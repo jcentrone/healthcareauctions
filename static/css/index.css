@@ -1,0 +1,431 @@
+/* Base CSS for HealthcareAuctions.com */
+
+:root {
+    --primary-blue: #0056b3;
+    --dark-blue: #0056b3;
+    --white: #FFFFFF;
+    --light-gray: #CCCCCC;
+    --dark-gray: #333333;
+    --gray: #999999;
+    --light-blue: #e6f0ff;
+
+    --font-primary: 'Montserrat', sans-serif;
+    --font-secondary: 'Roboto', sans-serif;
+
+    --border-radius: 4px;
+
+    --bg-blue: #006af5;
+    --bg-green: #067c4f;
+    --bg-red: #dd283d;
+    --border-left-blue: #006af5;
+    --border-left-green: #067c4f;
+    --border-left-red: #dd283d;
+    --border-left-orange: #fb8c00;
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    height: 100%;
+    font-family: var(--font-primary);
+    background-color: var(--white);
+    color: var(--dark-gray);
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--primary-blue);
+    color: var(--white);
+    padding: 10px 20px;
+}
+
+
+
+
+header nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 15px;
+}
+
+header nav ul li {
+    display: inline;
+}
+
+header nav ul li a {
+    color: var(--white);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.hero {
+    background: url('/static/images/hospital1.jpg') no-repeat center center/cover;
+    padding: 100px 20px 150px;
+    text-align: center;
+    color: var(--white);
+    position: relative;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3); /* Dark overlay */
+    Z-index: 0;
+}
+
+.hero h1 {
+    position: relative;
+    font-size: 48px;
+    margin-bottom: 10px;
+    color: var(--white);
+    z-index: 1;
+}
+
+.hero p {
+    position: relative;
+    font-size: 24px;
+    margin-bottom: 40px;
+}
+
+.hero .button {
+    position: relative;
+    padding: 10px 20px;
+    background-color: var(--dark-blue);
+    color: var(--white);
+    text-decoration: none;
+    border-radius: var(--border-radius);
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.hero .button:hover {
+    background-color: var(--primary-blue);
+}
+
+.featured-auctions {
+    padding: 40px 20px;
+    text-align: center;
+    background-color: var(--light-blue);
+}
+
+.featured-auctions h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+    color: var(--dark-gray);
+}
+
+.featured-auctions .grid {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.featured-auctions .auction-item {
+    background-color: var(--white);
+    border: 1px solid var(--light-gray);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    width: 300px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+}
+
+.featured-auctions .auction-item img {
+    width: 100%;
+    height: 130px;
+    border-radius: var(--border-radius);
+    margin-bottom: 10px;
+    object-fit: cover;
+}
+
+.featured-auctions .auction-item h3 {
+    font-size: 24px;
+    margin-bottom: 10px;
+    color: var(--dark-gray);
+}
+
+.featured-auctions .auction-item p {
+    font-size: 16px;
+    color: var(--gray);
+}
+
+.featured-auctions .button {
+    padding: 10px 20px;
+    background-color: var(--primary-blue);
+    color: var(--white);
+    text-decoration: none;
+    border-radius: var(--border-radius);
+    font-weight: bold;
+    font-size: 16px;
+    margin-top: 20px;
+}
+
+.featured-auctions .button:hover {
+    background-color: var(--dark-blue);
+}
+
+.how-it-works {
+    padding: 80px 20px;
+    text-align: center;
+}
+
+.how-it-works h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+    color: var(--dark-gray);
+}
+
+.steps {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    gap: 40px;
+}
+
+.step {
+    background-color: var(--primary-blue);
+    border-radius: 50%;
+    padding: 20px;
+    width: 225px;
+    height: 225px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    color: var(--white);
+    position: relative;
+    z-index: 1;
+}
+
+.step:nth-child(1) {
+    background-color: #007BFF;
+}
+
+.step:nth-child(3) {
+    background-color: #339FFF;
+}
+
+.step:nth-child(5) {
+    background-color: #66B2FF;
+}
+
+.step:nth-child(7) {
+    background-color: #99CCFF;
+}
+
+.step i {
+    font-size: 36px;
+    margin-bottom: 10px;
+}
+
+.step h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: var(--white);
+}
+
+.step p {
+    font-size: 14px;
+    color: var(--white);
+}
+
+.arrow {
+    font-size: 36px;
+    color: var(--dark-blue);
+    position: relative;
+    z-index: 0;
+}
+
+.arrow i {
+    font-size: 48px;
+    margin: 0 10px;
+}
+
+@media (max-width: 768px) {
+    .steps {
+        flex-direction: column;
+    }
+
+    .arrow {
+        transform: rotate(90deg);
+        margin: 20px 0;
+    }
+}
+
+.why-choose-us {
+    padding: 40px 20px;
+    text-align: center;
+    background-color: var(--light-blue);
+}
+
+.why-choose-us h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+    color: var(--dark-gray);
+}
+
+.why-choose-us ul {
+    list-style: none;
+    padding: 0;
+    margin: auto;
+    max-width: 800px;
+}
+
+.why-choose-us ul li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    font-size: 16px;
+    color: var(--dark-gray);
+}
+
+.why-choose-us ul li i {
+    font-size: 48px;
+    color: var(--primary-blue);
+    margin-right: 10px;
+}
+
+.why-choose-us ul li div {
+    text-align: left;
+}
+
+.why-choose-us ul li strong {
+    font-size: 18px;
+    display: block;
+    margin-bottom: 5px;
+    color: var(--dark-gray);
+}
+
+.why-choose-us ul li p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--gray);
+}
+
+.testimonials {
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.testimonials h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+    color: var(--dark-gray);
+}
+
+.testimonials .carousel {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.testimonials .testimonial {
+    background-color: var(--white);
+    border: 1px solid var(--light-gray);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    width: 300px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.testimonials .testimonial p {
+    font-size: 16px;
+    color: var(--gray);
+    margin-bottom: 10px;
+}
+
+.testimonials .testimonial span {
+    font-size: 14px;
+    color: var(--dark-gray);
+}
+
+.call-to-action {
+    padding: 100px 20px;
+    text-align: center;
+    background-color: var(--primary-blue);
+    color: var(--white);
+}
+
+.call-to-action h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+    color: var(--white);
+}
+
+.call-to-action p {
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+.call-to-action .button {
+    padding: 10px 20px;
+    background-color: var(--white);
+    color: var(--primary-blue);
+    text-decoration: none;
+    border-radius: var(--border-radius);
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.call-to-action .button:hover {
+    background-color: var(--light-blue);
+}
+
+footer {
+    padding: 20px;
+    text-align: center;
+    background-color: var(--dark-blue);
+    color: var(--white);
+}
+
+footer .quick-links {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 10px;
+}
+
+footer .quick-links a {
+    color: var(--white);
+    text-decoration: none;
+    font-size: 14px;
+}
+
+footer .contact-info p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+footer .social-media {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+footer .social-media a {
+    color: var(--white);
+    font-size: 24px;
+    text-decoration: none;
+}
+
+footer .social-media a:hover {
+    color: var(--light-blue);
+}
+

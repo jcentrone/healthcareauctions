@@ -1,0 +1,18 @@
+<!-- category_snippet.html -->
+{#{% if category.count_active_auctions %}#}
+    <li>
+        <a class='nav-link categories' href="{% url 'category_details_view' category.category_name %}">
+
+            <i class='fas fa-fw fa-folder-open'></i>
+            <span class='text-uppercase'>{{ category }}</span>
+            <span class="badge">{{ category.count_active_auctions }}</span>
+        </a>
+        {% if category.subcategories.all %}
+            <ul>
+                {% for subcategory in category.subcategories.all %}
+                    {% include 'category_snippet.html' with category=subcategory %}
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </li>
+{#{% endif %}#}

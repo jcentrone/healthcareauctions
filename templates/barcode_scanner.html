@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Scanner</title>
+    <script src="https://cdn.jsdelivr.net/npm/@zxing/library@latest/umd/index.min.js"></script>
+</head>
+
+<body>
+    <h1>Barcode Scanner</h1>
+    <button id="start-scan">Start Scan</button>
+    <div id="camera-preview" style="width: 100%; height: 400px;">
+        <video id="video" width="100%" height="100%" autoplay></video>
+    </div>
+    <div id="barcode-results"></div>
+
+    <script>
+        const formatMap = {
+            0: 'Aztec',
+            1: 'CODABAR',
+            2: 'Code 39',
+            3: 'Code 93',
+            4: 'Code 128',
+            5: 'Data Matrix',
+            6: 'EAN-8',
+            7: 'EAN-13',
+            8: 'ITF',
+            9: 'MaxiCode',
+            10: 'PDF 417',
+            11: 'QR Code',
+            12: 'RSS 14',
+            13: 'RSS Expanded',
+            14: 'UPC-A',
+            15: 'UPC-E',
+            16: 'UPC-EAN Extension'
+        };
+
+        const scannedBarcodes = [];
+
+        document.getElementById('start-scan').addEventListener('click', function () {
+            startScanner();
+        });
+
+        function startScanner() {
+            const codeReader = new ZXing.BrowserMultiFormatReader();
+            codeReader.decodeFromVideoDevice(null, 'video', (result, err) => {
+                if (result) {
+                    console.log(result);
+                    processDetectedBarcode(result);
+                }
+                if (err && !(err instanceof ZXing.NotFoundException)) {
+                    console.error(err);
+                }
+            });
+
+            function processDetectedBarcode(result) {
+                const code = result.text;
+                const format = formatMap[result.format];
+
+                if (!scannedBarcodes.find(item => item.code === code)) {
+                    const parsedResult = format === 'QR Code' || format === 'Data Matrix'
+                        ? parseQRCode(code)
+                        : parseGS1Barcode(code);
+
+                    scannedBarcodes.push({ code: code, format: format, parsed: parsedResult });
+                    displayDetectedBarcode(code, format, parsedResult);
+                }
+            }
+
+            function displayDetectedBarcode(code, format, parsedResult) {
+                const barcodeResults = document.getElementById('barcode-results');
+                const resultDiv = document.createElement('div');
+                resultDiv.innerHTML = `<strong>Detected Barcode (${format}):</strong> ${code} <br><strong>Parsed Results:</strong> <pre>${JSON.stringify(parsedResult, null, 2)}</pre>`;
+                barcodeResults.appendChild(resultDiv);
+            }
+
+            function parseQRCode(code) {
+                const sanitizedCode = code.replace(/[^ -~]+/g, ""); // Remove non-printable ASCII characters
+                const aiPatterns = {
+                    "01": "GTIN",
+                    "10": "Batch or Lot Number",
+                    "11": "Production Date",
+                    "17": "Expiration Date",
+                    // Add more AI patterns as needed
+                };
+                const parsedResult = {};
+                let remainingCode = sanitizedCode;
+                while (remainingCode.length > 0) {
+                    const ai = remainingCode.substring(0, 2);
+                    if (aiPatterns[ai]) {
+                        const field = aiPatterns[ai];
+                        let length;
+                        if (ai === "01") length = 14; // GTIN length
+                        else if (ai === "10") length = 20; // Lot Number max length
+                        else length = 6; // Dates length
+                        const value = remainingCode.substring(2, 2 + length).replace(/[^0-9A-Za-z]/g, "");
+                        parsedResult[field] = value;
+                        remainingCode = remainingCode.substring(2 + length);
+                    } else {
+                        remainingCode = remainingCode.substring(2);
+                    }
+                }
+                return parsedResult;
+            }
+
+            function parseGS1Barcode(code) {
+                const aiPatterns = {
+                    "01": "GTIN",
+                    "10": "Batch or Lot Number",
+                    "11": "Production Date",
+                    "17": "Expiration Date",
+                    // Add more AI patterns as needed
+                };
+                const parsedResult = {};
+                let remainingCode = code;
+                while (remainingCode.length > 0) {
+                    const ai = remainingCode.substring(0, 2);
+                    if (aiPatterns[ai]) {
+                        const field = aiPatterns[ai];
+                        let length;
+                        if (ai === "01") length = 14; // GTIN length
+                        else if (ai === "10") length = 20; // Lot Number max length
+                        else length = 6; // Dates length
+                        const value = remainingCode.substring(2, 2 + length).replace(/[^0-9A-Za-z]/g, "");
+                        parsedResult[field] = value;
+                        remainingCode = remainingCode.substring(2 + length);
+                    } else {
+                        remainingCode = remainingCode.substring(2);
+                    }
+                }
+                return parsedResult;
+            }
+        }
+    </script>
+
+</body>
+
+</html>
