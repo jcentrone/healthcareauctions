@@ -140,27 +140,264 @@ const scannedBarcodes = [];
 
 let codeReader = null;
 
+// function startScanner() {
+//     const codeReader = new ZXing.BrowserMultiFormatReader();
+//
+//     navigator.mediaDevices.getUserMedia({video: {facingMode: "environment"}})
+//         .then((stream) => {
+//             console.log("Stream obtained successfully.");
+//             const video = document.getElementById('video');
+//             video.srcObject = stream;
+//
+//             const track = stream.getVideoTracks()[0];
+//             const capabilities = track.getCapabilities();
+//             console.log("Video track capabilities:", capabilities);
+//
+//             const constraints = {
+//                 advanced: [
+//                     {brightness: capabilities.brightness.max * .75},
+//                     {contrast: capabilities.contrast.max},
+//                     {sharpness: capabilities.sharpness.max},
+//                     // { exposureCompensation: capabilities.exposureCompensation.max },
+//                     // { frameRate: capabilities.frameRate.min },
+//                     // { saturation: capabilities.saturation.max }
+//                 ]
+//             };
+//
+//             track.applyConstraints(constraints).then(() => {
+//                 console.log('Constraints applied:', constraints);
+//             }).catch((err) => {
+//                 console.error('Failed to apply constraints:', err);
+//             });
+//
+//             const zoomSlider = document.getElementById('zoom-slider');
+//
+//             if (capabilities.zoom) {
+//                 console.log("Zoom capabilities detected.");
+//                 const settings = track.getSettings();
+//                 console.log("Current video track settings:", settings);
+//                 zoomSlider.min = capabilities.zoom.min;
+//                 zoomSlider.max = capabilities.zoom.max;
+//                 zoomSlider.step = capabilities.zoom.step || 0.1;
+//                 zoomSlider.value = settings.zoom || (capabilities.zoom.min + capabilities.zoom.max) / 2;
+//
+//                 zoomSlider.addEventListener('input', () => {
+//                     const zoom = parseFloat(zoomSlider.value);
+//                     console.log("Attempting to set zoom level to:", zoom);
+//                     track.applyConstraints({
+//                         advanced: [{zoom: zoom}]
+//                     }).then(() => {
+//                         console.log('Zoom applied successfully:', zoom);
+//                     }).catch((err) => {
+//                         console.error('Failed to apply zoom:', err);
+//                     });
+//                 });
+//             } else {
+//                 console.log("Zoom capabilities not supported.");
+//                 zoomSlider.style.display = 'none';
+//             }
+//
+//             codeReader.decodeFromVideoDevice(null, 'video', (result, err) => {
+//                 if (result) {
+//                     console.log(result);
+//                     processDetectedBarcode(result);
+//                 }
+//                 if (err && !(err instanceof ZXing.NotFoundException)) {
+//                     console.error(err);
+//                 }
+//             });
+//         })
+//         .catch((err) => {
+//             console.error('Error accessing media devices:', err);
+//         });
+//
+//     function processDetectedBarcode(result) {
+//         const code = result.text;
+//         const format = formatMap[result.format];
+//
+//         if (!scannedBarcodes.find(item => item.code === code)) {
+//             const parsedResult = format === 'QR Code' || format === 'Data Matrix'
+//                 ? parseQRCode(code)
+//                 : parseGS1Barcode(code);
+//
+//             scannedBarcodes.push({code: code, format: format, parsed: parsedResult});
+//             displayDetectedBarcode(code, format, parsedResult);
+//         }
+//     }
+//
+//     const aiOptions = [
+//         {label: 'GTIN/UDI', value: '01'},
+//         {label: 'Batch or Lot Number', value: '10'},
+//         {label: 'Production Date', value: '11'},
+//         {label: 'Expiration Date', value: '17'},
+//         {label: 'Reference Number', value: 'ref'},
+//         {label: 'Unknown/Not Needed', value: 'Unknown'}
+//     ];
+//
+//     function displayDetectedBarcode(code, format, parsedResult) {
+//         const barcodeResults = document.getElementById('barcode-results');
+//         const resultDiv = document.getElementById('mapping-table');
+//
+//         for (const [key, value] of Object.entries(parsedResult)) {
+//             const row = document.createElement('div');
+//             row.classList.add('mapping-row');
+//
+//             const leftCell = document.createElement('div');
+//             leftCell.classList.add('mapping-cell');
+//             const select = document.createElement('select');
+//             select.classList.add('form-control');
+//
+//             aiOptions.forEach(option => {
+//                 const opt = document.createElement('option');
+//                 opt.value = option.value;
+//                 opt.innerText = option.label;
+//                 if (option.label === key) {
+//                     opt.selected = true;
+//                 }
+//                 select.appendChild(opt);
+//             });
+//
+//             leftCell.appendChild(select);
+//
+//             const arrowCell = document.createElement('div');
+//             arrowCell.classList.add('arrow');
+//             arrowCell.innerHTML = `<i class="fa-solid fa-arrow-right"></i>`;
+//
+//             const rightCell = document.createElement('div');
+//             rightCell.classList.add('mapping-cell');
+//             let formattedDate;
+//             if (key === 'Production Date' || key === 'Expiration Date') {
+//                 formattedDate = convertDate(value);
+//             } else {
+//                 formattedDate = value;
+//             }
+//             rightCell.innerText = formattedDate;
+//
+//             row.appendChild(leftCell);
+//             row.appendChild(arrowCell);
+//             row.appendChild(rightCell);
+//
+//             resultDiv.appendChild(row);
+//         }
+//
+//         barcodeResults.appendChild(resultDiv);
+//     }
+//
+//     function parseQRCode(code) {
+//         const sanitizedCode = code.replace(/[^ -~]+/g, ""); // Remove non-printable ASCII characters
+//         const aiPatterns = {
+//             "01": "GTIN",
+//             "10": "Batch or Lot Number",
+//             "11": "Production Date",
+//             "17": "Expiration Date",
+//             // Add more AI patterns as needed
+//         };
+//         const parsedResult = {};
+//         let remainingCode = sanitizedCode;
+//         while (remainingCode.length > 0) {
+//             const ai = remainingCode.substring(0, 2);
+//             if (aiPatterns[ai]) {
+//                 const field = aiPatterns[ai];
+//                 let length;
+//                 if (ai === "01") length = 14; // GTIN length
+//                 else if (ai === "10") length = 20; // Lot Number max length
+//                 else length = 6; // Dates length
+//                 const value = remainingCode.substring(2, 2 + length).replace(/[^0-9A-Za-z]/g, "");
+//                 parsedResult[field] = value;
+//                 remainingCode = remainingCode.substring(2 + length);
+//             } else {
+//                 remainingCode = remainingCode.substring(2);
+//             }
+//         }
+//         console.log(parsedResult);
+//         return parsedResult;
+//     }
+//
+//     function parseGS1Barcode(code) {
+//         const aiMap = {
+//             '00': 'SSCC',
+//             '01': 'GTIN',
+//             '10': 'Batch or Lot Number',
+//             '11': 'Production Date',
+//             '17': 'Expiration Date',
+//             '21': 'Serial Number',
+//             '310': 'Net Weight (kg)',
+//             '320': 'Net Weight (lb)',
+//             // Add more AIs as needed
+//         };
+//
+//         const fixedLengths = {
+//             '00': 18,
+//             '01': 14,
+//             '11': 6,
+//             '17': 6
+//         };
+//
+//         let index = 0;
+//         const length = code.length;
+//         const parsedResult = {};
+//         let unknownIndex = 1;
+//
+//         while (index < length) {
+//             let ai = code.substring(index, index + 2);
+//             let aiInfo = aiMap[ai];
+//
+//             if (!aiInfo) {
+//                 ai = code.substring(index, index + 3);
+//                 aiInfo = aiMap[ai];
+//             }
+//
+//             if (aiInfo) {
+//                 index += ai.length;
+//
+//                 // Determine length of the value
+//                 let value;
+//                 if (fixedLengths[ai]) {
+//                     value = code.substring(index, index + fixedLengths[ai]);
+//                     index += fixedLengths[ai];
+//                 } else {
+//                     let endIndex = code.indexOf(',', index);
+//                     if (endIndex === -1) {
+//                         endIndex = length;
+//                     }
+//                     value = code.substring(index, endIndex);
+//                     index = endIndex + 1;
+//                 }
+//
+//                 parsedResult[aiInfo] = value.replace(/[^0-9A-Za-z]/g, "");
+//             } else {
+//                 // Handle unknown AI
+//                 let endIndex = code.indexOf(',', index);
+//                 if (endIndex === -1) {
+//                     endIndex = length;
+//                 }
+//                 const unknownValue = code.substring(index, endIndex);
+//                 parsedResult[`Unknown/Not Needed`] = unknownValue.replace(/[^0-9A-Za-z]/g, "");
+//                 index = endIndex + 1;
+//             }
+//         }
+//
+//         console.log(parsedResult);
+//         return parsedResult;
+//     }
+// }
+
 function startScanner() {
     const codeReader = new ZXing.BrowserMultiFormatReader();
 
+    // Handle video scanning
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
         .then((stream) => {
-            console.log("Stream obtained successfully.");
             const video = document.getElementById('video');
             video.srcObject = stream;
 
             const track = stream.getVideoTracks()[0];
             const capabilities = track.getCapabilities();
-            console.log("Video track capabilities:", capabilities);
-
             const constraints = {
                 advanced: [
                     { brightness: capabilities.brightness.max * .75 },
-                    // { contrast: capabilities.contrast.max },
-                    // { sharpness: capabilities.sharpness.max },
-                    { exposureCompensation: capabilities.exposureCompensation.max },
-                    { frameRate: capabilities.frameRate.min },
-                    { saturation: capabilities.saturation.max }
+                    { contrast: capabilities.contrast.max },
+                    { sharpness: capabilities.sharpness.max }
                 ]
             };
 
@@ -171,11 +408,8 @@ function startScanner() {
             });
 
             const zoomSlider = document.getElementById('zoom-slider');
-
             if (capabilities.zoom) {
-                console.log("Zoom capabilities detected.");
                 const settings = track.getSettings();
-                console.log("Current video track settings:", settings);
                 zoomSlider.min = capabilities.zoom.min;
                 zoomSlider.max = capabilities.zoom.max;
                 zoomSlider.step = capabilities.zoom.step || 0.1;
@@ -183,7 +417,6 @@ function startScanner() {
 
                 zoomSlider.addEventListener('input', () => {
                     const zoom = parseFloat(zoomSlider.value);
-                    console.log("Attempting to set zoom level to:", zoom);
                     track.applyConstraints({
                         advanced: [{ zoom: zoom }]
                     }).then(() => {
@@ -193,7 +426,6 @@ function startScanner() {
                     });
                 });
             } else {
-                console.log("Zoom capabilities not supported.");
                 zoomSlider.style.display = 'none';
             }
 
@@ -210,6 +442,57 @@ function startScanner() {
         .catch((err) => {
             console.error('Error accessing media devices:', err);
         });
+
+    // Handle image input
+    document.getElementById('barcode-image-input').addEventListener('change', handleImageInput);
+    // Handle capture button click
+    document.getElementById('capture-button').addEventListener('click', captureImage);
+
+    function captureImage() {
+        const video = document.getElementById('video');
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const context = canvas.getContext('2d');
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const img = new Image();
+        img.onload = function() {
+            const codeReader = new ZXing.BrowserMultiFormatReader();
+            codeReader.decodeFromImage(img)
+                .then(result => {
+                    console.log(result);
+                    processDetectedBarcode(result);
+                })
+                .catch(err => {
+                    console.error('Failed to decode barcode from captured image:', err);
+                });
+        };
+        img.src = canvas.toDataURL('image/png');
+    }
+
+    function handleImageInput(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const codeReader = new ZXing.BrowserMultiFormatReader();
+                codeReader.decodeFromImage(img)
+                    .then(result => {
+                        console.log(result);
+                        processDetectedBarcode(result);
+                    })
+                    .catch(err => {
+                        console.error('Failed to decode barcode from image:', err);
+                    });
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
 
     function processDetectedBarcode(result) {
         const code = result.text;
@@ -289,8 +572,7 @@ function startScanner() {
             "01": "GTIN",
             "10": "Batch or Lot Number",
             "11": "Production Date",
-            "17": "Expiration Date",
-            // Add more AI patterns as needed
+            "17": "Expiration Date"
         };
         const parsedResult = {};
         let remainingCode = sanitizedCode;
@@ -309,7 +591,6 @@ function startScanner() {
                 remainingCode = remainingCode.substring(2);
             }
         }
-        console.log(parsedResult);
         return parsedResult;
     }
 
@@ -322,8 +603,7 @@ function startScanner() {
             '17': 'Expiration Date',
             '21': 'Serial Number',
             '310': 'Net Weight (kg)',
-            '320': 'Net Weight (lb)',
-            // Add more AIs as needed
+            '320': 'Net Weight (lb)'
         };
 
         const fixedLengths = {
@@ -377,11 +657,9 @@ function startScanner() {
             }
         }
 
-        console.log(parsedResult);
         return parsedResult;
     }
 }
-
 
 
 function stopScanner() {
@@ -395,7 +673,6 @@ function stopScanner() {
         console.log('Scanner stopped.');
     }
 }
-
 
 
 // API Functions
@@ -530,69 +807,9 @@ function populateForm(data) {
     }
 }
 
-// function handleFileSelect(event) {
-//     const file = event.target.files[0];
-//     if (file) {
-//         const reader = new FileReader();
-//         reader.onload = (e) => {
-//             const data = new Uint8Array(e.target.result);
-//             const workbook = XLSX.read(data, {type: 'array'});
-//             const sheetName = workbook.SheetNames[0];
-//             const sheet = workbook.Sheets[sheetName];
-//             const json = XLSX.utils.sheet_to_json(sheet, {header: 1, raw: true});
-//
-//             generatePreviewTable(json);
-//             generateMappingTable(json);
-//             document.getElementById('import-button').style.display = 'block';
-//             document.getElementById('fileInput').style.display = 'none';
-//             document.getElementById('import-modal-content').style.maxWidth = 'unset';
-//         };
-//         reader.readAsArrayBuffer(file);
-//     }
-// }
-//
-// function generatePreviewTable(data) {
-//     const previewTableHead = document.getElementById('previewTableHead');
-//     const previewTableBody = document.getElementById('previewTableBody');
-//     previewTableHead.innerHTML = '';
-//     previewTableBody.innerHTML = '';
-//
-//     const headerRow = document.createElement('tr');
-//     data[0].forEach(header => {
-//         const th = document.createElement('th');
-//         th.innerText = header;
-//         headerRow.appendChild(th);
-//     });
-//     previewTableHead.appendChild(headerRow);
-//
-//     data.slice(1, 6).forEach(row => {
-//         const tr = document.createElement('tr');
-//         row.forEach(cell => {
-//             const td = document.createElement('td');
-//             td.innerText = typeof cell === 'number' && isExcelDate(cell) ? formatDate(cell) : cell;
-//             tr.appendChild(td);
-//         });
-//         previewTableBody.appendChild(tr);
-//     });
-//
-//     document.getElementById('previewContainer').style.display = 'block';
-// }
-//
-// function isExcelDate(value) {
-//     return value > 25569;
-// }
-
 function toProperCase(str) {
     return str.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
 }
-
-// function formatDate(excelDate) {
-//     const date = new Date((excelDate - (25567 + 1)) * 86400 * 1000);
-//     const day = String(date.getDate()).padStart(2, '0');
-//     const month = String(date.getMonth() + 1).padStart(2, '0');
-//     const year = date.getFullYear();
-//     return `${month}/${day}/${year}`;
-// }
 
 function convertDate(dateString) {
 
@@ -623,61 +840,7 @@ function convertDate(dateString) {
 
         return formattedDate;
     }
-
-
 }
-
-// function generateMappingTable(data) {
-//     const headers = data[0];
-//     const formFields = [
-//         {label: 'Product Name', value: 'title'},
-//         {label: 'Description', value: 'description'},
-//         {label: 'Category', value: 'category'},
-//         {label: 'Starting Bid', value: 'starting_bid'},
-//         {label: 'Reserve Bid', value: 'reserve_bid'},
-//         {label: 'Auction Duration', value: 'auction_duration'},
-//         {label: 'Manufacturer', value: 'manufacturer'},
-//         {label: 'Reference Number', value: 'reference_number'},
-//         {label: 'Lot Number', value: 'lot_number'},
-//         {label: 'Expiration Date', value: 'expiration_date'},
-//         {label: 'Package Type', value: 'package_type'},
-//         {label: 'Package Quantity', value: 'package_quantity'},
-//         {label: 'Device Sterile', value: 'deviceSterile'},
-//         {label: 'Full Package', value: 'fullPackage'}
-//     ];
-//
-//     const mappingTable = document.getElementById('mappingTable');
-//     mappingTable.innerHTML = '';
-//
-//     headers.forEach(header => {
-//         const row = document.createElement('tr');
-//
-//         const fileHeaderCell = document.createElement('td');
-//         fileHeaderCell.innerText = header;
-//         row.appendChild(fileHeaderCell);
-//
-//         const arrowCell = document.createElement('td');
-//         arrowCell.innerHTML = '<i class="fa-solid fa-arrow-right"></i>';
-//         row.appendChild(arrowCell);
-//
-//         const formFieldCell = document.createElement('td');
-//         const select = document.createElement('select');
-//         select.classList.add('form-control');
-//         formFields.forEach(field => {
-//             const option = document.createElement('option');
-//             option.value = field.value;
-//             option.innerText = field.label;
-//             if (field.label.toLowerCase() === header.toLowerCase()) option.selected = true;
-//             select.appendChild(option);
-//         });
-//         formFieldCell.appendChild(select);
-//         row.appendChild(formFieldCell);
-//
-//         mappingTable.appendChild(row);
-//     });
-//
-//     document.getElementById('mappingContainer').style.display = 'block';
-// }
 
 // Add event listeners to scan buttons for individual barcode fields
 document.querySelectorAll('[id^="scanButton-"]').forEach(button => {
@@ -756,3 +919,28 @@ document.getElementById('infoIcon').addEventListener('mouseout', function () {
     document.querySelector('.tooltip').style.visibility = 'hidden';
     document.querySelector('.tooltip').style.opacity = 0;
 });
+
+document.getElementById('barcode-image-input').addEventListener('change', handleImageInput);
+
+function handleImageInput(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            const codeReader = new ZXing.BrowserMultiFormatReader();
+            codeReader.decodeFromImage(img)
+                .then(result => {
+                    console.log(result);
+                    processDetectedBarcode(result);
+                })
+                .catch(err => {
+                    console.error('Failed to decode barcode from image:', err);
+                });
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
