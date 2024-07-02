@@ -25,64 +25,66 @@
 </head>
 
 <body id='page-top'>
-<header>
-    <a class="logo" href="{% url 'index' %}">
-        <img src="{% static "images/HealthcareAuctionsLogo_no_bg.png" %} " alt="Auction 1">
-        HealthcareAuctions.com
-    </a>
-    <nav>
-        <ul>
-            <li class='nav-item dropdown no-arrow'>
-                <a class='nav-link' href="/">
-                    <i class="fa-solid fa-house"></i> Home
-                </a>
-            </li>
-            <li class='nav-item dropdown no-arrow'>
-                <a class='nav-link' href="#">
-                    <i class="fas fa-info-circle about-icon"></i> About
-                </a>
-            </li>
-            <li class='nav-item dropdown no-arrow'>
-                <a class='nav-link' href="#"><i class="fa-solid fa-bell-concierge"></i> Services
-                </a>
-            </li>
-            <li class='nav-item dropdown no-arrow'>
-                <a class='nav-link' href="/auction/active">
-                    <i class="fa-solid fa-gavel"></i> Auctions
-                </a>
-            </li>
-            <!-- Nav Item - User Information -->
-            {% if user.is_authenticated %}
-                <li class='nav-item dropdown no-arrow'>
-                    <a class='nav-link dropdown-toggle' data-bs-toggle='dropdown' href='#' role='button'
-                       aria-haspopup='true' aria-expanded='false'>
-                        <i class='fas fa-user fa-fw fa-lg'></i>
-                    </a>
-                    <div class='dropdown-menu dropdown-menu-end'>
-                        <a class='dropdown-item' href={% url 'dashboard' %}>
-                            <i class='fas fa-user'></i> My Dashboard
-                        </a>
-                        <div class='dropdown-divider'></div>
-                        <a class='dropdown-item' href="{% url 'logout' %}">
-                            <i class='fas fa-sign-out-alt'></i> Log Out
-                        </a>
-                    </div>
-                </li>
-            {% else %}
-                <li class='nav-item'>
-                    <a class='nav-link' href="{% url 'login' %}">
-                        <i class='fas fa-sign-in-alt'></i>&nbsp;Log In
-                    </a>
-                </li>
-                <li class='nav-item'>
-                    <a class='nav-link' href="{% url 'register' %}">
-                        <i class='fas fa-user-plus'></i>&nbsp;Register
-                    </a>
-                </li>
-            {% endif %}
-        </ul>
-    </nav>
-</header>
+
+ {% include 'header.html' %}
+{#<header>#}
+{#    <a class="logo" href="{% url 'index' %}">#}
+{#        <img src="{% static "images/HealthcareAuctionsLogo_no_bg.png" %} " alt="Auction 1">#}
+{#        Healthcare Auctions#}
+{#    </a>#}
+{#    <nav>#}
+{#        <ul>#}
+{#            <li class='nav-item dropdown no-arrow'>#}
+{#                <a class='nav-link' href="/">#}
+{#                    <i class="fa-solid fa-house"></i> Home#}
+{#                </a>#}
+{#            </li>#}
+{#            <li class='nav-item dropdown no-arrow'>#}
+{#                <a class='nav-link' href="#">#}
+{#                    <i class="fas fa-info-circle about-icon"></i> About#}
+{#                </a>#}
+{#            </li>#}
+{#            <li class='nav-item dropdown no-arrow'>#}
+{#                <a class='nav-link' href="#"><i class="fa-solid fa-bell-concierge"></i> Services#}
+{#                </a>#}
+{#            </li>#}
+{#            <li class='nav-item dropdown no-arrow'>#}
+{#                <a class='nav-link' href="/auction/active">#}
+{#                    <i class="fa-solid fa-gavel"></i> Auctions#}
+{#                </a>#}
+{#            </li>#}
+{#            <!-- Nav Item - User Information -->#}
+{#            {% if user.is_authenticated %}#}
+{#                <li class='nav-item dropdown no-arrow'>#}
+{#                    <a class='nav-link dropdown-toggle' data-bs-toggle='dropdown' href='#' role='button'#}
+{#                       aria-haspopup='true' aria-expanded='false'>#}
+{#                        <i class='fas fa-user fa-fw fa-lg'></i>#}
+{#                    </a>#}
+{#                    <div class='dropdown-menu dropdown-menu-end'>#}
+{#                        <a class='dropdown-item' href={% url 'dashboard' %}>#}
+{#                            <i class='fas fa-user'></i> My Dashboard#}
+{#                        </a>#}
+{#                        <div class='dropdown-divider'></div>#}
+{#                        <a class='dropdown-item' href="{% url 'logout' %}">#}
+{#                            <i class='fas fa-sign-out-alt'></i> Log Out#}
+{#                        </a>#}
+{#                    </div>#}
+{#                </li>#}
+{#            {% else %}#}
+{#                <li class='nav-item'>#}
+{#                    <a class='nav-link' href="{% url 'login' %}">#}
+{#                        <i class='fas fa-sign-in-alt'></i>&nbsp;Log In#}
+{#                    </a>#}
+{#                </li>#}
+{#                <li class='nav-item'>#}
+{#                    <a class='nav-link' href="{% url 'register' %}">#}
+{#                        <i class='fas fa-user-plus'></i>&nbsp;Register#}
+{#                    </a>#}
+{#                </li>#}
+{#            {% endif %}#}
+{#        </ul>#}
+{#    </nav>#}
+{#</header>#}
 
 <!-- Page Wrapper -->
 <div id='wrapper'>

@@ -1,0 +1,128 @@
+{#{% load static %}#}
+{#<header>#}
+{#    <a class="logo" href="{% url 'index' %}">#}
+{#        <img src="{% static "images/HealthcareAuctionsLogo_no_bg.png" %} " alt="Auction 1">#}
+{#        Healthcare Auctions#}
+{#    </a>#}
+{#    <nav>#}
+{#        <ul>#}
+{#            <li class='nav-item dropdown no-arrow'>#}
+{#                <a class='nav-link' href="/">#}
+{#                    <i class="fa-solid fa-house"></i> Home#}
+{#                </a>#}
+{#            </li>#}
+{#            <li class='nav-item dropdown no-arrow'>#}
+{#                <a class='nav-link' href="#">#}
+{#                    <i class="fas fa-info-circle about-icon"></i> About#}
+{#                </a>#}
+{#            </li>#}
+{#            <li class='nav-item dropdown no-arrow'>#}
+{#                <a class='nav-link' href="#"><i class="fa-solid fa-bell-concierge"></i> Services#}
+{#                </a>#}
+{#            </li>#}
+{#            <li class='nav-item dropdown no-arrow'>#}
+{#                <a class='nav-link' href="/auction/active">#}
+{#                    <i class="fa-solid fa-gavel"></i> Auctions#}
+{#                </a>#}
+{#            </li>#}
+{#            <!-- Nav Item - User Information -->#}
+{#            {% if user.is_authenticated %}#}
+{#                <li class='nav-item dropdown no-arrow'>#}
+{#                    <a class='nav-link dropdown-toggle' data-bs-toggle='dropdown' href='#' role='button'#}
+{#                       aria-haspopup='true' aria-expanded='false'>#}
+{#                        <i class='fas fa-user fa-fw fa-lg'></i>#}
+{#                    </a>#}
+{#                    <div class='dropdown-menu dropdown-menu-end'>#}
+{#                        <a class='dropdown-item' href={% url 'dashboard' %}>#}
+{#                            <i class='fas fa-user'></i> My Dashboard#}
+{#                        </a>#}
+{#                        <div class='dropdown-divider'></div>#}
+{#                        <a class='dropdown-item' href="{% url 'logout' %}">#}
+{#                            <i class='fas fa-sign-out-alt'></i> Log Out#}
+{#                        </a>#}
+{#                    </div>#}
+{#                </li>#}
+{#            {% else %}#}
+{#                <li class='nav-item'>#}
+{#                    <a class='nav-link' href="{% url 'login' %}">#}
+{#                        <i class='fas fa-sign-in-alt'></i>&nbsp;Log In#}
+{#                    </a>#}
+{#                </li>#}
+{#                <li class='nav-item'>#}
+{#                    <a class='nav-link' href="{% url 'register' %}">#}
+{#                        <i class='fas fa-user-plus'></i>&nbsp;Register#}
+{#                    </a>#}
+{#                </li>#}
+{#            {% endif %}#}
+{#        </ul>#}
+{#    </nav>#}
+{#</header>#}
+
+{% load static %}
+<header>
+    <nav class="navbar navbar-expand-lg">
+        <a class="logo navbar-brand" href="{% url 'index' %}">
+            <img src="{% static "images/HealthcareAuctionsLogo_no_bg.png" %}" alt="Auction 1">
+            <div>Healthcare Auctions</div>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">
+                        <i class="fa-solid fa-house"></i> Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+{#                        <i class="fa-solid fa-info" id="header-info-circle">About</i>#}
+                        <i class="fas fa-info-circle" id="header-info-circle"></i> About
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fa-solid fa-bell-concierge"></i> Services
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/auction/active">
+                        <i class="fa-solid fa-gavel"></i> Auctions
+                    </a>
+                </li>
+                {% if user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-user" id="user-icon"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <a class="dropdown-item" href="{% url 'dashboard' %}">
+                                <i class="fas fa-user"></i> My Dashboard
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{% url 'logout' %}">
+                                <i class="fas fa-sign-out-alt"></i> Log Out
+                            </a>
+                        </div>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">
+                            <i class="fas fa-sign-in-alt"></i> Log In
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'register' %}">
+                            <i class="fas fa-user-plus"></i> Register
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+</header>
+
+<!-- Add Bootstrap CSS and JS -->
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
