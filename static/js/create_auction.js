@@ -385,20 +385,27 @@ let codeReader = null;
 function startScanner() {
     const codeReader = new ZXing.BrowserMultiFormatReader();
 
-    // Handle video scanning
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+    navigator.mediaDevices.getUserMedia({video: {facingMode: "environment"}})
         .then((stream) => {
+            console.log("Stream obtained successfully.");
             const video = document.getElementById('video');
             video.srcObject = stream;
 
             const track = stream.getVideoTracks()[0];
             const capabilities = track.getCapabilities();
+            console.log("Video track capabilities:", capabilities);
+
             const constraints = {
                 advanced: [
-                    { brightness: capabilities.brightness.max * .75 },
-                    { contrast: capabilities.contrast.max },
-                    { sharpness: capabilities.sharpness.max }
-                ]
+                    {brightness: capabilities.brightness ? capabilities.brightness.max * 0.75 : undefined},
+                    {contrast: capabilities.contrast ? capabilities.contrast.max : undefined},
+                    {sharpness: capabilities.sharpness ? capabilities.sharpness.max : undefined},
+                    {exposureCompensation: capabilities.exposureCompensation ? capabilities.exposureCompensation.max : undefined},
+                    {frameRate: capabilities.frameRate ? capabilities.frameRate.min : undefined},
+                    {saturation: capabilities.saturation ? capabilities.saturation.max : undefined},
+
+
+                ].filter(Boolean)
             };
 
             track.applyConstraints(constraints).then(() => {
@@ -408,8 +415,11 @@ function startScanner() {
             });
 
             const zoomSlider = document.getElementById('zoom-slider');
+
             if (capabilities.zoom) {
+                console.log("Zoom capabilities detected.");
                 const settings = track.getSettings();
+                console.log("Current video track settings:", settings);
                 zoomSlider.min = capabilities.zoom.min;
                 zoomSlider.max = capabilities.zoom.max;
                 zoomSlider.step = capabilities.zoom.step || 0.1;
@@ -417,8 +427,9 @@ function startScanner() {
 
                 zoomSlider.addEventListener('input', () => {
                     const zoom = parseFloat(zoomSlider.value);
+                    console.log("Attempting to set zoom level to:", zoom);
                     track.applyConstraints({
-                        advanced: [{ zoom: zoom }]
+                        advanced: [{zoom: zoom}]
                     }).then(() => {
                         console.log('Zoom applied successfully:', zoom);
                     }).catch((err) => {
@@ -426,6 +437,7 @@ function startScanner() {
                     });
                 });
             } else {
+                console.log("Zoom capabilities not supported.");
                 zoomSlider.style.display = 'none';
             }
 
@@ -443,57 +455,6 @@ function startScanner() {
             console.error('Error accessing media devices:', err);
         });
 
-    // Handle image input
-    document.getElementById('barcode-image-input').addEventListener('change', handleImageInput);
-    // Handle capture button click
-    document.getElementById('capture-button').addEventListener('click', captureImage);
-
-    function captureImage() {
-        const video = document.getElementById('video');
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const context = canvas.getContext('2d');
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        const img = new Image();
-        img.onload = function() {
-            const codeReader = new ZXing.BrowserMultiFormatReader();
-            codeReader.decodeFromImage(img)
-                .then(result => {
-                    console.log(result);
-                    processDetectedBarcode(result);
-                })
-                .catch(err => {
-                    console.error('Failed to decode barcode from captured image:', err);
-                });
-        };
-        img.src = canvas.toDataURL('image/png');
-    }
-
-    function handleImageInput(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const img = new Image();
-            img.onload = function() {
-                const codeReader = new ZXing.BrowserMultiFormatReader();
-                codeReader.decodeFromImage(img)
-                    .then(result => {
-                        console.log(result);
-                        processDetectedBarcode(result);
-                    })
-                    .catch(err => {
-                        console.error('Failed to decode barcode from image:', err);
-                    });
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    }
-
     function processDetectedBarcode(result) {
         const code = result.text;
         const format = formatMap[result.format];
@@ -503,23 +464,24 @@ function startScanner() {
                 ? parseQRCode(code)
                 : parseGS1Barcode(code);
 
-            scannedBarcodes.push({ code: code, format: format, parsed: parsedResult });
+            scannedBarcodes.push({code: code, format: format, parsed: parsedResult});
             displayDetectedBarcode(code, format, parsedResult);
         }
     }
 
     const aiOptions = [
-        { label: 'GTIN/UDI', value: '01' },
-        { label: 'Batch or Lot Number', value: '10' },
-        { label: 'Production Date', value: '11' },
-        { label: 'Expiration Date', value: '17' },
-        { label: 'Reference Number', value: 'ref' },
-        { label: 'Unknown/Not Needed', value: 'Unknown' }
+        {label: 'GTIN/UDI', value: '01'},
+        {label: 'Batch or Lot Number', value: '10'},
+        {label: 'Production Date', value: '11'},
+        {label: 'Expiration Date', value: '17'},
+        {label: 'Reference Number', value: 'ref'},
+        {label: 'Unknown/Not Needed', value: 'Unknown'}
     ];
 
     function displayDetectedBarcode(code, format, parsedResult) {
         const barcodeResults = document.getElementById('barcode-results');
-        const resultDiv = document.getElementById('mapping-table');
+        const resultDiv = document.createElement('div');
+        resultDiv.id = 'mapping-table';
 
         for (const [key, value] of Object.entries(parsedResult)) {
             const row = document.createElement('div');
@@ -572,7 +534,8 @@ function startScanner() {
             "01": "GTIN",
             "10": "Batch or Lot Number",
             "11": "Production Date",
-            "17": "Expiration Date"
+            "17": "Expiration Date",
+            // Add more AI patterns as needed
         };
         const parsedResult = {};
         let remainingCode = sanitizedCode;
@@ -591,6 +554,7 @@ function startScanner() {
                 remainingCode = remainingCode.substring(2);
             }
         }
+        console.log(parsedResult);
         return parsedResult;
     }
 
@@ -603,7 +567,8 @@ function startScanner() {
             '17': 'Expiration Date',
             '21': 'Serial Number',
             '310': 'Net Weight (kg)',
-            '320': 'Net Weight (lb)'
+            '320': 'Net Weight (lb)',
+            // Add more AIs as needed
         };
 
         const fixedLengths = {
@@ -657,6 +622,7 @@ function startScanner() {
             }
         }
 
+        console.log(parsedResult);
         return parsedResult;
     }
 }
@@ -927,9 +893,9 @@ function handleImageInput(event) {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = function (e) {
         const img = new Image();
-        img.onload = function() {
+        img.onload = function () {
             const codeReader = new ZXing.BrowserMultiFormatReader();
             codeReader.decodeFromImage(img)
                 .then(result => {
