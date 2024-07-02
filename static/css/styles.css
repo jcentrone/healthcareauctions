@@ -582,6 +582,7 @@ body.sidebar-toggled footer.sticky-footer {
         display: none;
     }
 }
+
 @media (max-width: 400px) {
     header .logo div {
         display: none;
@@ -592,10 +593,12 @@ body.sidebar-toggled footer.sticky-footer {
     header .logo div {
         font-size: 14px;
     }
-    header{
+
+    header {
         padding: 0 20px;
     }
-    .navbar{
+
+    .navbar {
         padding: 1rem 0;
     }
 }
@@ -981,6 +984,30 @@ button i {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
+}
+
+@media (max-width: 768px) {
+    #auction-create {
+        display: block;
+    }
+
+    .sidebar {
+        display: none;
+    }
+
+    .bid-details {
+        height: 100% !important;
+    }
+
+    #id_quantity_available {
+        grid-column: span 2;
+    }
+
+    #qty-container {
+        display: grid;
+        grid-template-columns: auto auto;
+    }
+
 }
 
 .checkbox-row {
@@ -1615,6 +1642,6 @@ a.nav-link {
 }
 
 #header-info-circle,
-#user-icon{
+#user-icon {
     color: #FFFFFF !important;
 }
