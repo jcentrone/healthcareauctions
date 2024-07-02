@@ -1007,6 +1007,9 @@ button i {
         display: grid;
         grid-template-columns: auto auto;
     }
+    .camera-preview{
+        grid-template-columns: 1fr !important;
+    }
 
 }
 
