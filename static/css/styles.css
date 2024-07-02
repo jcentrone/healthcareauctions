@@ -992,7 +992,7 @@ button i {
     }
 
     .sidebar {
-        display: none;
+        /*display: none;*/
     }
 
     .bid-details {
