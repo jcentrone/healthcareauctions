@@ -52,7 +52,7 @@
                                     <div class="brackets"></div>
                                     <div class="scan-line"></div>
                                 </div>
-                                <div>
+                                <div id="zoom-slider-container">
                                     <label for="zoom-slider">Zoom:</label>
                                     <input type="range" id="zoom-slider" min="1" max="10" step="0.1" value="5">
                                 </div>
@@ -76,10 +76,10 @@
 
 
                     </div>
-                    <button id="capture-button">Capture Image</button>
-                    <input type="file" id="barcode-image-input" accept="image/*">
+{#                    <button id="capture-button">Capture Image</button>#}
+{#                    <input type="file" id="barcode-image-input" accept="image/*">#}
 
-                    <button id="closeScanModal" class="btn btn-secondary">Save</button>
+                    <button id="closeScanModal" class="btn btn-secondary">Save & Close</button>
                 </div>
             </div>
 
@@ -205,7 +205,7 @@
                                     {{ auction_form.package_quantity }}
                                 </div>
 
-                                <div class="checkbox-row">
+                                <div class="checkbox-row" id="id_deviceSterile">
                                     {{ auction_form.deviceSterile.label_tag }}
                                     {{ auction_form.deviceSterile }}
                                 </div>

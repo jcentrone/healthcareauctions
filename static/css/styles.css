@@ -581,6 +581,7 @@ body.sidebar-toggled footer.sticky-footer {
     .navbar-expand-sm .navbar-toggler {
         display: none;
     }
+
 }
 
 @media (max-width: 400px) {
@@ -603,13 +604,6 @@ body.sidebar-toggled footer.sticky-footer {
     }
 }
 
-@media (max-width: 767.98px) {
-    .navbar-expand-md > .container,
-    .navbar-expand-md > .container-fluid, .navbar-expand-md > .container-sm, .navbar-expand-md > .container-md, .navbar-expand-md > .container-lg, .navbar-expand-md > .container-xl {
-        padding-right: 0;
-        padding-left: 0;
-    }
-}
 
 @media (min-width: 768px) {
     .sidebar {
@@ -992,7 +986,7 @@ button i {
     }
 
     .sidebar {
-        /*display: none;*/
+        display: none;
     }
 
     .bid-details {
@@ -1007,8 +1001,9 @@ button i {
         display: grid;
         grid-template-columns: auto auto;
     }
-    .camera-preview{
-        grid-template-columns: 1fr !important;
+
+    .camera-preview {
+        grid-template-columns: 100% !important
     }
 
 }
@@ -1121,12 +1116,13 @@ button i {
 
 .bid-details {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 100%;
     align-items: flex-start;
     justify-content: flex-start;
     gap: 20px;
     grid-row: span 2;
     height: 20px;
+
 }
 
 .bid-row {
@@ -1222,6 +1218,18 @@ video {
     .option {
         flex: 1 1 100%;
         max-width: 100%;
+        height: 170px;
+    }
+
+    .container {
+        padding: 1rem;
+    }
+
+    .bid-row {
+        grid-template-columns: 1fr;
+    }
+    #id_deviceSterile{
+        margin-bottom: 20px;
     }
 }
 
@@ -1252,7 +1260,7 @@ video {
 
 .mapping-table {
     overflow-y: auto;
-    height: 400px !important;
+    /*height: 400px !important;*/
     padding-right: 20px;
 }
 
@@ -1647,4 +1655,16 @@ a.nav-link {
 #header-info-circle,
 #user-icon {
     color: #FFFFFF !important;
+}
+
+@media (max-width: 767.98px) {
+    .navbar-expand-md > .container,
+    .navbar-expand-md > .container-fluid, .navbar-expand-md > .container-sm, .navbar-expand-md > .container-md, .navbar-expand-md > .container-lg, .navbar-expand-md > .container-xl {
+        padding-right: 0;
+        padding-left: 0;
+    }
+
+    .mapping-table {
+        height: auto !important;
+    }
 }

@@ -682,7 +682,7 @@ function startScanner() {
                 });
             } else {
                 console.log("Zoom capabilities not supported.");
-                zoomSlider.style.display = 'none';
+                document.getElementById('zoom-slider-container').style.display = 'none';
             }
 
             codeReader.decodeFromVideoDevice(null, 'video', (result, err) => {
@@ -1145,7 +1145,7 @@ document.getElementById('infoIcon').addEventListener('mouseout', function () {
     document.querySelector('.tooltip').style.opacity = 0;
 });
 
-document.getElementById('barcode-image-input').addEventListener('change', handleImageInput);
+// document.getElementById('barcode-image-input').addEventListener('change', handleImageInput);
 
 function handleImageInput(event) {
     const file = event.target.files[0];

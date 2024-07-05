@@ -2230,6 +2230,7 @@ progress {
 .form-control {
     display: block;
     width: 100%;
+    min-width: 150px;
     padding: .75rem 1.5rem;
     font-size: 1rem;
     font-weight: 400;
@@ -4889,7 +4890,8 @@ textarea.form-control-lg {
 .card-body {
     -ms-flex: 1 1 auto;
     flex: 1 1 auto;
-    padding: 1rem 1rem
+    padding: 1rem 1rem;
+    width: 100%;
 }
 
 .card-title {
