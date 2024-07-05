@@ -3958,7 +3958,8 @@ textarea.form-control-lg {
 }
 
 .dropdown-item {
-    display: block;
+    gap: 20px;
+    display: flex;
     width: 100%;
     padding: .25rem 1rem;
     clear: both;
@@ -3968,7 +3969,9 @@ textarea.form-control-lg {
     text-decoration: none;
     white-space: nowrap;
     background-color: transparent;
-    border: 0
+    border: 0;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .dropdown-item:focus, .dropdown-item:hover {
@@ -3979,7 +3982,7 @@ textarea.form-control-lg {
 .dropdown-item.active, .dropdown-item:active {
     color: #fff;
     text-decoration: none;
-    background-color: #1a1a1a
+    /*background-color: #1a1a1a*/
 }
 
 .dropdown-item.disabled, .dropdown-item:disabled {
