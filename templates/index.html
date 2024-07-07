@@ -10,11 +10,12 @@
 
 {% block body %}
     <div class=container style="padding: 0;">
-
-        <section class="hero">
-            <h1>Welcome to Healthcare Auctions</h1>
-            <p>Your trusted platform for healthcare equipment and supplies.</p>
-            <a href="{% url 'active_auctions_view' %}" class="button primary">Explore Auctions</a>
+    <section class="hero">
+        {% include 'hero.html' %}
+{#        <section class="hero">#}
+{#            <h1>Welcome to Healthcare Auctions</h1>#}
+{#            <p>Your trusted platform for healthcare equipment and supplies.</p>#}
+{#            <a href="{% url 'active_auctions_view' %}" class="button primary">Explore Auctions</a>#}
         </section>
 
         <section class="featured-auctions">
