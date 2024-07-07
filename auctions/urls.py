@@ -22,5 +22,6 @@ urlpatterns = [
     path('barcode_scanner/', views.barcode_scanner, name='barcode_scanner'),
     path('import_excel/', views.import_excel, name='import_excel'),
     path('download-excel/', views.download_excel, name='download_excel'),
+    path('new_header/', views.header, name='new_header'),
 
 ]

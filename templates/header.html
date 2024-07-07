@@ -93,12 +93,13 @@
                     </a>
                 </li>
                 {% if user.is_authenticated %}
-                    <li class="nav-item dropdown">
+                    <li class="nav-item dropdown" id="user-ops">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                            data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <i class="fas fa-user" id="user-icon"></i>
+                            <div>{{ user.username }}</div>
                         </a>
-                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <div class="dropdown-menu dropdown-menu-end" id="userDropdownContent" aria-labelledby="userDropdown">
                             <a class="dropdown-item" href="{% url 'dashboard' %}">
                                 <i class='fas fa-fw fa-chart-area'></i>
                                 <div>Dashboard</div>

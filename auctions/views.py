@@ -13,7 +13,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from .forms import AuctionForm, ImageForm, CommentForm, BidForm
 from .models import Auction, Bid, Category, Image, User
-from .utils.helpers import classify_and_save_device, update_categories_from_fda
+from .utils.helpers import update_categories_from_fda
 
 
 def index(request):
@@ -39,6 +39,41 @@ def index(request):
         pages = paginator.page(paginator.num_pages)
 
     return render(request, 'index.html', {
+        'categories': Category.objects.all(),
+        'auctions': auctions,
+        'expensive_auctions': expensive_auctions,
+        'auctions_count': Auction.objects.all().count(),
+        'bids_count': Bid.objects.all().count(),
+        'categories_count': Category.objects.all().count(),
+        'users_count': User.objects.all().count(),
+        'pages': pages,
+        'title': 'Dashboard',
+    })
+
+
+def header(request):
+    """
+    The default route which renders a Dashboard page
+    """
+    auctions = Auction.objects.all()
+
+    expensive_auctions = Auction.objects.order_by('-starting_bid')[:4]
+
+    for auction in auctions:
+        auction.image = auction.get_images.first()
+
+    # Show 5 auctions per page
+    page = request.GET.get('page', 1)
+    paginator = Paginator(auctions, 5)
+
+    try:
+        pages = paginator.page(page)
+    except PageNotAnInteger:
+        pages = paginator.page(1)
+    except EmptyPage:
+        pages = paginator.page(paginator.num_pages)
+
+    return render(request, 'header_new.html', {
         'categories': Category.objects.all(),
         'auctions': auctions,
         'expensive_auctions': expensive_auctions,

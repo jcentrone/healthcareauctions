@@ -37,35 +37,35 @@ body {
     padding: 0;
 }
 
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: var(--primary-blue);
-    color: var(--white);
-    padding: 10px 20px;
-}
+/*header {*/
+/*    display: flex;*/
+/*    justify-content: space-between;*/
+/*    align-items: center;*/
+/*    background-color: var(--primary-blue);*/
+/*    color: var(--white);*/
+/*    padding: 10px 20px;*/
+/*}*/
 
 
 
 
-header nav ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    gap: 15px;
-}
+/*header nav ul {*/
+/*    list-style: none;*/
+/*    margin: 0;*/
+/*    padding: 0;*/
+/*    display: flex;*/
+/*    gap: 15px;*/
+/*}*/
 
-header nav ul li {
-    display: inline;
-}
+/*header nav ul li {*/
+/*    display: inline;*/
+/*}*/
 
-header nav ul li a {
-    color: var(--white);
-    text-decoration: none;
-    font-weight: bold;
-}
+/*header nav ul li a {*/
+/*    color: var(--white);*/
+/*    text-decoration: none;*/
+/*    font-weight: bold;*/
+/*}*/
 
 .hero {
     background: url('/static/images/hospital1.jpg') no-repeat center center/cover;
@@ -73,6 +73,8 @@ header nav ul li a {
     text-align: center;
     color: var(--white);
     position: relative;
+    border-radius: 10px;
+    margin-bottom: 20px;
 }
 
 .hero::before {
@@ -84,6 +86,7 @@ header nav ul li a {
     height: 100%;
     background: rgba(0, 0, 0, 0.3); /* Dark overlay */
     Z-index: 0;
+    border-radius: 10px;
 }
 
 .hero h1 {

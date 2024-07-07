@@ -1,0 +1,246 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+
+
+    {% block links %}
+    {% endblock %}
+</head>
+<body>
+<header class="border-bottom pb-3 mb-5">
+    <div class="section border-bottom">
+        <div class="container" id="header_container">
+            {% if user.is_authenticated %}
+                <div class="dropdown" id="logged-in-dropdown">
+                    <button class="btn  dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        Hi <b>{{ user.first_name }}!</b>
+                    </button>
+                    <ul class="dropdown-menu p-2">
+                        <li>
+                            <div class="dropdown-item d-flex">
+                                <div class="d-flex flex-row justify-content-start align-items-center">
+                                    <i class="fas fa-user m-1" id="user-icon"></i>
+                                    <div class="m-1">{{ user.first_name }} {{ user.last_name }}</div>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="dropdown-item d-flex">
+                                <div class="d-flex flex-row justify-content-start align-items-center">
+                                    <i class="fa-solid fa-id-badge m-1" id="user-icon"></i>
+                                    <div class="m-1">{{ user.username }}</div>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <a class="dropdown-item d-flex" href="{% url 'logout' %}">
+                                <div class="d-flex flex-row justify-content-start align-items-center">
+                                    <i class="fas fa-sign-out-alt m-1"></i>
+
+                                    <div class="m-1">Log Out</div>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            {% else %}
+                <div class="dropdown" id="logged-in-dropdown">
+                    <button class="btn  dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        Login / Register
+                    </button>
+                    <ul class="dropdown-menu p-2">
+                        <li>
+                            <a class="dropdown-item d-flex" href="{% url 'login' %}">
+                                <div class="d-flex flex-row justify-content-start align-items-center">
+                                    <i class="fas fa-sign-out-alt m-1"></i>
+
+                                    <div class="m-1">Log In</div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item d-flex" href="{% url 'register' %}">
+                                <div class="d-flex flex-row justify-content-start align-items-center">
+                                    <i class="fas fa-sign-out-alt m-1"></i>
+
+                                    <div class="m-1">Register</div>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            {% endif %}
+            <div class="d-flex align-items-center justify-content-start">
+                <div class="nav-item">Sell</div>
+                <div class="dropdown">
+                    <button class="btn  dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        Watchlist
+                    </button>
+                    <ul class="dropdown-menu p-2">
+                        <li>Watchlist Here</li>
+                    </ul>
+                </div>
+                <div class="dropdown">
+                    <button class="btn  dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        Discover
+                    </button>
+                    <ul class="dropdown-menu p-2">
+                        <li>Dashboard</li>
+                        <li>Recently Viewed</li>
+                        <li>Watchlist</li>
+                        <li>Purchase History</li>
+                        <li>Selling</li>
+
+                    </ul>
+                </div>
+                <!-- Nav Item - Alerts -->
+                <div class='nav-item mx-1'>
+                    <a class='nav-link' href='#'>
+                        <i class='fa-regular fa-bell fa-lg'></i>
+                        <!-- Counter - Alerts -->
+                        <span class='badge rounded-pill bg-danger badge-counter'>5+</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="section mt-3">
+        <div class="container" id="lower-header-container">
+            <a class="logo" href="{% url 'index' %}">
+                <img src="{% static "images/logo3.jpg" %}" alt="Auction 1">
+                <div class="col">
+                    <div>Healthcare</div>
+                    <div>Auctions</div>
+                </div>
+            </a>
+           <div class="dropdown">
+            <button class="btn dropdown-toggle wrap-button" type="button" data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                Shop By Category
+            </button>
+            <ul class="dropdown-menu p-2">
+                <li>Dashboard</li>
+                <li>Recently Viewed</li>
+                <li>Watchlist</li>
+                <li>Purchase History</li>
+                <li>Selling</li>
+            </ul>
+        </div>
+            <form class="navbar-search w-100">
+                <div class="input-group" style="position: relative;">
+                    <i class="fas fa-search"></i>
+                    <input type="text" class="form-control" placeholder="Search..." aria-label="Search"
+                           aria-describedby="basic-addon2">
+                    <select class="custom-select">
+                        <option selected>All Categories</option>
+                        <option value="1">Category 1</option>
+                        <option value="2">Category 2</option>
+                        <option value="3">Category 3</option>
+                    </select>
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" type="button">Search</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</header>
+
+<link href='{% static "css/header.css" %}' rel='stylesheet'>
+
+{##}
+{#<header>#}
+{#    <nav class="navbar navbar-expand-lg">#}
+{#        <a class="logo navbar-brand" href="{% url 'index' %}">#}
+{#            <img src="{% static "images/HealthcareAuctionsLogo_no_bg.png" %}" alt="Auction 1">#}
+{#            <div>Healthcare Auctions</div>#}
+{#        </a>#}
+{#        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"#}
+{#                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">#}
+{#            <i class="fa-solid fa-bars"></i>#}
+{#        </button>#}
+{#        <div class="collapse navbar-collapse" id="navbarNav">#}
+{#            <ul class="navbar-nav ms-auto">#}
+{#                <li class="nav-item">#}
+{#                    <a class="nav-link" href="/">#}
+{#                        <i class="fa-solid fa-house"></i> Home#}
+{#                    </a>#}
+{#                </li>#}
+{#                <li class="nav-item">#}
+{#                    <a class="nav-link" href="#">#}
+{#                        <i class="fa-solid fa-info" id="header-info-circle">About</i>#}
+{#                        <i class="fas fa-info-circle" id="header-info-circle"></i> About#}
+{#                    </a>#}
+{#                </li>#}
+{#                <li class="nav-item">#}
+{#                    <a class="nav-link" href="#">#}
+{#                        <i class="fa-solid fa-bell-concierge"></i> Services#}
+{#                    </a>#}
+{#                </li>#}
+{#                <li class="nav-item">#}
+{#                    <a class="nav-link" href="/auction/active">#}
+{#                        <i class="fa-solid fa-gavel"></i> Auctions#}
+{#                    </a>#}
+{#                </li>#}
+{#                {% if user.is_authenticated %}#}
+{#                    <li class="nav-item dropdown" id="user-ops">#}
+{#                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"#}
+{#                           data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">#}
+{#                            <i class="fas fa-user" id="user-icon"></i>#}
+{#                            <div>{{ user.username }}</div>#}
+{#                        </a>#}
+{#                        <div class="dropdown-menu dropdown-menu-end" id="userDropdownContent"#}
+{#                             aria-labelledby="userDropdown">#}
+{#                            <a class="dropdown-item" href="{% url 'dashboard' %}">#}
+{#                                <i class='fas fa-fw fa-chart-area'></i>#}
+{#                                <div>Dashboard</div>#}
+{#                            </a>#}
+{##}
+{#                            <div class="dropdown-divider"></div>#}
+{#                            <a class="dropdown-item" href="{% url 'active_auctions_view' %}">#}
+{#                                <i class="fa-solid fa-gavel"></i>#}
+{#                                <div>All Auctions</div>#}
+{#                            </a>#}
+{##}
+{#                            <div class="dropdown-divider"></div>#}
+{#                            <a class="dropdown-item" href="{% url 'watchlist_view' %}">#}
+{#                                <i class='fas fa-fw fa-eye'></i>#}
+{#                                <div>Watchlist</div>#}
+{#                            </a>#}
+{##}
+{#                            <div class="dropdown-divider"></div>#}
+{#                            <a class="dropdown-item" href="{% url 'logout' %}">#}
+{#                                <i class="fas fa-sign-out-alt"></i>#}
+{#                                <div>Log Out</div>#}
+{#                            </a>#}
+{#                        </div>#}
+{#                    </li>#}
+{#                {% else %}#}
+{#                    <li class="nav-item">#}
+{#                        <a class="nav-link" href="{% url 'login' %}">#}
+{#                            <i class="fas fa-sign-in-alt"></i> Log In#}
+{#                        </a>#}
+{#                    </li>#}
+{#                    <li class="nav-item">#}
+{#                        <a class="nav-link" href="{% url 'register' %}">#}
+{#                            <i class="fas fa-user-plus"></i> Register#}
+{#                        </a>#}
+{#                    </li>#}
+{#                {% endif %}#}
+{#            </ul>#}
+{#        </div>#}
+{#    </nav>#}
+{#</header>#}
+{##}
+{##}
+</body>
+</html>
+
+
+
+

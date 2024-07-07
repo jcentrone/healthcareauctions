@@ -1,0 +1,87 @@
+button {
+    outline: none !important;
+    border: none !important;
+}
+
+#header_container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+header .logo {
+    font-family: "Montserrat", sans-serif;
+    font-weight: bold;
+    font-size: 30px;
+    line-height: 1.1;
+    cursor: pointer;
+    text-decoration: none;
+    color: #021C25;
+}
+
+.logo {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 20px;
+}
+
+.logo img {
+    width: 60px;
+}
+
+#lower-header-container {
+    display: grid;
+    grid-template-columns: auto 100px 1fr;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+.wrap-button {
+    width: 100px; /* Adjust the width as needed */
+    white-space: normal;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    font-size: 14px;
+    line-height: 1;
+    text-align: right;
+    gap: 10px;
+}
+
+.dropdown-toggle::after {
+    /*margin-left: 10px;*/
+    /*margin-right: 10px;*/
+    line-height: 1.5; /* Adjust this value as needed */
+    /*font-size: 1.2em !important;*/
+}
+
+.input-group {
+    gap: 20px;
+}
+
+.input-group .form-control {
+    padding-left: 2.5rem;
+
+}
+
+.custom-select {
+    margin-left: -21px !important;
+    padding: 0 10px;
+}
+
+.input-group .fa-search {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #aaa;
+    z-index: 10;
+}
+
+.custom-select {
+    border: var(--bs-border-width) solid var(--bs-border-color);
+}
+
