@@ -91,6 +91,23 @@ body {
     margin-bottom: 20px;
 }
 
+#how-it-works-container,
+#why-choose-us-container{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+}
+.carousel-caption {
+    bottom: 50%;
+    transform: translatey(50%);
+}
+
+.image-container{
+    height: -webkit-fill-available;
+}
+
 /*.hero::before {*/
 /*    content: '';*/
 /*    position: absolute;*/
@@ -237,7 +254,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
     color: var(--white);
     position: relative;
@@ -301,22 +318,22 @@ body {
 }
 
 .why-choose-us {
-    padding: 40px 20px;
-    text-align: center;
-    background-color: var(--light-blue);
+    padding: 40px 40px 40px 200px;
+    margin-right: 100px;
 }
 
 .why-choose-us h2 {
     font-size: 36px;
+    text-align: center;
     margin-bottom: 20px;
-    color: var(--dark-gray);
+    color: var(--white);
 }
 
 .why-choose-us ul {
     list-style: none;
     padding: 0;
     margin: auto;
-    max-width: 800px;
+    /*max-width: 800px;*/
 }
 
 .why-choose-us ul li {
@@ -324,12 +341,12 @@ body {
     align-items: center;
     margin-bottom: 20px;
     font-size: 16px;
-    color: var(--dark-gray);
+    color: var(--white);
 }
 
 .why-choose-us ul li i {
     font-size: 48px;
-    color: var(--primary-blue);
+    color: var(--white);
     margin-right: 10px;
 }
 
@@ -341,13 +358,13 @@ body {
     font-size: 18px;
     display: block;
     margin-bottom: 5px;
-    color: var(--dark-gray);
+    color: var(--white);
 }
 
 .why-choose-us ul li p {
     margin: 0;
     font-size: 14px;
-    color: var(--gray);
+    color: var(--white);
 }
 
 .testimonials {
