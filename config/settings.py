@@ -146,21 +146,25 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# # Google Cloud Storage settings
-# GS_BUCKET_NAME = 'healthcare_auctions_auction_images'
-# GS_PROJECT_ID = 'healthcare-auctions'
-#
-# # Tell Django to use GCS for static files
-# STATICFILES_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
-#
-# # Tell Django to use GCS for media files
-# DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
-#
-# credentials = None
-#
-# google_credentials_raw = os.getenv('GOOGLE_CREDENTIALS')
-# print(google_credentials_raw)  # Check what this prints
-# service_account_info = json.loads(google_credentials_raw)
-# credentials = service_account.Credentials.from_service_account_info(service_account_info)
-#
-# GS_CREDENTIALS = credentials
+# Google Cloud Storage settings
+GS_BUCKET_NAME = 'healthcare_auctions_auction_images'
+GS_PROJECT_ID = 'healthcare-auctions'
+
+# Use default file storage for static files (local filesystem or another backend)
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+
+# Use GCS for media files
+DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
+
+# Load Google credentials from environment variable
+credentials = None
+google_credentials_raw = os.getenv('GOOGLE_CREDENTIALS')
+if google_credentials_raw:
+    service_account_info = json.loads(google_credentials_raw)
+    credentials = service_account.Credentials.from_service_account_info(service_account_info)
+
+GS_CREDENTIALS = credentials
+
+# Additional settings
+MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/'
+STATIC_URL = '/static/'

@@ -21,32 +21,45 @@ def index(request):
     """
     The default route which renders a Dashboard page
     """
-    categories = Category.objects.all()
-    category_count = categories.count()
+    # Filter categories to include only those with at least one auction
+    categories_with_auctions = Category.objects.filter(auction_category__isnull=False).distinct().order_by('category_name')
+    category_count = categories_with_auctions.count()
 
     if category_count < 2:
         # Ensure there are at least 2 categories
         return render(request, 'index.html', {
-            'error': 'Not enough categories available to display auctions.',
+            'error': 'Not enough categories with auctions available to display.',
         })
 
     # Select two random categories
-    random_categories = random.sample(list(categories), 2)
+    random_category1 = random.choice(categories_with_auctions)
+
+    # Select the second random category, ensuring it's different from the first
+    remaining_categories = categories_with_auctions.exclude(id=random_category1.id)
+    random_category2 = random.choice(remaining_categories)
 
     # Get up to 8 auctions from each of the random categories
-    auctions_cat1 = Auction.objects.filter(category=random_categories[0])[:8]
-    auctions_cat2 = Auction.objects.filter(category=random_categories[1])[:8]
+    auctions_cat1 = Auction.objects.filter(category=random_category1)[:8]
+    auctions_cat2 = Auction.objects.filter(category=random_category2)[:8]
+
+    # Determine if the user is watching each auction
+    if request.user.is_authenticated:
+        watchlist = request.user.watchlist.all()
+    else:
+        watchlist = Auction.objects.none()
 
     for auction in auctions_cat1:
         auction.image = auction.get_images.first()
+        auction.is_watched = auction in watchlist
 
     for auction in auctions_cat2:
         auction.image = auction.get_images.first()
+        auction.is_watched = auction in watchlist
 
     # Paginate if you still want to show auctions with pagination
     page = request.GET.get('page', 1)
-    paginator_cat1 = Paginator(auctions_cat1, 5)
-    paginator_cat2 = Paginator(auctions_cat2, 5)
+    paginator_cat1 = Paginator(auctions_cat1, 8)
+    paginator_cat2 = Paginator(auctions_cat2, 8)
 
     try:
         pages_cat1 = paginator_cat1.page(page)
@@ -59,7 +72,7 @@ def index(request):
         pages_cat2 = paginator_cat2.page(paginator_cat2.num_pages)
 
     return render(request, 'index.html', {
-        'categories': categories,
+        'categories': categories_with_auctions,
         'auctions_cat1': auctions_cat1,
         'auctions_cat2': auctions_cat2,
         'expensive_auctions': Auction.objects.order_by('-starting_bid')[:4],
@@ -69,9 +82,9 @@ def index(request):
         'users_count': User.objects.all().count(),
         'pages_cat1': pages_cat1,
         'pages_cat2': pages_cat2,
-        'title': 'Dashboard',
-        'random_category1': random_categories[0],
-        'random_category2': random_categories[1],
+        'title': 'Home',
+        'random_category1': random_category1,
+        'random_category2': random_category2,
     })
 
 

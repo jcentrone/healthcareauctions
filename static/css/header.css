@@ -83,5 +83,6 @@ header .logo {
 
 .custom-select {
     border: var(--bs-border-width) solid var(--bs-border-color);
+    width: 160px;
 }
 

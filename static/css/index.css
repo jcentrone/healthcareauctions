@@ -105,7 +105,7 @@ body {
     border-radius: 5px;
     bottom: 50%;
     transform: translatey(50%);
-    background: rgba(0,0,0,0);
+    background: rgba(0, 0, 0, 0);
     right: 10%;
     left: 10%;
     text-align: left;
@@ -122,7 +122,7 @@ body {
 
 }
 
-#slide2 .carousel-caption{
+#slide2 .carousel-caption {
     /*background: rgba(0, 0, 0, 0.3);*/
 }
 
@@ -198,27 +198,59 @@ body {
 }
 
 .featured-auctions {
-    padding: 40px 20px;
+    padding: 40px 0;
     text-align: center;
-    background-color: var(--light-blue);
+    /*background-color: var(--light-blue);*/
     overflow-x: auto;
 }
 
 .featured-auctions h2 {
     font-size: 36px;
+    text-align: left;
     margin-bottom: 20px;
     color: var(--dark-gray);
 }
 
-.featured-auctions .grid {
+.auctions-category .grid {
     display: grid;
-    grid-template-columns: repeat(5, minmax(300px, 1fr));
-    justify-content: center;
+    grid-template-columns: repeat(8, minmax(300px, 1fr));
+    justify-content: flex-start;
     align-items: center;
     gap: 20px;
     overflow-x: auto;
-    /*padding: 0 20px;*/
+    padding-bottom: 20px;
+    position: relative;
 
+}
+
+/* Customize scrollbar for WebKit browsers (Chrome, Safari) */
+.auctions-category .grid::-webkit-scrollbar {
+    height: 12px;
+}
+
+.auctions-category .grid::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.auctions-category .grid::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+.auctions-category .grid::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Customize scrollbar for Firefox */
+.auctions-category .grid {
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f1f1f1;
+}
+
+/* Customize scrollbar for IE and Edge */
+.auctions-category .grid {
+    -ms-overflow-style: -ms-autohiding-scrollbar;
 }
 
 @media (max-width: 768px) {
@@ -228,18 +260,21 @@ body {
     }
 }
 
-.featured-auctions .auction-item {
+.auction-item {
     background-color: var(--white);
     border: 1px solid var(--light-gray);
     border-radius: var(--border-radius);
     padding: 20px;
     width: 300px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    min-height: 356px;
+    /*box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);*/
+    box-shadow: 2px 6px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
     text-decoration: none;
     margin: auto;
 }
 
-.featured-auctions .auction-item img {
+.auction-item img {
     width: 100%;
     height: 130px;
     border-radius: var(--border-radius);
@@ -247,15 +282,21 @@ body {
     object-fit: cover;
 }
 
-.featured-auctions .auction-item h3 {
+.auction-item h3 {
     font-size: 24px;
     margin-bottom: 10px;
     color: var(--dark-gray);
 }
 
-.featured-auctions .auction-item p {
+.auction-item p {
     font-size: 16px;
     color: var(--gray);
+}
+
+.auction-item button{
+    position: absolute;
+    top: 20px;
+    right: 20px;
 }
 
 .featured-auctions .button {

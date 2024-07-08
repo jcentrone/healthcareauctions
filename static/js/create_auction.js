@@ -787,7 +787,12 @@ function startScanner() {
             "01": "GTIN",
             "10": "Batch or Lot Number",
             "11": "Production Date",
-            "17": "Expiration Date"
+            "17": "Expiration Date",
+            '21': 'Serial Number',
+            '310': 'Net Weight (kg)',
+            '320': 'Net Weight (lb)',
+            '30': 'Count of Trade Items / Variable Measure Quantity',
+
         };
         const parsedResult = {};
         let remainingCode = sanitizedCode;
@@ -819,7 +824,9 @@ function startScanner() {
             '17': 'Expiration Date',
             '21': 'Serial Number',
             '310': 'Net Weight (kg)',
-            '320': 'Net Weight (lb)'
+            '320': 'Net Weight (lb)',
+            '30': 'Count of Trade Items / Variable Measure Quantity',
+
         };
 
         const fixedLengths = {

@@ -74,7 +74,9 @@
                 </div>
             {% endif %}
             <div class="d-flex align-items-center justify-content-start">
-                <div class="nav-item">Sell</div>
+                <div class="nav-item">
+                    <a class='nav-link' href="{% url 'auction_create' %}">Sell</a>
+                </div>
                 <div class="dropdown">
                     <button class="btn  dropdown-toggle" type="button" data-bs-toggle="dropdown"
                             aria-expanded="false">
@@ -90,11 +92,20 @@
                         Discover
                     </button>
                     <ul class="dropdown-menu p-2">
-                        <li>Dashboard</li>
-                        <li>Recently Viewed</li>
-                        <li>Watchlist</li>
-                        <li>Purchase History</li>
-                        <li>Selling</li>
+                        <li class='nav-item p-2'>
+                            <a class='nav-link' href="{% url 'dashboard' %}">
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item p-2">Recently Viewed</li>
+                        <li class='nav-item p-2'>
+                            <a class='nav-link' href="{% url 'watchlist_view' %}">
+                               Watchlist
+                            </a>
+                        </li>
+
+                        <li class="nav-item p-2">Purchase History</li>
+                        <li class="nav-item p-2">Selling</li>
 
                     </ul>
                 </div>
@@ -118,19 +129,19 @@
                     <div>Auctions</div>
                 </div>
             </a>
-           <div class="dropdown">
-            <button class="btn dropdown-toggle wrap-button" type="button" data-bs-toggle="dropdown"
-                    aria-expanded="false">
-                Shop By Category
-            </button>
-            <ul class="dropdown-menu p-2">
-                <li>Dashboard</li>
-                <li>Recently Viewed</li>
-                <li>Watchlist</li>
-                <li>Purchase History</li>
-                <li>Selling</li>
-            </ul>
-        </div>
+            <div class="dropdown">
+                <button class="btn dropdown-toggle wrap-button" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                    Shop By Category
+                </button>
+                <ul class="dropdown-menu p-2">
+
+                    {% for category in categories %}
+                        <li>{{ category.category_name }}</li>
+                    {% endfor %}
+
+                </ul>
+            </div>
             <form class="navbar-search w-100">
                 <div class="input-group" style="position: relative;">
                     <i class="fas fa-search"></i>
@@ -138,9 +149,10 @@
                            aria-describedby="basic-addon2">
                     <select class="custom-select">
                         <option selected>All Categories</option>
-                        <option value="1">Category 1</option>
-                        <option value="2">Category 2</option>
-                        <option value="3">Category 3</option>
+                        {% for category in categories %}
+                            <option value="{{ category.category_name }}">{{ category.category_name }}</option>
+                        {% endfor %}
+
                     </select>
                     <div class="input-group-append">
                         <button class="btn btn-primary" type="button">Search</button>
