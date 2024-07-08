@@ -2,6 +2,8 @@ asgiref==3.7.2
 Django==4.2.13
 flake8==6.1.0
 google-auth
+django-storages
+google-cloud-storage
 gunicorn
 mccabe==0.7.0
 Pillow==10.0.1
