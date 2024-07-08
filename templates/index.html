@@ -10,12 +10,12 @@
 
 {% block body %}
     <div class=container style="padding: 0;">
-    <section class="hero">
-        {% include 'hero.html' %}
-{#        <section class="hero">#}
-{#            <h1>Welcome to Healthcare Auctions</h1>#}
-{#            <p>Your trusted platform for healthcare equipment and supplies.</p>#}
-{#            <a href="{% url 'active_auctions_view' %}" class="button primary">Explore Auctions</a>#}
+        <section class="hero">
+            {% include 'hero.html' %}
+            {#        <section class="hero">#}
+            {#            <h1>Welcome to Healthcare Auctions</h1>#}
+            {#            <p>Your trusted platform for healthcare equipment and supplies.</p>#}
+            {#            <a href="{% url 'active_auctions_view' %}" class="button primary">Explore Auctions</a>#}
         </section>
 
         <section class="featured-auctions">
@@ -66,69 +66,140 @@
             <a href="#" class="button secondary">View All Auctions</a>
         </section>
 
-        <section class="how-it-works">
-            <h2>How It Works</h2>
-            <div class="steps">
-                <div class="step">
-                    <i class="fas fa-user-plus"></i>
-                    <h3>Register</h3>
-                    <p>Sign up for a free account, it's easy.</p>
+        <section>
+            <div class="auctions-category">
+                <h2>{{ random_category1.name }}</h2>
+                <div class="auction-items">
+                    {% for auction in pages_cat1 %}
+                        <a class="auction-item" href="{% url 'auction_details_view' auction.id %}">
+                            {% if auction.image %}
+                                <img src="{{ auction.image.image.url }}" alt="{{ auction.title }}">
+                            {% else %}
+                                <img src="path/to/default/image.jpg" alt="Default Image">
+                            {% endif %}
+                            <h3>{{ auction.title }}</h3>
+                            <p>{{ auction.category }}</p>
+                            <h3>
+                                <!-- Product price-->
+                                {% if auction.current_bid %}
+                                    ${{ auction.current_bid }}
+                                {% else %}
+                                    ${{ auction.starting_bid }}
+                                {% endif %}
+                            </h3>
+                        </a>
+                    {% endfor %}
                 </div>
-                <div class="step">
-                    <i class="fas fa-search"></i>
-                    <h3>Browse</h3>
-                    <p>Explore the listings to find what you need.</p>
-                </div>
-                <div class="step">
-                    <i class="fas fa-gavel"></i>
-                    <h3>Bid</h3>
-                    <p>Bid on the items you want.</p>
-                </div>
-                <div class="step">
-                    <i class="fas fa-box-open"></i>
-                    <h3>Receive Items</h3>
-                    <p>Complete your purchase.</p>
+                <div class="pagination">
+                    {% if pages_cat1.has_previous %}
+                        <a href="?page={{ pages_cat1.previous_page_number }}">Previous</a>
+                    {% endif %}
+                    <span>Page {{ pages_cat1.number }} of {{ pages_cat1.paginator.num_pages }}</span>
+                    {% if pages_cat1.has_next %}
+                        <a href="?page={{ pages_cat1.next_page_number }}">Next</a>
+                    {% endif %}
                 </div>
             </div>
+
+            <div class="auctions-category">
+                <h2>{{ random_category2.name }}</h2>
+                <div class="auction-items">
+                    {% for auction in pages_cat2 %}
+                        <a class="auction-item" href="{% url 'auction_details_view' auction.id %}">
+                            {% if auction.image %}
+                                <img src="{{ auction.image.image.url }}" alt="{{ auction.title }}">
+                            {% else %}
+                                <img src="path/to/default/image.jpg" alt="Default Image">
+                            {% endif %}
+                            <h3>{{ auction.title }}</h3>
+                            <p>{{ auction.category }}</p>
+                            <h3>
+                                <!-- Product price-->
+                                {% if auction.current_bid %}
+                                    ${{ auction.current_bid }}
+                                {% else %}
+                                    ${{ auction.starting_bid }}
+                                {% endif %}
+                            </h3>
+                        </a>
+                    {% endfor %}
+                </div>
+                <div class="pagination">
+                    {% if pages_cat2.has_previous %}
+                        <a href="?page={{ pages_cat2.previous_page_number }}">Previous</a>
+                    {% endif %}
+                    <span>Page {{ pages_cat2.number }} of {{ pages_cat2.paginator.num_pages }}</span>
+                    {% if pages_cat2.has_next %}
+                        <a href="?page={{ pages_cat2.next_page_number }}">Next</a>
+                    {% endif %}
+                </div>
+            </div>
+
         </section>
 
+        {#        <section class="how-it-works">#}
+        {#            <h2>How It Works</h2>#}
+        {#            <div class="steps">#}
+        {#                <div class="step">#}
+        {#                    <i class="fas fa-user-plus"></i>#}
+        {#                    <h3>Register</h3>#}
+        {#                    <p>Sign up for a free account, it's easy.</p>#}
+        {#                </div>#}
+        {#                <div class="step">#}
+        {#                    <i class="fas fa-search"></i>#}
+        {#                    <h3>Browse</h3>#}
+        {#                    <p>Explore the listings to find what you need.</p>#}
+        {#                </div>#}
+        {#                <div class="step">#}
+        {#                    <i class="fas fa-gavel"></i>#}
+        {#                    <h3>Bid</h3>#}
+        {#                    <p>Bid on the items you want.</p>#}
+        {#                </div>#}
+        {#                <div class="step">#}
+        {#                    <i class="fas fa-box-open"></i>#}
+        {#                    <h3>Receive Items</h3>#}
+        {#                    <p>Complete your purchase.</p>#}
+        {#                </div>#}
+        {#            </div>#}
+        {#        </section>#}
 
-        <section class="why-choose-us">
-            <h2>Why Choose Healthcare Auctions</h2>
-            <ul>
-                <li>
-                    <i class="fas fa-shield-alt"></i>
-                    <div>
-                        <strong>Trusted Platform</strong>
-                        <p>We offer transaction insurance guaranteeing the product is as expected, or we will refund
-                            your money. This is a first for excess medical supplies auctions.</p>
-                    </div>
-                </li>
-                <li>
-                    <i class="fas fa-check-circle"></i>
-                    <div>
-                        <strong>High-Quality Listings</strong>
-                        <p>All listings are thoroughly vetted to ensure they meet our high standards of quality and
-                            reliability.</p>
-                    </div>
-                </li>
-                <li>
-                    <i class="fas fa-lock"></i>
-                    <div>
-                        <strong>Secure Transactions</strong>
-                        <p>Our platform uses advanced security measures to protect your transactions and personal
-                            information.</p>
-                    </div>
-                </li>
-                <li>
-                    <i class="fas fa-headset"></i>
-                    <div>
-                        <strong>Excellent Support</strong>
-                        <p>Our dedicated support team is available to assist you with any questions you may have.</p>
-                    </div>
-                </li>
-            </ul>
-        </section>
+
+        {#        <section class="why-choose-us">#}
+        {#            <h2>Why Choose Healthcare Auctions</h2>#}
+        {#            <ul>#}
+        {#                <li>#}
+        {#                    <i class="fas fa-shield-alt"></i>#}
+        {#                    <div>#}
+        {#                        <strong>Trusted Platform</strong>#}
+        {#                        <p>We offer transaction insurance guaranteeing the product is as expected, or we will refund#}
+        {#                            your money. This is a first for excess medical supplies auctions.</p>#}
+        {#                    </div>#}
+        {#                </li>#}
+        {#                <li>#}
+        {#                    <i class="fas fa-check-circle"></i>#}
+        {#                    <div>#}
+        {#                        <strong>High-Quality Listings</strong>#}
+        {#                        <p>All listings are thoroughly vetted to ensure they meet our high standards of quality and#}
+        {#                            reliability.</p>#}
+        {#                    </div>#}
+        {#                </li>#}
+        {#                <li>#}
+        {#                    <i class="fas fa-lock"></i>#}
+        {#                    <div>#}
+        {#                        <strong>Secure Transactions</strong>#}
+        {#                        <p>Our platform uses advanced security measures to protect your transactions and personal#}
+        {#                            information.</p>#}
+        {#                    </div>#}
+        {#                </li>#}
+        {#                <li>#}
+        {#                    <i class="fas fa-headset"></i>#}
+        {#                    <div>#}
+        {#                        <strong>Excellent Support</strong>#}
+        {#                        <p>Our dedicated support team is available to assist you with any questions you may have.</p>#}
+        {#                    </div>#}
+        {#                </li>#}
+        {#            </ul>#}
+        {#        </section>#}
 
 
         {#        <section class="testimonials">#}

@@ -1,5 +1,6 @@
 import json
 from decimal import Decimal
+import random
 
 from django import forms
 from django.contrib.auth import authenticate, login, logout
@@ -20,34 +21,57 @@ def index(request):
     """
     The default route which renders a Dashboard page
     """
-    auctions = Auction.objects.all()
+    categories = Category.objects.all()
+    category_count = categories.count()
 
-    expensive_auctions = Auction.objects.order_by('-starting_bid')[:4]
+    if category_count < 2:
+        # Ensure there are at least 2 categories
+        return render(request, 'index.html', {
+            'error': 'Not enough categories available to display auctions.',
+        })
 
-    for auction in auctions:
+    # Select two random categories
+    random_categories = random.sample(list(categories), 2)
+
+    # Get up to 8 auctions from each of the random categories
+    auctions_cat1 = Auction.objects.filter(category=random_categories[0])[:8]
+    auctions_cat2 = Auction.objects.filter(category=random_categories[1])[:8]
+
+    for auction in auctions_cat1:
         auction.image = auction.get_images.first()
 
-    # Show 5 auctions per page
+    for auction in auctions_cat2:
+        auction.image = auction.get_images.first()
+
+    # Paginate if you still want to show auctions with pagination
     page = request.GET.get('page', 1)
-    paginator = Paginator(auctions, 5)
+    paginator_cat1 = Paginator(auctions_cat1, 5)
+    paginator_cat2 = Paginator(auctions_cat2, 5)
 
     try:
-        pages = paginator.page(page)
+        pages_cat1 = paginator_cat1.page(page)
+        pages_cat2 = paginator_cat2.page(page)
     except PageNotAnInteger:
-        pages = paginator.page(1)
+        pages_cat1 = paginator_cat1.page(1)
+        pages_cat2 = paginator_cat2.page(1)
     except EmptyPage:
-        pages = paginator.page(paginator.num_pages)
+        pages_cat1 = paginator_cat1.page(paginator_cat1.num_pages)
+        pages_cat2 = paginator_cat2.page(paginator_cat2.num_pages)
 
     return render(request, 'index.html', {
-        'categories': Category.objects.all(),
-        'auctions': auctions,
-        'expensive_auctions': expensive_auctions,
+        'categories': categories,
+        'auctions_cat1': auctions_cat1,
+        'auctions_cat2': auctions_cat2,
+        'expensive_auctions': Auction.objects.order_by('-starting_bid')[:4],
         'auctions_count': Auction.objects.all().count(),
         'bids_count': Bid.objects.all().count(),
-        'categories_count': Category.objects.all().count(),
+        'categories_count': category_count,
         'users_count': User.objects.all().count(),
-        'pages': pages,
+        'pages_cat1': pages_cat1,
+        'pages_cat2': pages_cat2,
         'title': 'Dashboard',
+        'random_category1': random_categories[0],
+        'random_category2': random_categories[1],
     })
 
 
