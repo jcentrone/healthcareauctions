@@ -446,6 +446,7 @@ def auction_bid(request, auction_id):
     """
     auction = Auction.objects.get(id=auction_id)
     amount = Decimal(request.POST['amount'])
+    print('bid')
 
     if amount >= auction.starting_bid and (auction.current_bid is None or amount > auction.current_bid):
         auction.current_bid = amount
