@@ -1,0 +1,124 @@
+.auction_image_third {
+    height: 250px;
+    width: 250px;
+    object-fit: cover;
+    pointer-events: none;
+}
+
+
+.auction_image_first:hover {
+
+}
+
+.auction-card {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    align-items: center;
+    flex: 1;
+    text-decoration: none !important;
+    color: #333333;
+}
+
+.auction-card:hover > .listing {
+    color: #333333;
+    /*border: 1px solid #86B7FE;*/
+}
+
+.listing {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    align-items: center;
+    border-top: 1px solid #cccccc;
+    position: relative;
+}
+
+.listing:hover {
+    color: #333333;
+    /*border: 1px solid #86B7FE;*/
+    text-decoration: none;
+}
+
+.listing:hover > .auction-card > .card-body {
+    color: #333333;
+}
+
+.auction-title {
+    font-size: 2rem;
+    font-weight: 300;
+    width: 100%; /* Adjust the width as needed */
+    max-width: 700px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.display-8 {
+    font-size: 1.5rem;
+    font-weight: 300;
+}
+
+.bid-form {
+    width: 200px;
+    position: absolute;
+    right: 0;
+}
+
+.two-grid-auto-columns {
+    display: grid;
+    grid-template-columns: auto auto;
+    width: fit-content;
+    gap: 10px;
+    font-family: Montserrat, sans-serif;
+}
+
+.time-remaining {
+    color: #C12947;
+}
+
+.form-group.with-symbol {
+    position: relative;
+}
+
+.form-group.with-symbol::before {
+    content: "$";
+    position: absolute;
+    left: 10px; /* Adjust based on your design */
+    top: 19px;
+    transform: translateY(-50%);
+    font-size: 16px; /* Adjust based on your design */
+    color: #555; /* Adjust based on your design */
+}
+
+
+.form-group.with-symbol input {
+    padding-left: 25px; /* Adjust based on your design */
+}
+
+@media (max-width: 767.98px) {
+    .auction-card {
+        grid-template-columns: 1fr;
+        grid-template-rows: 250px 1fr;
+    }
+
+    .listing {
+        grid-template-columns: 1fr;
+    }
+
+    .auction-title {
+        max-width: 350px;
+    }
+
+    #auction-attributes {
+        display: grid !important;
+        grid-template-columns: auto auto;
+    }
+
+    .card-body{
+        padding: 0;
+    }
+
+    .bid-form{
+        position: relative;
+        margin-left:15px ;
+    }
+}
