@@ -8,8 +8,8 @@
                     aria-label="Slide 2"></button>
             <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"
                     aria-label="Slide 3"></button>
-            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="3"
-                    aria-label="Slide 4"></button>
+{#            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="3"#}
+{#                    aria-label="Slide 4"></button>#}
         </div>
         <div class="carousel-item active" id="slide1">
             <div class="image-container">
@@ -46,27 +46,25 @@
         </div>
         <div class="carousel-item" id="slide3">
             <div class="image-container">
-                <img src="{% static 'images/stethoscope.jpg' %}" class="d-block w-100" alt="Featured Auctions Image">
-                <div class="overlay"></div>
+                <img src="{% static 'images/medical-tech.jpg' %}" class="d-block w-100" alt="Featured Auctions Image">
+{#                <div class="overlay"></div>#}
             </div>
             <div class="d-none d-md-block" id="why-choose-us-container">
                 <section class="why-choose-us">
-                    <h2>Why Choose Healthcare Auctions</h2>
+                    <h2>Innovation is in our DNA</h2>
                     <ul>
                         <li>
                             <i class="fas fa-shield-alt"></i>
                             <div>
                                 <strong>Trusted Platform</strong>
-                                <p>We offer transaction insurance guaranteeing the product is as expected, or we will
-                                    refund
-                                    your money. This is a first for excess medical supplies auctions.</p>
+                                <p>We guarantee the product is as expected, or we refund your money.</p>
                             </div>
                         </li>
                         <li>
                             <i class="fas fa-check-circle"></i>
                             <div>
                                 <strong>High-Quality Listings</strong>
-                                <p>All listings are thoroughly vetted to ensure they meet our high standards of quality
+                                <p>All sellers are thoroughly vetted to ensure they meet our high standards of quality
                                     and
                                     reliability.</p>
                             </div>
@@ -92,14 +90,14 @@
                 </section>
             </div>
         </div>
-        {#        <div class="carousel-item" id="slide4">#}
-        {#            <img src="{% static 'images/register.jpg' %}" class="d-block w-100" alt="Join Our Community Image">#}
-        {#            <div class="carousel-caption d-none d-md-block">#}
-        {#                <h5>Join Our Community</h5>#}
-        {#                <p>Connect with professionals and enthusiasts.</p>#}
-        {#                <a href="#" class="btn btn-primary">Sign Up Now</a>#}
-        {#            </div>#}
-        {#        </div>#}
+{#        <div class="carousel-item" id="slide4">#}
+{#            <img src="{% static 'images/register.jpg' %}" class="d-block w-100" alt="Join Our Community Image">#}
+{#            <div class="carousel-caption d-none d-md-block">#}
+{#                <h5>Join Our Community</h5>#}
+{#                <p>Connect with professionals and enthusiasts.</p>#}
+{#                <a href="#" class="btn btn-primary">Sign Up Now</a>#}
+{#            </div>#}
+{#        </div>#}
     </div>
     <a class="carousel-control-prev" href="#heroCarousel" role="button" data-slide="prev">
         <span class="carousel-control-prev-icon" aria-hidden="true"></span>

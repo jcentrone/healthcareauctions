@@ -78,13 +78,36 @@
                     <a class='nav-link' href="{% url 'auction_create' %}">Sell</a>
                 </div>
                 <div class="dropdown">
-                    <button class="btn  dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                    <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown"
                             aria-expanded="false">
                         Watchlist
                     </button>
-                    <ul class="dropdown-menu p-2">
-                        <li>Watchlist Here</li>
-                    </ul>
+                    <div class="dropdown-menu p-2">
+                        <div class="mini-watchlist">
+                            {% for auction in watchlist %}
+                                <a class="mini-watchlist-item" href="{% url 'auction_details_view' auction.id %}">
+                                    {% if auction.image %}
+                                        <img src="{{ auction.image.image.url }}" alt="{{ auction.title }}">
+                                    {% else %}
+                                        <img src="path/to/default/image.jpg" alt="Default Image">
+                                    {% endif %}
+                                    <div>
+                                        <h6>{{ auction.title }}</h6>
+                                        <div>
+                                            <!-- Product price-->
+                                            {% if auction.current_bid %}
+                                                ${{ auction.current_bid }}
+                                            {% else %}
+                                                ${{ auction.starting_bid }}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                    
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
                 <div class="dropdown">
                     <button class="btn  dropdown-toggle" type="button" data-bs-toggle="dropdown"
@@ -100,7 +123,7 @@
                         <li class="nav-item p-2">Recently Viewed</li>
                         <li class='nav-item p-2'>
                             <a class='nav-link' href="{% url 'watchlist_view' %}">
-                               Watchlist
+                                Watchlist
                             </a>
                         </li>
 

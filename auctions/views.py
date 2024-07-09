@@ -45,6 +45,8 @@ def index(request):
     # Determine if the user is watching each auction
     if request.user.is_authenticated:
         watchlist = request.user.watchlist.all()
+        for auction in watchlist:
+            auction.image = auction.get_images.first()
     else:
         watchlist = Auction.objects.none()
 
@@ -85,6 +87,7 @@ def index(request):
         'title': 'Home',
         'random_category1': random_category1,
         'random_category2': random_category2,
+        'watchlist': watchlist,
     })
 
 

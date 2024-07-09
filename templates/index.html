@@ -14,7 +14,44 @@
             {% include 'hero.html' %}
         </section>
 
+
         <section class="featured-auctions">
+            {% if user.is_authenticated %}
+                <div class="auctions-category">
+                    <h2>Your Watchlist</h2>
+                    <div class="auction-items grid">
+                        {% for auction in watchlist %}
+                            <a class="auction-item" href="{% url 'auction_details_view' auction.id %}">
+                                {% if auction.image %}
+                                    <img src="{{ auction.image.image.url }}" alt="{{ auction.title }}">
+                                {% else %}
+                                    <img src="path/to/default/image.jpg" alt="Default Image">
+                                {% endif %}
+                                <h3>{{ auction.title }}</h3>
+                                <p>{{ auction.category }}</p>
+                                <h3>
+                                    <!-- Product price-->
+                                    {% if auction.current_bid %}
+                                        ${{ auction.current_bid }}
+                                    {% else %}
+                                        ${{ auction.starting_bid }}
+                                    {% endif %}
+                                </h3>
+                                <button class='btn btn-outline-success mt-auto rounded'
+                                        data-auction-id="{{ auction.id }}">
+                                    {% if auction.is_watched %}
+                                        <i class="fa-solid fa-eye"></i>
+                                    {% else %}
+                                        <i class="fa-regular fa-eye"></i>
+                                    {% endif %}
+                                </button>
+                            </a>
+
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
             <div class="auctions-category">
                 <h2>{{ random_category1 }}</h2>
                 <div class="auction-items grid">
@@ -36,7 +73,8 @@
                                 {% endif %}
                             </h3>
 
-                            <button class='btn btn-outline-success mt-auto rounded' data-auction-id="{{ auction.id }}">
+                            <button class='btn btn-outline-success mt-auto rounded'
+                                    data-auction-id="{{ auction.id }}">
                                 {% if auction.is_watched %}
                                     <i class="fa-solid fa-eye"></i>
                                 {% else %}
@@ -70,7 +108,8 @@
                                     ${{ auction.starting_bid }}
                                 {% endif %}
                             </h3>
-                            <button class='btn btn-outline-success mt-auto rounded' data-auction-id="{{ auction.id }}">
+                            <button class='btn btn-outline-success mt-auto rounded'
+                                    data-auction-id="{{ auction.id }}">
                                 {% if auction.is_watched %}
                                     <i class="fa-solid fa-eye"></i>
                                 {% else %}
@@ -88,20 +127,20 @@
             </div>
 
         </section>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const buttons = document.querySelectorAll('.watchlist-btn');
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const buttons = document.querySelectorAll('.watchlist-btn');
 
-        buttons.forEach(function (button) {
-            button.addEventListener('click', function (event) {
-                event.stopPropagation(); // Prevent the click event from propagating to the parent <a> element
-                const auctionId = button.getAttribute('data-auction-id');
-                const url = `{% url 'watchlist_edit' 0 'auction_details_view' %}`.replace('0', auctionId);
-                window.location.href = url;
+                buttons.forEach(function (button) {
+                    button.addEventListener('click', function (event) {
+                        event.stopPropagation(); // Prevent the click event from propagating to the parent <a> element
+                        const auctionId = button.getAttribute('data-auction-id');
+                        const url = `{% url 'watchlist_edit' 0 'auction_details_view' %}`.replace('0', auctionId);
+                        window.location.href = url;
+                    });
+                });
             });
-        });
-    });
-</script>
+        </script>
 
 
         {#        <section class="testimonials">#}

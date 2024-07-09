@@ -86,3 +86,50 @@ header .logo {
     width: 160px;
 }
 
+.mini-watchlist {
+    display: grid;
+    grid-template-columns: 1fr;
+    max-width: 350px;
+    max-height: 500px;
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f1f1f1;
+}
+
+.mini-watchlist::-webkit-scrollbar {
+    width: 12px;
+}
+
+.mini-watchlist::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.mini-watchlist::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+.mini-watchlist::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.mini-watchlist-item {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 75px 1fr;
+    align-items: center;
+    gap: 20px;
+    color: black;
+    position: relative;
+    text-decoration: none;
+    margin: auto;
+}
+
+.mini-watchlist-item img {
+    width: 100%;
+    border-radius: var(--border-radius);
+    margin-bottom: 10px;
+    object-fit: cover;
+}
+
