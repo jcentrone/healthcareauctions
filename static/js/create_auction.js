@@ -1006,6 +1006,7 @@ function getCsrfToken() {
 }
 
 function populateForm(data) {
+    console.log(data);
     if (data && data.gudid && data.gudid.device) {
         const device = data.gudid.device;
         document.getElementById('id_product_name').value = device.brandName || '';

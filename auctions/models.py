@@ -73,6 +73,9 @@ class Auction(models.Model):
     production_date = models.DateField(null=True, blank=True)
     package_type = models.CharField(max_length=100, null=True, blank=True)
     udi = models.CharField('UDI', null=True, blank=True)
+    surgical_specialty = models.CharField('Surgical Specialty', null=True, blank=True)
+    item_type = models.CharField('Item Type', null=True, blank=True)
+
 
     gmdnPTDefinition = models.TextField(null=True, blank=True)
     implantable = models.BooleanField(default=False)

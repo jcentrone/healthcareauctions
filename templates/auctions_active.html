@@ -2,19 +2,43 @@
 {% load static %}
 {% block title %}Auctions | {{ title }} {% endblock %}
 
-
-
-
 {% block body %}
-
-    {#    {% include 'sidebar.html' %}#}
-
     <div class="container">
-        <!-- Page Heading -->
-        <h1 class='h3 mb-4 text-gray-800'>{{ title }}</h1>
+        <div class="auctions-header-container">
+            <!-- Page Heading -->
+            <h1 class='h3 mb-4 text-gray-800'>{{ title }} - {{ auctions_count }} Results</h1>
+            <!-- Filters and Sorting -->
+            <div class="filters mb-4">
+                <form id="filter-form" method="get" class="form-inline">
+                    <div class="form-group mb-2">
+{#                        <label for="time-filter" class="mr-2">Time Filter</label>#}
+                        <select id="time-filter" name="time_filter" class="form-control">
+                            <option value="">Filter By: All Times</option>
+                            <option value="today">Today</option>
+                            <option value="tomorrow">Tomorrow</option>
+                            <option value="next_3_days">Next 3 Days</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-2">
+{#                        <label for="sort-by" class="mr-2">Sort By</label>#}
+                        <select id="sort-by" name="sort_by" class="form-control">
+                            <option value="">Sort By: Best Match</option>
+                            <option value="ending_soonest">Ending Soonest</option>
+                            <option value="newly_listed">Newly Listed</option>
+                            <option value="price_highest">Price Highest</option>
+                            <option value="price_lowest">Price Lowest</option>
+                            <option value="fewest_bids">Fewest Bids</option>
+                            <option value="most_bids">Most Bids</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
 
         <div class='mb-4'>
             <div class='card-body'>
+
 
                 <div class='col align-items-center'>
                     {% for auction in pages %}
@@ -39,9 +63,7 @@
                                         <div class='text-left'>
                                             <!-- Product name-->
                                             <div class='auction-title'>{{ auction.title }}</div>
-                                            {#                                    <hr class="sidebar-divider my-0">#}
                                             <div class="display-8">{{ auction.category }}</div>
-
 
                                             <h3>
                                                 <div class="two-grid-auto-columns mt-2 auction-price">
@@ -50,16 +72,13 @@
                                                         ${{ auction.current_bid }}
                                                     {% else %}
                                                         ${{ auction.starting_bid }}
-
                                                     {% endif %}
                                                 </div>
                                             </h3>
                                             <div class='two-grid-auto-columns'>
-
                                                 <div class="lead time-remaining">{{ auction.formatted_time_remaining }}
                                                     Remaining
                                                 </div>
-                                                {#                                                <div class='fw-bold time-remaining'>left</div>#}
                                             </div>
                                             <div class="two-grid-auto-columns mt-1">
                                                 <div class="">Quantity:</div>
@@ -72,22 +91,26 @@
                                                 {% endif %}
 
                                                 {% if auction.reference_number %}
-                                                    <div class="">Reference #</div>
+                                                    <div class="">Reference#</div>
                                                     <div>{{ auction.reference_number }},</div>
                                                 {% endif %}
 
                                                 {% if auction.lot_number %}
-                                                    <div class="">Lot #</div>
+                                                    <div class="">Lot#</div>
                                                     <div>{{ auction.lot_number }},</div>
                                                 {% endif %}
 
                                                 {% if auction.expiration_date %}
-                                                    <div class="fw-light">Exp Date:</div>
+                                                    <div class="">Exp Date:</div>
                                                     <div>{{ auction.expiration_date }}</div>
                                                 {% endif %}
-
                                             </div>
 
+                                            <!-- Display watchers and bids count -->
+                                            <div class="d-flex gap-1 mt-1" id="auction-stats">
+                                                <div>Watchers: {{ auction.watchers.count }}</div>
+                                                <div>Bids: {{ auction.bid_set.count }}</div>
+                                            </div>
                                         </div>
                                     </div>
                                 </a>
@@ -97,20 +120,16 @@
                                         <form action="{% url 'auction_bid' auction.id %}" method='POST'>
                                             {% csrf_token %}
                                             <div class='form-group with-symbol extra-m'>
-{#                                                {{ bid_form }}#}
                                                 {{ bid_form.amount }}
                                                 <br>
                                                 <button type='submit' class='btn btn-primary'>
                                                     Place a bid
                                                 </button>
-
                                             </div>
                                         </form>
                                     </div>
                                 </div>
                             </div>
-
-
                         </div>
                     {% endfor %}
 

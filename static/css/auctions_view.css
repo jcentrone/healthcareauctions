@@ -3,6 +3,7 @@
     width: 250px;
     object-fit: cover;
     pointer-events: none;
+    border-radius: 8px;
 }
 
 
@@ -22,6 +23,20 @@
 .auction-card:hover > .listing {
     color: #333333;
     /*border: 1px solid #86B7FE;*/
+}
+
+.auctions-header-container{
+    display: grid;
+    grid-template-columns: 1fr auto;
+
+}
+#filter-form{
+    display: flex;
+    gap: 10px;
+}
+#time-filter,
+#sort-by{
+    width:180px;
 }
 
 .listing {

@@ -1,5 +1,7 @@
 import json
 from decimal import Decimal
+from datetime import timedelta
+
 import random
 
 from django import forms
@@ -7,9 +9,11 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import IntegrityError
+from django.db.models import Count
 from django.http import HttpResponseRedirect, JsonResponse, FileResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
 from .forms import AuctionForm, ImageForm, CommentForm, BidForm
@@ -293,22 +297,49 @@ def active_auctions_view(request):
     """
     It renders a page that displays all of
     the currently active auction listings
-    Active auctions are paginated: 3 per page
+    Active auctions are paginated: 10 per page
     """
     category_name = request.GET.get('category_name', None)
+    time_filter = request.GET.get('time_filter', None)
+    sort_by = request.GET.get('sort_by', None)
+
+    auctions = Auction.objects.filter(active=True)
+
     if category_name is not None:
-        auctions = Auction.objects.filter(active=True, category=category_name)
-    else:
-        auctions = Auction.objects.filter(active=True)
+        auctions = auctions.filter(category__category_name=category_name)
+
+    if time_filter:
+        now = timezone.now()
+        if time_filter == 'today':
+            end_date = now + timedelta(days=1)
+            auctions = auctions.filter(date_created__lte=end_date)
+        elif time_filter == 'tomorrow':
+            start_date = now + timedelta(days=1)
+            end_date = now + timedelta(days=2)
+            auctions = auctions.filter(date_created__range=(start_date, end_date))
+        elif time_filter == 'next_3_days':
+            end_date = now + timedelta(days=3)
+            auctions = auctions.filter(date_created__lte=end_date)
+
+    if sort_by:
+        if sort_by == 'ending_soonest':
+            auctions = auctions.order_by('date_created')
+        elif sort_by == 'newly_listed':
+            auctions = auctions.order_by('-date_created')
+        elif sort_by == 'price_highest':
+            auctions = auctions.order_by('-starting_bid')
+        elif sort_by == 'price_lowest':
+            auctions = auctions.order_by('starting_bid')
+        elif sort_by == 'fewest_bids':
+            auctions = auctions.annotate(bid_count=Count('bid')).order_by('bid_count')
+        elif sort_by == 'most_bids':
+            auctions = auctions.annotate(bid_count=Count('bid')).order_by('-bid_count')
 
     for auction in auctions:
         auction.image = auction.get_images.first()
-        if request.user in auction.watchers.all():
-            auction.is_watched = True
-        else:
-            auction.is_watched = False
+        auction.is_watched = request.user in auction.watchers.all()
 
-    # Show 3 active auctions per page
+    # Show 10 active auctions per page
     page = request.GET.get('page', 1)
     paginator = Paginator(auctions, 10)
     try:
