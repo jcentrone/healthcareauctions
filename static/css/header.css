@@ -133,3 +133,25 @@ header .logo {
     object-fit: cover;
 }
 
+#alert-container{
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    justify-content: center;
+    border: 1px solid #ccc;
+    padding: 5px;
+    border-radius: 40px;
+}
+
+
+
+
+@media (max-width: 768px) {
+    #lower-header-container {
+        grid-template-rows: auto 1fr;
+        grid-template-columns: 1fr;
+    }
+    #header_container{
+        flex-direction: column;
+    }
+}
