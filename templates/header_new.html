@@ -88,6 +88,22 @@
                         </button>
                         <ul class="dropdown-menu p-2">
                             <li class='nav-item p-2'>
+                                <a class='nav-link' href="{% url 'active_auctions_view' %}">
+                                    All Auctions
+                                </a>
+                            </li>
+                            <li class='nav-item p-2'>
+                                <a class='nav-link' href="{% url 'active_auctions_view' %}">
+                                    My Auctions
+                                </a>
+                            </li>
+                            <li class='nav-item p-2'>
+                                <a class='nav-link' href="{% url 'auction_create' %}">
+                                    Create Auction
+                                </a>
+                            </li>
+
+                            <li class='nav-item p-2'>
                                 <a class='nav-link' href="{% url 'dashboard' %}">
                                     Dashboard
                                 </a>
@@ -100,7 +116,7 @@
                             </li>
 
                             <li class="nav-item p-2">Purchase History</li>
-                            <li class="nav-item p-2">Selling</li>
+
 
                         </ul>
                     </div>
@@ -147,7 +163,7 @@
     <div class="section mt-3">
         <div class="container" id="lower-header-container">
             <a class="logo" id="logo-container" href="{% url 'index' %}">
-                <img src="{% static "images/logo3.jpg" %}" alt="Auction 1">
+                <img src="{% static "images/logo3.jpg" %}" alt="Healthcare Auctions Logo">
                 <div class="">
                     <div>Healthcare</div>
                     <div>Auctions</div>
@@ -158,18 +174,24 @@
                         aria-expanded="false">
                     Shop By Category
                 </button>
-                <ul class="dropdown-menu p-2">
-
+                {#                <ul class="dropdown-menu p-2">#}
+                {#                    {% for category in categories %}#}
+                {#                        <li>{{ category.category_name }}</li>#}
+                {#                    {% endfor %}#}
+                {#                </ul>#}
+                <ul class="dropdown-menu p-2" id="category-dropdown-content">
                     {% for category in categories %}
-                        <li>{{ category.category_name }}</li>
+                         {% include 'category_snippet.html' with category=category %}
+{#                        {% if not category.parent %}#}
+{#                            {% include 'category_snippet.html' with category=category %}#}
+{#                        {% endif %}#}
                     {% endfor %}
-
                 </ul>
             </div>
             <form class="navbar-search w-100">
                 <div class="input-group" style="position: relative;">
                     <i class="fas fa-search"></i>
-                    <input type="text" class="form-control" placeholder="Search..." aria-label="Search"
+                    <input type="text" class="form-control" id="auction-search" placeholder="Search..." aria-label="Search"
                            aria-describedby="basic-addon2">
                     <select class="custom-select">
                         <option selected>All Categories</option>

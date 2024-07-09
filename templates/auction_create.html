@@ -1,277 +1,282 @@
-{% extends 'base.html' %}
-
+{% extends 'new_base.html' %}
+{% load static %}
 {% block title %}Auctions | {{ title }} {% endblock %}
 
 {% block body %}
-    {% include 'sidebar.html' %}
+    {#    {% include 'sidebar.html' %}#}
     <meta name="csrf-token" content="{{ csrf_token }}">
 
     <div class="container">
-        <!-- Page Heading -->
-        {% if success %}
-            <br>
-            <div id='success-alert' class='alert alert-success' role='alert'>
-                The new auction created successfully.
-            </div>
-        {% else %}
-            <!-- Option Modal -->
-            <div id="optionModal" class="modal">
-                <div class="modal-content">
-                    <h2>Select an Option</h2>
-                    <div class="modal-options">
-                        <div class="option" id="scanQRCode">
-                            <i class="fa-solid fa-qrcode"></i>
-                            <i class="fa-solid fa-barcode"></i>
-                            <h3>Scan Bar or QR Codes</h3>
+        <section>
+            <!-- Page Heading -->
+            {% if success %}
+                <br>
+                <div id='success-alert' class='alert alert-success' role='alert'>
+                    The new auction created successfully.
+                </div>
+            {% else %}
+                <!-- Option Modal -->
+                <div id="optionModal" class="modal">
+                    <div class="modal-content">
+                        <h2>Select an Option</h2>
+                        <div class="modal-options">
+                            <div class="option mobile-only" id="scanQRCode">
+                                <i class="fa-solid fa-qrcode"></i>
+                                <i class="fa-solid fa-barcode"></i>
+                                <h3>Scan Bar or QR Codes</h3>
+                            </div>
+                            <div class="option" id="enterDetails">
+                                <i class="fa-solid fa-pencil"></i>
+                                <h3>Enter Manually</h3>
+                            </div>
+                            <a href="{% url 'import_excel' %}" class="option" id="importExcel">
+                                <i class="fa-solid fa-file-excel"></i>
+                                <h3>Import Excel</h3>
+                            </a>
                         </div>
-                        <div class="option" id="enterDetails">
-                            <i class="fa-solid fa-pencil"></i>
-                            <h3>Enter Manually</h3>
-                        </div>
-                        <a href="{% url 'import_excel' %}" class="option" id="importExcel">
-                            <i class="fa-solid fa-file-excel"></i>
-                            <h3>Import Excel</h3>
-                        </a>
                     </div>
                 </div>
-            </div>
 
-            <!-- Scan QR Code Modal -->
-            <div id="scanModal" class="modal">
-                <div class="modal-content">
-                    <h2>Scan Barcode</h2>
-                    {#                    <button id="start-scan">Start Scan</button>#}
-                    <div id="camera-preview" class="camera-preview">
-                        <div style="position: relative; grid-row: span 2">
-                            <h4>Scanner</h4>
-                            <p>Place camera in front of barcodes</p>
-                            <div class="video-container" style="position: relative">
+                <!-- Scan QR Code Modal -->
+                <div id="scanModal" class="modal">
+                    <div class="modal-content">
+                        <h2>Scan Barcode</h2>
+                        {#                    <button id="start-scan">Start Scan</button>#}
+                        <div id="camera-preview" class="camera-preview">
+                            <div style="position: relative; grid-row: span 2">
+                                <h4>Scanner</h4>
+                                <p>Place camera in front of barcodes</p>
+                                <div class="video-container" style="position: relative">
 
-                                <video id="video" width="100%" height="100%" autoplay></video>
-                                <div class="scan-guide">
-                                    <div class="brackets"></div>
-                                    <div class="scan-line"></div>
-                                </div>
-                                <div id="zoom-slider-container">
-                                    <label for="zoom-slider">Zoom:</label>
-                                    <input type="range" id="zoom-slider" min="1" max="10" step="0.1" value="5">
+                                    <video id="video" width="100%" height="100%" autoplay></video>
+                                    <div class="scan-guide">
+                                        <div class="brackets"></div>
+                                        <div class="scan-line"></div>
+                                    </div>
+                                    <div id="zoom-slider-container">
+                                        <label for="zoom-slider">Zoom:</label>
+                                        <input type="range" id="zoom-slider" min="1" max="10" step="0.1" value="5">
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
 
-                        <div id="barcode-results">
-                            <h4>Results Map</h4>
-                            <p>Scanned barcodes will appear below. Please verify that they are correct.</p>
-                            <div class="mapping-table" id="mapping-table">
-                                <div class="mapping-header" style="border-bottom: 1px solid #777">
-                                    <h5>Name</h5>
-                                    <div></div>
-                                    <h5>Code</h5>
-                                </div>
-
-                            </div>
-
-                        </div>
-
-
-                    </div>
-{#                    <button id="capture-button">Capture Image</button>#}
-{#                    <input type="file" id="barcode-image-input" accept="image/*">#}
-
-                    <button id="closeScanModal" class="btn btn-secondary">Save & Close</button>
-                </div>
-            </div>
-
-
-
-            <!-- Create Auction Form -->
-            <h1 class='h3 mb-4 text-gray-800'>Create an Auction</h1>
-            <p>Enter the details of the auction below.</p>
-            <div class='card mb-4'>
-                <div class='card-body'>
-                    <h3 class="package-details-heading">Auction Summary</h3>
-                    <div class='form-group'>
-                        <form action="{% url 'auction_create' %}" method='POST' enctype='multipart/form-data'>
-                            {% csrf_token %}
-                            <div class='form-group' id="auction-create">
-                                <div class="hidden">
-                                    {{ auction_form.title.label_tag }}
-                                    {{ auction_form.title }}
-                                </div>
-                                <div>
-                                    {{ auction_form.product_name.label_tag }}
-                                    {{ auction_form.product_name }}
-                                </div>
-
-                                <div class="bid-details">
-
-                                    <div class="bid-scan-item">
-                                        {{ auction_form.udi.label_tag }}
-                                        {{ auction_form.udi }}
-                                        <div class="scan-control">
-                                            <i class="fa-solid fa-qrcode"></i>
-                                            <i class="fa-solid fa-barcode"></i>
-                                        </div>
+                            <div id="barcode-results">
+                                <h4>Results Map</h4>
+                                <p>Scanned barcodes will appear below. Please verify that they are correct.</p>
+                                <div class="mapping-table" id="mapping-table">
+                                    <div class="mapping-header" style="border-bottom: 1px solid #777">
+                                        <h5>Name</h5>
+                                        <div></div>
+                                        <h5>Code</h5>
                                     </div>
 
+                                </div>
+
+                            </div>
+
+
+                        </div>
+                        {#                    <button id="capture-button">Capture Image</button>#}
+                        {#                    <input type="file" id="barcode-image-input" accept="image/*">#}
+
+                        <button id="closeScanModal" class="btn btn-secondary">Save & Close</button>
+                    </div>
+                </div>
+
+
+
+                <!-- Create Auction Form -->
+                <h1 class='h3 mb-4 text-gray-800'>Create an Auction</h1>
+                <p>Enter the details of the auction below.</p>
+                <div class='card mb-4'>
+                    <div class='card-body'>
+                        <h3 class="package-details-heading">Auction Summary</h3>
+                        <div class='form-group'>
+                            <form action="{% url 'auction_create' %}" method='POST' enctype='multipart/form-data'>
+                                {% csrf_token %}
+                                <div class='form-group' id="auction-create">
+                                    <div class="hidden">
+                                        {{ auction_form.title.label_tag }}
+                                        {{ auction_form.title }}
+                                    </div>
                                     <div>
-                                        {{ auction_form.category.label_tag }}
-                                        {{ auction_form.category }}
+                                        {{ auction_form.product_name.label_tag }}
+                                        {{ auction_form.product_name }}
                                     </div>
-                                    <div class="bid-row">
-                                        <div class="form-group with-symbol">
-                                            {{ auction_form.starting_bid.label_tag }}
-                                            {{ auction_form.starting_bid }}
-                                        </div>
-                                        <div class="form-group with-symbol">
-                                            {{ auction_form.reserve_bid.label_tag }}
-                                            {{ auction_form.reserve_bid }}
-                                        </div>
-                                    </div>
-                                    <div class="bid-row">
-                                        <div id="qty-container">
-                                            {{ auction_form.quantity_available.label_tag }}
-                                            <i class="fa fa-info-circle" aria-hidden="true" id="infoIcon">
-                                                <span class="tooltip">When the auction quantity is greater than one, all product packages must be full.</span>
-                                            </i>
 
-                                            {{ auction_form.quantity_available }}
+                                    <div class="bid-details">
+
+                                        <div class="bid-scan-item">
+                                            {{ auction_form.udi.label_tag }}
+                                            {{ auction_form.udi }}
+                                            <div class="scan-control mobile-only">
+                                                <i class="fa-solid fa-qrcode"></i>
+                                                <i class="fa-solid fa-barcode"></i>
+                                            </div>
                                         </div>
+
                                         <div>
-                                            {{ auction_form.auction_duration.label_tag }}
-                                            {{ auction_form.auction_duration }}
+                                            {{ auction_form.category.label_tag }}
+                                            {{ auction_form.category }}
+                                        </div>
+                                        <div class="bid-row">
+                                            <div class="form-group with-symbol">
+                                                {{ auction_form.starting_bid.label_tag }}
+                                                {{ auction_form.starting_bid }}
+                                            </div>
+                                            <div class="form-group with-symbol">
+                                                {{ auction_form.reserve_bid.label_tag }}
+                                                {{ auction_form.reserve_bid }}
+                                            </div>
+                                        </div>
+                                        <div class="bid-row">
+                                            <div id="qty-container">
+                                                {{ auction_form.quantity_available.label_tag }}
+                                                <i class="fa fa-info-circle" aria-hidden="true" id="infoIcon">
+                                                    <span class="tooltip">When the auction quantity is greater than one, all product packages must be full.</span>
+                                                </i>
+
+                                                {{ auction_form.quantity_available }}
+                                            </div>
+                                            <div>
+                                                {{ auction_form.auction_duration.label_tag }}
+                                                {{ auction_form.auction_duration }}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="">
-                                    {{ auction_form.description.label_tag }}
-                                    {{ auction_form.description }}
-                                </div>
-
-                                <!-- Insert the heading here -->
-                                <h3 class="package-details-heading">Product Details</h3>
-
-                                <div>
-                                    {{ auction_form.manufacturer.label_tag }}
-                                    {{ auction_form.manufacturer }}
-                                </div>
-
-                                <div class="bid-scan-item">
-                                    {{ auction_form.reference_number.label_tag }}
-                                    {{ auction_form.reference_number }}
-                                    <div class="scan-control">
-                                        <i class="fa-solid fa-qrcode"></i>
-                                        <i class="fa-solid fa-barcode"></i>
+                                    <div id="auction-description">
+                                        {{ auction_form.description.label_tag }}
+                                        {{ auction_form.description }}
                                     </div>
-                                </div>
 
-                                <div class="bid-scan-item">
-                                    {{ auction_form.lot_number.label_tag }}
-                                    {{ auction_form.lot_number }}
-                                    <div class="scan-control">
-                                        <i class="fa-solid fa-qrcode"></i>
-                                        <i class="fa-solid fa-barcode"></i>
+                                    <!-- Insert the heading here -->
+                                    <h3 class="package-details-heading">Product Details</h3>
+
+                                    <div class="bid-detail">
+                                        {{ auction_form.manufacturer.label_tag }}
+                                        {{ auction_form.manufacturer }}
                                     </div>
-                                </div>
 
-                                <div class="bid-row">
-                                    <div class="bid-scan-item">
-                                        {{ auction_form.production_date.label_tag }}
-                                        {{ auction_form.production_date }}
-                                        <div class="scan-control">
+                                    <div class="bid-scan-item bid-detail">
+                                        {{ auction_form.reference_number.label_tag }}
+                                        {{ auction_form.reference_number }}
+                                        <div class="scan-control mobile-only">
                                             <i class="fa-solid fa-qrcode"></i>
                                             <i class="fa-solid fa-barcode"></i>
                                         </div>
                                     </div>
-                                    <div class="bid-scan-item">
-                                        {{ auction_form.expiration_date.label_tag }}
-                                        {{ auction_form.expiration_date }}
-                                        <div class="scan-control">
+
+                                    <div class="bid-scan-item bid-detail">
+                                        {{ auction_form.lot_number.label_tag }}
+                                        {{ auction_form.lot_number }}
+                                        <div class="scan-control mobile-only">
                                             <i class="fa-solid fa-qrcode"></i>
                                             <i class="fa-solid fa-barcode"></i>
                                         </div>
                                     </div>
-                                </div>
 
-
-                                <div>
-                                    {{ auction_form.package_type.label_tag }}
-                                    {{ auction_form.package_type }}
-                                </div>
-
-                                <div>
-                                    {{ auction_form.package_quantity.label_tag }}
-                                    {{ auction_form.package_quantity }}
-                                </div>
-
-                                <div class="checkbox-row" id="id_deviceSterile">
-                                    {{ auction_form.deviceSterile.label_tag }}
-                                    {{ auction_form.deviceSterile }}
-                                </div>
-                                <div class="bid-row">
-                                    <div class="checkbox-row">
-                                        {{ auction_form.fullPackage.label_tag }}
-                                        {{ auction_form.fullPackage }}
-                                    </div>
-                                    <div id="partial-qty">
-                                        {{ auction_form.partial_quantity.label_tag }}
-                                        {{ auction_form.partial_quantity }}
-                                    </div>
-                                </div>
-                                <h3 class="package-details-heading">Photos</h3>
-
-                                {{ image_form.management_form }}
-                                <div class="img-container">
-                                    <div class="main-img">
-                                        <div class="img-thumbnail" id="main-img"
-                                             onclick="document.getElementById('id_form-0-image').click()">
-                                            <img id="main-thumbnail-preview" src="#" alt="Upload Icon"
-                                                 style="display:none;"/>
-                                            <i class="fa-regular fa-image" id="main-upload-icon"></i>
+                                    <div class="bid-row bid-detail">
+                                        <div class="bid-scan-item">
+                                            {{ auction_form.production_date.label_tag }}
+                                            {{ auction_form.production_date }}
+                                            <div class="scan-control mobile-only">
+                                                <i class="fa-solid fa-qrcode"></i>
+                                                <i class="fa-solid fa-barcode"></i>
+                                            </div>
                                         </div>
-                                        <div style="display:none;">
-                                            {{ image_form.forms.0.image.label_tag }}:
-                                            {{ image_form.forms.0.image }}
-                                            {{ image_form.forms.0.id }}
+                                        <div class="bid-scan-item">
+                                            {{ auction_form.expiration_date.label_tag }}
+                                            {{ auction_form.expiration_date }}
+                                            <div class="scan-control mobile-only">
+                                                <i class="fa-solid fa-qrcode"></i>
+                                                <i class="fa-solid fa-barcode"></i>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="side-imgs">
-                                        {% for form in image_form.forms %}
-                                            {% if forloop.counter0 > 0 %}
-                                                <div class="side-img">
-                                                    <div class="img-thumbnail"
-                                                         onclick="document.getElementById('id_form-{{ forloop.counter0 }}-image').click()">
-                                                        <img id="thumbnail-preview-{{ forloop.counter0 }}" src="#"
-                                                             alt="Upload Icon" style="display:none;"/>
-                                                        <i class="fa-regular fa-image"
-                                                           id="upload-icon-{{ forloop.counter0 }}"></i>
-                                                    </div>
-                                                    <div style="display:none;">
-                                                        {{ form.image.label_tag }}:
-                                                        {{ form.image }}
-                                                        {{ form.id }}
-                                                    </div>
-                                                </div>
-                                            {% endif %}
-                                        {% endfor %}
+
+
+                                    <div class="bid-detail">
+                                        {{ auction_form.package_type.label_tag }}
+                                        {{ auction_form.package_type }}
                                     </div>
+
+                                    <div class="bid-detail">
+                                        {{ auction_form.package_quantity.label_tag }}
+                                        {{ auction_form.package_quantity }}
+                                    </div>
+
+                                    <div class="checkbox-row bid-detail" id="deviceSterile">
+                                        {{ auction_form.deviceSterile.label_tag }}
+                                        {{ auction_form.deviceSterile }}
+                                    </div>
+                                    <div class="bid-row bid-detail">
+                                        <div class="checkbox-row">
+                                            {{ auction_form.fullPackage.label_tag }}
+                                            {{ auction_form.fullPackage }}
+                                        </div>
+                                        <div class="bid-detail" id="partial-qty">
+                                            {{ auction_form.partial_quantity.label_tag }}
+                                            {{ auction_form.partial_quantity }}
+                                        </div>
+                                    </div>
+                                    <h3 class="package-details-heading">Photos</h3>
+
+                                    {{ image_form.management_form }}
+                                    <div class="img-container">
+                                        <div class="main-img">
+                                            <div class="img-thumbnail" id="main-img"
+                                                 onclick="document.getElementById('id_form-0-image').click()">
+                                                <img id="main-thumbnail-preview" src="#" alt="Upload Icon"
+                                                     style="display:none;"/>
+                                                <i class="fa-regular fa-image" id="main-upload-icon"></i>
+                                            </div>
+                                            <div style="display:none;">
+                                                {{ image_form.forms.0.image.label_tag }}:
+                                                {{ image_form.forms.0.image }}
+                                                {{ image_form.forms.0.id }}
+                                            </div>
+                                        </div>
+                                        <div class="side-imgs">
+                                            {% for form in image_form.forms %}
+                                                {% if forloop.counter0 > 0 %}
+                                                    <div class="side-img">
+                                                        <div class="img-thumbnail"
+                                                             onclick="document.getElementById('id_form-{{ forloop.counter0 }}-image').click()">
+                                                            <img id="thumbnail-preview-{{ forloop.counter0 }}" src="#"
+                                                                 alt="Upload Icon" style="display:none;"/>
+                                                            <i class="fa-regular fa-image"
+                                                               id="upload-icon-{{ forloop.counter0 }}"></i>
+                                                        </div>
+                                                        <div style="display:none;">
+                                                            {{ form.image.label_tag }}:
+                                                            {{ form.image }}
+                                                            {{ form.id }}
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+
+
+                                    <button type='submit' class='btn btn-primary'>
+                                        Save
+                                    </button>
+                                    <a href="{% url 'active_auctions_view' %}" class='btn btn-light border-dark'>
+                                        Cancel
+                                    </a>
                                 </div>
-
-
-                                <button type='submit' class='btn btn-primary'>
-                                    Save
-                                </button>
-                                <a href="{% url 'active_auctions_view' %}" class='btn btn-secondary'>
-                                    Cancel
-                                </a>
-                            </div>
-                        </form>
+                            </form>
+                        </div>
                     </div>
                 </div>
-            </div>
-        {% endif %}
+            {% endif %}
+        </section>
     </div>
+
+    <link href='{% static "css/styles.css" %}' rel='stylesheet'>
+
     <script src="https://cdn.jsdelivr.net/npm/@zxing/library@latest/umd/index.min.js"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>

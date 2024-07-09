@@ -41,59 +41,9 @@ body {
     overflow-x: hidden;
 }
 
-
-/*header {*/
-/*    display: flex;*/
-/*    justify-content: space-between;*/
-/*    align-items: center;*/
-/*    background-color: var(--dark-blue);*/
-/*    color: var(--white);*/
-/*    padding: 10px 20px;*/
-/*}*/
-
-/*header .logo {*/
-/*    font-family: "Futura", sans-serif;*/
-/*    font-weight: bold;*/
-/*    font-size: 24px;*/
-/*    text-shadow: 3px 3px 5px rgba(51, 51, 51, 0.7);*/
-/*    cursor: pointer;*/
-/*    text-decoration: none;*/
-/*    color: var(--white);*/
-/*}*/
-
-/*.logo {*/
-/*    display: flex;*/
-/*    flex-direction: row;*/
-/*    align-items: center;*/
-/*    justify-content: flex-start;*/
-/*    gap: 20px;*/
-/*}*/
-
-/*.logo img {*/
-/*    width: 60px;*/
-/*}*/
-
-
-/*header nav ul {*/
-/*    list-style: none;*/
-/*    margin: 0;*/
-/*    padding: 0;*/
-/*    display: flex;*/
-/*    gap: 15px;*/
-/*}*/
-
-/*header nav ul li {*/
-/*    display: inline;*/
-/*    margin-right: 0 !important;*/
-
-/*}*/
-
-/*header nav ul li a {*/
-/*    color: var(--white) !important;*/
-/*    text-decoration: none;*/
-/*    font-weight: bold;*/
-/*}*/
-
+.mobile-only {
+    display: none !important;
+}
 
 .dropdown .dropdown-menu {
     font-size: 0.85rem;
@@ -181,7 +131,6 @@ body {
     position: fixed;
     right: 1rem;
     bottom: 1rem;
-    display: none;
     width: 2.75rem;
     height: 2.75rem;
     text-align: center;
@@ -200,6 +149,7 @@ body {
 
 .scroll-to-top i {
     font-weight: 800;
+    color: white !important;
 }
 
 /* auction images */
@@ -220,15 +170,45 @@ body {
 
 /* footer */
 
-footer.sticky-footer {
-    /*padding: 2rem 0;*/
-    flex-shrink: 0;
-    color: #000000;
+footer {
+
+    padding: 20px;
+    text-align: center;
+    color: black;
 }
 
-footer.sticky-footer .copyright {
-    line-height: 1;
-    font-size: 0.8rem;
+footer .quick-links {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 10px;
+}
+
+footer .quick-links a {
+    color: var(--white);
+    text-decoration: none;
+    font-size: 14px;
+}
+
+footer .contact-info p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+footer .social-media {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+footer .social-media a {
+    color: var(--white);
+    font-size: 24px;
+    text-decoration: none;
+}
+
+footer .social-media a:hover {
+    color: var(--light-blue);
 }
 
 body.sidebar-toggled footer.sticky-footer {
@@ -780,6 +760,11 @@ body.sidebar-toggled footer.sticky-footer {
     }
 }
 
+@media (max-width: 768px) {
+    .mobile-only {
+        display: block !important;
+    }
+}
 
 @media (max-width: 991.98px) {
     .navbar-expand-lg > .container,
@@ -956,7 +941,7 @@ body.sidebar-toggled footer.sticky-footer {
 }
 
 .container {
-    max-width: 100% !important;
+    /*max-width: 100% !important;*/
     /*padding: 40px;*/
     position: relative;
 
@@ -991,6 +976,7 @@ button i {
 
     .bid-details {
         height: 100% !important;
+
     }
 
     #id_quantity_available {
@@ -1006,12 +992,18 @@ button i {
         grid-template-columns: 100% !important
     }
 
+    .bid-details,
+    .bid-detail,
+     #auction-description{
+        margin-bottom: 20px;
+    }
+
 }
 
 .checkbox-row {
     display: grid;
-    grid-template-columns: auto auto;
-    /*align-items: center;*/
+    grid-template-columns: 150px auto;
+    align-items: center;
     justify-content: flex-start;
     gap: 20px;
 }
@@ -1020,6 +1012,8 @@ button i {
 #id_fullPackage {
     width: 22px;
     height: 22px;
+    -webkit-appearance: auto;
+    appearance: auto;
 }
 
 .img-header {
@@ -1061,7 +1055,7 @@ button i {
     width: 100%;
     height: 150px;
     background-color: #F7F7F9; /* Placeholder background */
-    border: 1px solid #777;
+    /*border: 1px solid #777;*/
     border-radius: var(--border-radius);
     margin-bottom: 10px;
     display: flex;
@@ -1123,6 +1117,7 @@ button i {
     grid-row: span 2;
     height: 20px;
 
+
 }
 
 .bid-row {
@@ -1174,10 +1169,14 @@ button i {
 }
 
 #importExcel {
-    grid-column: span 2;
+    /*grid-column: span 2;*/
     width: 313px;
     align-self: center;
     justify-self: center;
+    text-decoration: none;
+    color: black;
+    display: block;
+
 }
 
 video {
@@ -1229,7 +1228,7 @@ video {
         grid-template-columns: 1fr;
     }
 
-    #id_deviceSterile {
+    #deviceSterile {
         margin-bottom: 20px;
     }
 
@@ -1251,11 +1250,16 @@ video {
     }
 
     .form-group.with-symbol {
-        margin-bottom: 20px;
+        /*margin-bottom: 20px;*/
     }
 
     .h3, h3 {
         font-size: calc(1.275rem + .0vw);
+    }
+
+    #importExcel {
+        grid-column: span 2;
+        display: none;
     }
 }
 
@@ -1416,9 +1420,9 @@ i {
     z-index: 100;
 }
 
-.nav-link i {
-    color: white !important;
-}
+/*.nav-link i {*/
+/*    color: white !important;*/
+/*}*/
 
 .form-group.with-symbol {
     position: relative;
@@ -1428,7 +1432,7 @@ i {
     content: "$";
     position: absolute;
     left: 10px; /* Adjust based on your design */
-    top: 48px;
+    top: 44px;
     transform: translateY(-50%);
     font-size: 16px; /* Adjust based on your design */
     color: #555; /* Adjust based on your design */
@@ -1448,7 +1452,7 @@ i {
 
 .scan-control {
     position: absolute;
-    top: 50%;
+    top: 26px;
     right: 15px;
     border: 1px solid transparent;
     border-radius: var(--border-radius);
@@ -1599,26 +1603,26 @@ i.fas.fa-user.fa-fw.fa-lg {
     align-items: center;
 }
 
-a.nav-link {
-    display: grid !important;
-    grid-template-columns: minmax(23px, auto) auto auto auto;
-    gap: 5px;
-    align-items: center;
-    justify-content: flex-end;
-}
+/*a.nav-link {*/
+/*    display: grid !important;*/
+/*    grid-template-columns: minmax(23px, auto) auto auto auto;*/
+/*    gap: 5px;*/
+/*    align-items: center;*/
+/*    justify-content: flex-end;*/
+/*}*/
 
-#user-ops{
+#user-ops {
     flex-direction: column;
     align-items: flex-end;
 }
 
-#userDropdownContent{
+#userDropdownContent {
     background: transparent;
     border: none;
 }
 
 #userDropdownContent .dropdown-item,
-#userDropdownContent .dropdown-item i{
+#userDropdownContent .dropdown-item i {
     color: #FFFFFF !important;
 }
 
@@ -1694,9 +1698,17 @@ a.nav-link {
     align-items: flex-start;
 }
 
+#auction-description textarea {
+    height: 203px;
+}
+
 #header-info-circle,
 #user-icon {
     color: #FFFFFF !important;
+}
+
+.form-control {
+    background: #F7F7F9;
 }
 
 @media (max-width: 767.98px) {

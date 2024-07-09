@@ -253,12 +253,7 @@ body {
     -ms-overflow-style: -ms-autohiding-scrollbar;
 }
 
-@media (max-width: 768px) {
-    .featured-auctions .grid {
-        grid-template-columns: repeat(1, minmax(300px, 1fr));
 
-    }
-}
 
 .auction-item {
     background-color: var(--white);
@@ -395,20 +390,8 @@ body {
     margin: 0 10px;
 }
 
-@media (max-width: 768px) {
-    .steps {
-        flex-direction: column;
-    }
-
-    .arrow {
-        transform: rotate(90deg);
-        margin: 20px 0;
-    }
-}
-
 .why-choose-us {
-    padding: 40px 40px 40px 200px;
-    margin-right: 100px;
+    padding: 15%;
 }
 
 .why-choose-us h2 {
@@ -535,8 +518,8 @@ body {
 footer {
     padding: 20px;
     text-align: center;
-    background-color: var(--dark-blue);
-    color: var(--white);
+    /*background-color: var(--dark-blue);*/
+    color: black;
 }
 
 footer .quick-links {
@@ -571,5 +554,52 @@ footer .social-media a {
 
 footer .social-media a:hover {
     color: var(--light-blue);
+}
+
+.scroll-to-top {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    display: none;
+    width: 2.75rem;
+    height: 2.75rem;
+    text-align: center;
+    color: var(--white);
+    background: rgba(90, 92, 105, 0.5);
+    line-height: 46px;
+}
+
+.scroll-to-top:focus, .scroll-to-top:hover {
+    color: var(--white);
+}
+
+.scroll-to-top:hover {
+    background: #5a5c69;
+}
+
+.scroll-to-top i {
+    font-weight: 800;
+}
+@media (max-width: 768px) {
+    .steps {
+        flex-direction: column;
+    }
+
+    .arrow {
+        transform: rotate(90deg);
+        margin: 20px 0;
+    }
+    .featured-auctions .grid {
+        /*grid-template-columns: repeat(1, minmax(300px, 1fr));*/
+
+    }
+
+    .featured-auctions h2{
+        text-align: center;
+    }
+
+    .hero-content{
+        scale: .8;
+    }
 }
 

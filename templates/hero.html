@@ -8,17 +8,17 @@
                     aria-label="Slide 2"></button>
             <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"
                     aria-label="Slide 3"></button>
-{#            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="3"#}
-{#                    aria-label="Slide 4"></button>#}
+            {#            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="3"#}
+            {#                    aria-label="Slide 4"></button>#}
         </div>
         <div class="carousel-item active" id="slide1">
             <div class="image-container">
                 <img src="{% static 'images/hospital1.jpg' %}" class="d-block w-100" alt="Welcome Image">
                 <div class="overlay"></div>
             </div>
-            <div class="carousel-caption d-none d-md-block">
+            <div class="carousel-caption d-md-block">
                 <div class="row">
-                    <div>
+                    <div class="hero-content">
                         <h1>Healthcare Auctions</h1>
                         <h4>Your trusted partner for healthcare equipment and supplies.</h4>
                         <h4>We guarantee you receive what you buy or your money back, that simple.</h4>
@@ -32,9 +32,9 @@
                 <img src="{% static 'images/instruments.jpg' %}" class="d-block w-100" alt="How It Works Image">
                 <div class="overlay"></div>
             </div>
-            <div class="carousel-caption d-none d-md-block">
+            <div class="carousel-caption d-md-block">
                 <div class="row">
-                    <div>
+                    <div class="hero-content">
                         <h1>Top-Quality Healthcare Equipment</h1>
                         <h4>Verified sellers ensure all auction items meet our high standards for quality and
                             reliability.</h4>
@@ -47,57 +47,17 @@
         <div class="carousel-item" id="slide3">
             <div class="image-container">
                 <img src="{% static 'images/medical-tech.jpg' %}" class="d-block w-100" alt="Featured Auctions Image">
-{#                <div class="overlay"></div>#}
             </div>
-            <div class="d-none d-md-block" id="why-choose-us-container">
-                <section class="why-choose-us">
-                    <h2>Innovation is in our DNA</h2>
-                    <ul>
-                        <li>
-                            <i class="fas fa-shield-alt"></i>
-                            <div>
-                                <strong>Trusted Platform</strong>
-                                <p>We guarantee the product is as expected, or we refund your money.</p>
-                            </div>
-                        </li>
-                        <li>
-                            <i class="fas fa-check-circle"></i>
-                            <div>
-                                <strong>High-Quality Listings</strong>
-                                <p>All sellers are thoroughly vetted to ensure they meet our high standards of quality
-                                    and
-                                    reliability.</p>
-                            </div>
-                        </li>
-                        <li>
-                            <i class="fas fa-lock"></i>
-                            <div>
-                                <strong>Secure Transactions</strong>
-                                <p>Our platform uses advanced security measures to protect your transactions and
-                                    personal
-                                    information.</p>
-                            </div>
-                        </li>
-                        <li>
-                            <i class="fas fa-headset"></i>
-                            <div>
-                                <strong>Excellent Support</strong>
-                                <p>Our dedicated support team is available to assist you with any questions you may
-                                    have.</p>
-                            </div>
-                        </li>
-                    </ul>
-                </section>
+            <div class="carousel-caption d-md-block">
+                <div class="row">
+                    <div class="hero-content">
+                        <h1>Innovation is in our DNA</h1>
+                        <h4>Discover top-tier medical equipment and supplies at unbeatable prices.</h4>
+                        <a href="{% url 'active_auctions_view' %}" class="btn btn-light mt-3">Learn More</a>
+                    </div>
+                </div>
             </div>
         </div>
-{#        <div class="carousel-item" id="slide4">#}
-{#            <img src="{% static 'images/register.jpg' %}" class="d-block w-100" alt="Join Our Community Image">#}
-{#            <div class="carousel-caption d-none d-md-block">#}
-{#                <h5>Join Our Community</h5>#}
-{#                <p>Connect with professionals and enthusiasts.</p>#}
-{#                <a href="#" class="btn btn-primary">Sign Up Now</a>#}
-{#            </div>#}
-{#        </div>#}
     </div>
     <a class="carousel-control-prev" href="#heroCarousel" role="button" data-slide="prev">
         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -107,6 +67,7 @@
         <span class="carousel-control-next-icon" aria-hidden="true"></span>
         <span class="sr-only">Next</span>
     </a>
+   
 </div>
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>

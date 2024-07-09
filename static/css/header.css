@@ -2,6 +2,12 @@ button {
     outline: none !important;
     border: none !important;
 }
+a:hover{
+    color: #0E75BF !important;
+}
+.logo:hover{
+    color: #021C25 !important;
+}
 
 #header_container {
     display: flex;
@@ -59,20 +65,21 @@ header .logo {
 }
 
 .input-group {
-    display: flex;
-    flex-wrap: wrap;
-
+    gap: 20px;
 }
 
 .input-group .form-control {
-    flex: 1 1 auto;
     padding-left: 2.5rem;
+
 }
 
 .custom-select {
-    flex: 1 1 auto;
+    margin-left: -21px !important;
     padding: 0 10px;
+    border: var(--bs-border-width) solid var(--bs-border-color);
+    width: auto;
 }
+
 
 .input-group .fa-search {
     position: absolute;
@@ -83,10 +90,6 @@ header .logo {
     z-index: 10;
 }
 
-.custom-select {
-    border: var(--bs-border-width) solid var(--bs-border-color);
-    width: auto;
-}
 
 .input-group-append {
     flex: 0 0 auto;
@@ -139,7 +142,7 @@ header .logo {
     object-fit: cover;
 }
 
-#alert-container{
+#alert-container {
     display: flex;
     align-items: center;
     gap: 5px;
@@ -149,21 +152,47 @@ header .logo {
     border-radius: 40px;
 }
 
-@media (max-width: 768px) {
+span.badge {
+    color: black;
+}
+
+#category-dropdown-content{
+    min-width: 250px;
+    width: fit-content;
+    max-height: 500px;
+    overflow: auto;
+}
+
+#auction-search{
+    background: #FFFFFF !important;
+}
+
+@media (max-width: 991.98px) {
     .input-group {
+        display: flex;
+        flex-wrap: wrap;
         flex-direction: column;
         gap: 10px;
     }
+
+    .input-group .form-control {
+        flex: 1 1 auto;
+        padding-left: 2.5rem;
+    }
+
 
     .input-group .form-control,
     .custom-select,
     .input-group-append,
     .wrap-button,
-    #search-button{
+    #search-button {
         width: 100%;
     }
-    .custom-select{
+
+    .custom-select {
         padding: 8px;
+        flex: 1 1 auto;
+        margin-left: 0 !important;
     }
 
     .input-group .fa-search {
@@ -176,13 +205,16 @@ header .logo {
         grid-template-rows: auto 1fr;
         grid-template-columns: 1fr;
     }
+
     #header_container {
         flex-direction: column;
     }
+
     #logo-container {
         justify-content: center;
     }
-    #category-dropdown{
+
+    #category-dropdown {
         display: none;
     }
 
