@@ -59,16 +59,18 @@ header .logo {
 }
 
 .input-group {
-    gap: 20px;
+    display: flex;
+    flex-wrap: wrap;
+
 }
 
 .input-group .form-control {
+    flex: 1 1 auto;
     padding-left: 2.5rem;
-
 }
 
 .custom-select {
-    margin-left: -21px !important;
+    flex: 1 1 auto;
     padding: 0 10px;
 }
 
@@ -83,7 +85,11 @@ header .logo {
 
 .custom-select {
     border: var(--bs-border-width) solid var(--bs-border-color);
-    width: 160px;
+    width: auto;
+}
+
+.input-group-append {
+    flex: 0 0 auto;
 }
 
 .mini-watchlist {
@@ -143,15 +149,41 @@ header .logo {
     border-radius: 40px;
 }
 
-
-
-
 @media (max-width: 768px) {
+    .input-group {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .input-group .form-control,
+    .custom-select,
+    .input-group-append,
+    .wrap-button,
+    #search-button{
+        width: 100%;
+    }
+    .custom-select{
+        padding: 8px;
+    }
+
+    .input-group .fa-search {
+        left: 1rem;
+        top: .6rem;
+        transform: none;
+    }
+
     #lower-header-container {
         grid-template-rows: auto 1fr;
         grid-template-columns: 1fr;
     }
-    #header_container{
+    #header_container {
         flex-direction: column;
     }
+    #logo-container {
+        justify-content: center;
+    }
+    #category-dropdown{
+        display: none;
+    }
+
 }

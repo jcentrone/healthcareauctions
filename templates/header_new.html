@@ -45,6 +45,74 @@
                         </li>
                     </ul>
                 </div>
+                <div class="d-flex align-items-center justify-content-start">
+                    <div class="nav-item">
+                        <a class='nav-link' href="{% url 'auction_create' %}">Sell</a>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                            Watchlist
+                        </button>
+                        <div class="dropdown-menu p-2">
+                            <div class="mini-watchlist">
+                                {% for auction in watchlist %}
+                                    <a class="mini-watchlist-item" href="{% url 'auction_details_view' auction.id %}">
+                                        {% if auction.image %}
+                                            <img src="{{ auction.image.image.url }}" alt="{{ auction.title }}">
+                                        {% else %}
+                                            <img src="path/to/default/image.jpg" alt="Default Image">
+                                        {% endif %}
+                                        <div>
+                                            <h6>{{ auction.title }}</h6>
+                                            <div>
+                                                <!-- Product price-->
+                                                {% if auction.current_bid %}
+                                                    ${{ auction.current_bid }}
+                                                {% else %}
+                                                    ${{ auction.starting_bid }}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn  dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                            Discover
+                        </button>
+                        <ul class="dropdown-menu p-2">
+                            <li class='nav-item p-2'>
+                                <a class='nav-link' href="{% url 'dashboard' %}">
+                                    Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item p-2">Recently Viewed</li>
+                            <li class='nav-item p-2'>
+                                <a class='nav-link' href="{% url 'watchlist_view' %}">
+                                    Watchlist
+                                </a>
+                            </li>
+
+                            <li class="nav-item p-2">Purchase History</li>
+                            <li class="nav-item p-2">Selling</li>
+
+                        </ul>
+                    </div>
+                    <!-- Nav Item - Alerts -->
+                    <div class='nav-item mx-1'>
+                        <a class='nav-link' id="alert-container" href='#'>
+                            <i class='fa-regular fa-bell fa-lg'></i>
+                            <!-- Counter - Alerts -->
+                            <span class='badge rounded-pill bg-danger badge-counter'>5+</span>
+                        </a>
+                    </div>
+                </div>
             {% else %}
                 <div class="dropdown" id="logged-in-dropdown">
                     <button class="btn  dropdown-toggle" type="button" data-bs-toggle="dropdown"
@@ -73,86 +141,19 @@
                     </ul>
                 </div>
             {% endif %}
-            <div class="d-flex align-items-center justify-content-start">
-                <div class="nav-item">
-                    <a class='nav-link' href="{% url 'auction_create' %}">Sell</a>
-                </div>
-                <div class="dropdown">
-                    <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                        Watchlist
-                    </button>
-                    <div class="dropdown-menu p-2">
-                        <div class="mini-watchlist">
-                            {% for auction in watchlist %}
-                                <a class="mini-watchlist-item" href="{% url 'auction_details_view' auction.id %}">
-                                    {% if auction.image %}
-                                        <img src="{{ auction.image.image.url }}" alt="{{ auction.title }}">
-                                    {% else %}
-                                        <img src="path/to/default/image.jpg" alt="Default Image">
-                                    {% endif %}
-                                    <div>
-                                        <h6>{{ auction.title }}</h6>
-                                        <div>
-                                            <!-- Product price-->
-                                            {% if auction.current_bid %}
-                                                ${{ auction.current_bid }}
-                                            {% else %}
-                                                ${{ auction.starting_bid }}
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                    
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-                <div class="dropdown">
-                    <button class="btn  dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                        Discover
-                    </button>
-                    <ul class="dropdown-menu p-2">
-                        <li class='nav-item p-2'>
-                            <a class='nav-link' href="{% url 'dashboard' %}">
-                                Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item p-2">Recently Viewed</li>
-                        <li class='nav-item p-2'>
-                            <a class='nav-link' href="{% url 'watchlist_view' %}">
-                                Watchlist
-                            </a>
-                        </li>
 
-                        <li class="nav-item p-2">Purchase History</li>
-                        <li class="nav-item p-2">Selling</li>
-
-                    </ul>
-                </div>
-                <!-- Nav Item - Alerts -->
-                <div class='nav-item mx-1' >
-                    <a class='nav-link' id="alert-container" href='#'>
-                        <i class='fa-regular fa-bell fa-lg'></i>
-                        <!-- Counter - Alerts -->
-                        <span class='badge rounded-pill bg-danger badge-counter'>5+</span>
-                    </a>
-                </div>
-            </div>
         </div>
     </div>
     <div class="section mt-3">
         <div class="container" id="lower-header-container">
-            <a class="logo" href="{% url 'index' %}">
+            <a class="logo" id="logo-container" href="{% url 'index' %}">
                 <img src="{% static "images/logo3.jpg" %}" alt="Auction 1">
-                <div class="col">
+                <div class="">
                     <div>Healthcare</div>
                     <div>Auctions</div>
                 </div>
             </a>
-            <div class="dropdown">
+            <div class="dropdown" id="category-dropdown">
                 <button class="btn dropdown-toggle wrap-button" type="button" data-bs-toggle="dropdown"
                         aria-expanded="false">
                     Shop By Category
@@ -175,13 +176,13 @@
                         {% for category in categories %}
                             <option value="{{ category.category_name }}">{{ category.category_name }}</option>
                         {% endfor %}
-
                     </select>
                     <div class="input-group-append">
-                        <button class="btn btn-primary" type="button">Search</button>
+                        <button class="btn btn-primary" id="search-button" type="button">Search</button>
                     </div>
                 </div>
             </form>
+
         </div>
     </div>
 </header>
