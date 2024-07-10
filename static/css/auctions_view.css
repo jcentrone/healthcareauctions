@@ -25,19 +25,21 @@
     /*border: 1px solid #86B7FE;*/
 }
 
-.auctions-header-container{
+.auctions-header-container {
     display: grid;
     grid-template-columns: 1fr auto;
 
 }
-#filter-form{
+
+#filter-form {
     display: flex;
     gap: 10px;
 }
+
 #time-filter,
 #sort-by,
-#mfg-filter{
-    width:180px;
+#mfg-filter {
+    width: 180px;
 }
 
 .listing {
@@ -129,12 +131,21 @@
         grid-template-columns: auto auto;
     }
 
-    .card-body{
+    .card-body {
         padding: 0;
     }
 
-    .bid-form{
+    .bid-form {
         position: relative;
-        margin-left:15px ;
+        margin-left: 15px;
     }
+
+    .auctions-header-container {
+        grid-template-columns: 1fr;
+    }
+
+    #filter-form {
+        flex-direction: column;
+    }
+
 }
