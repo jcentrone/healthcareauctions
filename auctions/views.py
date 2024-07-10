@@ -16,7 +16,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
 from .forms import AuctionForm, ImageForm, CommentForm, BidForm
-from .models import Auction, Bid, Category, Image, User
+from .models import Auction, Bid, Category, Image, User, Address
 from .utils.helpers import update_categories_from_fda
 
 
@@ -169,10 +169,25 @@ def register(request):
     if request.method == 'POST':
         username = request.POST['username']
         email = request.POST['email']
-
-        # Ensure password matches confirmation
         password = request.POST['password']
         confirmation = request.POST['confirmation']
+        company_name = request.POST['company_name']
+        phone_number = request.POST['phone_number']
+
+        # Billing Address
+        billing_street = request.POST['billing_street']
+        billing_city = request.POST['billing_city']
+        billing_state = request.POST['billing_state']
+        billing_zip = request.POST['billing_zip']
+        billing_country = request.POST['billing_country']
+
+        # Shipping Address
+        shipping_street = request.POST['shipping_street']
+        shipping_city = request.POST['shipping_city']
+        shipping_state = request.POST['shipping_state']
+        shipping_zip = request.POST['shipping_zip']
+        shipping_country = request.POST['shipping_country']
+
         if password != confirmation:
             return render(request, 'register.html', {
                 'message': 'Passwords must match.',
@@ -180,18 +195,42 @@ def register(request):
                 'categories': Category.objects.all()
             })
 
-        # Attempt to create new user
         try:
             user = User.objects.create_user(username, email, password)
+            user.company_name = company_name
+            user.phone_number = phone_number
             user.save()
+
+            # Save billing address
+            Address.objects.create(
+                user=user,
+                address_type='billing',
+                street=billing_street,
+                city=billing_city,
+                state=billing_state,
+                zip_code=billing_zip,
+                country=billing_country
+            )
+
+            # Save shipping address
+            Address.objects.create(
+                user=user,
+                address_type='shipping',
+                street=shipping_street,
+                city=shipping_city,
+                state=shipping_state,
+                zip_code=shipping_zip,
+                country=shipping_country
+            )
         except IntegrityError:
             return render(request, 'register.html', {
                 'message': 'Username already taken.',
                 'title': 'Register',
                 'categories': Category.objects.all()
             })
+
         login(request, user)
-        return HttpResponseRedirect(reverse('index'))
+        return redirect(reverse('index'))
     else:
         return render(request, 'register.html', {
             'title': 'Register',

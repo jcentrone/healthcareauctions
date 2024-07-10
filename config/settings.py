@@ -5,6 +5,8 @@ import secrets
 import dj_database_url
 from decouple import config
 from google.oauth2 import service_account
+from .storage_backends import ProfileImageStorage, CompanyLogoStorage
+
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 

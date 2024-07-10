@@ -1,12 +1,8 @@
-{% extends 'base.html' %}
-
+{% extends 'new_base.html' %}
+{% load static %}
 {% block title %}Auctions | {{ title }} {% endblock %}
 
-
 {% block body %}
-
-
-
     <div class="container">
         <!-- Page Heading -->
         <h1 class='h3 mb-4 text-gray-800'>Register</h1>
@@ -19,49 +15,86 @@
 
         <div class='card mb-4'>
             <div class='card-body'>
-
                 <form action="{% url 'register' %}" method='POST'>
                     {% csrf_token %}
                     <div class='form-group input-group'>
                         <div class='input-group-prepend'>
-                        <span class='input-group-text'>
-                            <i class='fa fa-user'></i>
-                        </span>
+                            <span class='input-group-text'><i class='fa fa-user'></i></span>
                         </div>
                         <input class='form-control' type='text' name='username' placeholder='Username' autofocus>
                     </div>
                     <div class='form-group input-group'>
                         <div class='input-group-prepend'>
-                        <span class='input-group-text'>
-                            <i class='fa fa-envelope'></i>
-                        </span>
+                            <span class='input-group-text'><i class='fa fa-envelope'></i></span>
                         </div>
                         <input class='form-control' type='email' name='email' placeholder='Email Address'>
                     </div>
                     <div class='form-group input-group'>
                         <div class='input-group-prepend'>
-                        <span class='input-group-text'>
-                            <i class='fa fa-lock'></i>
-                        </span>
+                            <span class='input-group-text'><i class='fa fa-lock'></i></span>
                         </div>
                         <input class='form-control' type='password' name='password' placeholder='Password'>
                     </div>
                     <div class='form-group input-group'>
                         <div class='input-group-prepend'>
-                        <span class='input-group-text'>
-                            <i class='fa fa-lock'></i>
-                        </span>
+                            <span class='input-group-text'><i class='fa fa-lock'></i></span>
                         </div>
                         <input class='form-control' type='password' name='confirmation' placeholder='Confirm Password'>
                     </div>
+                    <div class='form-group input-group'>
+                        <div class='input-group-prepend'>
+                            <span class='input-group-text'><i class='fa fa-building'></i></span>
+                        </div>
+                        <input class='form-control' type='text' name='company_name' placeholder='Company Name'>
+                    </div>
+                    <div class='form-group input-group'>
+                        <div class='input-group-prepend'>
+                            <span class='input-group-text'><i class='fa fa-phone'></i></span>
+                        </div>
+                        <input class='form-control' type='text' name='phone_number' placeholder='Phone Number'>
+                    </div>
+
+                    <h5>Billing Address</h5>
+                    <div class='form-group input-group'>
+                        <input class='form-control' type='text' name='billing_street' placeholder='Street'>
+                    </div>
+                    <div class='form-group input-group'>
+                        <input class='form-control' type='text' name='billing_city' placeholder='City'>
+                    </div>
+                    <div class='form-group input-group'>
+                        <input class='form-control' type='text' name='billing_state' placeholder='State'>
+                    </div>
+                    <div class='form-group input-group'>
+                        <input class='form-control' type='text' name='billing_zip' placeholder='Zip Code'>
+                    </div>
+                    <div class='form-group input-group'>
+                        <input class='form-control' type='text' name='billing_country' placeholder='Country'>
+                    </div>
+
+                    <h5>Shipping Address</h5>
+                    <div class='form-group input-group'>
+                        <input class='form-control' type='text' name='shipping_street' placeholder='Street'>
+                    </div>
+                    <div class='form-group input-group'>
+                        <input class='form-control' type='text' name='shipping_city' placeholder='City'>
+                    </div>
+                    <div class='form-group input-group'>
+                        <input class='form-control' type='text' name='shipping_state' placeholder='State'>
+                    </div>
+                    <div class='form-group input-group'>
+                        <input class='form-control' type='text' name='shipping_zip' placeholder='Zip Code'>
+                    </div>
+                    <div class='form-group input-group'>
+                        <input class='form-control' type='text' name='shipping_country' placeholder='Country'>
+                    </div>
+
                     <div class='input-group mb-3 mt-3'>
                         <button type='submit' class='btn btn-primary'>Create Account</button>
                     </div>
-                    <p>
-                        Already have an account? <a href="{% url 'login' %}">Log in here</a>
-                    </p>
+                    <p>Already have an account? <a href="{% url 'login' %}">Log in here</a></p>
                 </form>
             </div>
         </div>
     </div>
+    <link href='{% static "css/index.css" %}' rel='stylesheet'>
 {% endblock %}

@@ -17,7 +17,7 @@
 
         <section class="featured-auctions">
             {% if user.is_authenticated %}
-                <div class="auctions-category">
+                <div class="auctions-category mb-5">
                     <h2>Your Watchlist</h2>
                     <div class="auction-items grid">
                         {% for auction in watchlist %}
@@ -52,7 +52,7 @@
                 </div>
             {% endif %}
 
-            <div class="auctions-category">
+            <div class="auctions-category mb-5">
                 <h2>{{ random_category1 }}</h2>
                 <div class="auction-items grid">
                     {% for auction in pages_cat1 %}
@@ -86,9 +86,7 @@
                     {% endfor %}
                 </div>
             </div>
-            <br>
-            <br>
-            <div class="auctions-category">
+            <div class="auctions-category mb-5">
                 <h2>{{ random_category2 }}</h2>
                 <div class="auction-items grid">
                     {% for auction in pages_cat2 %}

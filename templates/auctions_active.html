@@ -167,22 +167,26 @@
                                         </div>
                                     </div>
                                 </a>
-                                <div class="bid-form pe-3">
-                                    <h5>Place Your Bid</h5>
-                                    <div class='form-group'>
-                                        <form action="{% url 'auction_bid' auction.id %}" method='POST'>
-                                            {% csrf_token %}
-                                            <div class='form-group with-symbol extra-m'>
-                                                {{ bid_form }}
-                                                <br>
-                                                <button type='submit' class='btn btn-primary'>
-                                                    Place a bid
-                                                </button>
-                                            </div>
-                                        </form>
+                                {% if user.is_authenticated %}
+
+
+                                    <div class="bid-form pe-3">
+                                        <h5>Place Your Bid</h5>
+                                        <div class='form-group'>
+                                            <form action="{% url 'auction_bid' auction.id %}" method='POST'>
+                                                {% csrf_token %}
+                                                <div class='form-group with-symbol extra-m'>
+                                                    {{ bid_form }}
+                                                    <br>
+                                                    <button type='submit' class='btn btn-primary'>
+                                                        Place a bid
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
+                                    </div>
+                                {% endif %}
                         </div>
                     {% endfor %}
 

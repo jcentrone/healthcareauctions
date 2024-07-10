@@ -1,13 +1,38 @@
+from datetime import timedelta
+
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
-from datetime import timedelta
+from config.storage_backends import ProfileImageStorage, CompanyLogoStorage
 
 
 class User(AbstractUser):
+    company_name = models.CharField(max_length=255, blank=True)
+    phone_number = models.CharField(max_length=15, blank=True)
+    profile_image = models.ImageField(storage=ProfileImageStorage(), blank=True, null=True)
+    company_logo = models.ImageField(storage=CompanyLogoStorage(), blank=True, null=True)
+
     def __str__(self):
-        return f'{self.username}'
+        return self.username
+
+
+class Address(models.Model):
+    ADDRESS_TYPE_CHOICES = [
+        ('billing', 'Billing'),
+        ('shipping', 'Shipping'),
+    ]
+
+    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='addresses')
+    address_type = models.CharField(max_length=10, choices=ADDRESS_TYPE_CHOICES)
+    street = models.CharField(max_length=255)
+    city = models.CharField(max_length=255)
+    state = models.CharField(max_length=255)
+    zip_code = models.CharField(max_length=10)
+    country = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f'{self.address_type} address for {self.user.username}'
 
 
 class Category(models.Model):
@@ -50,8 +75,8 @@ class Auction(models.Model):
         max_digits=7,
         decimal_places=2,
         validators=[MinValueValidator(0.01)],
-        blank = True,
-        null = True
+        blank=True,
+        null=True
     )
     current_bid = models.DecimalField(
         max_digits=7,
@@ -75,7 +100,6 @@ class Auction(models.Model):
     udi = models.CharField('UDI', null=True, blank=True)
     surgical_specialty = models.CharField('Surgical Specialty', null=True, blank=True)
     item_type = models.CharField('Item Type', null=True, blank=True)
-
 
     gmdnPTDefinition = models.TextField(null=True, blank=True)
     implantable = models.BooleanField(default=False)
