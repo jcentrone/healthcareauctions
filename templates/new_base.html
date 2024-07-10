@@ -51,9 +51,13 @@
         <!-- Footer -->
         <footer class='sticky-footer bg-light mt-3'>
             <div class='container my-auto'>
-                <div class='copyright text-center my-auto'>
+                <div class='copyright text-center my-auto gap-4 d-flex align-items-center justify-content-center'>
                             <span>
                                 Copyright &copy; <script>document.write(new Date().getFullYear())</script> Healthcare Auctions.
+                            </span>
+                            <span><i class="fa-solid fa-diamond" style="font-size: 10px;"></i></span>
+                            <span>
+                                <a class="text-decoration-none" id="privacy-link" href="{% url 'privacy_policy' %}">Privacy Policy</a>
                             </span>
                 </div>
             </div>

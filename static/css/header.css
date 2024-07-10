@@ -210,6 +210,10 @@ footer .social-media a:hover {
     color: var(--light-blue);
 }
 
+#privacy-link{
+    color: black;
+}
+
 .scroll-to-top {
     position: fixed;
     right: 1rem;
