@@ -299,10 +299,13 @@ def active_auctions_view(request):
     the currently active auction listings
     Active auctions are paginated: 10 per page
     """
+
     category_name = request.GET.get('category_name', None)
     time_filter = request.GET.get('time_filter', None)
     sort_by = request.GET.get('sort_by', None)
+    print(sort_by)
     manufacturer_filter = request.GET.get('mfg_filter', None)
+
     my_auctions = request.GET.get('my_auctions', None)
     search_query = request.GET.get('search_query', None)
     title = 'Active Auctions'
@@ -328,6 +331,7 @@ def active_auctions_view(request):
         elif time_filter == 'next_3_days':
             end_date = now + timedelta(days=3)
             auctions = auctions.filter(date_created__lte=end_date)
+        title = 'Ending: ' + time_filter
 
     if sort_by:
         if sort_by == 'ending_soonest':
@@ -342,6 +346,7 @@ def active_auctions_view(request):
             auctions = auctions.annotate(bid_count=Count('bid')).order_by('bid_count')
         elif sort_by == 'most_bids':
             auctions = auctions.annotate(bid_count=Count('bid')).order_by('-bid_count')
+        title = 'Sorted By: ' + sort_by
 
     manufacturers = [str(auction.manufacturer) for auction in auctions]
     unique_manufacturers = sorted(set(manufacturers))
@@ -359,8 +364,6 @@ def active_auctions_view(request):
             Q(lot_number__icontains=search_query)
         )
         title = search_query
-
-
 
     for auction in auctions:
         auction.image = auction.get_images.first()
@@ -382,8 +385,11 @@ def active_auctions_view(request):
         'bid_form': BidForm(),
         'auctions_count': auctions.count(),
         'pages': pages,
-        'title': title,
-        'unique_manufacturers': unique_manufacturers
+        'title': title.replace("_", " "),
+        'unique_manufacturers': unique_manufacturers,
+        'time_filter': time_filter,
+        'sort_by': sort_by,
+        'manufacturer_filter': manufacturer_filter,
     })
 
 

@@ -31,7 +31,8 @@
 
 }
 
-#filter-form {
+#filter-form,
+#auction-filter-form{
     display: flex;
     gap: 10px;
 }
