@@ -3,9 +3,9 @@
 {% block title %}Auctions | {{ title }} {% endblock %}
 
 {% block body %}
-    <div class="container">
+    <div class="container"  style="min-height: 75vh;">
         <!-- Page Heading -->
-        <h1 class='h3 mb-4 text-gray-800'>Register</h1>
+
 
         {% if message %}
             <div class='alert alert-danger mb-3' role='alert'>
@@ -13,88 +13,180 @@
             </div>
         {% endif %}
 
-        <div class='card mb-4'>
-            <div class='card-body'>
-                <form action="{% url 'register' %}" method='POST'>
-                    {% csrf_token %}
-                    <div class='form-group input-group'>
-                        <div class='input-group-prepend'>
-                            <span class='input-group-text'><i class='fa fa-user'></i></span>
-                        </div>
-                        <input class='form-control' type='text' name='username' placeholder='Username' autofocus>
-                    </div>
-                    <div class='form-group input-group'>
-                        <div class='input-group-prepend'>
-                            <span class='input-group-text'><i class='fa fa-envelope'></i></span>
-                        </div>
-                        <input class='form-control' type='email' name='email' placeholder='Email Address'>
-                    </div>
-                    <div class='form-group input-group'>
-                        <div class='input-group-prepend'>
-                            <span class='input-group-text'><i class='fa fa-lock'></i></span>
-                        </div>
-                        <input class='form-control' type='password' name='password' placeholder='Password'>
-                    </div>
-                    <div class='form-group input-group'>
-                        <div class='input-group-prepend'>
-                            <span class='input-group-text'><i class='fa fa-lock'></i></span>
-                        </div>
-                        <input class='form-control' type='password' name='confirmation' placeholder='Confirm Password'>
-                    </div>
-                    <div class='form-group input-group'>
-                        <div class='input-group-prepend'>
-                            <span class='input-group-text'><i class='fa fa-building'></i></span>
-                        </div>
-                        <input class='form-control' type='text' name='company_name' placeholder='Company Name'>
-                    </div>
-                    <div class='form-group input-group'>
-                        <div class='input-group-prepend'>
-                            <span class='input-group-text'><i class='fa fa-phone'></i></span>
-                        </div>
-                        <input class='form-control' type='text' name='phone_number' placeholder='Phone Number'>
-                    </div>
+        <div class="registration-container">
+            <div>
+                <img id="registration-image" src="{% static 'images/registration.png' %}">
+            </div>
 
-                    <h5>Billing Address</h5>
-                    <div class='form-group input-group'>
-                        <input class='form-control' type='text' name='billing_street' placeholder='Street'>
-                    </div>
-                    <div class='form-group input-group'>
-                        <input class='form-control' type='text' name='billing_city' placeholder='City'>
-                    </div>
-                    <div class='form-group input-group'>
-                        <input class='form-control' type='text' name='billing_state' placeholder='State'>
-                    </div>
-                    <div class='form-group input-group'>
-                        <input class='form-control' type='text' name='billing_zip' placeholder='Zip Code'>
-                    </div>
-                    <div class='form-group input-group'>
-                        <input class='form-control' type='text' name='billing_country' placeholder='Country'>
-                    </div>
+            <div class='card' id="registration-card">
+                <div class='card-body'>
+                    <h1 class='h3 mb-4 text-gray-800'>Create an Account</h1>
+                    <form id="registration-form" action="{% url 'register' %}" method='POST'
+                          enctype="multipart/form-data">
+                        {% csrf_token %}
 
-                    <h5>Shipping Address</h5>
-                    <div class='form-group input-group'>
-                        <input class='form-control' type='text' name='shipping_street' placeholder='Street'>
-                    </div>
-                    <div class='form-group input-group'>
-                        <input class='form-control' type='text' name='shipping_city' placeholder='City'>
-                    </div>
-                    <div class='form-group input-group'>
-                        <input class='form-control' type='text' name='shipping_state' placeholder='State'>
-                    </div>
-                    <div class='form-group input-group'>
-                        <input class='form-control' type='text' name='shipping_zip' placeholder='Zip Code'>
-                    </div>
-                    <div class='form-group input-group'>
-                        <input class='form-control' type='text' name='shipping_country' placeholder='Country'>
-                    </div>
+                        <div id="form-page-1" class="form-page">
+                            <div class="form-group input-group">
+                                {#                            <label for="account_type">Account Type:</label>    #}
+                                <div class="input-group mb-3">
+                                    <button type="button" class="btn btn-primary" id="business-account-selector">
+                                        Business
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" id="personal-account-selector">
+                                        Personal
+                                    </button>
+                                </div>
+                                <input type="hidden" id="account_type" name="account_type" value="business">
+                            </div>
+                            <div class='form-group input-group mb-3'>
+                                <div class='input-group-prepend'>
+                                    <span class='input-group-text'><i class='fa fa-user'></i></span>
+                                </div>
+                                <input class='form-control rounded' type='text' name='username' placeholder='Username'
+                                       autofocus
+                                       required>
+                            </div>
+                            <div class='form-group input-group mb-3'>
+                                <div class='input-group-prepend'>
+                                    <span class='input-group-text'><i class='fa fa-envelope'></i></span>
+                                </div>
+                                <input class='form-control rounded' type='email' name='email'
+                                       placeholder='Email Address'
+                                       required>
+                            </div>
+                            <div class='form-group input-group mb-3'>
+                                <div class='input-group-prepend'>
+                                    <span class='input-group-text'><i class='fa fa-lock'></i></span>
+                                </div>
+                                <input class='form-control rounded' type='password' name='password'
+                                       placeholder='Password'
+                                       required>
+                            </div>
+                            <div class='form-group input-group mb-3'>
+                                <div class='input-group-prepend'>
+                                    <span class='input-group-text'><i class='fa fa-lock'></i></span>
+                                </div>
+                                <input class='form-control rounded' type='password' name='confirmation'
+                                       placeholder='Confirm Password' required>
+                            </div>
+                            <div class='form-group input-group mb-3' id="company_name_group">
+                                <div class='input-group-prepend'>
+                                    <span class='input-group-text'><i class='fa fa-building'></i></span>
+                                </div>
+                                <input class='form-control rounded' type='text' name='company_name'
+                                       placeholder='Company Name'>
+                            </div>
+                            <button type="button" class="btn btn-primary next-btn">Next</button>
+                        </div>
 
-                    <div class='input-group mb-3 mt-3'>
-                        <button type='submit' class='btn btn-primary'>Create Account</button>
-                    </div>
-                    <p>Already have an account? <a href="{% url 'login' %}">Log in here</a></p>
-                </form>
+                        <div id="form-page-2" class="form-page" style="display:none;">
+                            <h5>Shipping Address</h5>
+                            <div class='form-group input-group mb-3'>
+                                <input class='form-control' type='text' name='shipping_street' placeholder='Street'
+                                       required>
+                            </div>
+                            <div class='form-group input-group mb-3'>
+                                <input class='form-control' type='text' name='shipping_city' placeholder='City'
+                                       required>
+                            </div>
+                            <div class='form-group input-group mb-3'>
+                                <input class='form-control' type='text' name='shipping_state' placeholder='State'
+                                       required>
+                            </div>
+                            <div class='form-group input-group mb-3'>
+                                <input class='form-control' type='text' name='shipping_zip' placeholder='Zip Code'
+                                       required>
+                            </div>
+                            <div class='form-group input-group mb-3'>
+                                <input class='form-control' type='text' name='shipping_country' placeholder='Country'
+                                       required>
+                            </div>
+                            <button type="button" class="btn btn-secondary prev-btn">Previous</button>
+                            <button type="button" class="btn btn-primary next-btn">Next</button>
+                        </div>
+
+                        <div id="form-page-3" class="form-page" style="display:none;">
+                            <span>
+                            <h5>Billing Address</h5>
+                            <div class="form-group mb-3">
+                                <input type="checkbox" id="same-as-shipping">
+                                <label for="same-as-shipping">Same as Shipping Address</label>
+                            </div>
+                                </span>
+                            <div class='form-group input-group mb-3'>
+                                <input class='form-control' type='text' name='billing_street' placeholder='Street'
+                                       required>
+                            </div>
+                            <div class='form-group input-group mb-3'>
+                                <input class='form-control' type='text' name='billing_city' placeholder='City' required>
+                            </div>
+                            <div class='form-group input-group mb-3'>
+                                <input class='form-control' type='text' name='billing_state' placeholder='State'
+                                       required>
+                            </div>
+                            <div class='form-group input-group mb-3'>
+                                <input class='form-control' type='text' name='billing_zip' placeholder='Zip Code'
+                                       required>
+                            </div>
+                            <div class='form-group input-group mb-3'>
+                                <input class='form-control' type='text' name='billing_country' placeholder='Country'
+                                       required>
+                            </div>
+                            <button type="button" class="btn btn-secondary prev-btn">Previous</button>
+                            <button type="button" class="btn btn-primary next-btn">Next</button>
+                        </div>
+
+                        <div id="form-page-4" class="form-page" style="display:none;">
+                            <div id="registration-image-container">
+                                <div class="main-img mb-3">
+                                    <h5 id="profile-image-heading">Profile Image</h5>
+                                    <div class="img-thumbnail" id="profile-img"
+                                         onclick="document.getElementById('profile_image_input').click()">
+                                        <img id="profile-thumbnail-preview" src="#" alt="Upload Icon"
+                                             style="display:none;">
+                                        <div class="d-flex flex-column align-items-center justify-content-center">
+                                            <i class="fa fa-image" id="profile-upload-icon"></i>
+                                        </div>
+                                    </div>
+                                    <div style="display:none;">
+                                        <input type="file" name="profile_image" accept="image/*" class="form-control"
+                                               id="profile_image_input">
+                                    </div>
+                                </div>
+
+                                <div class="main-img mb-3" id="company_logo_group">
+                                    <h5 id="company-profile-image-heading">Company Logo</h5>
+                                    <div class="img-thumbnail" id="company-logo-img"
+                                         onclick="document.getElementById('company_logo_input').click()">
+                                        <img id="company-logo-thumbnail-preview" src="#" alt="Upload Icon"
+                                             style="display:none;">
+                                        <div class="d-flex flex-column align-items-center justify-content-center">
+
+                                            <i class="fa fa-image" id="company-logo-upload-icon"></i>
+                                        </div>
+
+                                    </div>
+                                    <div style="display:none;">
+                                        <input type="file" name="company_logo" accept="image/*" class="form-control"
+                                               id="company_logo_input">
+                                    </div>
+                                </div>
+                            </div>
+                            <p>
+                                By selecting Create personal account, you agree to our User Agreement and acknowledge
+                                reading our User Privacy Notice.
+                            </p>
+
+                            <button type="button" class="btn btn-secondary prev-btn">Previous</button>
+                            <button type="submit" class="btn btn-primary">Create Account</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
+    
     <link href='{% static "css/index.css" %}' rel='stylesheet'>
+    <script src='{% static "js/register.js" %}'></script>
+
 {% endblock %}

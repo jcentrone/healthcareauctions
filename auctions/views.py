@@ -6,6 +6,7 @@ from decimal import Decimal
 from django import forms
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.core.files.storage import get_storage_class
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import IntegrityError
 from django.db.models import Count, Q
@@ -188,6 +189,10 @@ def register(request):
         shipping_zip = request.POST['shipping_zip']
         shipping_country = request.POST['shipping_country']
 
+        # Handle profile image and company logo
+        profile_image = request.FILES.get('profile_image')
+        company_logo = request.FILES.get('company_logo')
+
         if password != confirmation:
             return render(request, 'register.html', {
                 'message': 'Passwords must match.',
@@ -199,7 +204,13 @@ def register(request):
             user = User.objects.create_user(username, email, password)
             user.company_name = company_name
             user.phone_number = phone_number
-            user.save()
+            if profile_image:
+                profile_image_storage = get_storage_class('myapp.custom_storage_backend.ProfileImageStorage')()
+                user.profile_image = profile_image_storage.save(profile_image.name, profile_image)
+
+            if company_logo:
+                company_logo_storage = get_storage_class('myapp.custom_storage_backend.CompanyLogoStorage')()
+                user.company_logo = company_logo_storage.save(company_logo.name, company_logo)
 
             # Save billing address
             Address.objects.create(
@@ -509,6 +520,13 @@ def auction_details_view(request, auction_id):
         'comments': auction.get_comments.all(),
         'comment_form': CommentForm(),
         'title': 'Auction'
+    })
+
+
+def privacy_policy(request):
+    return render(request, 'privacy_policy.html', {
+        'categories': Category.objects.all(),
+        'title': 'Privacy Policy'
     })
 
 

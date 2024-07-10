@@ -254,7 +254,6 @@ body {
 }
 
 
-
 .auction-item {
     background-color: var(--white);
     border: 1px solid var(--light-gray);
@@ -288,7 +287,7 @@ body {
     color: var(--gray);
 }
 
-.auction-item button{
+.auction-item button {
     position: absolute;
     top: 20px;
     right: 20px;
@@ -580,6 +579,105 @@ footer .social-media a:hover {
 .scroll-to-top i {
     font-weight: 800;
 }
+
+#personal-account-selector {
+    margin-left: -20px;
+}
+
+.registration-container,
+.login-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.logo-container {
+    display: grid;
+    grid-template-columns: auto auto;
+}
+
+#registration-image,
+#login-image {
+    width: 100%;
+    height: 500px;
+    border-radius: 8px;
+    object-fit: cover;
+    object-position: top;
+}
+
+#registration-card,
+#login-card {
+    height: 500px;
+}
+
+#login-card {
+    position: relative;
+}
+
+#welcome-message {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #021C25;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#logo-text {
+    font-family: "Montserrat", sans-serif;
+    font-weight: bold;
+    font-size: 30px;
+    line-height: 1.1;
+    cursor: pointer;
+    text-decoration: none;
+    color: #021C25;
+}
+
+.form-group.input-group.mb-3 .form-control {
+    padding: .375rem .75rem !important;
+}
+
+.input-group-text {
+    height: 38px;
+}
+
+#profile-img,
+#company-logo-img {
+    height: 250px;
+    width: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+}
+
+#profile-img i,
+#company-logo-img i {
+    font-size: 48px;
+}
+
+#registration-container {
+    min-height: 75vh;
+}
+
+#company-logo-thumbnail-preview,
+#profile-thumbnail-preview {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    object-fit: contain;
+}
+
+#registration-image-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+}
+
+
 @media (max-width: 768px) {
     .steps {
         flex-direction: column;
@@ -589,16 +687,17 @@ footer .social-media a:hover {
         transform: rotate(90deg);
         margin: 20px 0;
     }
+
     .featured-auctions .grid {
         /*grid-template-columns: repeat(1, minmax(300px, 1fr));*/
 
     }
 
-    .featured-auctions h2{
+    .featured-auctions h2 {
         text-align: center;
     }
 
-    .hero-content{
+    .hero-content {
         scale: .8;
     }
 }

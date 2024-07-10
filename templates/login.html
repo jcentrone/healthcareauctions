@@ -1,15 +1,12 @@
 {% extends 'new_base.html' %}
-
+{% load static %}
 {% block title %}Auctions | {{ title }} {% endblock %}
 
 
 
 {% block body %}
-    
+    <div class="container" style="min-height: 75vh;">
 
-    <div class="container">
-
-        <h1 class='h3 mb-4 text-gray-800'>Log in</h1>
 
         {% if message %}
             <div class='alert alert-danger mb-3' role='alert'>
@@ -17,35 +14,58 @@
             </div>
         {% endif %}
 
-        <div class='card mb-4'>
-            <div class='card-body'>
-                <form action="{% url 'login' %}" method='POST'>
-                    {% csrf_token %}
-                    <div class='form-group input-group'>
-                        <div class='input-group-prepend'>
-                        <span class='input-group-text'>
-                            <i class='fa fa-user'></i>
-                        </span>
+        <div class="login-container">
+            <div class="position-relative">
+                <img id="login-image" src="{% static 'images/purple-background.png' %}">
+                <div class="position-absolute" id="welcome-message">
+                    <div class="logo mb-3" id="logo-container" href="{% url 'index' %}">
+                        <img src="{% static "images/logo.png" %}" alt="Healthcare Auctions Logo">
+                        <div id="logo-text">
+                            <div>Healthcare</div>
+                            <div>Auctions</div>
                         </div>
-                        <input class='form-control' type='text' name='username' placeholder='Username' autofocus>
                     </div>
-                    <div class='form-group input-group'>
-                        <div class='input-group-prepend'>
+                    <div class="display-3 mb-3">Welcome Back!!</div>
+                    <p>Enter your password to login to Healthcare Auctions</p>
+
+                </div>
+
+            </div>
+
+
+            <div class='card' id="login-card">
+                <div class='card-body'>
+                    <h1 class='h3 mb-4 text-gray-800'>Log in</h1>
+                    <form action="{% url 'login' %}" method='POST'>
+                        {% csrf_token %}
+                        <div class='form-group input-group mb-3'>
+                            <div class='input-group-prepend'>
+                                <span class='input-group-text'>
+                                    <i class='fa fa-user'></i>
+                                </span>
+                            </div>
+                            <input class='form-control rounded' type='text' name='username' placeholder='Username'
+                                   autofocus>
+                        </div>
+                        <div class='form-group input-group mb-3'>
+                            <div class='input-group-prepend'>
                         <span class='input-group-text'>
                             <i class='fa fa-lock'></i>
                         </span>
+                            </div>
+                            <input class='form-control rounded' type='password' name='password' placeholder='Password'>
                         </div>
-                        <input class='form-control' type='password' name='password' placeholder='Password'>
-                    </div>
-                    <div class='input-group mb-3 mt-3'>
-                        <button type='submit' class='btn btn-primary'>Log In</button>
-                    </div>
-                    <p>
-                        Don't have an account? <a href="{% url 'register' %}">Register here</a>
-                    </p>
-                </form>
+                        <div class='input-group mb-3 mt-3'>
+                            <button type='submit' class='btn btn-primary'>Log In</button>
+                        </div>
+                        <p>
+                            Don't have an account? <a href="{% url 'register' %}">Register here</a>
+                        </p>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
     <link href='{% static "css/index.css" %}' rel='stylesheet'>
+
 {% endblock %}
