@@ -302,6 +302,9 @@ def active_auctions_view(request):
     category_name = request.GET.get('category_name', None)
     time_filter = request.GET.get('time_filter', None)
     sort_by = request.GET.get('sort_by', None)
+    manufacturer_filter = request.GET.get('mfg_filter', None)
+    my_auctions = request.GET.get('my_auctions', None)
+    title = 'Active Auctions'
 
     auctions = Auction.objects.filter(active=True)
 
@@ -335,6 +338,17 @@ def active_auctions_view(request):
         elif sort_by == 'most_bids':
             auctions = auctions.annotate(bid_count=Count('bid')).order_by('-bid_count')
 
+    if my_auctions:
+        auctions = auctions.filter(creator=request.user)
+        title = 'My Auctions'
+
+    manufacturers = [str(auction.manufacturer) for auction in auctions]
+    unique_manufacturers = sorted(set(manufacturers))
+
+    if manufacturer_filter:
+        auctions = auctions.filter(manufacturer=manufacturer_filter)  # Filter auctions by manufacturer
+        title = manufacturer_filter
+
     for auction in auctions:
         auction.image = auction.get_images.first()
         auction.is_watched = request.user in auction.watchers.all()
@@ -351,12 +365,15 @@ def active_auctions_view(request):
 
     return render(request, 'auctions_active.html', {
         'categories': Category.objects.all(),
-        'auctions': auctions,
+        'auctions': pages,  # Pass the paginated auctions here
         'bid_form': BidForm(),
         'auctions_count': auctions.count(),
         'pages': pages,
-        'title': 'Active Auctions'
+        'title': title,
+        'unique_manufacturers': unique_manufacturers
     })
+
+
 
 
 @login_required

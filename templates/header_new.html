@@ -93,7 +93,7 @@
                                 </a>
                             </li>
                             <li class='nav-item p-2'>
-                                <a class='nav-link' href="{% url 'active_auctions_view' %}">
+                                <a class='nav-link' href="{% url 'active_auctions_view' %}?my_auctions=true">
                                     My Auctions
                                 </a>
                             </li>
@@ -172,7 +172,7 @@
             <div class="dropdown" id="category-dropdown">
                 <button class="btn dropdown-toggle wrap-button" type="button" data-bs-toggle="dropdown"
                         aria-expanded="false">
-                    Shop By Category
+                    Shop By Specialty
                 </button>
                 {#                <ul class="dropdown-menu p-2">#}
                 {#                    {% for category in categories %}#}
@@ -181,20 +181,21 @@
                 {#                </ul>#}
                 <ul class="dropdown-menu p-2" id="category-dropdown-content">
                     {% for category in categories %}
-                         {% include 'category_snippet.html' with category=category %}
-{#                        {% if not category.parent %}#}
-{#                            {% include 'category_snippet.html' with category=category %}#}
-{#                        {% endif %}#}
+                        {% include 'category_snippet.html' with category=category %}
+                        {#                        {% if not category.parent %}#}
+                        {#                            {% include 'category_snippet.html' with category=category %}#}
+                        {#                        {% endif %}#}
                     {% endfor %}
                 </ul>
             </div>
             <form class="navbar-search w-100">
                 <div class="input-group" style="position: relative;">
                     <i class="fas fa-search"></i>
-                    <input type="text" class="form-control" id="auction-search" placeholder="Search..." aria-label="Search"
+                    <input type="text" class="form-control" id="auction-search" placeholder="Search..."
+                           aria-label="Search"
                            aria-describedby="basic-addon2">
                     <select class="custom-select">
-                        <option selected>All Categories</option>
+                        <option selected>All Specialties</option>
                         {% for category in categories %}
                             <option value="{{ category.category_name }}">{{ category.category_name }}</option>
                         {% endfor %}

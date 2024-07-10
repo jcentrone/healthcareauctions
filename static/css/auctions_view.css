@@ -35,7 +35,8 @@
     gap: 10px;
 }
 #time-filter,
-#sort-by{
+#sort-by,
+#mfg-filter{
     width:180px;
 }
 

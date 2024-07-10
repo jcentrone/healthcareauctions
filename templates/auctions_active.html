@@ -11,17 +11,16 @@
             <div class="filters mb-4">
                 <form id="filter-form" method="get" class="form-inline">
                     <div class="form-group mb-2">
-{#                        <label for="time-filter" class="mr-2">Time Filter</label>#}
                         <select id="time-filter" name="time_filter" class="form-control">
                             <option value="">Filter By: All Times</option>
                             <option value="today">Today</option>
                             <option value="tomorrow">Tomorrow</option>
                             <option value="next_3_days">Next 3 Days</option>
+                            <option value="">Reset</option> <!-- Reset option added -->
                         </select>
                     </div>
 
                     <div class="form-group mb-2">
-{#                        <label for="sort-by" class="mr-2">Sort By</label>#}
                         <select id="sort-by" name="sort_by" class="form-control">
                             <option value="">Sort By: Best Match</option>
                             <option value="ending_soonest">Ending Soonest</option>
@@ -30,9 +29,21 @@
                             <option value="price_lowest">Price Lowest</option>
                             <option value="fewest_bids">Fewest Bids</option>
                             <option value="most_bids">Most Bids</option>
+                            <option value="">Reset</option> <!-- Reset option added -->
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-2">
+                        <select id="mfg-filter" name="mfg_filter" class="form-control">
+                            <option value="">Select Manufacturer</option>
+                            {% for manufacturer in unique_manufacturers %}
+                                <option value="{{ manufacturer }}">{{ manufacturer }}</option>
+                            {% endfor %}
+                            <option value="">Reset</option> <!-- Reset option added -->
                         </select>
                     </div>
                 </form>
+
             </div>
         </div>
 
