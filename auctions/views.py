@@ -1,15 +1,14 @@
 import json
-from decimal import Decimal
-from datetime import timedelta
-
 import random
+from datetime import timedelta
+from decimal import Decimal
 
 from django import forms
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import IntegrityError
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.http import HttpResponseRedirect, JsonResponse, FileResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -26,7 +25,8 @@ def index(request):
     The default route which renders a Dashboard page
     """
     # Filter categories to include only those with at least one auction
-    categories_with_auctions = Category.objects.filter(auction_category__isnull=False).distinct().order_by('category_name')
+    categories_with_auctions = Category.objects.filter(auction_category__isnull=False).distinct().order_by(
+        'category_name')
     category_count = categories_with_auctions.count()
 
     if category_count < 2:
@@ -304,11 +304,16 @@ def active_auctions_view(request):
     sort_by = request.GET.get('sort_by', None)
     manufacturer_filter = request.GET.get('mfg_filter', None)
     my_auctions = request.GET.get('my_auctions', None)
+    search_query = request.GET.get('search_query', None)
     title = 'Active Auctions'
 
     auctions = Auction.objects.filter(active=True)
 
-    if category_name is not None:
+    if my_auctions:
+        auctions = auctions.filter(creator=request.user)
+        title = 'My Auctions'
+
+    if category_name:
         auctions = auctions.filter(category__category_name=category_name)
 
     if time_filter:
@@ -338,16 +343,24 @@ def active_auctions_view(request):
         elif sort_by == 'most_bids':
             auctions = auctions.annotate(bid_count=Count('bid')).order_by('-bid_count')
 
-    if my_auctions:
-        auctions = auctions.filter(creator=request.user)
-        title = 'My Auctions'
-
     manufacturers = [str(auction.manufacturer) for auction in auctions]
     unique_manufacturers = sorted(set(manufacturers))
 
     if manufacturer_filter:
-        auctions = auctions.filter(manufacturer=manufacturer_filter)  # Filter auctions by manufacturer
+        auctions = auctions.filter(manufacturer=manufacturer_filter)
         title = manufacturer_filter
+
+    if search_query:
+        auctions = auctions.filter(
+            Q(title__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(product_name__icontains=search_query) |
+            Q(reference_number__icontains=search_query) |
+            Q(lot_number__icontains=search_query)
+        )
+        title = search_query
+
+
 
     for auction in auctions:
         auction.image = auction.get_images.first()
@@ -365,15 +378,13 @@ def active_auctions_view(request):
 
     return render(request, 'auctions_active.html', {
         'categories': Category.objects.all(),
-        'auctions': pages,  # Pass the paginated auctions here
+        'auctions': pages,
         'bid_form': BidForm(),
         'auctions_count': auctions.count(),
         'pages': pages,
         'title': title,
         'unique_manufacturers': unique_manufacturers
     })
-
-
 
 
 @login_required

@@ -125,7 +125,7 @@
                         <a class='nav-link' id="alert-container" href='#'>
                             <i class='fa-regular fa-bell fa-lg'></i>
                             <!-- Counter - Alerts -->
-                            <span class='badge rounded-pill bg-danger badge-counter'>5+</span>
+                            <span class='badge rounded-pill bg-danger badge-counter light'>5+</span>
                         </a>
                     </div>
                 </div>
@@ -174,11 +174,6 @@
                         aria-expanded="false">
                     Shop By Specialty
                 </button>
-                {#                <ul class="dropdown-menu p-2">#}
-                {#                    {% for category in categories %}#}
-                {#                        <li>{{ category.category_name }}</li>#}
-                {#                    {% endfor %}#}
-                {#                </ul>#}
                 <ul class="dropdown-menu p-2" id="category-dropdown-content">
                     {% for category in categories %}
                         {% include 'category_snippet.html' with category=category %}
@@ -188,23 +183,24 @@
                     {% endfor %}
                 </ul>
             </div>
-            <form class="navbar-search w-100">
+            {#            <form class="navbar-search w-100">#}
+            <form id="filter-form" method="get" class="navbar-search w-100">
                 <div class="input-group" style="position: relative;">
                     <i class="fas fa-search"></i>
-                    <input type="text" class="form-control" id="auction-search" placeholder="Search..."
-                           aria-label="Search"
-                           aria-describedby="basic-addon2">
-                    <select class="custom-select">
-                        <option selected>All Specialties</option>
+                    <input type="text" class="form-control" id="auction-search" name="search_query"
+                           placeholder="Search..." aria-label="Search" aria-describedby="basic-addon2">
+                    <select class="custom-select" name="category_name">
+                        <option value="">All Specialties</option>
                         {% for category in categories %}
                             <option value="{{ category.category_name }}">{{ category.category_name }}</option>
                         {% endfor %}
                     </select>
                     <div class="input-group-append">
-                        <button class="btn btn-primary" id="search-button" type="button">Search</button>
+                        <button class="btn btn-primary" id="search-button" type="submit">Search</button>
                     </div>
                 </div>
             </form>
+
 
         </div>
     </div>
