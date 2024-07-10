@@ -700,5 +700,44 @@ footer .social-media a:hover {
     .hero-content {
         scale: .8;
     }
+
+    .registration-container, .login-container {
+        grid-template-columns: auto;
+    }
+
+    .form-group.input-group.mb-3 {
+        flex-direction: row;
+    }
+
+    .form-group.input-group.mb-3 .form-control {
+        width: auto;
+    }
+
+    #registration-card, #login-card {
+        height: auto;
+    }
+
+    #registration-image, #login-image {
+        height: 300px;
+    }
+
+    #business-account-selector, #personal-account-selector {
+        width: 50%;
+    }
+
+    #account-type-buttons {
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #profile-img, #company-logo-img {
+        height: 150px;
+        width: auto;
+    }
+
+    #registration-image-container {
+        gap: 20px;
+    }
 }
 
