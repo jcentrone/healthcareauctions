@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'new_base.html' %}
 {% load static %}
 
 {% block title %}Auctions | {{ title }} {% endblock %}
@@ -39,14 +39,14 @@
                 </a>
             </div>
         </div>
-        <div class="time-remaining">
+        <div class="time-remaining my-3">
             Time Remaining: {{ auction.formatted_time_remaining }}
         </div>
         <div class='auction-container'>
             <div class="column">
                 <div class=''>
                     <div class=''>
-                        <div class='auction-img-container'>
+                        <div class='card auction-img-container'>
                             <div class='thumbnail-column'>
                                 {% for image in images %}
                                     <img class='thumbnail-img' src="{{ image.image.url }}"
@@ -490,6 +490,7 @@
             </div>
 
             </div>
+        <link href='{% static "css/auction.css" %}' rel='stylesheet'>
 
             <script>
                 document.addEventListener('DOMContentLoaded', function () {

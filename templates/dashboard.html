@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'new_base.html' %}
 {% load static %}
 {% block title %}Auctions | {{ title }} {% endblock %}
 
@@ -6,64 +6,13 @@
 
 
 {% block body %}
-    {% include 'sidebar.html' %}
+
 
 
 
     <!-- Page Content -->
     <div class="container">
-        <!-- Topbar -->
-        <nav class='navbar navbar-expand navbar-light topbar static-top '>
 
-
-            <!-- Topbar Navbar -->
-            <ul class='navbar-nav ms-auto'>
-
-                <!-- Nav Item - Search Dropdown (Visible Only XS) -->
-                <li class='nav-item dropdown no-arrow d-sm-none'>
-                    <a class='nav-link' href='#'>
-                        <i class='fas fa-search fa-fw'></i>
-                    </a>
-                </li>
-
-                <!-- Nav Item - Alerts -->
-                <li class='nav-item mx-1'>
-                    <a class='nav-link' href='#'>
-                        <i class='fas fa-bell fa-fw fa-lg'></i>
-                        <!-- Counter - Alerts -->
-                        <span class='badge rounded-pill bg-danger badge-counter'>5+</span>
-                    </a>
-                </li>
-
-                <!-- Nav Item - Messages -->
-                <li class='nav-item mx-1'>
-                    <a class='nav-link' href='#'>
-                        <i class='fas fa-envelope fa-fw fa-lg'></i>
-                        <!-- Counter - Messages -->
-                        <span class='badge rounded-pill bg-danger badge-counter'>9</span>
-                    </a>
-                </li>
-
-                <div class='topbar-divider d-none d-sm-block'></div>
-
-                <!-- Topbar Search -->
-                <form class='d-none d-sm-inline-block form-inline me-auto ms-md-3 my-2 my-md-0 mw-100 navbar-search'>
-                    <div class='input-group'>
-                        <input type='text' class='' placeholder='Search...'
-                               aria-label='Search' aria-describedby='basic-addon2'>
-                        <div class='input-group-append'>
-                            <button class='btn btn-primary' type='button'>
-                                <i class='fas fa-search fa-sm'></i>
-                            </button>
-                        </div>
-                    </div>
-                </form>
-
-
-            </ul>
-
-        </nav>
-        <!-- End of Topbar -->
 
         <div class="container-content">
             <h1 class='h3 mb-4 text-gray-800'>Dashboard</h1>
