@@ -1177,3 +1177,16 @@ function handleImageInput(event) {
     };
     reader.readAsDataURL(file);
 }
+
+
+document.addEventListener("DOMContentLoaded", function() {
+    function isMobileDevice() {
+        return /Mobi|Android/i.test(navigator.userAgent);
+    }
+
+    if (isMobileDevice()) {
+        document.querySelectorAll('.mobile-only').forEach(function(element) {
+            element.style.display = 'block';
+        });
+    }
+});

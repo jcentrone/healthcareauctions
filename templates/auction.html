@@ -21,15 +21,18 @@
                     <h6>
                         <span class='text-muted'>Category: <span
                                 class='text-primary'>{{ auction.category }}</span></span> &nbsp; | &nbsp;
-                        <span class='text-muted'>Listed by: <span
-                                class='text-primary'>{{ auction.creator }}</span></span> &nbsp; | &nbsp;
-                        <span class='text-muted'>Created on {{ auction.date_created }}</span>
+{#                        <span class='text-muted'>Listed by: <span#}
+{#                                class='text-primary'>{{ auction.creator }}</span></span> &nbsp; | &nbsp;#}
+                        <span class='text-muted'>Created on:  <span
+                                class='text-primary'> {{ auction.date_created }}</span></span> &nbsp; | &nbsp;
+                        <span class='text-muted'>Watchers: <span
+                                class='text-primary'>{{ auction.count_watchers }}</span></span>
                     </h6>
                 </div>
             </div>
             <!-- Watchlist -->
             <div>
-                <a class='btn btn-outline-success mt-auto rounded'
+                <a class='btn btn-outline-primary mt-auto rounded'
                    href="{% url 'watchlist_edit' auction.id 'auction_details_view' %}">
                     {% if auction.is_watched %}
                         Remove from Watchlist
@@ -59,10 +62,11 @@
                             </div>
                             <img id='main-image' class='card-img-top'
                                  src="
-
-
-
-                                         {% if images %}{{ images.0.image.url }}{% else %}{% static 'images/no_image.png' %}{% endif %}"
+                                         {% if images %}
+                                         {{ images.0.image.url }}
+                                         {% else %}
+                                         {% static 'images/no_image.png' %}
+                                         {% endif %}"
                                  alt='Main Product Image'>
                         </div>
                     </div>
@@ -70,152 +74,7 @@
             </div>
             <!-- Product Details -->
             <div class="column" id="auction-details">
-                <div class='card mb-4'>
-                    <div class='card-body'>
-                        <div class="auction-price-container">
-                            <div>
-                                <h3>Product Details</h3>
 
-                                <div class="container mt-4">
-                                    <div class="row mb-4">
-                                        <div class="col-md-6">
-                                            <div class="row mb-2">
-                                                <div class="col-4 font-weight-bold">Product Name:</div>
-                                                <div class="col-8">{{ auction.product_name }}</div>
-                                            </div>
-                                            <div class="row mb-2">
-                                                <div class="col-4 font-weight-bold">UDI:</div>
-                                                <div class="col-8">{{ auction.udi }}</div>
-                                            </div>
-                                            <div class="row mb-2">
-                                                <div class="col-4 font-weight-bold">Quantity:</div>
-                                                <div class="col-8">{{ auction.quantity_available }}</div>
-                                            </div>
-                                            <div class="row mb-2">
-                                                <div class="col-4 font-weight-bold">Manufacturer:</div>
-                                                <div class="col-8">{{ auction.manufacturer }}</div>
-                                            </div>
-                                            <div class="row mb-2">
-                                                <div class="col-4 font-weight-bold">Reference Number:</div>
-                                                <div class="col-8">{{ auction.reference_number }}</div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="row mb-2">
-                                                <div class="col-4 font-weight-bold">Lot Number:</div>
-                                                <div class="col-8">{{ auction.lot_number }}</div>
-                                            </div>
-                                            <div class="row mb-2">
-                                                <div class="col-4 font-weight-bold">Production Date:</div>
-                                                <div class="col-8">{{ auction.production_date }}</div>
-                                            </div>
-                                            <div class="row mb-2">
-                                                <div class="col-4 font-weight-bold">Expiration Date:</div>
-                                                <div class="col-8">{{ auction.expiration_date }}</div>
-                                            </div>
-                                            <div class="row mb-2">
-                                                <div class="col-4 font-weight-bold">Package Type:</div>
-                                                <div class="col-8">{{ auction.package_type }}</div>
-                                            </div>
-                                            <div class="row mb-2">
-                                                <div class="col-4 font-weight-bold">Package Quantity:</div>
-                                                <div class="col-8">{{ auction.package_quantity }}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row mb-2">
-                                        <div class="col-md-6">
-                                            <div class="row mb-2">
-                                                <div class="col-4 font-weight-bold">Package Sterile:</div>
-                                                <div class="col-8">
-                                                    {% if auction.deviceSterile %}
-                                                        Yes
-                                                    {% else %}
-                                                        No
-                                                    {% endif %}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="row mb-2">
-                                                <div class="col-4 font-weight-bold">Package Full:</div>
-                                                <div class="col-8">
-                                                    {% if auction.fullPackage %}
-                                                        Yes
-                                                    {% else %}
-                                                        Partial Quantity: {{ auction.partial_quantity }}
-                                                    {% endif %}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                {#                                <table class="product-details-table">#}
-                                {#                                    <tr>#}
-                                {#                                        <td class="label-column">Product Name:</td>#}
-                                {#                                        <td>{{ auction.product_name }}</td>#}
-                                {#                                    </tr>#}
-                                {#                                    <tr>#}
-                                {#                                        <td class="label-column">UDI:</td>#}
-                                {#                                        <td>{{ auction.udi }}</td>#}
-                                {#                                    </tr>#}
-                                {#                                    <tr>#}
-                                {#                                        <td class="label-column">Quantity:</td>#}
-                                {#                                        <td>{{ auction.quantity_available }}</td>#}
-                                {#                                    </tr>#}
-                                {#                                    <tr>#}
-                                {#                                        <td class="label-column">Manufacturer:</td>#}
-                                {#                                        <td>{{ auction.manufacturer }}</td>#}
-                                {#                                    </tr>#}
-                                {#                                    <tr>#}
-                                {#                                        <td class="label-column">Reference Number:</td>#}
-                                {#                                        <td>{{ auction.reference_number }}</td>#}
-                                {#                                    </tr>#}
-                                {#                                    <tr>#}
-                                {#                                        <td class="label-column">Lot Number:</td>#}
-                                {#                                        <td>{{ auction.lot_number }}</td>#}
-                                {#                                    </tr>#}
-                                {#                                    <tr>#}
-                                {#                                        <td class="label-column">Production Date:</td>#}
-                                {#                                        <td>{{ auction.production_date }}</td>#}
-                                {#                                    </tr>#}
-                                {#                                    <tr>#}
-                                {#                                        <td class="label-column">Expiration Date:</td>#}
-                                {#                                        <td>{{ auction.expiration_date }}</td>#}
-                                {#                                    </tr>#}
-                                {#                                    <tr>#}
-                                {#                                        <td class="label-column">Package Type:</td>#}
-                                {#                                        <td>{{ auction.package_type }}</td>#}
-                                {#                                    </tr>#}
-                                {#                                    <tr>#}
-                                {#                                        <td class="label-column">Package Quantity:</td>#}
-                                {#                                        <td>{{ auction.package_quantity }}</td>#}
-                                {#                                    </tr>#}
-                                {#                                    <tr>#}
-                                {#                                        <td class="label-column">Package Sterile:</td>#}
-                                {#                                        <td>#}
-                                {#                                            {% if auction.deviceSterile %}#}
-                                {#                                                Yes#}
-                                {#                                            {% else %}#}
-                                {#                                                No#}
-                                {#                                            {% endif %}#}
-                                {#                                        </td>#}
-                                {#                                    </tr>#}
-                                {#                                    <tr>#}
-                                {#                                        <td class="label-column">Package Full:</td>#}
-                                {#                                        <td>#}
-                                {#                                            {% if auction.fullPackage %}#}
-                                {#                                                Yes#}
-                                {#                                            {% else %}#}
-                                {#                                                Partial Quantity: {{ auction.partial_quantity }}#}
-                                {#                                            {% endif %}#}
-                                {#                                        </td>#}
-                                {#                                    </tr>#}
-                                {#                                </table>#}
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Bid and Post Close Info -->
                 <div class='row'>
@@ -322,96 +181,81 @@
                                             </div>
                                         </div>
                                     </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                                    <!-- Comments -->
-                                    {#                                                            <div class='col-xl-6'>#}
-                                    {#                                                                <div class='card mb-4'>#}
-                                    {#                                                                    <div class='card-header'>#}
-                                    {#                                                                        <i class='fas fa-comments'></i>#}
-                                    {#                                                                        Comments#}
-                                    {#                                                                    </div>#}
-                                    {#                                                                    <div class='card-body'> -->#}
+                <div class='card mb-4'>
+                    <div class='card-body'>
+                        <div class="auction-price-container">
+                            <div>
+                                <h3>Product Details</h3>
 
-                                    <!-- Comments -->
-                                    {#                            {% if auction.active %}#}
-                                    {#                                <div>#}
-                                    {#                                    <form action="{% url 'auction_comment' auction.id %}" method='POST'>#}
-                                    {#                                        {% csrf_token %}#}
-                                    {#                                        <div class='form-group'>#}
-                                    {#                                            {{ comment_form }}#}
-                                    {#                                            <br>#}
-                                    {#                                            <button type='submit' class='btn btn-success'>#}
-                                    {#                                                Add a comment#}
-                                    {#                                            </button>#}
-                                    {#                                            <a href="{% url 'index' %}" class='btn btn-secondary'>#}
-                                    {#                                                Cancel#}
-                                    {#                                            </a>#}
-                                    {#                                        </div>#}
-                                    {#                                    </form>#}
-                                    {#                                </div>#}
-                                    {#                            {% endif %}#}
-                                    {##}
-                                    {#                            {% for comment in comments %}#}
-                                    {#                                <div>#}
-                                    {#                                    <div class='text-muted'>#}
-                                    {#                                        <strong>{{ comment.user|default:"Unknown" }}</strong> commented#}
-                                    {#                                        on {{ comment.date_created }}#}
-                                    {#                                    </div>#}
-                                    {#                                </div>#}
-                                    {#                                <div>#}
-                                    {#                                    <p>{{ comment.comment }}</p>#}
-                                    {#                                </div>#}
-                                    {#                            {% endfor %}#}
-                                    {#                        </div>#}
-                                    {#                        </div>#}
-                                    {#                        </div>#}
-                                    {#                        </div>>#}
-                                {% elif auction.creator == user and auction.active %}
-
-                                    <div class='row'>
-                                        <!-- Comments -->
-                                        <div class='col-xl-12'>
-                                            <div class='card mb-4'>
-                                                <div class='card-header'>
-                                                    <i class='fas fa-comments'></i>
-                                                    Comments
-                                                </div>
-                                                <div class='card-body'>
-                                                    <!-- Comments -->
-                                                    {% if auction.active %}
-                                                        <div>
-                                                            <form action="{% url 'auction_comment' auction.id %}"
-                                                                  method='POST'>
-                                                                {% csrf_token %}
-                                                                <div class='form-group'>
-                                                                    {{ comment_form }}
-                                                                    <br>
-                                                                    <button type='submit' class='btn btn-success'>
-                                                                        Add a comment
-                                                                    </button>
-                                                                    <a href="{% url 'index' %}"
-                                                                       class='btn btn-secondary'>
-                                                                        Cancel
-                                                                    </a>
-                                                                </div>
-                                                            </form>
-                                                        </div>
-                                                    {% endif %}
-
-                                                    {% for comment in comments %}
-                                                        <div>
-                                                            {{ comment.user|default:"Unknown" }} commented
-                                                            on {{ comment.date_created }}
-                                                        </div>
-                                                        <div>
-                                                            <p>{{ comment.comment }}</p>
-                                                        </div>
-                                                    {% endfor %}
-                                                </div>
-                                            </div>
+                                <div class="container mt-4">
+                                    <div class="row mb-2">
+                                        <div class="col-md-3 font-weight-bold">Product Name:</div>
+                                        <div class="col-md-9">{{ auction.product_name }}</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-3 font-weight-bold">UDI:</div>
+                                        <div class="col-md-9">{{ auction.udi }}</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-3 font-weight-bold">Quantity:</div>
+                                        <div class="col-md-9">{{ auction.quantity_available }}</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-3 font-weight-bold">Manufacturer:</div>
+                                        <div class="col-md-9">{{ auction.manufacturer }}</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-3 font-weight-bold">Reference Number:</div>
+                                        <div class="col-md-9">{{ auction.reference_number }}</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-3 font-weight-bold">Lot Number:</div>
+                                        <div class="col-md-9">{{ auction.lot_number }}</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-3 font-weight-bold">Production Date:</div>
+                                        <div class="col-md-9">{{ auction.production_date }}</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-3 font-weight-bold">Expiration Date:</div>
+                                        <div class="col-md-9">{{ auction.expiration_date }}</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-3 font-weight-bold">Package Type:</div>
+                                        <div class="col-md-9">{{ auction.package_type }}</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-3 font-weight-bold">Package Quantity:</div>
+                                        <div class="col-md-9">{{ auction.package_quantity }}</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-3 font-weight-bold">Package Sterile:</div>
+                                        <div class="col-md-9">
+                                            {% if auction.deviceSterile %}
+                                                Yes
+                                            {% else %}
+                                                No
+                                            {% endif %}
                                         </div>
                                     </div>
-                                {% endif %}
+                                    <div class="row mb-2">
+                                        <div class="col-md-3 font-weight-bold">Package Full:</div>
+                                        <div class="col-md-9">
+                                            {% if auction.fullPackage %}
+                                                Yes
+                                            {% else %}
+                                                Partial Quantity: {{ auction.partial_quantity }}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     </div>

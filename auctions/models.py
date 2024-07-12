@@ -144,6 +144,9 @@ class Auction(models.Model):
         minutes = (total_seconds // 60) % 60
         return f"{int(days)}D {int(hours)}H {int(minutes)}M"
 
+    def count_watchers(self):
+        return self.watchers.count()
+
 
 class Image(models.Model):
     auction = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name='get_images')
