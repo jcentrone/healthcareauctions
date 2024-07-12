@@ -289,38 +289,41 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
     <script src="{% static 'js/create_auction.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/dynamsoft-barcode-reader-bundle@10.2.1000/dist/dbr.bundle.js"></script>
-{#    <script type="module" src="{% static 'js/scandit.js' %}"></script>#}
+    <script src="{% static 'js/scanner.js' %}"></script>
     <script>
-        Dynamsoft.License.LicenseManager.initLicense("DLS2eyJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSJ9");
-        Dynamsoft.Core.CoreModule.loadWasm(["dbr"]);
-        (async () => {
-            let cvRouter = await Dynamsoft.CVR.CaptureVisionRouter.createInstance();
-
-            let cameraView = await Dynamsoft.DCE.CameraView.createInstance();
-            let cameraEnhancer = await Dynamsoft.DCE.CameraEnhancer.createInstance(cameraView);
-            document.querySelector("#camera-view-container").append(cameraView.getUIElement());
-            cvRouter.setInput(cameraEnhancer);
-
-            const resultsContainer = document.querySelector("#results");
-            cvRouter.addResultReceiver({
-                onDecodedBarcodesReceived: (result) => {
-                    if (result.barcodeResultItems.length > 0) {
-                        {#resultsContainer.textContent = '';#}
-                        for (let item of result.barcodeResultItems) {
-                            resultsContainer.textContent += `${item.formatString}: ${item.text}\n\n`;
-                        }
-                    }
-                }
-            });
-
-            let filter = new Dynamsoft.Utility.MultiFrameResultCrossFilter();
-            filter.enableResultCrossVerification("barcode", true);
-            filter.enableResultDeduplication("barcode", true);
-            await cvRouter.addResultFilter(filter);
-
-            await cameraEnhancer.open();
-            await cvRouter.startCapturing("ReadBarcodes_Balance");
-        })();
+        {#Dynamsoft.License.LicenseManager.initLicense("DLS2eyJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSJ9");#}
+        {#Dynamsoft.Core.CoreModule.loadWasm(["dbr"]);#}
+        {#(async () => {#}
+        {#    let cvRouter = await Dynamsoft.CVR.CaptureVisionRouter.createInstance();#}
+        {##}
+        {#    let cameraView = await Dynamsoft.DCE.CameraView.createInstance();#}
+        {#    let cameraEnhancer = await Dynamsoft.DCE.CameraEnhancer.createInstance(cameraView);#}
+        {#    document.querySelector("#camera-view-container").append(cameraView.getUIElement());#}
+        {#    cvRouter.setInput(cameraEnhancer);#}
+        {##}
+        {#    const resultsContainer = document.querySelector("#results");#}
+        {#    cvRouter.addResultReceiver({#}
+        {#        onDecodedBarcodesReceived: (result) => {#}
+        {#            if (result.barcodeResultItems.length > 0) {#}
+        {#                {#}
+        {#                    resultsContainer.textContent = '';#}
+        {##}
+        {#                }#}
+        {#                for (let item of result.barcodeResultItems) {#}
+        {#                    resultsContainer.textContent += `${item.formatString}: ${item.text}\n\n`;#}
+        {#                }#}
+        {#            }#}
+        {#        }#}
+        {#    });#}
+        {##}
+        {#    let filter = new Dynamsoft.Utility.MultiFrameResultCrossFilter();#}
+        {#    filter.enableResultCrossVerification("barcode", true);#}
+        {#    filter.enableResultDeduplication("barcode", true);#}
+        {#    await cvRouter.addResultFilter(filter);#}
+        {##}
+        {#    await cameraEnhancer.open();#}
+        {#    await cvRouter.startCapturing("ReadBarcodes_Balance");#}
+        {#})();#}
     </script>
 
 {% endblock %}
