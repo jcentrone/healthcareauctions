@@ -305,7 +305,7 @@
             cvRouter.addResultReceiver({
                 onDecodedBarcodesReceived: (result) => {
                     if (result.barcodeResultItems.length > 0) {
-                        resultsContainer.textContent = '';
+                        {#resultsContainer.textContent = '';#}
                         for (let item of result.barcodeResultItems) {
                             resultsContainer.textContent += `${item.formatString}: ${item.text}\n\n`;
                         }
@@ -319,7 +319,7 @@
             await cvRouter.addResultFilter(filter);
 
             await cameraEnhancer.open();
-            await cvRouter.startCapturing("ReadSingleBarcode");
+            await cvRouter.startCapturing("ReadBarcodes_Balance");
         })();
     </script>
 
