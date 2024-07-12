@@ -1186,7 +1186,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     if (isMobileDevice()) {
         document.querySelectorAll('.mobile-only').forEach(function(element) {
-            element.style.display = 'block';
+           element.setAttribute('style', 'display: block !important;');
         });
     }
 });
