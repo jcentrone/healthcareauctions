@@ -116,102 +116,102 @@ document.getElementById('id_udi').addEventListener('change', (e) => {
 
 
 // Scanner Functions
-const formatMap = {
-    0: 'Aztec',
-    1: 'CODABAR',
-    2: 'Code 39',
-    3: 'Code 93',
-    4: 'Code 128',
-    5: 'Data Matrix',
-    6: 'EAN-8',
-    7: 'EAN-13',
-    8: 'ITF',
-    9: 'MaxiCode',
-    10: 'PDF 417',
-    11: 'QR Code',
-    12: 'RSS 14',
-    13: 'RSS Expanded',
-    14: 'UPC-A',
-    15: 'UPC-E',
-    16: 'UPC-EAN Extension'
-};
-
-const scannedBarcodes = [];
-
-let codeReader = null;
-
-
-
-function startScanner() {
-    const codeReader = new ZXing.BrowserMultiFormatReader();
-
-    navigator.mediaDevices.getUserMedia({video: {facingMode: "environment"}})
-        .then((stream) => {
-            console.log("Stream obtained successfully.");
-            const video = document.getElementById('video');
-            video.srcObject = stream;
-
-            const track = stream.getVideoTracks()[0];
-            const capabilities = track.getCapabilities();
-            console.log("Video track capabilities:", capabilities);
-
-            const constraints = {
-                advanced: [
-                    {brightness: capabilities.brightness ? capabilities.brightness.max * 0.75 : undefined},
-                    {contrast: capabilities.contrast ? capabilities.contrast.max : undefined},
-                    {sharpness: capabilities.sharpness ? capabilities.sharpness.max : undefined},
-                    {exposureCompensation: capabilities.exposureCompensation ? capabilities.exposureCompensation.max : undefined},
-                    {frameRate: capabilities.frameRate ? capabilities.frameRate.min : undefined},
-                    {saturation: capabilities.saturation ? capabilities.saturation.max : undefined},
-                ].filter(Boolean)
-            };
-
-            track.applyConstraints(constraints).then(() => {
-                console.log('Constraints applied:', constraints);
-            }).catch((err) => {
-                console.error('Failed to apply constraints:', err);
-            });
-
-            const zoomSlider = document.getElementById('zoom-slider');
-
-            if (capabilities.zoom) {
-                console.log("Zoom capabilities detected.");
-                const settings = track.getSettings();
-                console.log("Current video track settings:", settings);
-                zoomSlider.min = capabilities.zoom.min;
-                zoomSlider.max = capabilities.zoom.max;
-                zoomSlider.step = capabilities.zoom.step || 0.1;
-                zoomSlider.value = settings.zoom || (capabilities.zoom.min + capabilities.zoom.max) / 2;
-
-                zoomSlider.addEventListener('input', () => {
-                    const zoom = parseFloat(zoomSlider.value);
-                    console.log("Attempting to set zoom level to:", zoom);
-                    track.applyConstraints({
-                        advanced: [{zoom: zoom}]
-                    }).then(() => {
-                        console.log('Zoom applied successfully:', zoom);
-                    }).catch((err) => {
-                        console.error('Failed to apply zoom:', err);
-                    });
-                });
-            } else {
-                console.log("Zoom capabilities not supported.");
-                document.getElementById('zoom-slider-container').style.display = 'none';
-            }
-
-            codeReader.decodeFromVideoDevice(null, 'video', (result, err) => {
-                if (result) {
-                    console.log(result);
-                    processDetectedBarcode(result);
-                }
-                if (err && !(err instanceof ZXing.NotFoundException)) {
-                    console.error(err);
-                }
-            });
-        })
-        .catch((err) => {
-            console.error('Error accessing media devices:', err);
-        });
+// const formatMap = {
+//     0: 'Aztec',
+//     1: 'CODABAR',
+//     2: 'Code 39',
+//     3: 'Code 93',
+//     4: 'Code 128',
+//     5: 'Data Matrix',
+//     6: 'EAN-8',
+//     7: 'EAN-13',
+//     8: 'ITF',
+//     9: 'MaxiCode',
+//     10: 'PDF 417',
+//     11: 'QR Code',
+//     12: 'RSS 14',
+//     13: 'RSS Expanded',
+//     14: 'UPC-A',
+//     15: 'UPC-E',
+//     16: 'UPC-EAN Extension'
+// };
+//
+// const scannedBarcodes = [];
+//
+// let codeReader = null;
+//
+//
+//
+// function startScanner() {
+//     const codeReader = new ZXing.BrowserMultiFormatReader();
+//
+//     navigator.mediaDevices.getUserMedia({video: {facingMode: "environment"}})
+//         .then((stream) => {
+//             console.log("Stream obtained successfully.");
+//             const video = document.getElementById('video');
+//             video.srcObject = stream;
+//
+//             const track = stream.getVideoTracks()[0];
+//             const capabilities = track.getCapabilities();
+//             console.log("Video track capabilities:", capabilities);
+//
+//             const constraints = {
+//                 advanced: [
+//                     {brightness: capabilities.brightness ? capabilities.brightness.max * 0.75 : undefined},
+//                     {contrast: capabilities.contrast ? capabilities.contrast.max : undefined},
+//                     {sharpness: capabilities.sharpness ? capabilities.sharpness.max : undefined},
+//                     {exposureCompensation: capabilities.exposureCompensation ? capabilities.exposureCompensation.max : undefined},
+//                     {frameRate: capabilities.frameRate ? capabilities.frameRate.min : undefined},
+//                     {saturation: capabilities.saturation ? capabilities.saturation.max : undefined},
+//                 ].filter(Boolean)
+//             };
+//
+//             track.applyConstraints(constraints).then(() => {
+//                 console.log('Constraints applied:', constraints);
+//             }).catch((err) => {
+//                 console.error('Failed to apply constraints:', err);
+//             });
+//
+//             const zoomSlider = document.getElementById('zoom-slider');
+//
+//             if (capabilities.zoom) {
+//                 console.log("Zoom capabilities detected.");
+//                 const settings = track.getSettings();
+//                 console.log("Current video track settings:", settings);
+//                 zoomSlider.min = capabilities.zoom.min;
+//                 zoomSlider.max = capabilities.zoom.max;
+//                 zoomSlider.step = capabilities.zoom.step || 0.1;
+//                 zoomSlider.value = settings.zoom || (capabilities.zoom.min + capabilities.zoom.max) / 2;
+//
+//                 zoomSlider.addEventListener('input', () => {
+//                     const zoom = parseFloat(zoomSlider.value);
+//                     console.log("Attempting to set zoom level to:", zoom);
+//                     track.applyConstraints({
+//                         advanced: [{zoom: zoom}]
+//                     }).then(() => {
+//                         console.log('Zoom applied successfully:', zoom);
+//                     }).catch((err) => {
+//                         console.error('Failed to apply zoom:', err);
+//                     });
+//                 });
+//             } else {
+//                 console.log("Zoom capabilities not supported.");
+//                 document.getElementById('zoom-slider-container').style.display = 'none';
+//             }
+//
+//             codeReader.decodeFromVideoDevice(null, 'video', (result, err) => {
+//                 if (result) {
+//                     console.log(result);
+//                     processDetectedBarcode(result);
+//                 }
+//                 if (err && !(err instanceof ZXing.NotFoundException)) {
+//                     console.error(err);
+//                 }
+//             });
+//         })
+//         .catch((err) => {
+//             console.error('Error accessing media devices:', err);
+//         });
 
     // function processDetectedBarcode(result) {
     //     const code = result.text;
@@ -398,7 +398,7 @@ function startScanner() {
     //     console.log(parsedResult);
     //     return parsedResult;
     // }
-}
+// }
 
 
 function stopScanner() {
