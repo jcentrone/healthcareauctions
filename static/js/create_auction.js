@@ -29,7 +29,7 @@ document.querySelectorAll('input[type="file"][id^="id_form-"]').forEach((input) 
 document.querySelectorAll('.scan-control').forEach((input) => {
     // Extract the index from the input ID
     input.addEventListener('click', () => {
-        startScanner();
+        // startScanner();
         document.getElementById('scanModal').style.display = 'block';
 
     });
@@ -83,7 +83,7 @@ Object.keys(options).forEach(option => {
         document.getElementById('optionModal').style.display = 'none';
         const modalId = options[option];
         if (modalId) document.getElementById(modalId).style.display = 'block';
-        if (option === 'scanQRCode') startScanner();
+        // if (option === 'scanQRCode') startScanner();
     };
 });
 
@@ -401,17 +401,17 @@ document.getElementById('id_udi').addEventListener('change', (e) => {
 // }
 
 
-function stopScanner() {
-    if (codeReader) {
-        codeReader.reset();
-        const video = document.getElementById('video');
-        if (video.srcObject) {
-            video.srcObject.getTracks().forEach(track => track.stop());
-            video.srcObject = null;
-        }
-        console.log('Scanner stopped.');
-    }
-}
+// function stopScanner() {
+//     if (codeReader) {
+//         codeReader.reset();
+//         const video = document.getElementById('video');
+//         if (video.srcObject) {
+//             video.srcObject.getTracks().forEach(track => track.stop());
+//             video.srcObject = null;
+//         }
+//         console.log('Scanner stopped.');
+//     }
+// }
 
 function triggerHapticFeedback() {
     if (navigator.vibrate) {
@@ -594,7 +594,7 @@ function convertDate(dateString) {
 document.querySelectorAll('[id^="scanButton-"]').forEach(button => {
     button.addEventListener('click', () => {
         const inputId = button.getAttribute('data-input');
-        startScanner(inputId);
+        // startScanner(inputId);
         document.getElementById('scanModal').style.display = 'block';
     });
 });
@@ -655,7 +655,7 @@ function transferDataToAuctionForm() {
 
         }
     }
-    stopScanner();
+    // stopScanner();
     document.getElementById('scanModal').style.display = 'none';
 }
 
