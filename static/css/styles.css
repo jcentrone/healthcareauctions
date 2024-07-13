@@ -41,6 +41,15 @@ body {
     overflow-x: hidden;
 }
 
+dce-component video {
+    background: white !important;
+    object-fit: cover !important;
+}
+
+dce-video-container{
+    object-fit: cover !important;
+}
+
 .mobile-only {
     display: none !important;
 }
@@ -766,6 +775,10 @@ body.sidebar-toggled footer.sticky-footer {
 /*    }*/
 /*}*/
 
+.dce-msg-poweredby {
+    display: none;
+}
+
 @media (max-width: 991.98px) {
     .navbar-expand-lg > .container,
     .navbar-expand-lg > .container-fluid, .navbar-expand-lg > .container-sm, .navbar-expand-lg > .container-md, .navbar-expand-lg > .container-lg, .navbar-expand-lg > .container-xl {
@@ -994,7 +1007,7 @@ button i {
 
     .bid-details,
     .bid-detail,
-     #auction-description{
+    #auction-description {
         margin-bottom: 20px;
     }
 
@@ -1012,7 +1025,7 @@ button i {
 #id_fullPackage {
     width: 22px;
     height: 22px;
-    -webkit-appearance: auto;
+    -webkit-appearance: unset;
     appearance: auto;
 }
 
@@ -1710,6 +1723,8 @@ i.fas.fa-user.fa-fw.fa-lg {
 .form-control {
     background: #F7F7F9;
 }
+
+
 
 @media (max-width: 767.98px) {
     .navbar-expand-md > .container,

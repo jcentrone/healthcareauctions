@@ -106,7 +106,7 @@ Object.keys(options).forEach(option => {
 document.getElementById('scanQRCode').onclick = () => {
     document.getElementById('optionModal').style.display = 'none';
     document.getElementById('scanModal').style.display = 'block';
-    startScanner();
+    // startScanner();
 };
 
 // document.getElementById('fileInput').addEventListener('change', handleFileSelect);
