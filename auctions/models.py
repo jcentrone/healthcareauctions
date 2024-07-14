@@ -1,9 +1,11 @@
 from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
+
 from config.storage_backends import ProfileImageStorage, CompanyLogoStorage
 
 
@@ -177,3 +179,26 @@ class Comment(models.Model):
 
     def __str__(self):
         return f'Comment #{self.id}: {self.user.username} on {self.auction.title}: {self.comment}'
+
+
+class Cart(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='cart')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Cart ({self.user.username})'
+
+    def total_cost(self):
+        return sum(item.total_price() for item in self.items.all())
+
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
+    auction = models.ForeignKey(Auction, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f'{self.quantity} x {self.auction.title}'
+
+    def total_price(self):
+        return self.quantity * self.auction.current_bid if self.auction.current_bid else 0

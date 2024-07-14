@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Auction, Bid, Comment, Image, Category
+from .models import Auction, Bid, Comment, Image, Category, CartItem
 
 from django import forms
 
@@ -75,5 +75,22 @@ class BidForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(BidForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control mt-2'
+
+
+class AddToCartForm(forms.ModelForm):
+    class Meta:
+        model = CartItem
+        fields = ['quantity']
+        widgets = {
+            'quantity': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': 1
+            })
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(AddToCartForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control mt-2'

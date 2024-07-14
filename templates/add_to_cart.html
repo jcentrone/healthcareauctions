@@ -1,0 +1,8 @@
+<div class="container">
+    <h2>Add to Cart</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary mt-3">Add to Cart</button>
+    </form>
+</div>    

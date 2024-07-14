@@ -24,5 +24,8 @@ urlpatterns = [
     path('import_excel/', views.import_excel, name='import_excel'),
     path('download-excel/', views.download_excel, name='download_excel'),
     path('new_header/', views.header, name='new_header'),
+    path('add-to-cart/<int:auction_id>/', views.add_to_cart, name='add_to_cart'),
+    path('cart/', views.view_cart, name='view_cart'),
+    path('remove-from-cart/<int:item_id>/', views.remove_from_cart, name='remove_from_cart'),
 
 ]

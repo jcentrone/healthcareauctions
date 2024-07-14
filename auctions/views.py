@@ -11,13 +11,13 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import IntegrityError
 from django.db.models import Count, Q
 from django.http import HttpResponseRedirect, JsonResponse, FileResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
-from .forms import AuctionForm, ImageForm, CommentForm, BidForm
-from .models import Auction, Bid, Category, Image, User, Address
+from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm
+from .models import Auction, Bid, Category, Image, User, Address, CartItem, Cart
 from .utils.helpers import update_categories_from_fda
 
 
@@ -517,6 +517,7 @@ def auction_details_view(request, auction_id):
         'auction': auction,
         'images': auction.get_images.all(),
         'bid_form': BidForm(),
+        'buy_it_now_form': AddToCartForm(),
         'comments': auction.get_comments.all(),
         'comment_form': CommentForm(),
         'title': 'Auction'
@@ -650,3 +651,28 @@ def download_excel(request):
     filepath = 'static/downloads/sample.xlsx'
     response = FileResponse(open(filepath, 'rb'), as_attachment=True, filename='sample.xlsx')
     return response
+
+
+def add_to_cart(request, auction_id):
+    auction = get_object_or_404(Auction, id=auction_id)
+    cart, created = Cart.objects.get_or_create(user=request.user)
+    form = AddToCartForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        quantity = form.cleaned_data['quantity']
+        cart_item, created = CartItem.objects.get_or_create(cart=cart, auction=auction)
+        cart_item.quantity += quantity
+        cart_item.save()
+        return redirect('view_cart')
+
+    return render(request, 'add_to_cart.html', {'auction': auction, 'form': form})
+
+
+def view_cart(request):
+    cart = get_object_or_404(Cart, user=request.user)
+    return render(request, 'view_cart.html', {'cart': cart})
+
+
+def remove_from_cart(request, item_id):
+    cart_item = get_object_or_404(CartItem, id=item_id)
+    cart_item.delete()
+    return redirect('view_cart')
