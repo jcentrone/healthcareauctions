@@ -37,6 +37,8 @@ Dynamsoft.Core.CoreModule.loadWasm(["dbr"]);
     await cameraEnhancer.open();
     await cvRouter.startCapturing("ReadBarcodes_Balance");
 
+
+
     console.log(cameraView.getUIElement());
 })();
 

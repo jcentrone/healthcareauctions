@@ -39,6 +39,7 @@ body {
     margin: 0;
     padding: 0;
     overflow-x: hidden;
+    min-height: 100vh;
 }
 
 dce-component video {
@@ -46,10 +47,9 @@ dce-component video {
     object-fit: cover !important;
 }
 
-dce-video-container{
+dce-video-container {
     object-fit: cover !important;
 }
-
 
 
 .mobile-only {
@@ -186,6 +186,10 @@ footer {
     padding: 20px;
     text-align: center;
     color: black;
+    /*position: fixed;*/
+    /*bottom: 0;*/
+    /*left: 0;*/
+    /*right: 0;*/
 }
 
 footer .quick-links {
@@ -1017,7 +1021,7 @@ button i {
 
 .checkbox-row {
     display: grid;
-    grid-template-columns: 150px auto;
+    grid-template-columns: 150px auto auto;
     align-items: center;
     justify-content: flex-start;
     gap: 20px;
@@ -1135,6 +1139,11 @@ button i {
 
 }
 
+.bid-detail {
+    display: grid;
+    gap: 20px;
+}
+
 .bid-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1149,7 +1158,7 @@ button i {
 .modal {
     /*display: none;*/
     position: fixed;
-    z-index: 1000;
+    /*z-index: 1000;*/
     left: 0;
     top: 0;
     width: 100%;
@@ -1726,7 +1735,21 @@ i.fas.fa-user.fa-fw.fa-lg {
     background: #F7F7F9;
 }
 
+#auction-summary-container {
+    display: grid;
+    grid-template-rows: 100%;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
 
+.animated-field {
+    transition: all 0.5s ease-in-out;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1050;
+}
 
 @media (max-width: 767.98px) {
     .navbar-expand-md > .container,
@@ -1738,4 +1761,16 @@ i.fas.fa-user.fa-fw.fa-lg {
     .mapping-table {
         height: auto !important;
     }
+
+    #auction-summary-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+
+    }
+
+    .centered-modal-content {
+        width: 80%;
+    }
+
+
 }

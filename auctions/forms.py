@@ -4,23 +4,31 @@ from .models import Auction, Bid, Comment, Image, Category, CartItem
 
 from django import forms
 
+
 class AuctionForm(forms.ModelForm):
     class Meta:
         model = Auction
-        fields = ['title', 'product_name', 'description', 'category', 'starting_bid', 'reserve_bid', 'auction_duration',
-                  'manufacturer', 'reference_number', 'lot_number', 'expiration_date', 'package_type',
-                  'package_quantity', 'deviceSterile', 'fullPackage', 'udi', 'quantity_available', 'production_date',
-                  'partial_quantity']
+        exclude = ['creator', 'date_created', 'buyer']
+        widgets = {
+            'partial_quantity': forms.NumberInput(attrs={'placeholder': 'Enter partial quantity'}),
+            'production_date': forms.DateInput(attrs={'class': 'datepicker'}),
+            'expiration_date': forms.DateInput(attrs={'class': 'datepicker'}),
+        }
 
     def __init__(self, *args, **kwargs):
         super(AuctionForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+        # Ensure the datepicker class is preserved for date fields
+        self.fields['production_date'].widget.attrs['class'] += ' datepicker'
+        self.fields['expiration_date'].widget.attrs['class'] += ' datepicker'
+
         # Customize category field choices to show parent/child relationships
         self.fields['category'].queryset = Category.objects.all()
         self.fields['category'].choices = [
-            (category.id, f"{category.parent.category_name} / {category.category_name}" if category.parent else f"{category.category_name}")
+            (category.id,
+             f"{category.parent.category_name} / {category.category_name}" if category.parent else f"{category.category_name}")
             for category in Category.objects.all().order_by('parent__category_name', 'category_name')
         ]
 

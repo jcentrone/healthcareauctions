@@ -1,4 +1,5 @@
 import json
+import logging
 import random
 from datetime import timedelta
 from decimal import Decimal
@@ -19,6 +20,9 @@ from django.views.decorators.csrf import csrf_exempt
 from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm
 from .models import Auction, Bid, Category, Image, User, Address, CartItem, Cart
 from .utils.helpers import update_categories_from_fda
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 
 def index(request):
@@ -290,6 +294,9 @@ def auction_create(request):
         if auction_form.is_valid() and image_form.is_valid():
             new_auction = auction_form.save(commit=False)
             new_auction.creator = request.user
+            new_auction.date_created = timezone.now()
+            # Handle buyer as needed, for example:
+            # new_auction.buyer = some_user_instance
             new_auction.save()
 
             for form in image_form.cleaned_data:
@@ -299,7 +306,11 @@ def auction_create(request):
                     new_image.save()
 
             return redirect('active_auctions_view')
-
+        else:
+            if not auction_form.is_valid():
+                logger.error(f'Auction form errors: {auction_form.errors}')
+            if not image_form.is_valid():
+                logger.error(f'Image form errors: {image_form.errors}')
     else:
         auction_form = AuctionForm()
         image_form = ImageFormSet(queryset=Image.objects.none())
@@ -326,6 +337,7 @@ def import_excel(request):
             if auction_form.is_valid():
                 new_auction = auction_form.save(commit=False)
                 new_auction.creator = request.user
+                new_auction.active = True
                 new_auction.save()
 
                 # Save images
@@ -343,24 +355,24 @@ def import_excel(request):
     })
 
 
+@login_required
 def active_auctions_view(request):
     """
     It renders a page that displays all of
     the currently active auction listings
     Active auctions are paginated: 10 per page
     """
-
     category_name = request.GET.get('category_name', None)
     time_filter = request.GET.get('time_filter', None)
     sort_by = request.GET.get('sort_by', None)
-    print(sort_by)
     manufacturer_filter = request.GET.get('mfg_filter', None)
-
     my_auctions = request.GET.get('my_auctions', None)
     search_query = request.GET.get('search_query', None)
     title = 'Active Auctions'
 
-    auctions = Auction.objects.filter(active=True)
+    now = timezone.now()
+
+    auctions = Auction.objects.filter(active=True, expiration_date__gte=now)
 
     if my_auctions:
         auctions = auctions.filter(creator=request.user)
@@ -370,7 +382,6 @@ def active_auctions_view(request):
         auctions = auctions.filter(category__category_name=category_name)
 
     if time_filter:
-        now = timezone.now()
         if time_filter == 'today':
             end_date = now + timedelta(days=1)
             auctions = auctions.filter(date_created__lte=end_date)
@@ -385,7 +396,7 @@ def active_auctions_view(request):
 
     if sort_by:
         if sort_by == 'ending_soonest':
-            auctions = auctions.order_by('date_created')
+            auctions = auctions.order_by('expiration_date')
         elif sort_by == 'newly_listed':
             auctions = auctions.order_by('-date_created')
         elif sort_by == 'price_highest':

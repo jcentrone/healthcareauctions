@@ -6,7 +6,7 @@
     {#    {% include 'sidebar.html' %}#}
     <meta name="csrf-token" content="{{ csrf_token }}">
 
-    <div class="container">
+    <div class="container" style="min-height: 80vh">
         <section>
             <!-- Page Heading -->
             {% if success %}
@@ -16,7 +16,7 @@
                 </div>
             {% else %}
                 <!-- Option Modal -->
-                <div id="optionModal" class="modal">
+                <div id="optionModal" class="modal" style="display: none">
                     <div class="modal-content">
                         <h2>Select an Option</h2>
                         <div class="modal-options">
@@ -66,18 +66,7 @@
                                 <textarea id="results"
                                           style="display: none; width: 100%; min-height: 10vh; font-size: 3vmin; overflow: auto"
                                           disabled></textarea>
-                                {#                                <div class="video-container" style="position: relative">#}
-                                {##}
-                                {#                                    <video id="video" width="100%" height="100%" autoplay></video>#}
-                                {#                                    <div class="scan-guide">#}
-                                {#                                        <div class="brackets"></div>#}
-                                {#                                        <div class="scan-line"></div>#}
-                                {#                                    </div>#}
-                                {#                                    <div id="zoom-slider-container">#}
-                                {#                                        <label for="zoom-slider">Zoom:</label>#}
-                                {#                                        <input type="range" id="zoom-slider" min="1" max="10" step="0.1" value="5">#}
-                                {#                                    </div>#}
-                                {#                                </div>#}
+
                             </div>
 
 
@@ -97,8 +86,6 @@
 
 
                         </div>
-                        {#                    <button id="capture-button">Capture Image</button>#}
-                        {#                    <input type="file" id="barcode-image-input" accept="image/*">#}
 
                         <button id="closeScanModal" class="btn btn-secondary">Save & Close</button>
                     </div>
@@ -111,193 +98,281 @@
                 <p>Enter the details of the auction below.</p>
                 <div class='card mb-4'>
                     <div class='card-body'>
-                        <h3 class="package-details-heading">Auction Summary</h3>
+                        {#                        <h3 class="package-details-heading">Auction Summary</h3>#}
                         <div class='form-group'>
                             <form action="{% url 'auction_create' %}" method='POST' enctype='multipart/form-data'>
                                 {% csrf_token %}
-                                <div class='form-group' id="auction-create">
-                                    <div class="hidden">
-                                        {{ auction_form.title.label_tag }}
-                                        {{ auction_form.title }}
-                                    </div>
-                                    <div>
-                                        {{ auction_form.product_name.label_tag }}
-                                        {{ auction_form.product_name }}
-                                    </div>
-
-                                    <div class="bid-details">
-
-                                        <div class="bid-scan-item">
-                                            {{ auction_form.udi.label_tag }}
-                                            {{ auction_form.udi }}
-                                            <div class="scan-control mobile-only">
-                                                <i class="fa-solid fa-qrcode"></i>
-                                                <i class="fa-solid fa-barcode"></i>
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            {{ auction_form.category.label_tag }}
-                                            {{ auction_form.category }}
-                                        </div>
-                                        <div class="bid-row">
-                                            <div class="form-group with-symbol">
-                                                {{ auction_form.starting_bid.label_tag }}
-                                                {{ auction_form.starting_bid }}
-                                            </div>
-                                            <div class="form-group with-symbol">
-                                                {{ auction_form.reserve_bid.label_tag }}
-                                                {{ auction_form.reserve_bid }}
-                                            </div>
-                                        </div>
-                                        <div class="bid-row">
-                                            <div id="qty-container">
-                                                {{ auction_form.quantity_available.label_tag }}
-                                                <i class="fa fa-info-circle" aria-hidden="true" id="infoIcon">
-                                                    <span class="tooltip">When the auction quantity is greater than one, all product packages must be full.</span>
-                                                </i>
-
-                                                {{ auction_form.quantity_available }}
-                                            </div>
-                                            <div>
-                                                {{ auction_form.auction_duration.label_tag }}
-                                                {{ auction_form.auction_duration }}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div id="auction-description">
-                                        {{ auction_form.description.label_tag }}
-                                        {{ auction_form.description }}
-                                    </div>
-
-                                    <!-- Insert the heading here -->
-                                    <h3 class="package-details-heading">Product Details</h3>
-
-                                    <div class="bid-detail">
-                                        {{ auction_form.manufacturer.label_tag }}
-                                        {{ auction_form.manufacturer }}
-                                    </div>
-
-                                    <div class="bid-scan-item bid-detail">
-                                        {{ auction_form.reference_number.label_tag }}
-                                        {{ auction_form.reference_number }}
-                                        <div class="scan-control mobile-only">
-                                            <i class="fa-solid fa-qrcode"></i>
-                                            <i class="fa-solid fa-barcode"></i>
-                                        </div>
-                                    </div>
-
-                                    <div class="bid-scan-item bid-detail">
-                                        {{ auction_form.lot_number.label_tag }}
-                                        {{ auction_form.lot_number }}
-                                        <div class="scan-control mobile-only">
-                                            <i class="fa-solid fa-qrcode"></i>
-                                            <i class="fa-solid fa-barcode"></i>
-                                        </div>
-                                    </div>
-
-                                    <div class="bid-row bid-detail">
-                                        <div class="bid-scan-item">
-                                            {{ auction_form.production_date.label_tag }}
-                                            {{ auction_form.production_date }}
-                                            <div class="scan-control mobile-only">
-                                                <i class="fa-solid fa-qrcode"></i>
-                                                <i class="fa-solid fa-barcode"></i>
-                                            </div>
-                                        </div>
-                                        <div class="bid-scan-item">
-                                            {{ auction_form.expiration_date.label_tag }}
-                                            {{ auction_form.expiration_date }}
-                                            <div class="scan-control mobile-only">
-                                                <i class="fa-solid fa-qrcode"></i>
-                                                <i class="fa-solid fa-barcode"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-
-
-                                    <div class="bid-detail">
-                                        {{ auction_form.package_type.label_tag }}
-                                        {{ auction_form.package_type }}
-                                    </div>
-
-                                    <div class="bid-detail">
-                                        {{ auction_form.package_quantity.label_tag }}
-                                        {{ auction_form.package_quantity }}
-                                    </div>
-
-                                    <div class="checkbox-row bid-detail" id="deviceSterile">
-                                        {{ auction_form.deviceSterile.label_tag }}
-                                        {{ auction_form.deviceSterile }}
-                                    </div>
-                                    <div class="bid-row bid-detail">
-                                        <div class="checkbox-row">
-                                            {{ auction_form.fullPackage.label_tag }}
-                                            {{ auction_form.fullPackage }}
-                                        </div>
-                                        <div class="bid-detail" id="partial-qty">
-                                            {{ auction_form.partial_quantity.label_tag }}
-                                            {{ auction_form.partial_quantity }}
-                                        </div>
-                                    </div>
-                                    <h3 class="package-details-heading">Photos</h3>
-
-                                    {{ image_form.management_form }}
-                                    <div class="img-container">
-                                        <div class="main-img">
-                                            <div class="img-thumbnail" id="main-img"
-                                                 onclick="document.getElementById('id_form-0-image').click()">
-                                                <img id="main-thumbnail-preview" src="#" alt="Upload Icon"
-                                                     style="display:none;"/>
-                                                <i class="fa-regular fa-image" id="main-upload-icon"></i>
-                                            </div>
-                                            <div style="display:none;">
-                                                {{ image_form.forms.0.image.label_tag }}:
-                                                {{ image_form.forms.0.image }}
-                                                {{ image_form.forms.0.id }}
-                                            </div>
-                                        </div>
-                                        <div class="side-imgs">
-                                            {% for form in image_form.forms %}
-                                                {% if forloop.counter0 > 0 %}
-                                                    <div class="side-img">
-                                                        <div class="img-thumbnail"
-                                                             onclick="document.getElementById('id_form-{{ forloop.counter0 }}-image').click()">
-                                                            <img id="thumbnail-preview-{{ forloop.counter0 }}" src="#"
-                                                                 alt="Upload Icon" style="display:none;"/>
-                                                            <i class="fa-regular fa-image"
-                                                               id="upload-icon-{{ forloop.counter0 }}"></i>
-                                                        </div>
-                                                        <div style="display:none;">
-                                                            {{ form.image.label_tag }}:
-                                                            {{ form.image }}
-                                                            {{ form.id }}
+                                <div id="multi-step-form">
+                                    <ul class="nav nav-tabs" id="formTabs" role="tablist" style="display: none">
+                                        <li class="nav-item">
+                                            <a class="nav-link active" id="page1-tab" data-toggle="tab" href="#page1"
+                                               role="tab" aria-controls="page1" aria-selected="true">Page 1</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="page2-tab" data-toggle="tab" href="#page2"
+                                               role="tab" aria-controls="page2" aria-selected="false">Page 2</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="page3-tab" data-toggle="tab" href="#page3"
+                                               role="tab" aria-controls="page3" aria-selected="false">Page 3</a>
+                                        </li>
+                                    </ul>
+                                    <div class="tab-content" id="formTabsContent">
+                                        <!-- Start Page 1 -->
+                                        <div class="tab-pane fade show active" id="page1" role="tabpanel"
+                                             aria-labelledby="page1-tab">
+                                            <h3 class="package-details-heading">Auction Summary</h3>
+                                            <div class='form-group mb-5' id="auction-summary-container">
+                                                <div class="hidden">
+                                                    {{ auction_form.title.label_tag }}
+                                                    {{ auction_form.title }}
+                                                </div>
+                                                <div class="bid-detail">
+                                                    <div>
+                                                        {{ auction_form.product_name.label_tag }}
+                                                        {{ auction_form.product_name }}
+                                                    </div>
+                                                    <div id="auction-description">
+                                                        {{ auction_form.description.label_tag }}
+                                                        {{ auction_form.description }}
+                                                    </div>
+                                                </div>
+                                                <div class="bid-detail" id="sku-container">
+                                                    <!-- SKU/UDI Field within the Form -->
+                                                    <div id="sku-field" class="bid-scan-item">
+                                                        SKU/{{ auction_form.udi.label_tag }}
+                                                        {{ auction_form.udi }}
+                                                        <div class="scan-control mobile-only">
+                                                            <i class="fa-solid fa-qrcode"></i>
+                                                            <i class="fa-solid fa-barcode"></i>
                                                         </div>
                                                     </div>
-                                                {% endif %}
-                                            {% endfor %}
+                                                    <!-- Modal Background -->
+                                                    <div id="modal-bg" class="centered-modal-bg hidden-field">
+                                                        <div class="centered-modal-content" id="centered-modal-content">
+                                                            <p class="hidden-field" id="sku-info">Please enter the
+                                                                SKU/UDI
+                                                                to get product information.</p>
+                                                            <div id="modal-content">
+                                                                <div id="placeholderEL"></div>
+                                                            </div>
+                                                            <div class="">
+                                                                <button id="close-modal"
+                                                                        class="btn btn-danger mt-3 hidden-field">Close
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+
+                                                    <div>
+                                                        {{ auction_form.category.label_tag }}
+                                                        {{ auction_form.category }}
+                                                    </div>
+                                                    <div class="bid-row">
+                                                        <div class="form-group with-symbol">
+                                                            {{ auction_form.starting_bid.label_tag }}
+                                                            {{ auction_form.starting_bid }}
+                                                        </div>
+                                                        <div class="form-group with-symbol">
+                                                            {{ auction_form.reserve_bid.label_tag }}
+                                                            {{ auction_form.reserve_bid }}
+                                                        </div>
+                                                    </div>
+                                                    <div class="bid-row">
+                                                        <div id="qty-container">
+                                                            <div>
+                                                                {{ auction_form.quantity_available.label_tag }}
+                                                                <i class="fa fa-info-circle" aria-hidden="true"
+                                                                   id="infoIcon">
+                                                                    <span class="tooltip">When the auction quantity is greater than one, all product packages must be full.</span>
+                                                                </i>
+                                                            </div>
+                                                            {{ auction_form.quantity_available }}
+                                                        </div>
+                                                        <div>
+                                                            {{ auction_form.auction_duration.label_tag }}
+                                                            {{ auction_form.auction_duration }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <button type="button" class="btn btn-primary next-tab">Next</button>
                                         </div>
+                                        <!-- End Page 1 -->
+
+                                        <!-- Start Page 2 -->
+                                        <div class="tab-pane fade" id="page2" role="tabpanel"
+                                             aria-labelledby="page2-tab">
+                                            <h3 class="package-details-heading">Product Details</h3>
+                                            <div class="bid-detail">
+                                                <div class="">
+                                                    {{ auction_form.manufacturer.label_tag }}
+                                                    {{ auction_form.manufacturer }}
+                                                </div>
+                                                <div class="bid-scan-item">
+                                                    {{ auction_form.reference_number.label_tag }}
+                                                    {{ auction_form.reference_number }}
+                                                    <div class="scan-control mobile-only">
+                                                        <i class="fa-solid fa-qrcode"></i>
+                                                        <i class="fa-solid fa-barcode"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="bid-scan-item">
+                                                    {{ auction_form.lot_number.label_tag }}
+                                                    {{ auction_form.lot_number }}
+                                                    <div class="scan-control mobile-only">
+                                                        <i class="fa-solid fa-qrcode"></i>
+                                                        <i class="fa-solid fa-barcode"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="bid-row bid-detail">
+                                                    <div class="bid-scan-item">
+                                                        {{ auction_form.production_date.label_tag }}
+                                                        {{ auction_form.production_date }}
+                                                        <div class="scan-control mobile-only">
+                                                            <i class="fa-solid fa-qrcode"></i>
+                                                            <i class="fa-solid fa-barcode"></i>
+                                                        </div>
+                                                    </div>
+                                                    <div class="bid-scan-item">
+                                                        {{ auction_form.expiration_date.label_tag }}
+                                                        {{ auction_form.expiration_date }}
+                                                        <div class="scan-control mobile-only">
+                                                            <i class="fa-solid fa-qrcode"></i>
+                                                            <i class="fa-solid fa-barcode"></i>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="">
+                                                    {{ auction_form.package_type.label_tag }}
+                                                    {{ auction_form.package_type }}
+                                                </div>
+                                                <div class="">
+                                                    {{ auction_form.package_quantity.label_tag }}
+                                                    {{ auction_form.package_quantity }}
+                                                </div>
+                                                <div class="checkbox-row bid-detail" id="deviceSterile">
+                                                    {{ auction_form.deviceSterile.label_tag }}
+                                                    {{ auction_form.deviceSterile }}
+                                                </div>
+                                                <div class="bid-row bid-detail">
+                                                    <div class="checkbox-row">
+                                                        {{ auction_form.fullPackage.label_tag }}
+                                                        {{ auction_form.fullPackage }}
+                                                        <div class="" id="partial-qty">
+                                                            {#                                                            {{ auction_form.partial_quantity.label_tag }}#}
+                                                            {{ auction_form.partial_quantity }}
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                            <div class="mt-3">
+                                                <button type="button" class="btn btn-secondary prev-tab">Previous
+                                                </button>
+                                                <button type="button" class="btn btn-primary next-tab">Next</button>
+                                            </div>
+                                        </div>
+                                        <!-- End Page 2 -->
+
+                                        <!-- Start Page 3 -->
+                                        <div class="tab-pane fade" id="page3" role="tabpanel"
+                                             aria-labelledby="page3-tab">
+                                            <h3 class="package-details-heading">Photos</h3>
+                                            {{ image_form.management_form }}
+                                            <div class="img-container">
+                                                <div class="main-img">
+                                                    <div class="img-thumbnail" id="main-img"
+                                                         onclick="document.getElementById('id_form-0-image').click()">
+                                                        <img id="main-thumbnail-preview" src="#" alt="Upload Icon"
+                                                             style="display:none;"/>
+                                                        <i class="fa-regular fa-image" id="main-upload-icon"></i>
+                                                    </div>
+                                                    <div style="display:none;">
+                                                        {{ image_form.forms.0.image.label_tag }}:
+                                                        {{ image_form.forms.0.image }}
+                                                        {{ image_form.forms.0.id }}
+                                                    </div>
+                                                </div>
+                                                <div class="side-imgs">
+                                                    {% for form in image_form.forms %}
+                                                        {% if forloop.counter0 > 0 %}
+                                                            <div class="side-img">
+                                                                <div class="img-thumbnail"
+                                                                     onclick="document.getElementById('id_form-{{ forloop.counter0 }}-image').click()">
+                                                                    <img id="thumbnail-preview-{{ forloop.counter0 }}"
+                                                                         src="#" alt="Upload Icon"
+                                                                         style="display:none;"/>
+                                                                    <i class="fa-regular fa-image"
+                                                                       id="upload-icon-{{ forloop.counter0 }}"></i>
+                                                                </div>
+                                                                <div style="display:none;">
+                                                                    {{ form.image.label_tag }}:
+                                                                    {{ form.image }}
+                                                                    {{ form.id }}
+                                                                </div>
+                                                            </div>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                            <div class="mt-3">
+                                                <button type="button" class="btn btn-secondary prev-tab">Previous
+                                                </button>
+                                                <button type='submit' class='btn btn-primary'>Save</button>
+                                                <a href="{% url 'active_auctions_view' %}"
+                                                   class='btn btn-light border-dark'>Cancel</a>
+                                            </div>
+                                        </div>
+                                        <!-- End Page 3 -->
                                     </div>
-
-
-                                    <button type='submit' class='btn btn-primary'>
-                                        Save
-                                    </button>
-                                    <a href="{% url 'active_auctions_view' %}" class='btn btn-light border-dark'>
-                                        Cancel
-                                    </a>
                                 </div>
+
                             </form>
+
                         </div>
                     </div>
                 </div>
             {% endif %}
         </section>
     </div>
+    <style>
+        .centered-modal-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        {#background: rgba(0, 0, 0, 0.5);#} display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1040;
+
+
+        }
+
+        .centered-modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: transform 5s ease-in-out;
+            z-index: 1050;
+        }
+
+        .hidden-field {
+            display: none;
+        }
+    </style>
 
     <link href='{% static "css/styles.css" %}' rel='stylesheet'>
 
-    <script src="https://cdn.jsdelivr.net/npm/@zxing/library@latest/umd/index.min.js"></script>
+    {#    <script src="https://cdn.jsdelivr.net/npm/@zxing/library@latest/umd/index.min.js"></script>#}
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
@@ -306,41 +381,107 @@
     <script src="https://cdn.jsdelivr.net/npm/dynamsoft-barcode-reader-bundle@10.2.1000/dist/dbr.bundle.js"></script>
     <script src="{% static 'js/scanner.js' %}"></script>
     <script>
-        {#Dynamsoft.License.LicenseManager.initLicense("DLS2eyJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSJ9");#}
-        {#Dynamsoft.Core.CoreModule.loadWasm(["dbr"]);#}
-        {#(async () => {#}
-        {#    let cvRouter = await Dynamsoft.CVR.CaptureVisionRouter.createInstance();#}
-        {##}
-        {#    let cameraView = await Dynamsoft.DCE.CameraView.createInstance();#}
-        {#    let cameraEnhancer = await Dynamsoft.DCE.CameraEnhancer.createInstance(cameraView);#}
-        {#    document.querySelector("#camera-view-container").append(cameraView.getUIElement());#}
-        {#    cvRouter.setInput(cameraEnhancer);#}
-        {##}
-        {#    const resultsContainer = document.querySelector("#results");#}
-        {#    cvRouter.addResultReceiver({#}
-        {#        onDecodedBarcodesReceived: (result) => {#}
-        {#            if (result.barcodeResultItems.length > 0) {#}
-        {#                {#}
-        {#                    resultsContainer.textContent = '';#}
-        {##}
-        {#                }#}
-        {#                for (let item of result.barcodeResultItems) {#}
-        {#                    resultsContainer.textContent += `${item.formatString}: ${item.text}\n\n`;#}
-        {#                }#}
-        {#            }#}
-        {#        }#}
-        {#    });#}
-        {##}
-        {#    let filter = new Dynamsoft.Utility.MultiFrameResultCrossFilter();#}
-        {#    filter.enableResultCrossVerification("barcode", true);#}
-        {#    filter.enableResultDeduplication("barcode", true);#}
-        {#    await cvRouter.addResultFilter(filter);#}
-        {##}
-        {#    await cameraEnhancer.open();#}
-        {#    await cvRouter.startCapturing("ReadBarcodes_Balance");#}
-        {#})
-            ();
-        #}
+        $(document).ready(function () {
+            $('.next-tab').click(function () {
+                let activeTab = $('.nav-tabs .nav-link.active');
+                let nextTab = activeTab.parent().next().find('.nav-link');
+                if (nextTab.length) {
+                    nextTab.tab('show');
+                }
+            });
+
+            $('.prev-tab').click(function () {
+                let activeTab = $('.nav-tabs .nav-link.active');
+                let prevTab = activeTab.parent().prev().find('.nav-link');
+                if (prevTab.length) {
+                    prevTab.tab('show');
+                }
+            });
+
+            // Event listener for tab shown event
+            $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                let targetTab = $(e.target).attr("href"); // Get the target tab pane's selector
+                let firstEmptyInput = $(targetTab).find('input').filter(function () {
+                    return !this.value; // Filter out inputs that are not empty
+                }).first(); // Get the first empty input
+
+                if (firstEmptyInput.length) {
+                    firstEmptyInput.focus(); // Set focus to the first empty input
+                }
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            $('.datepicker').datepicker({
+                format: 'yyyy-mm-dd',
+                autoclose: true,
+                todayHighlight: true
+            });
+        });
+    </script>
+
+    {#    <script>#}
+    {#        $(document).ready(function () {#}
+    {#            // On page load, animate the SKU/UDI field to the center and show the modal background#}
+    {#            setTimeout(function () {#}
+    {#$('#sku-field').addClass('centered-modal-content');#}
+    {#                $('#sku-field').prependTo('#modal-content');#}
+    {#                $('#placeholderEL').prependTo('#sku-container').height(57);#}
+    {#                $('#sku-info').removeClass('hidden-field');#}
+    {#                $('#close-modal').removeClass('hidden-field');#}
+    {#                $('#modal-bg').removeClass('hidden-field');#}
+    {##}
+    {#            }, 500); // Delay to ensure everything is loaded properly#}
+    {##}
+    {#            // Handle closing the modal#}
+    {#            $('#close-modal').click(function () {#}
+    {#                setTimeout(function () {#}
+    {#$('#sku-field').removeClass('centered-modal-content');#}
+    {#                    $('#sku-field').prependTo('#sku-container');#}
+    {#                    $('#placeholderEL').appendTo('#modal-content').height(0);#}
+    {##}
+    {#                    $('#sku-info').addClass('hidden-field');#}
+    {#                    $('#close-modal').addClass('hidden-field');#}
+    {#                    $('#modal-bg').addClass('hidden-field');#}
+    {#                }, 500);#}
+    {#            });#}
+    {#        });#}
+    {#    </script>#}
+    <script>
+        $(document).ready(function () {
+            // On page load, animate the SKU/UDI field to the center and show the modal background
+            setTimeout(function () {
+                $('#sku-field').prependTo('#modal-content');
+
+                $('#centered-modal-content').css({
+                    height: 'auto'  // Adjust as needed
+                });
+
+                // Add the 'show' class to trigger the CSS transform transition
+                $('#centered-modal-content').addClass('show');
+
+                $('#placeholderEL').prependTo('#sku-container').height(57);
+                $('#sku-info').removeClass('hidden-field');
+                $('#close-modal').removeClass('hidden-field');
+                $('#modal-bg').removeClass('hidden-field');
+            }, 500); // Delay to ensure everything is loaded properly
+
+            // Handle closing the modal
+            $('#close-modal').click(function () {
+                setTimeout(function () {
+                    // Remove the 'show' class to reverse the CSS transform transition
+                    $('#centered-modal-content').removeClass('show');
+
+                    $('#sku-field').prependTo('#sku-container');
+                    $('#placeholderEL').appendTo('#modal-content').height(0);
+                    $('#sku-info').addClass('hidden-field');
+                    $('#close-modal').addClass('hidden-field');
+                    $('#modal-bg').addClass('hidden-field');
+                }, 500);
+            });
+        });
     </script>
 
 {% endblock %}
+    

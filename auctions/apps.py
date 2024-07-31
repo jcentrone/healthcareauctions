@@ -1,4 +1,5 @@
 from django.apps import AppConfig
+from django.db.models.signals import post_migrate
 
 
 class AuctionsConfig(AppConfig):
@@ -6,4 +7,10 @@ class AuctionsConfig(AppConfig):
     name = 'auctions'
 
     def ready(self):
-        import auctions.signals
+        from . import scheduler
+        from django.core.management import call_command
+
+        def start_scheduler(sender, **kwargs):
+            call_command('start_scheduler')
+
+        post_migrate.connect(start_scheduler, sender=self)

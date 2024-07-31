@@ -87,6 +87,12 @@ class Auction(models.Model):
         blank=True,
         null=True
     )
+    buyItNowPrice = models.DecimalField(
+        max_digits=7,
+        decimal_places=2,
+        blank=True,
+        null=True
+    )
     buyer = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
     watchers = models.ManyToManyField(User, related_name='watchlist', blank=True)
     active = models.BooleanField(default=True)

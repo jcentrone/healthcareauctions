@@ -7,14 +7,24 @@
     <title>Healthcare Auctions</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
           integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <!-- Bootstrap Datepicker CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css"
+          rel="stylesheet">
+
     <link href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css' rel='stylesheet'>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
           rel="stylesheet">
+    <script
+            src="https://code.jquery.com/jquery-3.7.1.js"
+            integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+            crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
             crossorigin="anonymous"></script>
+    <!-- Bootstrap Datepicker JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
 
     {% block links %}
     {% endblock %}
@@ -55,8 +65,8 @@
                             <span>
                                 Copyright &copy; <script>document.write(new Date().getFullYear())</script> Healthcare Auctions.
                             </span>
-                            <span><i class="fa-solid fa-diamond" style="font-size: 10px;"></i></span>
-                            <span>
+                    <span><i class="fa-solid fa-diamond" style="font-size: 10px;"></i></span>
+                    <span>
                                 <a class="text-decoration-none" id="privacy-link" href="{% url 'privacy_policy' %}">Privacy Policy</a>
                             </span>
                 </div>
@@ -77,17 +87,17 @@
 
 {% block script %}
     <!-- Bootstrap core JavaScript-->
-{#    <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js'></script>#}
-{##}
-{#    <!-- Core plugin JavaScript-->#}
-{#    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js'></script>#}
-{#    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js'></script>#}
-{##}
-{#    <!-- Page level plugins -->#}
-{#    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js'></script>#}
+    {#    <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js'></script>#}
+    {##}
+    {#    <!-- Core plugin JavaScript-->#}
+    {#    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js'></script>#}
+    {#    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js'></script>#}
+    {##}
+    {#    <!-- Page level plugins -->#}
+    {#    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js'></script>#}
 
     <!-- Custom scripts -->
-{#    <script src='{% static "js/scripts.js" %}'></script>#}
+    {#    <script src='{% static "js/scripts.js" %}'></script>#}
 
 {% endblock %}
 
