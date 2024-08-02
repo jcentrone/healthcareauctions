@@ -3,7 +3,7 @@ button {
     border: none !important;
 }
 a:hover{
-    color: #0E75BF !important;
+    /*color: #0E75BF !important;*/
 }
 .logo:hover{
     color: #021C25 !important;

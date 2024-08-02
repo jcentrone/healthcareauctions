@@ -372,7 +372,7 @@ def active_auctions_view(request):
 
     now = timezone.now()
 
-    auctions = Auction.objects.filter(active=True, expiration_date__gte=now)
+    auctions = Auction.objects.filter(active=True)
 
     if my_auctions:
         auctions = auctions.filter(creator=request.user)
@@ -452,6 +452,14 @@ def active_auctions_view(request):
         'sort_by': sort_by,
         'manufacturer_filter': manufacturer_filter,
     })
+
+
+@login_required
+def get_auction_images(request, auction_id):
+    auction = get_object_or_404(Auction, id=auction_id)
+    images = auction.get_images.all()
+    image_urls = [image.image.url for image in images]
+    return JsonResponse({'image_urls': image_urls})
 
 
 @login_required

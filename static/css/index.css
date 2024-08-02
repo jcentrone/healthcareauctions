@@ -194,7 +194,7 @@ body {
 }
 
 .hero .button:hover {
-    background-color: var(--primary-blue);
+    /*background-color: var(--primary-blue);*/
 }
 
 .featured-auctions {

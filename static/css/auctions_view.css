@@ -32,7 +32,7 @@
 }
 
 #filter-form,
-#auction-filter-form{
+#auction-filter-form {
     display: flex;
     gap: 10px;
 }
@@ -45,7 +45,7 @@
 
 .listing {
     display: grid;
-    grid-template-columns: 1fr 300px;
+    grid-template-columns: 1fr minmax(300px, 1fr);
     align-items: center;
     border-top: 1px solid #cccccc;
     position: relative;
@@ -74,6 +74,7 @@
 .display-8 {
     font-size: 1.5rem;
     font-weight: 300;
+    text-align: left;
 }
 
 .bid-form {
@@ -111,6 +112,12 @@
 
 .form-group.with-symbol input {
     padding-left: 25px; /* Adjust based on your design */
+}
+
+.additional-images {
+    height: 165px;
+    display: flex;
+    gap: 5px;
 }
 
 @media (max-width: 767.98px) {
