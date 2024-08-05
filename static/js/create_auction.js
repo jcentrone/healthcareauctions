@@ -100,7 +100,6 @@ document.getElementById('id_udi').addEventListener('change', (e) => {
 });
 
 
-
 function triggerHapticFeedback() {
     if (navigator.vibrate) {
         navigator.vibrate(200); // Vibrate for 200 milliseconds
@@ -244,10 +243,85 @@ function populateForm(data) {
         document.getElementById('id_package_quantity').value = packageQuantity;
         document.getElementById('id_deviceSterile').checked = device.sterilization.deviceSterile || false;
         document.getElementById('id_fullPackage').checked = device.deviceStatus || false;
+
+        // Modal Actions
+        modalActions();
+
     } else {
         console.log("No device data found");
     }
 }
+
+// Modal Actions - Workflow
+// Function to handle actions within the modal
+function modalActions() {
+    let placeholderEL = document.getElementById('placeholderEL');
+    placeholderEL.style.height = '0px';
+
+    // Move UDI/SKU back to its original position
+    moveElement('sku-field', 'sku-container', true);
+
+    // Append placeholder to modal content
+    document.getElementById('modal-content').appendChild(placeholderEL);
+
+    // Hide SKU info
+    document.getElementById('sku-info').classList.add('hidden-field');
+
+    // Show description information in the modal
+    document.getElementById('description-information').classList.remove('hidden-field');
+
+    // Move description container to modal content
+    moveElement('description-name-container', 'modal-content');
+
+    // Move placeholder to auction summary container
+    moveElement('placeholderEL', 'auction-summary-container', true);
+
+    // Show the next button
+    document.getElementById('next-modal-btn').classList.remove('hidden-field');
+}
+
+// Function to move elements within the DOM
+function moveElement(elementId, targetId, prepend = false) {
+    let element = document.getElementById(elementId);
+    let target = document.getElementById(targetId);
+    if (prepend) {
+        target.prepend(element);
+    } else {
+        target.appendChild(element);
+    }
+}
+
+// Event listener for the next button click
+document.getElementById('next-modal-btn').addEventListener('click', function () {
+    // Hide description information and move description container
+    document.getElementById('description-information').classList.add('hidden-field');
+    moveElement('description-name-container', 'auction-summary-container', true);
+
+    // Move placeholder back to modal content
+    moveElement('placeholderEL', 'modal-content', true);
+
+    // Show auction type modal title and move listing type container
+    document.getElementById('auction-type-modal-title').classList.remove('hidden-field');
+    moveElement('listingTypeContainer', 'modal-content', true);
+
+    // Move placeholder back to SKU container
+    moveElement('placeholderEL', 'sku-container');
+
+    // Hide the next button and show the close button
+    document.getElementById('next-modal-btn').classList.add('hidden-field');
+    document.getElementById('close-modal-btn').classList.remove('hidden-field');
+});
+
+// Event listener for the close button click
+document.getElementById('close-modal-btn').addEventListener('click', function () {
+    // Move placeholder back to modal content and move listing type container
+    moveElement('placeholderEL', 'modal-content', true);
+    moveElement('listingTypeContainer', 'sku-container');
+
+    // Hide the modal background
+    document.getElementById('modal-bg').classList.add('hidden-field');
+});
+
 
 function toProperCase(str) {
     return str.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
@@ -388,14 +462,14 @@ function handleImageInput(event) {
 }
 
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     function isMobileDevice() {
         return /Mobi|Android/i.test(navigator.userAgent);
     }
 
     if (isMobileDevice()) {
-        document.querySelectorAll('.mobile-only').forEach(function(element) {
-           element.setAttribute('style', 'display: block !important;');
+        document.querySelectorAll('.mobile-only').forEach(function (element) {
+            element.setAttribute('style', 'display: block !important;');
         });
     }
 });

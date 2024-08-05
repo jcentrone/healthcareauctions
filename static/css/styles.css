@@ -1015,6 +1015,7 @@ button i {
     .bid-detail,
     #auction-description {
         margin-bottom: 20px;
+        gap: 20px;
     }
 
 }
@@ -1141,14 +1142,26 @@ button i {
 
 .bid-detail {
     display: grid;
-    gap: 20px;
+    /*gap: 20px;*/
 }
+
+#page2 .bid-detail {
+    gap: 15px;
+}
+
+
 
 .bid-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
+    margin-bottom: 20px;
 }
+
+#page2 .bid-row {
+    margin-bottom: 0;
+}
+
 
 .span-two {
     grid-column: span 2;
@@ -1723,7 +1736,7 @@ i.fas.fa-user.fa-fw.fa-lg {
 }
 
 #auction-description textarea {
-    height: 203px;
+    height: 315px;
 }
 
 #header-info-circle,
@@ -1750,6 +1763,54 @@ i.fas.fa-user.fa-fw.fa-lg {
     transform: translate(-50%, -50%);
     z-index: 1050;
 }
+
+#listingType {
+
+}
+
+#auction-tab-li {
+    /*background: #0F4C75;*/
+}
+
+#buyItNow-tab-li {
+
+}
+
+/* Custom styles for tabs within .custom-tabs container */
+.custom-tabs .nav-tabs .nav-item .nav-link {
+    border-radius: 0.25rem 0.25rem 0 0;
+}
+
+.custom-tabs .nav-tabs .nav-item .nav-link.active {
+    background-color: var(--bs-primary);
+    color: white;
+}
+
+.custom-tabs .nav-tabs .nav-item .nav-link {
+    background-color: var(--bs-secondary);
+    color: white;
+    border: none;
+    border-radius: 0.25rem 0.25rem 0 0;
+    margin-right: 0.1rem;
+}
+
+.custom-tabs .nav-tabs .nav-item .nav-link:hover {
+    background-color: var(--bs-primary);
+    color: white;
+}
+
+.custom-tabs .nav-tabs .nav-item .nav-link:not(.active) {
+    background-color: var(--bs-secondary);
+    color: white;
+}
+
+.custom-tabs .tab-content > .tab-pane {
+    border: 1px solid #dee2e6;
+    border-top: 0;
+    border-radius: 0 0 0.25rem 0.25rem;
+    padding: 1rem;
+}
+
 
 @media (max-width: 767.98px) {
     .navbar-expand-md > .container,

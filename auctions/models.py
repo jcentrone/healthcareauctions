@@ -88,6 +88,7 @@ class Auction(models.Model):
         null=True
     )
     buyItNowPrice = models.DecimalField(
+        'Sales Price',
         max_digits=7,
         decimal_places=2,
         blank=True,

@@ -127,7 +127,7 @@
                                                     {{ auction_form.title.label_tag }}
                                                     {{ auction_form.title }}
                                                 </div>
-                                                <div class="bid-detail">
+                                                <div class="bid-detail" id="description-name-container">
                                                     <div>
                                                         {{ auction_form.product_name.label_tag }}
                                                         {{ auction_form.product_name }}
@@ -147,57 +147,82 @@
                                                             <i class="fa-solid fa-barcode"></i>
                                                         </div>
                                                     </div>
-                                                    <!-- Modal Background -->
-                                                    <div id="modal-bg" class="centered-modal-bg hidden-field">
-                                                        <div class="centered-modal-content" id="centered-modal-content">
-                                                            <p class="hidden-field" id="sku-info">Please enter the
-                                                                SKU/UDI
-                                                                to get product information.</p>
-                                                            <div id="modal-content">
-                                                                <div id="placeholderEL"></div>
-                                                            </div>
-                                                            <div class="">
-                                                                <button id="close-modal"
-                                                                        class="btn btn-danger mt-3 hidden-field">Close
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-
                                                     <div>
                                                         {{ auction_form.category.label_tag }}
                                                         {{ auction_form.category }}
                                                     </div>
-                                                    <div class="bid-row">
-                                                        <div class="form-group with-symbol">
-                                                            {{ auction_form.starting_bid.label_tag }}
-                                                            {{ auction_form.starting_bid }}
-                                                        </div>
-                                                        <div class="form-group with-symbol">
-                                                            {{ auction_form.reserve_bid.label_tag }}
-                                                            {{ auction_form.reserve_bid }}
-                                                        </div>
-                                                    </div>
-                                                    <div class="bid-row">
-                                                        <div id="qty-container">
-                                                            <div>
-                                                                {{ auction_form.quantity_available.label_tag }}
-                                                                <i class="fa fa-info-circle" aria-hidden="true"
-                                                                   id="infoIcon">
-                                                                    <span class="tooltip">When the auction quantity is greater than one, all product packages must be full.</span>
-                                                                </i>
+                                                    <!--Auction Type Tab panes -->
+                                                    <div class="container p-0 custom-tabs" id="listingTypeContainer">
+                                                        <!-- Nav tabs -->
+                                                        <ul class="nav nav-tabs" id="listingType" role="tablist">
+                                                            <li class="nav-item" role="presentation"
+                                                                id="auction-tab-li">
+                                                                <button class="nav-link active" id="auction-tab"
+                                                                        data-bs-toggle="tab" data-bs-target="#auction"
+                                                                        type="button" role="tab" aria-controls="auction"
+                                                                        aria-selected="true">Auction
+                                                                </button>
+                                                            </li>
+                                                            <li class="nav-item" role="presentation"
+                                                                id="buyItNow-tab-li">
+                                                                <button class="nav-link" id="buyItNow-tab"
+                                                                        data-bs-toggle="tab" data-bs-target="#buyItNow"
+                                                                        type="button" role="tab"
+                                                                        aria-controls="buyItNow"
+                                                                        aria-selected="false">Add to Cart
+                                                                </button>
+                                                            </li>
+                                                        </ul>
+                                                        <!-- Nav content -->
+                                                        <div class="tab-content" id="myTabContent">
+                                                            <div class="tab-pane fade show active" id="auction"
+                                                                 role="tabpanel" aria-labelledby="auction-tab">
+                                                                <div class="pt-3">
+                                                                    <div class="bid-row">
+                                                                        <div class="form-group with-symbol">
+                                                                            {{ auction_form.starting_bid.label_tag }}
+                                                                            {{ auction_form.starting_bid }}
+                                                                        </div>
+                                                                        <div class="form-group with-symbol">
+                                                                            {{ auction_form.reserve_bid.label_tag }}
+                                                                            {{ auction_form.reserve_bid }}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="bid-row">
+                                                                        <div id="qty-container">
+                                                                            <div>
+                                                                                {{ auction_form.quantity_available.label_tag }}
+                                                                                <i class="fa fa-info-circle"
+                                                                                   aria-hidden="true"
+                                                                                   id="infoIcon">
+                                                                                    <span class="tooltip">When the auction quantity is greater than one, all product packages must be full.</span>
+                                                                                </i>
+                                                                            </div>
+                                                                            {{ auction_form.quantity_available }}
+                                                                        </div>
+                                                                        <div>
+                                                                            {{ auction_form.auction_duration.label_tag }}
+                                                                            {{ auction_form.auction_duration }}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
                                                             </div>
-                                                            {{ auction_form.quantity_available }}
-                                                        </div>
-                                                        <div>
-                                                            {{ auction_form.auction_duration.label_tag }}
-                                                            {{ auction_form.auction_duration }}
+                                                            <div class="tab-pane fade" id="buyItNow" role="tabpanel"
+                                                                 aria-labelledby="buyItNow-tab">
+                                                                <div class="p-3">
+                                                                    <h3>Sales Price</h3>
+                                                                    <p>Enter the sales price that you would like to sell this product for.</p>
+                                                                    <div class="form-group with-symbol">
+                                                                        {{ auction_form.buyItNowPrice.label_tag }}
+                                                                        {{ auction_form.buyItNowPrice }}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
+                                                <button type="button" class="btn btn-primary next-tab">Next</button>
                                             </div>
-                                            <button type="button" class="btn btn-primary next-tab">Next</button>
                                         </div>
                                         <!-- End Page 1 -->
 
@@ -205,6 +230,8 @@
                                         <div class="tab-pane fade" id="page2" role="tabpanel"
                                              aria-labelledby="page2-tab">
                                             <h3 class="package-details-heading">Product Details</h3>
+                                            <p class="border-bottom pb-2">Please add as many details about the product
+                                                as possible. A more complete listing is more likely to sell faster.</p>
                                             <div class="bid-detail">
                                                 <div class="">
                                                     {{ auction_form.manufacturer.label_tag }}
@@ -330,6 +357,38 @@
                                 </div>
 
                             </form>
+                            <!-- Modal Background -->
+                            <div id="modal-bg" class="centered-modal-bg hidden-field">
+                                <div class="centered-modal-content" id="centered-modal-content">
+                                    <div class="modal-header border-bottom mb-3 pb-2">
+                                        <h5 class="hidden-field modal-title" id="sku-info">Please enter the SKU/UDI to
+                                            get started</h5>
+
+                                        <div class="hidden-field modal-title" id="description-information">
+                                            <h5 class="modal-title">Here's what we discovered</h5>
+                                            <p>You are welcome to make changes or add new information.</p>
+                                        </div>
+                                        <div class="hidden-field modal-title" id="auction-type-modal-title">
+                                            <h5 class="modal-title">Listing Type</h5>
+                                            <p>Please select the type of listing you would like to post. You can choose
+                                                between a traditional auction or an add to cart option.</p>
+                                        </div>
+
+
+                                    </div>
+                                    <div id="modal-content">
+                                        <div id="placeholderEL"></div>
+                                    </div>
+                                    <div class="">
+                                        <button id="next-modal-btn"
+                                                class="btn btn-primary mt-3 hidden-field">Next
+                                        </button>
+                                        <button id="close-modal-btn"
+                                                class="btn btn-secondary mt-3 hidden-field">Close
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
 
                         </div>
                     </div>
@@ -344,7 +403,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-        {#background: rgba(0, 0, 0, 0.5);#} display: flex;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
             align-items: center;
             justify-content: center;
             z-index: 1040;
@@ -363,6 +423,7 @@
             transform: translate(-50%, -50%);
             transition: transform 5s ease-in-out;
             z-index: 1050;
+            width: 80%;
         }
 
         .hidden-field {
@@ -371,8 +432,6 @@
     </style>
 
     <link href='{% static "css/styles.css" %}' rel='stylesheet'>
-
-    {#    <script src="https://cdn.jsdelivr.net/npm/@zxing/library@latest/umd/index.min.js"></script>#}
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
@@ -401,12 +460,16 @@
             // Event listener for tab shown event
             $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
                 let targetTab = $(e.target).attr("href"); // Get the target tab pane's selector
+                console.log('Target Tab', targetTab);
                 let firstEmptyInput = $(targetTab).find('input').filter(function () {
                     return !this.value; // Filter out inputs that are not empty
                 }).first(); // Get the first empty input
 
                 if (firstEmptyInput.length) {
                     firstEmptyInput.focus(); // Set focus to the first empty input
+                }
+                if (targetTab === 'page2') {
+                    console.log('Page Dos');
                 }
             });
         });
@@ -421,33 +484,6 @@
         });
     </script>
 
-    {#    <script>#}
-    {#        $(document).ready(function () {#}
-    {#            // On page load, animate the SKU/UDI field to the center and show the modal background#}
-    {#            setTimeout(function () {#}
-    {#$('#sku-field').addClass('centered-modal-content');#}
-    {#                $('#sku-field').prependTo('#modal-content');#}
-    {#                $('#placeholderEL').prependTo('#sku-container').height(57);#}
-    {#                $('#sku-info').removeClass('hidden-field');#}
-    {#                $('#close-modal').removeClass('hidden-field');#}
-    {#                $('#modal-bg').removeClass('hidden-field');#}
-    {##}
-    {#            }, 500); // Delay to ensure everything is loaded properly#}
-    {##}
-    {#            // Handle closing the modal#}
-    {#            $('#close-modal').click(function () {#}
-    {#                setTimeout(function () {#}
-    {#$('#sku-field').removeClass('centered-modal-content');#}
-    {#                    $('#sku-field').prependTo('#sku-container');#}
-    {#                    $('#placeholderEL').appendTo('#modal-content').height(0);#}
-    {##}
-    {#                    $('#sku-info').addClass('hidden-field');#}
-    {#                    $('#close-modal').addClass('hidden-field');#}
-    {#                    $('#modal-bg').addClass('hidden-field');#}
-    {#                }, 500);#}
-    {#            });#}
-    {#        });#}
-    {#    </script>#}
     <script>
         $(document).ready(function () {
             // On page load, animate the SKU/UDI field to the center and show the modal background
@@ -463,25 +499,10 @@
 
                 $('#placeholderEL').prependTo('#sku-container').height(57);
                 $('#sku-info').removeClass('hidden-field');
-                $('#close-modal').removeClass('hidden-field');
+                {#$('#close-modal').removeClass('hidden-field');#}
                 $('#modal-bg').removeClass('hidden-field');
             }, 500); // Delay to ensure everything is loaded properly
-
-            // Handle closing the modal
-            $('#close-modal').click(function () {
-                setTimeout(function () {
-                    // Remove the 'show' class to reverse the CSS transform transition
-                    $('#centered-modal-content').removeClass('show');
-
-                    $('#sku-field').prependTo('#sku-container');
-                    $('#placeholderEL').appendTo('#modal-content').height(0);
-                    $('#sku-info').addClass('hidden-field');
-                    $('#close-modal').addClass('hidden-field');
-                    $('#modal-bg').addClass('hidden-field');
-                }, 500);
-            });
         });
     </script>
 
 {% endblock %}
-    
