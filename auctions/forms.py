@@ -2,8 +2,6 @@ from django import forms
 
 from .models import Auction, Bid, Comment, Image, Category, CartItem
 
-from django import forms
-
 
 class AuctionForm(forms.ModelForm):
     class Meta:
@@ -31,6 +29,23 @@ class AuctionForm(forms.ModelForm):
              f"{category.parent.category_name} / {category.category_name}" if category.parent else f"{category.category_name}")
             for category in Category.objects.all().order_by('parent__category_name', 'category_name')
         ]
+
+    def clean(self):
+        cleaned_data = super().clean()
+        auction_type = cleaned_data.get("auction_type")
+        package_full = cleaned_data.get("package_full")
+
+        if auction_type == "Auction":
+            if not cleaned_data.get("starting_bid"):
+                self.add_error('starting_bid', "Starting bid is required for auctions.")
+            if not cleaned_data.get("quantity_available"):
+                self.add_error('quantity_available', "Quantity is required for auctions.")
+
+        if not package_full and not cleaned_data.get("partial_quantity"):
+            self.add_error('partial_quantity', "Partial quantity is required when the package is not full.")
+
+        return cleaned_data
+
 
 class ImageForm(forms.ModelForm):
     '''

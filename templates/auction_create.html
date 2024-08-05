@@ -94,13 +94,14 @@
 
 
                 <!-- Create Auction Form -->
-                <h1 class='h3 mb-4 text-gray-800'>Create an Auction</h1>
-                <p>Enter the details of the auction below.</p>
+                <h1 class='h3 mb-4 text-gray-800'>Create A Listing</h1>
+                {#                <p>Enter the details of the auction below.</p>#}
                 <div class='card mb-4'>
                     <div class='card-body'>
                         {#                        <h3 class="package-details-heading">Auction Summary</h3>#}
                         <div class='form-group'>
-                            <form action="{% url 'auction_create' %}" method='POST' enctype='multipart/form-data'>
+                            <form action="{% url 'auction_create' %}" method='POST' enctype='multipart/form-data'
+                                  id="auction-form">
                                 {% csrf_token %}
                                 <div id="multi-step-form">
                                     <ul class="nav nav-tabs" id="formTabs" role="tablist" style="display: none">
@@ -119,9 +120,10 @@
                                     </ul>
                                     <div class="tab-content" id="formTabsContent">
                                         <!-- Start Page 1 -->
-                                        <div class="tab-pane fade show active" id="page1" role="tabpanel"
+                                        <div class="tab-pane fade show active main-tab" id="page1" role="tabpanel"
                                              aria-labelledby="page1-tab">
-                                            <h3 class="package-details-heading">Auction Summary</h3>
+                                            <h3 class="package-details-heading">Listing Summary</h3>
+                                            <p>Add the basic details of your listing</p>
                                             <div class='form-group mb-5' id="auction-summary-container">
                                                 <div class="hidden">
                                                     {{ auction_form.title.label_tag }}
@@ -152,7 +154,11 @@
                                                         {{ auction_form.category }}
                                                     </div>
                                                     <!--Auction Type Tab panes -->
-                                                    <div class="container p-0 custom-tabs" id="listingTypeContainer">
+                                                    <div class="container p-0 custom-tabs" id="listingTypeContainer"
+                                                         data-auctiontype="Auction">
+                                                        <div class="hidden-field">
+                                                            {{ auction_form.auction_type }}
+                                                        </div>
                                                         <!-- Nav tabs -->
                                                         <ul class="nav nav-tabs" id="listingType" role="tablist">
                                                             <li class="nav-item" role="presentation"
@@ -160,7 +166,8 @@
                                                                 <button class="nav-link active" id="auction-tab"
                                                                         data-bs-toggle="tab" data-bs-target="#auction"
                                                                         type="button" role="tab" aria-controls="auction"
-                                                                        aria-selected="true">Auction
+                                                                        aria-selected="true">
+                                                                    Auction <i class="fa-solid fa-check"></i>
                                                                 </button>
                                                             </li>
                                                             <li class="nav-item" role="presentation"
@@ -168,8 +175,9 @@
                                                                 <button class="nav-link" id="buyItNow-tab"
                                                                         data-bs-toggle="tab" data-bs-target="#buyItNow"
                                                                         type="button" role="tab"
-                                                                        aria-controls="buyItNow"
-                                                                        aria-selected="false">Add to Cart
+                                                                        aria-controls="buyItNow" aria-selected="false">
+                                                                    Add to Cart <i class="fa-solid fa-check"
+                                                                                   style="display: none;"></i>
                                                                 </button>
                                                             </li>
                                                         </ul>
@@ -193,8 +201,7 @@
                                                                             <div>
                                                                                 {{ auction_form.quantity_available.label_tag }}
                                                                                 <i class="fa fa-info-circle"
-                                                                                   aria-hidden="true"
-                                                                                   id="infoIcon">
+                                                                                   aria-hidden="true" id="infoIcon">
                                                                                     <span class="tooltip">When the auction quantity is greater than one, all product packages must be full.</span>
                                                                                 </i>
                                                                             </div>
@@ -209,9 +216,10 @@
                                                             </div>
                                                             <div class="tab-pane fade" id="buyItNow" role="tabpanel"
                                                                  aria-labelledby="buyItNow-tab">
-                                                                <div class="p-3">
+                                                                <div class="p-2">
                                                                     <h3>Sales Price</h3>
-                                                                    <p>Enter the sales price that you would like to sell this product for.</p>
+                                                                    <p>Enter the sales price that you would like to sell
+                                                                        this product for.</p>
                                                                     <div class="form-group with-symbol">
                                                                         {{ auction_form.buyItNowPrice.label_tag }}
                                                                         {{ auction_form.buyItNowPrice }}
@@ -221,17 +229,20 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <button type="button" class="btn btn-primary next-tab">Next</button>
                                             </div>
                                         </div>
                                         <!-- End Page 1 -->
 
                                         <!-- Start Page 2 -->
-                                        <div class="tab-pane fade" id="page2" role="tabpanel"
+                                        <div class="tab-pane fade main-tab" id="page2" role="tabpanel"
                                              aria-labelledby="page2-tab">
-                                            <h3 class="package-details-heading">Product Details</h3>
-                                            <p class="border-bottom pb-2">Please add as many details about the product
-                                                as possible. A more complete listing is more likely to sell faster.</p>
+                                            <div class="">
+                                                <h3 class="package-details-heading">Product Details</h3>
+                                                <p class="border-bottom pb-2">Please add as many details about the
+                                                    product
+                                                    as possible. A more complete listing is more likely to sell
+                                                    faster.</p>
+                                            </div>
                                             <div class="bid-detail">
                                                 <div class="">
                                                     {{ auction_form.manufacturer.label_tag }}
@@ -288,23 +299,18 @@
                                                         {{ auction_form.fullPackage.label_tag }}
                                                         {{ auction_form.fullPackage }}
                                                         <div class="" id="partial-qty">
-                                                            {#                                                            {{ auction_form.partial_quantity.label_tag }}#}
+                                                            {#{{ auction_form.partial_quantity.label_tag }}#}
                                                             {{ auction_form.partial_quantity }}
                                                         </div>
                                                     </div>
 
                                                 </div>
                                             </div>
-                                            <div class="mt-3">
-                                                <button type="button" class="btn btn-secondary prev-tab">Previous
-                                                </button>
-                                                <button type="button" class="btn btn-primary next-tab">Next</button>
-                                            </div>
                                         </div>
                                         <!-- End Page 2 -->
 
                                         <!-- Start Page 3 -->
-                                        <div class="tab-pane fade" id="page3" role="tabpanel"
+                                        <div class="tab-pane fade main-tab" id="page3" role="tabpanel"
                                              aria-labelledby="page3-tab">
                                             <h3 class="package-details-heading">Photos</h3>
                                             {{ image_form.management_form }}
@@ -344,19 +350,28 @@
                                                     {% endfor %}
                                                 </div>
                                             </div>
-                                            <div class="mt-3">
-                                                <button type="button" class="btn btn-secondary prev-tab">Previous
-                                                </button>
-                                                <button type='submit' class='btn btn-primary'>Save</button>
-                                                <a href="{% url 'active_auctions_view' %}"
-                                                   class='btn btn-light border-dark'>Cancel</a>
-                                            </div>
+                                            {#                                            <div class="mt-3">#}
+                                            {#                                                <button type="button" class="btn btn-secondary prev-tab">Previous#}
+                                            {#                                                </button>#}
+                                            {#                                                <button type='submit' class='btn btn-primary'>Save</button>#}
+                                            {#                                                <a href="{% url 'active_auctions_view' %}"#}
+                                            {#                                                   class='btn btn-light border-dark'>Cancel</a>#}
+                                            {#                                            </div>#}
                                         </div>
                                         <!-- End Page 3 -->
+                                        <div class="mt-3">
+                                            <button type="button" class="btn btn-secondary prev-tab">Previous</button>
+                                            <button type="button" class="btn btn-primary next-tab">Next</button>
+                                            <button type="button" class="btn btn-primary" id="submit-btn">Save</button>
+                                            <a href="{% url 'active_auctions_view' %}"
+                                               class="btn btn-light border-dark">Cancel</a>
+                                        </div>
                                     </div>
                                 </div>
 
                             </form>
+{#                            <div id="error-messages" style="display: none;" class="alert alert-danger"></div>#}
+
                             <!-- Modal Background -->
                             <div id="modal-bg" class="centered-modal-bg hidden-field">
                                 <div class="centered-modal-content" id="centered-modal-content">
@@ -397,6 +412,19 @@
         </section>
     </div>
     <style>
+
+        #error-messages {
+            position: absolute;
+            z-index: 1000;
+            width: auto;
+            max-width: 300px;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
         .centered-modal-bg {
             position: fixed;
             top: 0;
@@ -441,21 +469,7 @@
     <script src="{% static 'js/scanner.js' %}"></script>
     <script>
         $(document).ready(function () {
-            $('.next-tab').click(function () {
-                let activeTab = $('.nav-tabs .nav-link.active');
-                let nextTab = activeTab.parent().next().find('.nav-link');
-                if (nextTab.length) {
-                    nextTab.tab('show');
-                }
-            });
 
-            $('.prev-tab').click(function () {
-                let activeTab = $('.nav-tabs .nav-link.active');
-                let prevTab = activeTab.parent().prev().find('.nav-link');
-                if (prevTab.length) {
-                    prevTab.tab('show');
-                }
-            });
 
             // Event listener for tab shown event
             $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
@@ -503,6 +517,9 @@
                 $('#modal-bg').removeClass('hidden-field');
             }, 500); // Delay to ensure everything is loaded properly
         });
+    </script>
+    <script>
+
     </script>
 
 {% endblock %}

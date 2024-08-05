@@ -289,38 +289,44 @@ def auction_create(request):
 
     if request.method == 'POST':
         auction_form = AuctionForm(request.POST, request.FILES)
-        image_form = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.none())
+        image_formset = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.none())
 
-        if auction_form.is_valid() and image_form.is_valid():
+        if auction_form.is_valid() and image_formset.is_valid():
             new_auction = auction_form.save(commit=False)
             new_auction.creator = request.user
             new_auction.date_created = timezone.now()
-            # Handle buyer as needed, for example:
-            # new_auction.buyer = some_user_instance
             new_auction.save()
 
-            for form in image_form.cleaned_data:
+            for form in image_formset.cleaned_data:
                 if form:
                     image = form['image']
                     new_image = Image(auction=new_auction, image=image)
                     new_image.save()
 
-            return redirect('active_auctions_view')
+            return JsonResponse({'success': True})
         else:
+            errors = []
             if not auction_form.is_valid():
+                for field, error in auction_form.errors.items():
+                    errors.append({'field': field, 'message': error[0]})
                 logger.error(f'Auction form errors: {auction_form.errors}')
-            if not image_form.is_valid():
-                logger.error(f'Image form errors: {image_form.errors}')
+            if not image_formset.is_valid():
+                for form in image_formset.forms:
+                    for field, error in form.errors.items():
+                        errors.append({'field': f'{form.prefix}-{field}', 'message': error[0]})
+                logger.error(f'Image form errors: {image_formset.errors}')
+            return JsonResponse({'success': False, 'errors': errors})
     else:
         auction_form = AuctionForm()
-        image_form = ImageFormSet(queryset=Image.objects.none())
+        image_formset = ImageFormSet(queryset=Image.objects.none())
 
     return render(request, 'auction_create.html', {
         'categories': Category.objects.all(),
         'auction_form': auction_form,
-        'image_form': image_form,
+        'image_form': image_formset,
         'title': 'Create Auction',
     })
+
 
 
 @login_required

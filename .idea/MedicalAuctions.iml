@@ -23,6 +23,9 @@
     <orderEntry type="library" name="quagga" level="application" />
     <orderEntry type="library" name="jsqr" level="application" />
     <orderEntry type="library" name="@zxing/library" level="application" />
+    <orderEntry type="library" name="xlsx" level="application" />
+    <orderEntry type="library" name="jsqr" level="application" />
+    <orderEntry type="library" name="quagga" level="application" />
   </component>
   <component name="PyDocumentationSettings">
     <option name="format" value="PLAIN" />

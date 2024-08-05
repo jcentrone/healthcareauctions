@@ -473,3 +473,237 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('test');
+    const listingTypeContainer = document.getElementById('listingTypeContainer');
+    const auctionTab = document.getElementById('auction-tab');
+    const buyItNowTab = document.getElementById('buyItNow-tab');
+
+    const updateAuctionType = () => {
+        if (auctionTab.classList.contains('active')) {
+            listingTypeContainer.setAttribute('data-auctiontype', 'Auction');
+            document.getElementById('id_auction_type').value = 'Auction';
+
+        } else {
+            listingTypeContainer.setAttribute('data-auctiontype', 'Sale');
+            document.getElementById('id_auction_type').value = 'Sale';
+
+        }
+    };
+
+    auctionTab.addEventListener('click', function () {
+        auctionTab.classList.add('active');
+        buyItNowTab.classList.remove('active');
+        updateAuctionType();
+        auctionTab.querySelector('i').style.display = 'inline';
+        buyItNowTab.querySelector('i').style.display = 'none';
+    });
+
+    buyItNowTab.addEventListener('click', function () {
+        buyItNowTab.classList.add('active');
+        auctionTab.classList.remove('active');
+        updateAuctionType();
+        buyItNowTab.querySelector('i').style.display = 'inline';
+        auctionTab.querySelector('i').style.display = 'none';
+    });
+
+    // Initialize auction type on page load
+    updateAuctionType();
+    if (auctionTab.classList.contains('active')) {
+        auctionTab.querySelector('i').style.display = 'inline';
+        buyItNowTab.querySelector('i').style.display = 'none';
+    } else {
+        buyItNowTab.querySelector('i').style.display = 'inline';
+        auctionTab.querySelector('i').style.display = 'none';
+    }
+});
+
+document.getElementById('auction-form').addEventListener('submit', function (event) {
+    let invalidInput = document.querySelector('.tab-content .tab-pane:invalid');
+    console.log('Invalid Input', invalidInput);
+    if (invalidInput) {
+        event.preventDefault();
+
+        let invalidTabId = invalidInput.closest('.tab-pane').id;
+        let invalidTabLink = document.querySelector(`a[href="#${invalidTabId}"]`);
+        if (invalidTabLink) {
+            invalidTabLink.click();
+        }
+
+        invalidInput.focus();
+    }
+});
+
+function updateButtonVisibility() {
+    const activeTab = document.querySelector('.nav-tabs .nav-link.active');
+    const prevTab = activeTab.parentElement.previousElementSibling?.querySelector('.nav-link');
+    const nextTab = activeTab.parentElement.nextElementSibling?.querySelector('.nav-link');
+    const prevButton = document.querySelector('.prev-tab');
+    const nextButton = document.querySelector('.next-tab');
+    prevButton.style.display = prevTab ? 'inline-block' : 'none';
+    nextButton.style.display = nextTab ? 'inline-block' : 'none';
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('auction-form');
+    const errorMessages = document.getElementById('error-messages');
+
+
+    // Initialize Bootstrap tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Handle tab switching
+    function switchToMainTab(tabPaneId) {
+        const tabLink = document.querySelector(`a[href="#${tabPaneId}"]`);
+        if (tabLink) {
+            const tabEvent = new bootstrap.Tab(tabLink);
+            tabEvent.show();
+        }
+    }
+
+
+    // Initial button visibility update
+    updateButtonVisibility();
+
+    // Handle form submission via AJAX
+    document.getElementById('submit-btn').addEventListener('click', function (event) {
+        event.preventDefault();
+
+        const formData = new FormData(form);
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        // Clear previous error messages
+        document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+        document.querySelectorAll('.is-invalid').forEach(el => {
+            el.classList.remove('is-invalid');
+            el.removeAttribute('data-bs-original-title');
+            el.removeAttribute('data-bs-toggle');
+        });
+
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+            },
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Handle successful form submission (e.g., redirect or show a success message)
+                    window.location.href = "{% url 'active_auctions_view' %}";
+                } else {
+                    // Handle form errors
+                    const firstErrorField = document.querySelector(`[name="${data.errors[0].field}"]`);
+                    if (firstErrorField) {
+                        firstErrorField.classList.add('is-invalid');
+                        firstErrorField.setAttribute('data-bs-toggle', 'tooltip');
+                        firstErrorField.setAttribute('data-bs-original-title', data.errors[0].message);
+
+                        // Initialize the tooltip for the invalid field
+                        const tooltip = new bootstrap.Tooltip(firstErrorField);
+                        tooltip.show();
+
+                        const mainTabPane = firstErrorField.closest('.main-tab');
+                        if (mainTabPane) {
+                            switchToMainTab(mainTabPane.id);
+                            firstErrorField.focus();
+                            updateButtonVisibility();
+                        }
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    });
+
+    // Clear error message on input
+    form.querySelectorAll('input, textarea, select').forEach(input => {
+        input.addEventListener('input', function () {
+            if (input.classList.contains('is-invalid')) {
+                input.classList.remove('is-invalid');
+                input.removeAttribute('data-bs-original-title');
+                input.removeAttribute('data-bs-toggle');
+                const tooltip = bootstrap.Tooltip.getInstance(input);
+                if (tooltip) {
+                    tooltip.dispose();
+                }
+            }
+        });
+    });
+
+    // Tab navigation buttons
+    document.querySelectorAll('.next-tab').forEach(button => {
+        button.addEventListener('click', function () {
+            const activeTab = document.querySelector('.nav-tabs .nav-link.active');
+            const nextTab = activeTab.parentElement.nextElementSibling?.querySelector('.nav-link');
+            if (nextTab) {
+                const tabEvent = new bootstrap.Tab(nextTab);
+                tabEvent.show();
+                updateButtonVisibility();
+            }
+        });
+    });
+
+    document.querySelectorAll('.prev-tab').forEach(button => {
+        button.addEventListener('click', function () {
+            const activeTab = document.querySelector('.nav-tabs .nav-link.active');
+            const prevTab = activeTab.parentElement.previousElementSibling?.querySelector('.nav-link');
+            if (prevTab) {
+                const tabEvent = new bootstrap.Tab(prevTab);
+                tabEvent.show();
+                updateButtonVisibility();
+            }
+        });
+    });
+
+    // Update button visibility on tab shown event
+    document.querySelectorAll('a[data-bs-toggle="tab"]').forEach(tab => {
+        tab.addEventListener('shown.bs.tab', updateButtonVisibility);
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    const auctionTypeField = document.querySelector('[name="auction_type"]');
+    const startingBidField = document.querySelector('[name="starting_bid"]');
+    const quantityAvailableField = document.querySelector('[name="quantity_available"]');
+    const packageFullField = document.querySelector('[name="package_full"]');
+    const partialQuantityField = document.querySelector('[name="partial_quantity"]');
+
+    function updateFieldRequirements() {
+        const auctionType = auctionTypeField.value;
+        const packageFull = packageFullField.checked;
+
+        if (auctionType === "Auction") {
+            startingBidField.required = true;
+            quantityAvailableField.required = true;
+        } else {
+            startingBidField.required = false;
+            quantityAvailableField.required = false;
+        }
+
+        if (packageFull) {
+            partialQuantityField.required = false;
+        } else {
+            partialQuantityField.required = true;
+        }
+
+    }
+
+    // Initial check
+    updateFieldRequirements();
+
+    // Event listeners
+    auctionTypeField.addEventListener('change', updateFieldRequirements);
+    packageFullField.addEventListener('change', updateFieldRequirements);
+});
+
+
+
+
+

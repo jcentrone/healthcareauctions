@@ -1142,7 +1142,7 @@ button i {
 
 .bid-detail {
     display: grid;
-    /*gap: 20px;*/
+    gap: 20px;
 }
 
 #page2 .bid-detail {
