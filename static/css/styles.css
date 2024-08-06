@@ -1144,6 +1144,9 @@ button i {
     display: grid;
     gap: 20px;
 }
+#auctionTabContent{
+    min-height: 220px;
+}
 
 #page2 .bid-detail {
     gap: 15px;

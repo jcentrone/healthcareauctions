@@ -612,8 +612,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (mainTabPane) {
                             switchToMainTab(mainTabPane.id);
                             firstErrorField.focus();
-                            updateButtonVisibility();
+                            // updateButtonVisibility();
                         }
+                        updateButtonVisibility();
                     }
                 }
             })
