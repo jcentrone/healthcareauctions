@@ -116,10 +116,17 @@
                                             <div class="display-8">{{ auction.category }}</div>
                                             <h3>
                                                 <div class="two-grid-auto-columns mt-2 auction-price">
-                                                    {% if auction.current_bid %}
-                                                        ${{ auction.current_bid }}
+                                                    {% if auction.auction_type == 'Auction' %}
+                                                        {% if auction.current_bid %}
+                                                            ${{ auction.current_bid }}
+                                                            <div class="fs-5">Current Bid</div>
+                                                        {% else %}
+                                                            ${{ auction.starting_bid }}
+                                                            <div class="fs-5 fw-light fst-italic">Starting Bid</div>
+                                                        {% endif %}
                                                     {% else %}
-                                                        ${{ auction.starting_bid }}
+                                                        ${{ auction.buyItNowPrice }}
+                                                        <div class="fs-5 fw-light fst-italic">Get It Now</div>
                                                     {% endif %}
                                                 </div>
                                             </h3>
@@ -160,52 +167,83 @@
                                         </div>
                                     </div>
                                 </button>
-
+                                <!-- Admin Section -->
                                 {% if user.is_authenticated %}
                                     <div class="p-3">
-                                        <!-- Admin Section -->
-{#                                        <div class="bid-form pe-3">#}
+
+                                        {% if auction.auction_type == 'Auction' %}
+                                            <!-- Start Bid Form -->
                                             <div class='card mb-4'>
                                                 <div class='card-header'>
-                                                    <div>Place Your Bid</div>
+                                                    <div class="">Place Your Bid</div>
+                                                    
                                                 </div>
-
-                                            <div class='form-group'>
-                                                <form class="p-3 " action="{% url 'auction_bid' auction.id %}" method='POST'
-                                                      data-auction-id="{{ auction.id }}"
-                                                      data-starting-bid="{{ auction.starting_bid }}"
-                                                      data-current-bid="{{ auction.current_bid }}">
-                                                    {% csrf_token %}
-                                                    <div class='form-group with-symbol extra-m'>
-                                                        {{ bid_form }}
-                                                        <br>
-                                                        <button type='submit' class='btn btn-primary'>
-                                                            Place a bid
-                                                        </button>
-                                                    </div>
-                                                </form>
+                                                <div class='form-group'>
+                                                    <form class="p-3 " action="{% url 'auction_bid' auction.id %}"
+                                                          method='POST'
+                                                          data-auction-id="{{ auction.id }}"
+                                                          data-starting-bid="{{ auction.starting_bid }}"
+                                                          data-current-bid="{{ auction.current_bid }}">
+                                                        {% csrf_token %}
+                                                        <div class='form-group with-symbol extra-m'>
+                                                            {{ bid_form }}
+                                                            <br>
+                                                            <button type='submit' class='btn btn-primary'>
+                                                                Place a bid
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                </div>
                                             </div>
-                                        </div>
-
-                                        {% if auction.creator == user and auction.active %}
-
-                                            <!-- Admin section: Close Auction -->
-
-                                            <div class='card'>
+                                            <!-- End Bid Form -->
+                                        {% else %}
+                                            <!-- Start Get It Now Form -->
+                                            <div class='card mb-4'>
                                                 <div class='card-header'>
-                                                    <i class='fas fa-lock'></i>
-                                                    Admin section
+                                                    <div class="">Add to Cart</div>
+                                                    
                                                 </div>
-                                                <div class='card-body'>
-                                                    <a class='btn btn-danger mt-auto'
-                                                       href="{% url 'auction_close' auction.id %}">
-                                                        Close auction
-                                                    </a>
+                                                <div class='form-group'>
+                                                    <form class="p-3 " action="{% url 'auction_bid' auction.id %}"
+                                                          method='POST'
+                                                          data-auction-id="{{ auction.id }}"
+                                                          data-starting-bid="{{ auction.starting_bid }}"
+                                                          data-current-bid="{{ auction.current_bid }}">
+                                                        {% csrf_token %}
+                                                        <div class='form-group extra-m'>
+                                                            {{ add_to_cart_form }}
+                                                            <br>
+                                                            <button type='submit' class='btn btn-primary'>
+                                                                Get it Now
+                                                            </button>
+                                                        </div>
+                                                    </form>
                                                 </div>
                                             </div>
-
-
+                                            <!-- End Get It Now Form -->
                                         {% endif %}
+
+
+
+                                        {#                                        {% if auction.creator == user and auction.active %}#}
+                                        {##}
+                                        {#                                            <!-- Admin section: Close Auction -->#}
+                                        {##}
+                                        {#                                            <div class='card'>#}
+                                        {#                                                <div class='card-header'>#}
+                                        {#                                                    <i class='fas fa-lock'></i>#}
+                                        {#                                                    Admin section#}
+                                        {#                                                </div>#}
+                                        {#                                                <div class='card-body'>#}
+                                        {#                                                    <a class='btn btn-danger mt-auto'#}
+                                        {#                                                       href="{% url 'auction_close' auction.id %}">#}
+                                        {#                                                        Close auction#}
+                                        {#                                                    </a>#}
+                                        {#                                                </div>#}
+                                        {#                                            </div>#}
+                                        {##}
+                                        {##}
+                                        {#                                        {% endif %}#}
                                     </div>
                                 {% endif %}
                             </div>

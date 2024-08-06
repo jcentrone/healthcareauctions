@@ -450,6 +450,7 @@ def active_auctions_view(request):
         'categories': Category.objects.all(),
         'auctions': pages,
         'bid_form': BidForm(),
+        'add_to_cart_form': AddToCartForm(),
         'auctions_count': auctions.count(),
         'pages': pages,
         'title': title.replace("_", " "),

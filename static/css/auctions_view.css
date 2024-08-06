@@ -89,6 +89,7 @@
     width: fit-content;
     gap: 10px;
     font-family: Montserrat, sans-serif;
+    align-items: center;
 }
 
 .time-remaining {

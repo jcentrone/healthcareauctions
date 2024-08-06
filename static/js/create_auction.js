@@ -244,8 +244,11 @@ function populateForm(data) {
         document.getElementById('id_deviceSterile').checked = device.sterilization.deviceSterile || false;
         document.getElementById('id_fullPackage').checked = device.deviceStatus || false;
 
-        // Modal Actions
-        modalActions();
+        let modal = document.getElementById('modal-bg');
+        if (!modal.classList.contains('hidden-field')) {
+            // Modal Actions
+            modalActions();
+        }
 
     } else {
         console.log("No device data found");
