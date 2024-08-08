@@ -1,30 +1,30 @@
 let currentInputId = null;
 
-function readURL(input, previewId, iconId) {
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            document.getElementById(previewId).src = e.target.result;
-            document.getElementById(previewId).style.display = 'block';
-            document.getElementById(iconId).style.display = 'none';
-        };
-        reader.readAsDataURL(input.files[0]);
+document.addEventListener('DOMContentLoaded', (event) => {
+    function readURL(input, previewId, iconId) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById(previewId).src = e.target.result;
+                document.getElementById(previewId).style.display = 'block';
+                document.getElementById(iconId).style.display = 'none';
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
     }
-}
 
-// Attach event listener to the main image input
-document.getElementById('id_form-0-image').addEventListener('change', () => {
-    readURL(document.getElementById('id_form-0-image'), 'main-thumbnail-preview', 'main-upload-icon');
-});
-
-
-// Attach event listeners to all image upload inputs
-document.querySelectorAll('input[type="file"][id^="id_form-"]').forEach((input) => {
-    const index = input.id.match(/\d+/)[0]; // Extract the index from the input ID
-    input.addEventListener('change', () => {
-        readURL(input, `thumbnail-preview-${index}`, `upload-icon-${index}`);
+    // Attach event listeners to all image upload inputs
+    document.querySelectorAll('input[type="file"][id^="id_form-"]').forEach((input) => {
+        const index = input.id.match(/\d+/)[0]; // Extract the index from the input ID
+        input.addEventListener('change', () => {
+            readURL(input, `thumbnail-preview-${index}`, `upload-icon-${index}`);
+        });
     });
+
+    document.getElementById('id_form-0-sku').required = true;
+    document.getElementById('id_category').required = true;
 });
+
 
 document.querySelectorAll('.scan-control').forEach((input) => {
     // Extract the index from the input ID
@@ -46,11 +46,11 @@ document.getElementById('id_fullPackage').addEventListener('change', (event) => 
     let auctionQty = document.getElementById('id_quantity_available');
 
     if (event.target.checked) {
-        partialQty.style.visibility = 'hidden';
+        partialQty.classList.add('hidden-field');
         auctionQty.disabled = false;
 
     } else {
-        partialQty.style.visibility = 'visible';
+        partialQty.classList.remove('hidden-field');
         auctionQty.value = 1;
         auctionQty.disabled = true;
     }
@@ -94,9 +94,24 @@ document.getElementById('scanQRCode').onclick = () => {
     // startScanner();
 };
 
-// document.getElementById('fileInput').addEventListener('change', handleFileSelect);
-document.getElementById('id_udi').addEventListener('change', (e) => {
-    parseBarcode(e.target.value);
+document.addEventListener('DOMContentLoaded', function () {
+    const skuInput = document.getElementById('id_form-0-sku');
+
+    // Paste event listener
+    skuInput.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const pastedData = (e.clipboardData || window.clipboardData).getData('text');
+        e.target.value = pastedData;
+        parseBarcode(pastedData);
+    });
+
+    // Keydown event listener
+    skuInput.addEventListener('input', (e) => {
+        // Check the length of the input value
+        if (skuInput.value.length >= 13) {
+            parseBarcode(skuInput.value);
+        }
+    });
 });
 
 
@@ -141,10 +156,14 @@ function fetchDeviceData(code) {
         })
         .then(data => {
             console.log("Device data from AccessGUDID:", data);
+            document.getElementById('lookup-errors').innerText = '';
             populateForm(data);
             fetchClassificationData(data.gudid.device.productCodes.fdaProductCode[0].productCode);
         })
-        .catch(error => console.error('Error fetching device data:', error));
+        .catch(error => {
+            document.getElementById('lookup-errors').innerText = 'No Device Date Found';
+            console.error('Error fetching device data:', error)
+        });
 }
 
 function fetchClassificationData(code) {
@@ -214,13 +233,17 @@ function getCsrfToken() {
 }
 
 function populateForm(data) {
-    console.log(data);
     if (data && data.gudid && data.gudid.device) {
         const device = data.gudid.device;
         document.getElementById('id_product_name').value = device.brandName || '';
-        document.getElementById('id_description').value = device.deviceDescription || '';
         document.getElementById('id_manufacturer').value = toProperCase(device.companyName) || '';
 
+        let description = device.deviceDescription || '';
+        let gmdnTerms = device.gmdnTerms.gmdn[0].gmdnPTDefinition || '';
+        if (gmdnTerms) {
+            description += '\n\n' + gmdnTerms;
+        }
+        document.getElementById('id_description').value = description;
 
         let packageQuantity = '';
         let packageType = '';
@@ -229,7 +252,7 @@ function populateForm(data) {
             for (const identifier of device.identifiers.identifier) {
                 if (identifier.deviceIdType === "Package") {
                     packageQuantity = identifier.pkgQuantity || '';
-                    packageType = toProperCase(identifier.pkgType || '');
+                    packageType = identifier.pkgType || '';
                     break;
                 } else {
                     packageQuantity = device.deviceCount || '';
@@ -237,19 +260,40 @@ function populateForm(data) {
             }
         }
 
-
         document.getElementById('id_title').value = device.brandName + " - " + device.deviceDescription;
-        document.getElementById('id_package_type').value = packageType;
         document.getElementById('id_package_quantity').value = packageQuantity;
+
+        // Map package type to the dropdown
+        const packageTypeField = document.getElementById('id_package_type');
+        if (packageType) {
+            packageTypeField.value = packageType.toUpperCase();
+        } else {
+            packageTypeField.value = '';
+        }
+
         document.getElementById('id_deviceSterile').checked = device.sterilization.deviceSterile || false;
-        document.getElementById('id_fullPackage').checked = device.deviceStatus || false;
+        document.getElementById('id_fullPackage').checked = true;
+        document.getElementById('partial-qty').classList.add('hidden-field');
+
+
+        // If device has manufacturing date requirement make required
+        if (device.manufacturingDate) {
+            document.getElementById('id_form-0-production_date').required = true;
+        }
+        // If device has expiration date requirement make required
+        if (device.expirationDate) {
+            document.getElementById('id_form-0-expiration_date').required = true;
+        }
+        // If device has expiration date requirement make required
+        if (device.lotBatch) {
+            document.getElementById('id_form-0-lot_number').required = true;
+        }
+
 
         let modal = document.getElementById('modal-bg');
         if (!modal.classList.contains('hidden-field')) {
-            // Modal Actions
             modalActions();
         }
-
     } else {
         console.log("No device data found");
     }
@@ -262,7 +306,7 @@ function modalActions() {
     placeholderEL.style.height = '0px';
 
     // Move UDI/SKU back to its original position
-    moveElement('sku-field', 'sku-container', true);
+    moveElement('sku-field0', 'product-detail-container0', true);
 
     // Append placeholder to modal content
     document.getElementById('modal-content').appendChild(placeholderEL);
@@ -276,12 +320,24 @@ function modalActions() {
     // Move description container to modal content
     moveElement('description-name-container', 'modal-content');
 
+    // // Destroy the existing TinyMCE instance
+    // tinymce.get('id_description').remove();
+    // // Reinitialize TinyMCE
+    //
+    // tinymce.init({
+    //     selector: '#id_description',
+    //     menubar: false,
+    //     plugins: 'autolink charmap lists searchreplace visualblocks wordcount linkchecker',
+    //     toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | align lineheight | numlist bullist indent outdent | charmap | removeformat',
+    // });
+
     // Move placeholder to auction summary container
     moveElement('placeholderEL', 'auction-summary-container', true);
 
     // Show the next button
     document.getElementById('next-modal-btn').classList.remove('hidden-field');
 }
+
 
 // Function to move elements within the DOM
 function moveElement(elementId, targetId, prepend = false) {
@@ -306,7 +362,7 @@ document.getElementById('next-modal-btn').addEventListener('click', function () 
     // Show auction type modal title and move listing type container
     document.getElementById('auction-type-modal-title').classList.remove('hidden-field');
     moveElement('listingTypeContainer', 'modal-content', true);
-
+    document.getElementById('id_starting_bid').focus();
     // Move placeholder back to SKU container
     moveElement('placeholderEL', 'sku-container');
 
@@ -430,39 +486,27 @@ function transferDataToAuctionForm() {
     document.getElementById('scanModal').style.display = 'none';
 }
 
-document.getElementById('infoIcon').addEventListener('mouseover', function () {
-    document.querySelector('.tooltip').style.visibility = 'visible';
-    document.querySelector('.tooltip').style.opacity = 1;
+document.addEventListener('DOMContentLoaded', function () {
+    const infoIcons = document.querySelectorAll('.fa-info-circle');
+
+    infoIcons.forEach(icon => {
+        icon.addEventListener('mouseover', function () {
+            const tooltip = icon.querySelector('.tooltip');
+            if (tooltip) {
+                tooltip.style.visibility = 'visible';
+                tooltip.style.opacity = 1;
+            }
+        });
+
+        icon.addEventListener('mouseout', function () {
+            const tooltip = icon.querySelector('.tooltip');
+            if (tooltip) {
+                tooltip.style.visibility = 'hidden';
+                tooltip.style.opacity = 0;
+            }
+        });
+    });
 });
-document.getElementById('infoIcon').addEventListener('mouseout', function () {
-    document.querySelector('.tooltip').style.visibility = 'hidden';
-    document.querySelector('.tooltip').style.opacity = 0;
-});
-
-// document.getElementById('barcode-image-input').addEventListener('change', handleImageInput);
-
-function handleImageInput(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function (e) {
-        const img = new Image();
-        img.onload = function () {
-            const codeReader = new ZXing.BrowserMultiFormatReader();
-            codeReader.decodeFromImage(img)
-                .then(result => {
-                    console.log(result);
-                    processDetectedBarcode(result);
-                })
-                .catch(err => {
-                    console.error('Failed to decode barcode from image:', err);
-                });
-        };
-        img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-}
 
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -478,7 +522,6 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 document.addEventListener('DOMContentLoaded', function () {
-    console.log('test');
     const listingTypeContainer = document.getElementById('listingTypeContainer');
     const auctionTab = document.getElementById('auction-tab');
     const buyItNowTab = document.getElementById('buyItNow-tab');
@@ -572,7 +615,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // Initial button visibility update
     updateButtonVisibility();
 
-    // Handle form submission via AJAX
     document.getElementById('submit-btn').addEventListener('click', function (event) {
         event.preventDefault();
 
@@ -587,6 +629,18 @@ document.addEventListener('DOMContentLoaded', function () {
             el.removeAttribute('data-bs-toggle');
         });
 
+        // Show processing alert
+        Swal.fire({
+            title: 'Processing...',
+            text: 'Please wait while we submit your form.',
+            icon: 'info',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            willOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
         fetch(form.action, {
             method: 'POST',
             headers: {
@@ -596,10 +650,34 @@ document.addEventListener('DOMContentLoaded', function () {
         })
             .then(response => response.json())
             .then(data => {
+                Swal.close(); // Close the processing alert
+
                 if (data.success) {
-                    // Handle successful form submission (e.g., redirect or show a success message)
-                    window.location.href = "{% url 'active_auctions_view' %}";
+                    // Show success alert with custom button class
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Your form has been submitted successfully.',
+                        icon: 'success',
+                        confirmButtonText: 'OK',
+                        customClass: {
+                            confirmButton: 'btn btn-primary'
+                        }
+                    }).then(() => {
+                        // Redirect to the next page
+                        window.location.href = data.redirect_url;
+                    });
                 } else {
+                    // Show error alert
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'There were errors with your submission.',
+                        icon: 'error',
+                        confirmButtonText: 'OK',
+                        customClass: {
+                            confirmButton: 'btn btn-danger'
+                        }
+                    });
+
                     // Handle form errors
                     const firstErrorField = document.querySelector(`[name="${data.errors[0].field}"]`);
                     if (firstErrorField) {
@@ -623,8 +701,21 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .catch(error => {
                 console.error('Error:', error);
+                Swal.close(); // Close the processing alert
+
+                // Show generic error alert
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'An unexpected error occurred. Please try again later.',
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                    customClass: {
+                        confirmButton: 'btn btn-danger'
+                    }
+                });
             });
     });
+
 
     // Clear error message on input
     form.querySelectorAll('input, textarea, select').forEach(input => {
@@ -676,8 +767,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const auctionTypeField = document.querySelector('[name="auction_type"]');
     const startingBidField = document.querySelector('[name="starting_bid"]');
     const quantityAvailableField = document.querySelector('[name="quantity_available"]');
-    const packageFullField = document.querySelector('[name="package_full"]');
-    const partialQuantityField = document.querySelector('[name="partial_quantity"]');
+    const packageFullField = document.querySelector('[name="fullPackage"]');
+    const partialQuantityField = document.querySelector('[name="package_quantity"]');
 
     function updateFieldRequirements() {
         const auctionType = auctionTypeField.value;
@@ -707,6 +798,77 @@ document.addEventListener('DOMContentLoaded', function () {
     packageFullField.addEventListener('change', updateFieldRequirements);
 });
 
+document.addEventListener('DOMContentLoaded', function () {
+    const quantityAvailableField = document.getElementById('id_quantity_available');
+
+    if (quantityAvailableField) {
+        quantityAvailableField.addEventListener('input', function () {
+            if (parseInt(this.value, 10) > 1) {
+                // Your code here for when the value is greater than 1
+            }
+        });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    const formsetContainer = document.getElementById('product-detail-formset');
+    const addButton = document.getElementById('add-product-detail');
+    const totalFormsInput = document.querySelector('#id_form-TOTAL_FORMS');
+    let formCount = parseInt(totalFormsInput.value);
+
+    const parentElement = document.querySelector('[data-form-index="0"]');
+    const childElement = parentElement.querySelector('.remove-form-row');
+    childElement.style.opacity = '0';
+
+    addButton.addEventListener('click', function () {
+        const newForm = formsetContainer.querySelector('.product-detail-form').cloneNode(true);
+        const formRegex = RegExp(`form-(\\d){1}-`, 'g');
+        newForm.innerHTML = newForm.innerHTML.replace(formRegex, `form-${formCount}-`);
+        newForm.setAttribute('data-form-index', formCount);
+
+        // Clear the input values
+        Array.from(newForm.querySelectorAll('input')).forEach(input => {
+            input.value = '';
+        });
+
+
+        // Append the new form and update the form count
+        formsetContainer.appendChild(newForm);
+        formCount++;
+        totalFormsInput.value = formCount;
+
+        // Add event listener to the remove button of the new form
+        const removeButton = newForm.querySelector('.remove-form-row');
+        removeButton.style.opacity = '1';
+        removeButton.addEventListener('click', function () {
+            newForm.remove();
+            formCount--;
+            totalFormsInput.value = formCount;
+        });
+    });
+
+    // Attach remove event to initial forms
+    document.querySelectorAll('.remove-form-row').forEach(button => {
+        button.addEventListener('click', function (event) {
+            event.target.closest('.product-detail-form').remove();
+            formCount--;
+            totalFormsInput.value = formCount;
+        });
+    });
+});
+
+// document.addEventListener('DOMContentLoaded', function() {
+//     const skuInputs = document.querySelectorAll('.sku-input');
+//
+//     skuInputs.forEach(input => {
+//         Inputmask({
+//             mask: "(01)9999999999999", // Define the mask with 13 numeric characters after the (01)
+//             placeholder: " ", // Placeholder for the remaining numeric characters
+//             showMaskOnHover: true, // Optional: Hide the mask when not focused
+//             showMaskOnFocus: true // Optional: Show the mask when focused
+//         }).mask(input);
+//     });
+// });
 
 
 

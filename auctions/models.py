@@ -62,12 +62,31 @@ class Auction(models.Model):
         (7, '7 days'),
         (10, '10 days')
     ]
+    PACKAGE_TYPE_CHOICES = [
+        ('BAG', 'Bag'),
+        ('BOT', 'Bottle'),
+        ('BOX', 'Box'),
+        ('CAR', 'Cartridge'),
+        ('CA', 'Case'),
+        ('CTN', 'Carton'),
+        ('DRM', 'Drum'),
+        ('JAR', 'Jar'),
+        ('PKG', 'Package'),
+        ('PKT', 'Packet'),
+        ('ROL', 'Roll'),
+        ('SAK', 'Sack'),
+        ('SET', 'Set'),
+        ('TRY', 'Tray'),
+        ('TUB', 'Tub'),
+        ('VIAL', 'Vial'),
+        ('OTHER', 'Other'),
+    ]
     title = models.CharField('Title', max_length=100)
-    description = models.TextField(max_length=800, null=False, default='.')
+    description = models.TextField(max_length=800, null=False, default='')
     creator = models.ForeignKey(User, on_delete=models.PROTECT, related_name='auction_creator')
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='auction_category')
     date_created = models.DateTimeField(default=timezone.now)
-    quantity_available = models.IntegerField('Listing Quantity', null=True, blank=True)
+    quantity_available = models.IntegerField('Listing Quantity', null=True, blank=True, default=1)
     starting_bid = models.DecimalField(
         max_digits=7,
         decimal_places=2,
@@ -99,29 +118,33 @@ class Auction(models.Model):
     watchers = models.ManyToManyField(User, related_name='watchlist', blank=True)
     active = models.BooleanField(default=True)
     product_name = models.CharField('Product Name', max_length=256, null=False, blank=False, default='')
-    package_quantity = models.IntegerField(null=True, blank=True)
-    partial_quantity = models.IntegerField(null=True, blank=True)
+    package_quantity = models.IntegerField('Package Quantity', null=True, blank=True)
+    partial_quantity = models.IntegerField('Partial Quantity', null=True, blank=True)
     manufacturer = models.CharField(max_length=100, null=False, blank=False, default='')
-    reference_number = models.CharField(max_length=100, null=True, blank=True)
-    lot_number = models.CharField(max_length=100, null=True, blank=True)
-    expiration_date = models.DateField(null=True, blank=True)
-    production_date = models.DateField(null=True, blank=True)
-    package_type = models.CharField(max_length=100, null=True, blank=True)
-    udi = models.CharField('UDI', null=False, blank=False, default='')
-    surgical_specialty = models.CharField('Surgical Specialty', null=True, blank=True)
-    item_type = models.CharField('Item Type', null=True, blank=True)
     auction_type = models.CharField('Auction Type', null=False, blank=False, default='Auction')
     gmdnPTDefinition = models.TextField(null=True, blank=True)
     implantable = models.BooleanField(default=False)
-    productCode = models.CharField(max_length=100, null=True, blank=True)
-    productCodeName = models.CharField(max_length=100, null=True, blank=True)
-    deviceSterile = models.BooleanField('Package Sterile', default=False)
+    deviceSterile = models.BooleanField('Package(s) Sterile', default=False)
     sterilizationPriorToUse = models.BooleanField(default=False)
-    deviceClass = models.CharField(max_length=50, null=True, blank=True)
-    size_information = models.TextField(null=True, blank=True)
-    storage_handling = models.JSONField(null=True, blank=True)
-    fullPackage = models.BooleanField('Package Full', default=False)
+    package_type = models.CharField(
+        'Package Type',
+        max_length=100,
+        choices=PACKAGE_TYPE_CHOICES,
+        null=True,
+        blank=True
+    )
+    sell_full_lot = models.BooleanField('Sell as Full Lot', default=True)
     auction_duration = models.IntegerField('Listing Duration', choices=DURATION_CHOICES, default=7)
+
+
+
+    # udi = models.CharField('SKU/UDI', max_length=100, null=False, blank=False, default='')
+    # reference_number = models.CharField(max_length=100, null=True, blank=True)
+    # lot_number = models.CharField(max_length=100, null=True, blank=True)
+    # production_date = models.DateField(null=True, blank=True)
+    # expiration_date = models.DateField(null=True, blank=True)
+    fullPackage = models.BooleanField('Package(s) Full', default=False)
+
 
     def __str__(self):
         return f'Auction #{self.id}: {self.title} ({self.creator})'
@@ -156,6 +179,18 @@ class Auction(models.Model):
 
     def count_watchers(self):
         return self.watchers.count()
+
+
+class ProductDetail(models.Model):
+    auction = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name='product_details')
+    sku = models.CharField('SKU/UDI', max_length=100, null=False, blank=False, default='(01)')
+    reference_number = models.CharField(max_length=100, null=True, blank=True)
+    lot_number = models.CharField(max_length=100, null=True, blank=True)
+    production_date = models.DateField(null=True, blank=True)
+    expiration_date = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return f'ProductDetail #{self.id} for Auction #{self.auction.id}'
 
 
 class Image(models.Model):

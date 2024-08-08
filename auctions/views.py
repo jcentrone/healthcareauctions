@@ -17,8 +17,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
-from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm
-from .models import Auction, Bid, Category, Image, User, Address, CartItem, Cart
+from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, ProductDetailFormSet
+from .models import Auction, Bid, Category, Image, User, Address, CartItem, Cart, ProductDetail
 from .utils.helpers import update_categories_from_fda
 
 # Set up logging
@@ -290,11 +290,14 @@ def auction_create(request):
     if request.method == 'POST':
         auction_form = AuctionForm(request.POST, request.FILES)
         image_formset = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.none())
+        product_detail_formset = ProductDetailFormSet(request.POST, request.FILES,
+                                                      queryset=ProductDetail.objects.none())
 
-        if auction_form.is_valid() and image_formset.is_valid():
+        if auction_form.is_valid() and image_formset.is_valid() and product_detail_formset.is_valid():
             new_auction = auction_form.save(commit=False)
             new_auction.creator = request.user
             new_auction.date_created = timezone.now()
+            new_auction.active = True
             new_auction.save()
 
             for form in image_formset.cleaned_data:
@@ -303,7 +306,15 @@ def auction_create(request):
                     new_image = Image(auction=new_auction, image=image)
                     new_image.save()
 
-            return JsonResponse({'success': True})
+            for form in product_detail_formset.forms:
+                if form.cleaned_data.get('sku'):  # Ensure the SKU field is filled
+                    product_detail = form.save(commit=False)
+                    product_detail.auction = new_auction
+                    product_detail.save()
+
+            # Redirect URL
+            redirect_url = reverse('active_auctions_view')
+            return JsonResponse({'success': True, 'auction_id': new_auction.id, 'redirect_url': redirect_url})
         else:
             errors = []
             if not auction_form.is_valid():
@@ -315,18 +326,25 @@ def auction_create(request):
                     for field, error in form.errors.items():
                         errors.append({'field': f'{form.prefix}-{field}', 'message': error[0]})
                 logger.error(f'Image form errors: {image_formset.errors}')
+            if not product_detail_formset.is_valid():
+                for form in product_detail_formset.forms:
+                    if form.errors:
+                        for field, error in form.errors.items():
+                            errors.append({'field': f'{form.prefix}-{field}', 'message': error[0]})
+                logger.error(f'Product detail form errors: {product_detail_formset.errors}')
             return JsonResponse({'success': False, 'errors': errors})
     else:
         auction_form = AuctionForm()
         image_formset = ImageFormSet(queryset=Image.objects.none())
+        product_detail_formset = ProductDetailFormSet(queryset=ProductDetail.objects.none())
 
     return render(request, 'auction_create.html', {
         'categories': Category.objects.all(),
         'auction_form': auction_form,
-        'image_form': image_formset,
+        'image_formset': image_formset,
+        'product_detail_formset': product_detail_formset,
         'title': 'Create Auction',
     })
-
 
 
 @login_required

@@ -1,6 +1,7 @@
 from django import forms
+from django.forms import modelformset_factory
 
-from .models import Auction, Bid, Comment, Image, Category, CartItem
+from .models import Auction, Bid, Comment, Image, Category, CartItem, ProductDetail
 
 
 class AuctionForm(forms.ModelForm):
@@ -19,8 +20,10 @@ class AuctionForm(forms.ModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
         # Ensure the datepicker class is preserved for date fields
-        self.fields['production_date'].widget.attrs['class'] += ' datepicker'
-        self.fields['expiration_date'].widget.attrs['class'] += ' datepicker'
+        if 'production_date' in self.fields:
+            self.fields['production_date'].widget.attrs['class'] += ' datepicker'
+        if 'expiration_date' in self.fields:
+            self.fields['expiration_date'].widget.attrs['class'] += ' datepicker'
 
         # Customize category field choices to show parent/child relationships
         self.fields['category'].queryset = Category.objects.all()
@@ -30,10 +33,11 @@ class AuctionForm(forms.ModelForm):
             for category in Category.objects.all().order_by('parent__category_name', 'category_name')
         ]
 
+
     def clean(self):
         cleaned_data = super().clean()
         auction_type = cleaned_data.get("auction_type")
-        package_full = cleaned_data.get("package_full")
+        package_full = cleaned_data.get("fullPackage")
 
         if auction_type == "Auction":
             if not cleaned_data.get("starting_bid"):
@@ -45,6 +49,35 @@ class AuctionForm(forms.ModelForm):
             self.add_error('partial_quantity', "Partial quantity is required when the package is not full.")
 
         return cleaned_data
+
+
+class ProductDetailForm(forms.ModelForm):
+    class Meta:
+        model = ProductDetail
+        exclude = ['auction']
+        widgets = {
+            # 'sku': forms.NumberInput(attrs={'placeholder': '(01)_____________'}),
+            'production_date': forms.DateInput(attrs={'class': 'datepicker'}),
+            'expiration_date': forms.DateInput(attrs={'class': 'datepicker'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(ProductDetailForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+        if 'sku' in self.fields:
+            # self.fields['sku'].required = True
+            self.fields['sku'].widget.attrs['class'] = 'form-control sku-input'
+
+        if 'production_date' in self.fields:
+            self.fields['production_date'].widget.attrs['class'] += ' datepicker'
+        if 'expiration_date' in self.fields:
+            self.fields['expiration_date'].widget.attrs['class'] += ' datepicker'
+
+
+# Define the formset for ProductDetail
+ProductDetailFormSet = modelformset_factory(ProductDetail, form=ProductDetailForm, extra=1)
 
 
 class ImageForm(forms.ModelForm):

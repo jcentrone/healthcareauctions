@@ -5,6 +5,9 @@
 {% block body %}
     {#    {% include 'sidebar.html' %}#}
     <meta name="csrf-token" content="{{ csrf_token }}">
+    <script src="https://cdn.tiny.cloud/1/kdubaexmadrxmrwndf31nzngrszy0ocwsxlj48a20z3pvyks/tinymce/7/tinymce.min.js"
+            referrerpolicy="origin"></script>
+    {#    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>#}
 
     <div class="container" style="min-height: 80vh">
         <section>
@@ -123,7 +126,7 @@
                                         <div class="tab-pane fade show active main-tab" id="page1" role="tabpanel"
                                              aria-labelledby="page1-tab">
                                             <h3 class="package-details-heading">Listing Summary</h3>
-                                            <p>Add the basic details of your listing</p>
+                                            <p class="border-bottom pb-2">Add the basic details of your listing</p>
                                             <div class='form-group mb-5' id="auction-summary-container">
                                                 <div class="hidden">
                                                     {{ auction_form.title.label_tag }}
@@ -136,21 +139,20 @@
                                                     </div>
                                                     <div id="auction-description">
                                                         {{ auction_form.description.label_tag }}
+                                                        <i class="fa fa-info-circle"
+                                                           aria-hidden="true" id="infoIcon">
+                                                            <span class="tooltip">We add a description when possible, but you can change it if needed.</span>
+                                                        </i>
                                                         {{ auction_form.description }}
                                                     </div>
                                                 </div>
                                                 <div class="bid-detail" id="sku-container">
-                                                    <!-- SKU/UDI Field within the Form -->
-                                                    <div id="sku-field" class="bid-scan-item">
-                                                        SKU/{{ auction_form.udi.label_tag }}
-                                                        {{ auction_form.udi }}
-                                                        <div class="scan-control mobile-only">
-                                                            <i class="fa-solid fa-qrcode"></i>
-                                                            <i class="fa-solid fa-barcode"></i>
-                                                        </div>
-                                                    </div>
                                                     <div>
                                                         {{ auction_form.category.label_tag }}
+                                                        <i class="fa fa-info-circle"
+                                                           aria-hidden="true" id="">
+                                                            <span class="tooltip">We auto-select the category when possible, but you can change it if needed.</span>
+                                                        </i>
                                                         {{ auction_form.category }}
                                                     </div>
                                                     <!--Auction Type Tab panes -->
@@ -191,10 +193,18 @@
                                                                     <div class="bid-row">
                                                                         <div class="form-group with-symbol">
                                                                             {{ auction_form.starting_bid.label_tag }}
+                                                                            <i class="fa fa-info-circle"
+                                                                               aria-hidden="true" id="">
+                                                                                <span class="tooltip">Enter the minimum bid amount to start the auction.</span>
+                                                                            </i>
                                                                             {{ auction_form.starting_bid }}
                                                                         </div>
                                                                         <div class="form-group with-symbol">
                                                                             {{ auction_form.reserve_bid.label_tag }}
+                                                                            <i class="fa fa-info-circle"
+                                                                               aria-hidden="true" id="">
+                                                                                <span class="tooltip">The reserve price is the minimum amount required for the item to be sold.</span>
+                                                                            </i>
                                                                             {{ auction_form.reserve_bid }}
                                                                         </div>
                                                                     </div>
@@ -216,7 +226,7 @@
                                                                     <div>
                                                                         {{ auction_form.quantity_available.label_tag }}
                                                                         <i class="fa fa-info-circle"
-                                                                           aria-hidden="true" id="infoIcon">
+                                                                           aria-hidden="true" id="">
                                                                             <span class="tooltip">When the auction quantity is greater than one, all product packages must be full.</span>
                                                                         </i>
                                                                     </div>
@@ -224,9 +234,24 @@
                                                                 </div>
                                                                 <div>
                                                                     {{ auction_form.auction_duration.label_tag }}
+                                                                    <i class="fa fa-info-circle"
+                                                                       aria-hidden="true" id="">
+                                                                        <span class="tooltip">Choose the number of days the auction will be active.</span>
+                                                                    </i>
                                                                     {{ auction_form.auction_duration }}
                                                                 </div>
+
                                                             </div>
+                                                            {#                                                            <div class="form-group p-3" id="full-lot">#}
+                                                            {#                                                                {{ auction_form.sell_full_lot.label_tag }}#}
+                                                            {#                                                                <i class="fa fa-info-circle" aria-hidden="true"#}
+                                                            {#                                                                   id="infoIcon">#}
+                                                            {#                                                                    <span class="tooltip"#}
+                                                            {#                                                                          style="visibility: hidden; opacity: 0;">Leave unchecked to sell each item individually.  Check to sell all items together as a lot. </span>#}
+                                                            {#                                                                </i>#}
+                                                            {#                                                                {{ auction_form.sell_full_lot }}#}
+                                                            {#                                                            </div>#}
+
                                                         </div>
                                                     </div>
                                                 </div>
@@ -239,74 +264,88 @@
                                              aria-labelledby="page2-tab">
                                             <div class="">
                                                 <h3 class="package-details-heading">Product Details</h3>
-                                                <p class="border-bottom pb-2">Please add as many details about the
-                                                    product
-                                                    as possible. A more complete listing is more likely to sell
-                                                    faster.</p>
+                                                <p class="border-bottom pb-2">
+                                                    Please add as many details about the product as possible. A more
+                                                    complete listing is more likely to sell faster.
+                                                </p>
                                             </div>
                                             <div class="bid-detail">
                                                 <div class="">
                                                     {{ auction_form.manufacturer.label_tag }}
                                                     {{ auction_form.manufacturer }}
                                                 </div>
-                                                <div class="bid-scan-item">
-                                                    {{ auction_form.reference_number.label_tag }}
-                                                    {{ auction_form.reference_number }}
-                                                    <div class="scan-control mobile-only">
-                                                        <i class="fa-solid fa-qrcode"></i>
-                                                        <i class="fa-solid fa-barcode"></i>
+
+
+                                                <div class="bid-row">
+                                                    <div class="form-group">
+                                                        {{ auction_form.package_type.label_tag }}
+                                                        {{ auction_form.package_type }}
                                                     </div>
-                                                </div>
-                                                <div class="bid-scan-item">
-                                                    {{ auction_form.lot_number.label_tag }}
-                                                    {{ auction_form.lot_number }}
-                                                    <div class="scan-control mobile-only">
-                                                        <i class="fa-solid fa-qrcode"></i>
-                                                        <i class="fa-solid fa-barcode"></i>
+                                                    <div class="form-group" id="deviceSterile">
+                                                        {{ auction_form.deviceSterile.label_tag }}
+                                                        {{ auction_form.deviceSterile }}
                                                     </div>
-                                                </div>
-                                                <div class="bid-row bid-detail">
-                                                    <div class="bid-scan-item">
-                                                        {{ auction_form.production_date.label_tag }}
-                                                        {{ auction_form.production_date }}
-                                                        <div class="scan-control mobile-only">
-                                                            <i class="fa-solid fa-qrcode"></i>
-                                                            <i class="fa-solid fa-barcode"></i>
-                                                        </div>
+                                                    <div class="form-group">
+                                                        {{ auction_form.package_quantity.label_tag }}
+                                                        {{ auction_form.package_quantity }}
                                                     </div>
-                                                    <div class="bid-scan-item">
-                                                        {{ auction_form.expiration_date.label_tag }}
-                                                        {{ auction_form.expiration_date }}
-                                                        <div class="scan-control mobile-only">
-                                                            <i class="fa-solid fa-qrcode"></i>
-                                                            <i class="fa-solid fa-barcode"></i>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="">
-                                                    {{ auction_form.package_type.label_tag }}
-                                                    {{ auction_form.package_type }}
-                                                </div>
-                                                <div class="">
-                                                    {{ auction_form.package_quantity.label_tag }}
-                                                    {{ auction_form.package_quantity }}
-                                                </div>
-                                                <div class="checkbox-row bid-detail" id="deviceSterile">
-                                                    {{ auction_form.deviceSterile.label_tag }}
-                                                    {{ auction_form.deviceSterile }}
-                                                </div>
-                                                <div class="bid-row bid-detail">
-                                                    <div class="checkbox-row">
+                                                    <div class="form-group">
                                                         {{ auction_form.fullPackage.label_tag }}
                                                         {{ auction_form.fullPackage }}
-                                                        <div class="" id="partial-qty">
-                                                            {#{{ auction_form.partial_quantity.label_tag }}#}
-                                                            {{ auction_form.partial_quantity }}
-                                                        </div>
-                                                    </div>
 
+                                                    </div>
+                                                    <div class="form-group" id="partial-qty">
+                                                        {{ auction_form.partial_quantity.label_tag }}
+                                                        {{ auction_form.partial_quantity }}
+                                                    </div>
                                                 </div>
                                             </div>
+                                            <h5 class="mt-5">Product Specific Details</h5>
+                                            <p>Add the details below for each variation.</p>
+                                            <!-- Product Detail Formset -->
+                                            <div class="border-top" id="product-detail-formset">
+                                                {{ product_detail_formset.management_form }}
+                                                {% for form in product_detail_formset %}
+                                                    <div class="product-detail-form my-3"
+                                                         id="product-detail-container{{ forloop.counter0 }}"
+                                                         data-form-index="{{ forloop.counter0 }}">
+
+                                                        <div id="sku-field{{ forloop.counter0 }}"
+                                                             class="form-group bid-scan-item">
+                                                            {{ form.sku.label_tag }}
+                                                            {{ form.sku }}
+                                                            <div class="scan-control mobile-only">
+                                                                <i class="fa-solid fa-qrcode"></i>
+                                                                <i class="fa-solid fa-barcode"></i>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            {{ form.reference_number.label_tag }}
+                                                            {{ form.reference_number }}
+                                                        </div>
+                                                        <div class="form-group">
+                                                            {{ form.lot_number.label_tag }}
+                                                            {{ form.lot_number }}
+                                                        </div>
+                                                        <div class="form-group">
+                                                            {{ form.production_date.label_tag }}
+                                                            {{ form.production_date }}
+                                                        </div>
+                                                        <div class="form-group">
+                                                            {{ form.expiration_date.label_tag }}
+                                                            {{ form.expiration_date }}
+                                                        </div>
+                                                        <button type="button" class="btn btn-danger remove-form-row ">
+                                                            Remove
+                                                        </button>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                            <button type="button" id="add-product-detail" class="btn btn-info my-3 ">
+                                                Add Product Detail
+                                            </button>
+
+
                                         </div>
                                         <!-- End Page 2 -->
 
@@ -314,23 +353,23 @@
                                         <div class="tab-pane fade main-tab" id="page3" role="tabpanel"
                                              aria-labelledby="page3-tab">
                                             <h3 class="package-details-heading">Photos</h3>
-                                            {{ image_form.management_form }}
+                                            {{ image_formset.management_form }}
                                             <div class="img-container">
                                                 <div class="main-img">
                                                     <div class="img-thumbnail" id="main-img"
                                                          onclick="document.getElementById('id_form-0-image').click()">
-                                                        <img id="main-thumbnail-preview" src="#" alt="Upload Icon"
+                                                        <img id="thumbnail-preview-0" src="#" alt="Upload Icon"
                                                              style="display:none;"/>
-                                                        <i class="fa-regular fa-image" id="main-upload-icon"></i>
+                                                        <i class="fa-regular fa-image" id="upload-icon-0"></i>
                                                     </div>
                                                     <div style="display:none;">
-                                                        {{ image_form.forms.0.image.label_tag }}:
-                                                        {{ image_form.forms.0.image }}
-                                                        {{ image_form.forms.0.id }}
+                                                        {{ image_formset.forms.0.image.label_tag }}:
+                                                        {{ image_formset.forms.0.image }}
+                                                        {{ image_formset.forms.0.id }}
                                                     </div>
                                                 </div>
                                                 <div class="side-imgs">
-                                                    {% for form in image_form.forms %}
+                                                    {% for form in image_formset.forms %}
                                                         {% if forloop.counter0 > 0 %}
                                                             <div class="side-img">
                                                                 <div class="img-thumbnail"
@@ -353,12 +392,12 @@
                                             </div>
                                         </div>
                                         <!-- End Page 3 -->
-                                        <div class="mt-3">
+                                        <div class="mt-3 pt-3 border-top">
                                             <button type="button" class="btn btn-secondary prev-tab">Previous</button>
                                             <button type="button" class="btn btn-primary next-tab">Next</button>
-                                            <button type="button" class="btn btn-primary" id="submit-btn">Save</button>
+                                            <button type="button" class="btn btn-success" id="submit-btn">Save</button>
                                             <a href="{% url 'active_auctions_view' %}"
-                                               class="btn btn-light border-dark">Cancel</a>
+                                               class="btn btn-outline-danger">Cancel</a>
                                         </div>
                                     </div>
                                 </div>
@@ -370,7 +409,7 @@
                             <div id="modal-bg" class="centered-modal-bg hidden-field">
                                 <div class="centered-modal-content" id="centered-modal-content">
                                     <div class="modal-header border-bottom mb-3 pb-2">
-                                        <h5 class="hidden-field modal-title" id="sku-info">Please enter the SKU/UDI to
+                                        <h5 class="hidden-field modal-title" id="sku-info">Please enter a SKU/UDI to
                                             get started</h5>
 
                                         <div class="hidden-field modal-title" id="description-information">
@@ -388,6 +427,7 @@
                                     <div id="modal-content">
                                         <div id="placeholderEL"></div>
                                     </div>
+                                    <div class="mt-3" id="lookup-errors"></div>
                                     <div class="">
                                         <button id="next-modal-btn"
                                                 class="btn btn-primary mt-3 hidden-field">Next
@@ -408,13 +448,17 @@
 
 
     <link href='{% static "css/styles.css" %}' rel='stylesheet'>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
     <script src="{% static 'js/create_auction.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/dynamsoft-barcode-reader-bundle@10.2.1000/dist/dbr.bundle.js"></script>
     <script src="{% static 'js/scanner.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.6-beta.14/inputmask.min.js"
+            integrity="sha512-SF/1EBFQ9uIdO5cEddNUP9IxLkXwoSg2gMiDFvB8B3+oAB3T0uXctHvI0oK+xa8rps5wVV8fA9Lhdunzyz+oKw=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
     <script>
         $(document).ready(function () {
             // Initialize date picker
@@ -442,7 +486,7 @@
 
             // On page load, animate the SKU/UDI field to the center and show the modal background
             setTimeout(function () {
-                $('#sku-field').prependTo('#modal-content');
+                $('#sku-field0').prependTo('#modal-content');
 
                 $('#centered-modal-content').css({
                     height: 'auto'  // Adjust as needed
@@ -451,12 +495,23 @@
                 // Add the 'show' class to trigger the CSS transform transition
                 $('#centered-modal-content').addClass('show');
 
-                $('#placeholderEL').prependTo('#sku-container').height(57);
+                $('#placeholderEL').prependTo('#product-detail-container0').height(57);
                 $('#sku-info').removeClass('hidden-field');
                 {#$('#close-modal').removeClass('hidden-field');#}
                 $('#modal-bg').removeClass('hidden-field');
+                $('#id_form-0-sku').focus();
             }, 500); // Delay to ensure everything is loaded properly
         });
     </script>
-    
+    <script>
+        {#tinymce.init({#}
+        {#    selector: '#id_description',#}
+        {#    plugins: 'autolink charmap lists searchreplace visualblocks wordcount linkchecker',#}
+        {#    toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | align lineheight | numlist bullist indent outdent | charmap | removeformat',#}
+        {#})
+            ;
+        #}
+
+    </script>
+
 {% endblock %}

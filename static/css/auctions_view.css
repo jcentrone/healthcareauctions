@@ -157,5 +157,51 @@
         flex-direction: column;
     }
 
+    .product-detail-form {
+        grid-template-columns: 1fr;
+    }
 
 }
+
+@media (min-width: 576px) {
+    .auction-title {
+        max-width: 460px;
+    }
+}
+
+@media (min-width: 768px) {
+    .auction-title {
+        max-width: 400px;
+    }
+}
+
+@media (max-width: 992px) {
+    .listing {
+        grid-template-columns: 1fr;
+    }
+    .auctions-header-container{
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width: 992px) {
+    .auction-title {
+        max-width: 335px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .auction-title {
+        max-width: 515px;
+    }
+}
+
+@media (min-width: 1400px) {
+    .auction-title {
+        max-width: 700px;
+    }
+}
+
+
+
+
