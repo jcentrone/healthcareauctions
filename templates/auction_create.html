@@ -98,6 +98,9 @@
 
                 <!-- Create Auction Form -->
                 <h1 class='h3 mb-4 text-gray-800'>Create A Listing</h1>
+                <p>We've made it easy to create your listings by automatically populating as much information as
+                    possible based on the details you provide. Simply review the auto-filled details, make any necessary
+                    adjustments, and your listing is ready to go!</p>
                 {#                <p>Enter the details of the auction below.</p>#}
                 <div class='card mb-4'>
                     <div class='card-body'>
@@ -170,7 +173,7 @@
                                                                         data-bs-toggle="tab" data-bs-target="#auction"
                                                                         type="button" role="tab" aria-controls="auction"
                                                                         aria-selected="true">
-                                                                    Auction <i class="fa-solid fa-check"></i>
+                                                                    Auction<i class="ms-2 fa-solid fa-check"></i>
                                                                 </button>
                                                             </li>
                                                             <li class="nav-item" role="presentation"
@@ -179,8 +182,8 @@
                                                                         data-bs-toggle="tab" data-bs-target="#buyItNow"
                                                                         type="button" role="tab"
                                                                         aria-controls="buyItNow" aria-selected="false">
-                                                                    Add to Cart <i class="fa-solid fa-check"
-                                                                                   style="display: none;"></i>
+                                                                    Get It Now<i class="ms-2 fa-solid fa-check "
+                                                                                 style="display: none;"></i>
                                                                 </button>
                                                             </li>
                                                         </ul>
@@ -190,6 +193,9 @@
                                                             <div class="tab-pane border-0 fade show active" id="auction"
                                                                  role="tabpanel" aria-labelledby="auction-tab">
                                                                 <div class="">
+                                                                    <div class="mb-2 fw-light fst-italic">The Listing Type
+                                                                        Will Be Auction
+                                                                    </div>
                                                                     <div class="bid-row">
                                                                         <div class="form-group with-symbol">
                                                                             {{ auction_form.starting_bid.label_tag }}
@@ -215,8 +221,16 @@
                                                                  role="tabpanel"
                                                                  aria-labelledby="buyItNow-tab">
                                                                 <div class="">
+                                                                    <div class="mb-2 fw-light fst-italic">The Listing Type
+                                                                        Will Be Sale
+                                                                    </div>
+
                                                                     <div class="form-group with-symbol">
                                                                         {{ auction_form.buyItNowPrice.label_tag }}
+                                                                        <i class="fa fa-info-circle"
+                                                                           aria-hidden="true" id="">
+                                                                            <span class="tooltip">The sale price is the price at which the item will sell.</span>
+                                                                        </i>
                                                                         {{ auction_form.buyItNowPrice }}
                                                                     </div>
                                                                 </div>
@@ -242,6 +256,8 @@
                                                                 </div>
 
                                                             </div>
+
+
                                                             {#                                                            <div class="form-group p-3" id="full-lot">#}
                                                             {#                                                                {{ auction_form.sell_full_lot.label_tag }}#}
                                                             {#                                                                <i class="fa fa-info-circle" aria-hidden="true"#}
@@ -319,21 +335,37 @@
                                                                 <i class="fa-solid fa-barcode"></i>
                                                             </div>
                                                         </div>
-                                                        <div class="form-group">
+                                                        <div class="form-group bid-scan-item">
                                                             {{ form.reference_number.label_tag }}
                                                             {{ form.reference_number }}
+                                                            <div class="scan-control mobile-only">
+                                                                <i class="fa-solid fa-qrcode"></i>
+                                                                <i class="fa-solid fa-barcode"></i>
+                                                            </div>
                                                         </div>
-                                                        <div class="form-group">
+                                                        <div class="form-group bid-scan-item">
                                                             {{ form.lot_number.label_tag }}
                                                             {{ form.lot_number }}
+                                                            <div class="scan-control mobile-only">
+                                                                <i class="fa-solid fa-qrcode"></i>
+                                                                <i class="fa-solid fa-barcode"></i>
+                                                            </div>
                                                         </div>
-                                                        <div class="form-group">
+                                                        <div class="form-group bid-scan-item">
                                                             {{ form.production_date.label_tag }}
                                                             {{ form.production_date }}
+                                                            <div class="scan-control mobile-only">
+                                                                <i class="fa-solid fa-qrcode"></i>
+                                                                <i class="fa-solid fa-barcode"></i>
+                                                            </div>
                                                         </div>
-                                                        <div class="form-group">
+                                                        <div class="form-group bid-scan-item">
                                                             {{ form.expiration_date.label_tag }}
                                                             {{ form.expiration_date }}
+                                                            <div class="scan-control mobile-only">
+                                                                <i class="fa-solid fa-qrcode"></i>
+                                                                <i class="fa-solid fa-barcode"></i>
+                                                            </div>
                                                         </div>
                                                         <button type="button" class="btn btn-danger remove-form-row ">
                                                             Remove
@@ -427,13 +459,13 @@
                                     <div id="modal-content">
                                         <div id="placeholderEL"></div>
                                     </div>
-                                    <div class="mt-3" id="lookup-errors"></div>
+                                    <div class="my-3" id="lookup-errors"></div>
                                     <div class="">
                                         <button id="next-modal-btn"
-                                                class="btn btn-primary mt-3 hidden-field">Next
+                                                class="btn btn-primary hidden-field">Next
                                         </button>
                                         <button id="close-modal-btn"
-                                                class="btn btn-secondary mt-3 hidden-field">Close
+                                                class="btn btn-secondary hidden-field">Close
                                         </button>
                                     </div>
                                 </div>
@@ -503,6 +535,6 @@
             }, 500); // Delay to ensure everything is loaded properly
         });
     </script>
-    
+
 
 {% endblock %}

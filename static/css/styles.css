@@ -1209,6 +1209,9 @@ input:required, select:required, textarea:required {
     transition: transform 5s ease-in-out;
     z-index: 1050;
     width: 80%;
+    max-height: 90%;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .hidden-field {
@@ -1373,6 +1376,13 @@ video {
         grid-column: span 2;
         display: none;
     }
+    #id_auction_duration{
+        margin-bottom: 20px;
+    }
+    .product-detail-form{
+        grid-template-columns: 1fr;
+    }
+
 }
 
 .camera-preview {

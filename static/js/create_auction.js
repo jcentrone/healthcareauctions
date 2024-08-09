@@ -136,13 +136,16 @@ function parseBarcode(code) {
             })
             .then(data => {
                 console.log("Device data from AccessGUDID:", data);
-
-
+                document.getElementById('lookup-errors').innerText = '';
                 fetchDeviceData(data.udi);
 
                 // populateForm(data);
             })
-            .catch(error => console.error('Error fetching device data:', error));
+            .catch(error => {
+                document.getElementById('lookup-errors').innerText = 'No Information Found';
+                document.getElementById('close-modal-btn').classList.remove('hidden-field');
+                console.error('Error fetching device data:', error);
+            });
     }
 }
 
@@ -161,8 +164,9 @@ function fetchDeviceData(code) {
             fetchClassificationData(data.gudid.device.productCodes.fdaProductCode[0].productCode);
         })
         .catch(error => {
-            document.getElementById('lookup-errors').innerText = 'No Device Date Found';
-            console.error('Error fetching device data:', error)
+            document.getElementById('lookup-errors').innerText = 'No Information Found';
+            document.getElementById('close-modal-btn').classList.remove('hidden-field');
+            console.error('Error fetching device data:', error);
         });
 }
 
