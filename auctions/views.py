@@ -293,12 +293,18 @@ def auction_create(request):
         product_detail_formset = ProductDetailFormSet(request.POST, request.FILES,
                                                       queryset=ProductDetail.objects.none())
 
+        print("Product Detail Form Data: %s", product_detail_formset.data)
+        print("Product Detail Formset Errors: %s", product_detail_formset.errors)
+
         if auction_form.is_valid() and image_formset.is_valid() and product_detail_formset.is_valid():
             new_auction = auction_form.save(commit=False)
             new_auction.creator = request.user
             new_auction.date_created = timezone.now()
             new_auction.active = True
             new_auction.save()
+
+            print("Product Detail Form Data: %s", product_detail_formset.data)
+            print("Product Detail Formset Errors: %s", product_detail_formset.errors)
 
             for form in image_formset.cleaned_data:
                 if form:
@@ -316,6 +322,9 @@ def auction_create(request):
             redirect_url = reverse('active_auctions_view')
             return JsonResponse({'success': True, 'auction_id': new_auction.id, 'redirect_url': redirect_url})
         else:
+            print("Auction Form Errors: %s", auction_form.errors)
+            print("Image Formset Errors: %s", image_formset.errors)
+            print("Product Detail Formset Errors: %s", product_detail_formset.errors)
             errors = []
             if not auction_form.is_valid():
                 for field, error in auction_form.errors.items():

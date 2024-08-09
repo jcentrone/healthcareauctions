@@ -135,14 +135,6 @@ class Auction(models.Model):
     )
     sell_full_lot = models.BooleanField('Sell as Full Lot', default=True)
     auction_duration = models.IntegerField('Listing Duration', choices=DURATION_CHOICES, default=7)
-
-
-
-    # udi = models.CharField('SKU/UDI', max_length=100, null=False, blank=False, default='')
-    # reference_number = models.CharField(max_length=100, null=True, blank=True)
-    # lot_number = models.CharField(max_length=100, null=True, blank=True)
-    # production_date = models.DateField(null=True, blank=True)
-    # expiration_date = models.DateField(null=True, blank=True)
     fullPackage = models.BooleanField('Package(s) Full', default=False)
 
 
@@ -183,7 +175,7 @@ class Auction(models.Model):
 
 class ProductDetail(models.Model):
     auction = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name='product_details')
-    sku = models.CharField('SKU/UDI', max_length=100, null=False, blank=False, default='(01)')
+    sku = models.CharField('SKU/UDI', max_length=100, null=True, blank=True, default='(01)')
     reference_number = models.CharField(max_length=100, null=True, blank=True)
     lot_number = models.CharField(max_length=100, null=True, blank=True)
     production_date = models.DateField(null=True, blank=True)
