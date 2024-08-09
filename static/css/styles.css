@@ -1002,6 +1002,10 @@ button i {
         grid-column: span 2;
     }
 
+    #id_buyItNowPrice{
+        max-width: 100% !important;
+    }
+
     #qty-container {
         display: grid;
         grid-template-columns: auto auto;
@@ -1115,6 +1119,10 @@ input:required, select:required, textarea:required {
 .img-thumbnail i {
     font-size: 48px;
     color: #999;
+}
+
+#id_buyItNowPrice{
+    max-width: calc(50% - 10px);
 }
 
 @media (max-width: 768px) {

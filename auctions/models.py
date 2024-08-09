@@ -90,7 +90,9 @@ class Auction(models.Model):
     starting_bid = models.DecimalField(
         max_digits=7,
         decimal_places=2,
-        validators=[MinValueValidator(0.01)]
+        validators=[MinValueValidator(0.01)],
+        blank=True,
+        null=True
     )
     reserve_bid = models.DecimalField(
         'Reserve Price',

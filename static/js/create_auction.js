@@ -525,6 +525,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
+// Auction Type Card Functions
 document.addEventListener('DOMContentLoaded', function () {
     const listingTypeContainer = document.getElementById('listingTypeContainer');
     const auctionTab = document.getElementById('auction-tab');
@@ -534,10 +535,16 @@ document.addEventListener('DOMContentLoaded', function () {
         if (auctionTab.classList.contains('active')) {
             listingTypeContainer.setAttribute('data-auctiontype', 'Auction');
             document.getElementById('id_auction_type').value = 'Auction';
+            document.getElementById('id_starting_bid').required = true;
+            document.getElementById('id_buyItNowPrice').required = false;
+            document.getElementById('listing-duration').classList.remove('hidden-field');
 
         } else {
             listingTypeContainer.setAttribute('data-auctiontype', 'Sale');
             document.getElementById('id_auction_type').value = 'Sale';
+            document.getElementById('id_starting_bid').required = false;
+            document.getElementById('id_buyItNowPrice').required = true;
+            document.getElementById('listing-duration').classList.add('hidden-field');
 
         }
     };
@@ -622,6 +629,88 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('submit-btn').addEventListener('click', function (event) {
         event.preventDefault();
 
+        // Function to validate required fields within a specific container
+        function validateRequiredFields(containerSelector) {
+            let allValid = true;
+            const requiredFields = document.querySelectorAll(`${containerSelector} [required]`);
+
+            requiredFields.forEach((field) => {
+                if (!field.value.trim()) {
+                    allValid = false;
+                    field.classList.add('is-invalid'); // Highlight the empty required field
+                } else {
+                    field.classList.remove('is-invalid'); // Remove the invalid class if the field has a value
+                }
+            });
+
+            return allValid;
+        }
+
+        // Validate fields on Page 1
+        if (!validateRequiredFields('#page1')) {
+            Swal.fire({
+                title: 'Missing Information!',
+                text: 'Please fill in all required fields in the listing summary.',
+                icon: 'warning',
+                confirmButtonText: 'OK',
+                customClass: {
+                    confirmButton: 'btn btn-warning'
+                }
+            });
+            switchToMainTab('page1');
+            updateButtonVisibility();
+            return;
+        }
+
+        // Validate fields on Page 2
+        if (!validateRequiredFields('#mfgPkg-info')) {
+            Swal.fire({
+                title: 'Missing Information!',
+                text: 'Please fill in all required fields in the product details.',
+                icon: 'warning',
+                confirmButtonText: 'OK',
+                customClass: {
+                    confirmButton: 'btn btn-warning'
+                }
+            });
+            switchToMainTab('page2');
+            updateButtonVisibility();
+            return;
+        }
+
+        // Validate fields in the Product Detail Formset
+        if (!validateRequiredFields('#product-detail-formset')) {
+            Swal.fire({
+                title: 'Missing Information!',
+                text: 'Please fill in all required fields in the product details.',
+                icon: 'warning',
+                confirmButtonText: 'OK',
+                customClass: {
+                    confirmButton: 'btn btn-warning'
+                }
+            });
+            switchToMainTab('page2');
+            updateButtonVisibility();
+            return;
+        }
+
+        // Check if the main image has been uploaded
+        const mainImageInput = document.getElementById('id_form-0-image');
+        if (!mainImageInput.files.length) {
+            Swal.fire({
+                title: 'Main Image Missing!',
+                text: 'Please upload a main image before submitting your listing.',
+                icon: 'warning',
+                confirmButtonText: 'OK',
+                customClass: {
+                    confirmButton: 'btn btn-warning'
+                }
+            });
+            switchToMainTab('page3');
+            updateButtonVisibility();
+            return;
+        }
+
         const formData = new FormData(form);
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
@@ -636,7 +725,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Show processing alert
         Swal.fire({
             title: 'Processing...',
-            text: 'Please wait while we submit your form.',
+            text: 'Please wait while we create your listing.',
             icon: 'info',
             allowOutsideClick: false,
             showConfirmButton: false,
@@ -657,21 +746,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 Swal.close(); // Close the processing alert
 
                 if (data.success) {
-                    // Show success alert with custom button class
                     Swal.fire({
                         title: 'Success!',
-                        text: 'Your form has been submitted successfully.',
+                        text: 'Your listing has been added successfully.',
                         icon: 'success',
                         confirmButtonText: 'OK',
                         customClass: {
                             confirmButton: 'btn btn-primary'
                         }
                     }).then(() => {
-                        // Redirect to the next page
                         window.location.href = data.redirect_url;
                     });
                 } else {
-                    // Show error alert
                     Swal.fire({
                         title: 'Error!',
                         text: 'There were errors with your submission.',
@@ -682,14 +768,12 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     });
 
-                    // Handle form errors
                     const firstErrorField = document.querySelector(`[name="${data.errors[0].field}"]`);
                     if (firstErrorField) {
                         firstErrorField.classList.add('is-invalid');
                         firstErrorField.setAttribute('data-bs-toggle', 'tooltip');
                         firstErrorField.setAttribute('data-bs-original-title', data.errors[0].message);
 
-                        // Initialize the tooltip for the invalid field
                         const tooltip = new bootstrap.Tooltip(firstErrorField);
                         tooltip.show();
 
@@ -697,7 +781,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (mainTabPane) {
                             switchToMainTab(mainTabPane.id);
                             firstErrorField.focus();
-                            // updateButtonVisibility();
                         }
                         updateButtonVisibility();
                     }
@@ -707,7 +790,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.error('Error:', error);
                 Swal.close(); // Close the processing alert
 
-                // Show generic error alert
                 Swal.fire({
                     title: 'Error!',
                     text: 'An unexpected error occurred. Please try again later.',
