@@ -82,7 +82,7 @@ class Auction(models.Model):
         ('OTHER', 'Other'),
     ]
     title = models.CharField('Title', max_length=100)
-    description = models.TextField(max_length=800, null=False, default='')
+    description = models.TextField(max_length=2000, null=False, default='')
     creator = models.ForeignKey(User, on_delete=models.PROTECT, related_name='auction_creator')
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='auction_category')
     date_created = models.DateTimeField(default=timezone.now)
