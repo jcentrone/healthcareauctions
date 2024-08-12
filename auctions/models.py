@@ -19,6 +19,9 @@ class User(AbstractUser):
         return self.username
 
 
+
+
+
 class Address(models.Model):
     ADDRESS_TYPE_CHOICES = [
         ('billing', 'Billing'),
@@ -139,7 +142,6 @@ class Auction(models.Model):
     auction_duration = models.IntegerField('Listing Duration', choices=DURATION_CHOICES, default=7)
     fullPackage = models.BooleanField('Package(s) Full', default=False)
 
-
     def __str__(self):
         return f'Auction #{self.id}: {self.title} ({self.creator})'
 
@@ -173,6 +175,18 @@ class Auction(models.Model):
 
     def count_watchers(self):
         return self.watchers.count()
+
+    def total_views(self):
+        return self.views.count()
+
+
+class AuctionView(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='auction_views')
+    auction = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name='views')
+    viewed_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user.username} viewed Auction #{self.auction.id} on {self.viewed_at}'
 
 
 class ProductDetail(models.Model):
@@ -232,10 +246,9 @@ class Cart(models.Model):
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
     auction = models.ForeignKey(Auction, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(default=1)
 
     def __str__(self):
-        return f'{self.quantity} x {self.auction.title}'
+        return f'{self.auction.title}'
 
     def total_price(self):
-        return self.quantity * self.auction.current_bid if self.auction.current_bid else 0
+        return self.auction.buyItNowPrice if self.auction.buyItNowPrice else 0

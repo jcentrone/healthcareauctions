@@ -2,12 +2,15 @@ button {
     outline: none !important;
     border: none !important;
 }
-a:hover{
+
+a:hover {
     /*color: #0E75BF !important;*/
 }
-.logo:hover{
+
+.logo:hover {
     color: #021C25 !important;
 }
+
 
 #header_container {
     display: flex;
@@ -156,14 +159,14 @@ span.badge {
     color: white;
 }
 
-#category-dropdown-content{
+#category-dropdown-content {
     min-width: 250px;
     width: fit-content;
     max-height: 500px;
     overflow: auto;
 }
 
-#auction-search{
+#auction-search {
     background: #FFFFFF !important;
 }
 
@@ -210,7 +213,7 @@ footer .social-media a:hover {
     color: var(--light-blue);
 }
 
-#privacy-link{
+#privacy-link {
     color: black;
 }
 
@@ -275,8 +278,8 @@ footer .social-media a:hover {
     }
 
     #lower-header-container {
-        grid-template-rows: auto 1fr;
-        grid-template-columns: 1fr;
+        grid-template-rows: 1fr;
+        grid-template-columns: auto 1fr;
     }
 
     #header_container {
@@ -285,10 +288,20 @@ footer .social-media a:hover {
 
     #logo-container {
         justify-content: center;
+        flex-direction: column;
     }
 
     #category-dropdown {
         display: none;
     }
+
+    .logo-text {
+        font-size: medium;
+        align-items: center;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+    }
+
 
 }

@@ -10,20 +10,24 @@ from django.contrib.auth.decorators import login_required
 from django.core.files.storage import get_storage_class
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import IntegrityError
-from django.db.models import Count, Q
+from django.db.models import Count, Q, QuerySet
 from django.http import HttpResponseRedirect, JsonResponse, FileResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
 from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, ProductDetailFormSet
-from .models import Auction, Bid, Category, Image, User, Address, CartItem, Cart, ProductDetail
+from .models import Auction, Bid, Category, Image, User, Address, CartItem, Cart, ProductDetail, AuctionView
 from .utils.helpers import update_categories_from_fda
 
 # Set up logging
 logger = logging.getLogger(__name__)
 
+
+from django.db.models import Count
+from .models import Auction, AuctionView
 
 def index(request):
     """
@@ -42,8 +46,6 @@ def index(request):
 
     # Select two random categories
     random_category1 = random.choice(categories_with_auctions)
-
-    # Select the second random category, ensuring it's different from the first
     remaining_categories = categories_with_auctions.exclude(id=random_category1.id)
     random_category2 = random.choice(remaining_categories)
 
@@ -54,18 +56,21 @@ def index(request):
     # Determine if the user is watching each auction
     if request.user.is_authenticated:
         watchlist = request.user.watchlist.all()
+        recent_views = AuctionView.objects.filter(user=request.user).order_by('-viewed_at')[:8]
+
         for auction in watchlist:
             auction.image = auction.get_images.first()
+
+        for auction in auctions_cat1:
+            auction.image = auction.get_images.first()
+            auction.is_watched = auction in watchlist
+
+        for auction in auctions_cat2:
+            auction.image = auction.get_images.first()
+            auction.is_watched = auction in watchlist
     else:
         watchlist = Auction.objects.none()
-
-    for auction in auctions_cat1:
-        auction.image = auction.get_images.first()
-        auction.is_watched = auction in watchlist
-
-    for auction in auctions_cat2:
-        auction.image = auction.get_images.first()
-        auction.is_watched = auction in watchlist
+        recent_views = Auction.objects.none()
 
     # Paginate if you still want to show auctions with pagination
     page = request.GET.get('page', 1)
@@ -97,7 +102,9 @@ def index(request):
         'random_category1': random_category1,
         'random_category2': random_category2,
         'watchlist': watchlist,
+        'recent_views': recent_views,
     })
+
 
 
 def header(request):
@@ -389,11 +396,10 @@ def import_excel(request):
 
 
 @login_required
-def active_auctions_view(request):
+def active_auctions_view(request, auction_id=None):
     """
-    It renders a page that displays all of
-    the currently active auction listings
-    Active auctions are paginated: 10 per page
+    Renders a page that displays all of the currently active auction listings.
+    Active auctions are paginated: 10 per page.
     """
     category_name = request.GET.get('category_name', None)
     time_filter = request.GET.get('time_filter', None)
@@ -401,15 +407,34 @@ def active_auctions_view(request):
     manufacturer_filter = request.GET.get('mfg_filter', None)
     my_auctions = request.GET.get('my_auctions', None)
     search_query = request.GET.get('search_query', None)
+    auction_type = request.GET.get('auction_type', None)
+    watchlist_filter = request.GET.get('watchlist', None)
+    recent_views_filter = request.GET.get('recent_views', None)
+    has_active_auctions = Auction.objects.filter(creator=request.user, active=True).exists()
+
+
     title = 'Active Auctions'
 
     now = timezone.now()
 
     auctions = Auction.objects.filter(active=True)
 
+    if auction_type:
+        auctions = auctions.filter(auction_type=auction_type)
+        title = f'{auction_type}s'
+
+    if recent_views_filter:
+        recent_views = AuctionView.objects.filter(user=request.user).order_by('-viewed_at').values_list('auction', flat=True)
+        auctions = auctions.filter(id__in=recent_views)
+        title = 'Recently Viewed Listings'
+
     if my_auctions:
         auctions = auctions.filter(creator=request.user)
-        title = 'My Auctions'
+        title = 'My Listings'
+
+    if watchlist_filter:
+        auctions = request.user.watchlist.all()
+        title = 'My Watchlist'
 
     if category_name:
         auctions = auctions.filter(category__category_name=category_name)
@@ -442,6 +467,14 @@ def active_auctions_view(request):
             auctions = auctions.annotate(bid_count=Count('bid')).order_by('-bid_count')
         title = 'Sorted By: ' + sort_by
 
+    if auction_id:
+        try:
+            specific_auction = Auction.objects.get(id=auction_id, active=True)
+            auctions = auctions.exclude(id=auction_id)  # Remove the specific auction from the queryset
+            auctions = [specific_auction] + list(auctions)  # Add it at the start of the list
+        except Auction.DoesNotExist:
+            pass
+
     manufacturers = [str(auction.manufacturer) for auction in auctions]
     unique_manufacturers = sorted(set(manufacturers))
 
@@ -473,18 +506,25 @@ def active_auctions_view(request):
     except EmptyPage:
         pages = paginator.page(paginator.num_pages)
 
+    if isinstance(auctions, QuerySet):
+        auctions_count = auctions.count()
+    else:
+        auctions_count = len(auctions)
+
     return render(request, 'auctions_active.html', {
         'categories': Category.objects.all(),
         'auctions': pages,
         'bid_form': BidForm(),
         'add_to_cart_form': AddToCartForm(),
-        'auctions_count': auctions.count(),
+        'auctions_count': auctions_count,
         'pages': pages,
         'title': title.replace("_", " "),
         'unique_manufacturers': unique_manufacturers,
         'time_filter': time_filter,
         'sort_by': sort_by,
         'manufacturer_filter': manufacturer_filter,
+        'my_auctions': my_auctions,
+        'has_active_auctions': has_active_auctions,
     })
 
 
@@ -493,7 +533,18 @@ def get_auction_images(request, auction_id):
     auction = get_object_or_404(Auction, id=auction_id)
     images = auction.get_images.all()
     image_urls = [image.image.url for image in images]
-    return JsonResponse({'image_urls': image_urls})
+    return (JsonResponse({'image_urls': image_urls}))
+
+
+@login_required
+def get_auction_product_details(request, auction_id):
+    auction = get_object_or_404(Auction, id=auction_id)
+    product_details = auction.product_details.all()
+
+    # Convert product details to a list of dictionaries
+    product_details_list = list(product_details.values())
+
+    return JsonResponse({'product_details': product_details_list})
 
 
 @login_required
@@ -545,8 +596,8 @@ def watchlist_edit(request, auction_id, reverse_method):
     else:
         auction.watchers.add(request.user)
 
-    if reverse_method == 'auction_details_view':
-        return auction_details_view(request, auction_id)
+    if reverse_method == 'active_auctions_with_id':
+        return HttpResponseRedirect(reverse('active_auctions_with_id', kwargs={'auction_id': auction_id}))
     else:
         return HttpResponseRedirect(reverse(reverse_method))
 
@@ -709,15 +760,12 @@ def download_excel(request):
 def add_to_cart(request, auction_id):
     auction = get_object_or_404(Auction, id=auction_id)
     cart, created = Cart.objects.get_or_create(user=request.user)
-    form = AddToCartForm(request.POST or None)
-    if request.method == 'POST' and form.is_valid():
-        quantity = form.cleaned_data['quantity']
+
+    if request.method == 'POST':
         cart_item, created = CartItem.objects.get_or_create(cart=cart, auction=auction)
-        cart_item.quantity += quantity
-        cart_item.save()
         return redirect('view_cart')
 
-    return render(request, 'add_to_cart.html', {'auction': auction, 'form': form})
+    return render(request, 'add_to_cart.html', {'auction': auction})
 
 
 def view_cart(request):
@@ -729,3 +777,14 @@ def remove_from_cart(request, item_id):
     cart_item = get_object_or_404(CartItem, id=item_id)
     cart_item.delete()
     return redirect('view_cart')
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+def track_auction_view(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        auction_id = data.get('auction_id')
+        auction = Auction.objects.get(id=auction_id)
+        AuctionView.objects.create(user=request.user, auction=auction)
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'fail'}, status=400)

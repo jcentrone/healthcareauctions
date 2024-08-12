@@ -12,6 +12,7 @@ urlpatterns = [
     path('auction/create', views.auction_create, name='auction_create'),
     path('auction/active', views.active_auctions_view, name='active_auctions_view'),
     path('auction/active/<str:category_name>', views.active_auctions_view, name='active_auctions_view'),
+    path('auction/active/id/<int:auction_id>/', views.active_auctions_view, name='active_auctions_with_id'),
     path('auction/watchlist', views.watchlist_view, name='watchlist_view'),
     path('auction/watchlist/<int:auction_id>/edit/<str:reverse_method>', views.watchlist_edit, name='watchlist_edit'),
     path('auction/<str:auction_id>', views.auction_details_view, name='auction_details_view'),
@@ -28,5 +29,8 @@ urlpatterns = [
     path('cart/', views.view_cart, name='view_cart'),
     path('remove-from-cart/<int:item_id>/', views.remove_from_cart, name='remove_from_cart'),
     path('api/get-auction-images/<int:auction_id>/', views.get_auction_images, name='get_auction_images'),
+    path('auction/<int:auction_id>/product-details/', views.get_auction_product_details,
+         name='get_auction_additional_details'),
+    path('track-auction-view/', views.track_auction_view, name='track_auction_view'),
 
 ]

@@ -17,15 +17,97 @@
 
         <section class="featured-auctions">
             {% if user.is_authenticated %}
+                {% if recent_views %}
+                    <div class="auctions-category mb-5">
+                        <h2>
+                            <a href="{% url 'active_auctions_view' %}?recent_views=1">Recently Viewed</a>
+                        </h2>
+                        <div class="auction-items grid">
+                            {% for view in recent_views %}
+                                <div class="auction-item-container">
+                                    <a class="auction-item" href="{% url 'active_auctions_with_id' view.auction.id %}">
+                                        {% if view.auction.get_images.first %}
+                                            <img src="{{ view.auction.get_images.first.image.url }}"
+                                                 alt="{{ view.auction.title }}">
+                                        {% else %}
+                                            <img src="{% static 'images/no_image.png' %}" alt="Default Image">
+                                        {% endif %}
+                                        <h3>{{ view.auction.title }}</h3>
+                                        <p>{{ view.auction.category }}</p>
+                                        {% if view.auction.auction_type == 'Auction' %}
+                                            <h3>
+                                                {% if view.auction.current_bid %}
+                                                    ${{ view.auction.current_bid }}
+                                                {% else %}
+                                                    ${{ view.auction.starting_bid }}
+                                                {% endif %}
+                                            </h3>
+                                        {% else %}
+                                            <h3>
+                                                ${{ view.auction.buyItNowPrice }}
+                                            </h3>
+                                        {% endif %}
+                                    </a>
+                                    <a class='btn btn-secondary mt-auto rounded watch-button'
+                                       href="{% url 'watchlist_edit' view.auction.id 'active_auctions_with_id' %}">
+                                        {% if view.auction.is_watched %}
+                                            <i class="fa-solid fa-eye"></i>
+                                        {% else %}
+                                            <i class="fa-regular fa-eye"></i>
+                                        {% endif %}
+                                    </a>
+
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
                 <div class="auctions-category mb-5">
                     <h2>Your Watchlist</h2>
                     <div class="auction-items grid">
                         {% for auction in watchlist %}
-                            <a class="auction-item" href="{% url 'auction_details_view' auction.id %}">
+                            <div class="auction-item-container">
+                                <a class="auction-item" href="{% url 'active_auctions_with_id' auction.id %}">
+                                    {% if auction.image %}
+                                        <img src="{{ auction.image.image.url }}" alt="{{ auction.title }}">
+                                    {% else %}
+                                        <img src="{% static 'images/no_image.png' %}" alt="Default Image">
+                                    {% endif %}
+                                    <h3>{{ auction.title }}</h3>
+                                    <p>{{ auction.category }}</p>
+                                    <h3>
+                                        <!-- Product price-->
+                                        {% if auction.current_bid %}
+                                            ${{ auction.current_bid }}
+                                        {% else %}
+                                            ${{ auction.starting_bid }}
+                                        {% endif %}
+                                    </h3>
+                                </a>
+                                <a class='btn btn-secondary mt-auto rounded watch-button'
+                                   href="{% url 'watchlist_edit' auction.id 'active_auctions_with_id' %}">
+                                    {% if auction.is_watched %}
+                                        <i class="fa-solid fa-eye"></i>
+                                    {% else %}
+                                        <i class="fa-regular fa-eye"></i>
+                                    {% endif %}
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="auctions-category mb-5">
+                <h2>{{ random_category1 }}</h2>
+                <div class="auction-items grid">
+                    {% for auction in pages_cat1 %}
+                        <div class="auction-item-container">
+                            <a class="auction-item" href="{% url 'active_auctions_with_id' auction.id %}">
                                 {% if auction.image %}
                                     <img src="{{ auction.image.image.url }}" alt="{{ auction.title }}">
                                 {% else %}
-                                    <img src="path/to/default/image.jpg" alt="Default Image">
+                                    <img src="{% static 'images/no_image.png' %}" alt="Default Image">
                                 {% endif %}
                                 <h3>{{ auction.title }}</h3>
                                 <p>{{ auction.category }}</p>
@@ -37,52 +119,16 @@
                                         ${{ auction.starting_bid }}
                                     {% endif %}
                                 </h3>
-                                <button class='btn btn-outline-success mt-auto rounded'
-                                        data-auction-id="{{ auction.id }}">
-                                    {% if auction.is_watched %}
-                                        <i class="fa-solid fa-eye"></i>
-                                    {% else %}
-                                        <i class="fa-regular fa-eye"></i>
-                                    {% endif %}
-                                </button>
                             </a>
-
-                        {% endfor %}
-                    </div>
-                </div>
-            {% endif %}
-
-            <div class="auctions-category mb-5">
-                <h2>{{ random_category1 }}</h2>
-                <div class="auction-items grid">
-                    {% for auction in pages_cat1 %}
-                        <a class="auction-item" href="{% url 'auction_details_view' auction.id %}">
-                            {% if auction.image %}
-                                <img src="{{ auction.image.image.url }}" alt="{{ auction.title }}">
-                            {% else %}
-                                <img src="path/to/default/image.jpg" alt="Default Image">
-                            {% endif %}
-                            <h3>{{ auction.title }}</h3>
-                            <p>{{ auction.category }}</p>
-                            <h3>
-                                <!-- Product price-->
-                                {% if auction.current_bid %}
-                                    ${{ auction.current_bid }}
-                                {% else %}
-                                    ${{ auction.starting_bid }}
-                                {% endif %}
-                            </h3>
-
-                            <button class='btn btn-outline-success mt-auto rounded'
-                                    data-auction-id="{{ auction.id }}">
+                            <a class='btn btn-secondary mt-auto rounded watch-button'
+                               href="{% url 'watchlist_edit' auction.id 'active_auctions_with_id' %}">
                                 {% if auction.is_watched %}
                                     <i class="fa-solid fa-eye"></i>
                                 {% else %}
                                     <i class="fa-regular fa-eye"></i>
                                 {% endif %}
-                            </button>
-
-                        </a>
+                            </a>
+                        </div>
                     {% endfor %}
                 </div>
             </div>
@@ -90,34 +136,33 @@
                 <h2>{{ random_category2 }}</h2>
                 <div class="auction-items grid">
                     {% for auction in pages_cat2 %}
-                        <a class="auction-item" href="{% url 'auction_details_view' auction.id %}">
-                            {% if auction.image %}
-                                <img src="{{ auction.image.image.url }}" alt="{{ auction.title }}">
-                            {% else %}
-                                <img src="path/to/default/image.jpg" alt="Default Image">
-                            {% endif %}
-                            <h3>{{ auction.title }}</h3>
-                            <p>{{ auction.category }}</p>
-                            <h3>
-                                <!-- Product price-->
-                                {% if auction.current_bid %}
-                                    ${{ auction.current_bid }}
+                        <div class="auction-item-container">
+                            <a class="auction-item" href="{% url 'active_auctions_with_id' auction.id %}">
+                                {% if auction.image %}
+                                    <img src="{{ auction.image.image.url }}" alt="{{ auction.title }}">
                                 {% else %}
-                                    ${{ auction.starting_bid }}
+                                    <img src="{% static 'images/no_image.png' %}" alt="Default Image">
                                 {% endif %}
-                            </h3>
-                            <button class='btn btn-outline-success mt-auto rounded'
-                                    data-auction-id="{{ auction.id }}">
+                                <h3>{{ auction.title }}</h3>
+                                <p>{{ auction.category }}</p>
+                                <h3>
+                                    <!-- Product price-->
+                                    {% if auction.current_bid %}
+                                        ${{ auction.current_bid }}
+                                    {% else %}
+                                        ${{ auction.starting_bid }}
+                                    {% endif %}
+                                </h3>
+                            </a>
+                            <a class='btn btn-secondary mt-auto rounded watch-button'
+                               href="{% url 'watchlist_edit' auction.id 'active_auctions_with_id' %}">
                                 {% if auction.is_watched %}
                                     <i class="fa-solid fa-eye"></i>
                                 {% else %}
                                     <i class="fa-regular fa-eye"></i>
                                 {% endif %}
-                            </button>
-
-                        </a>
-
-
+                            </a>
+                        </div>
 
 
                     {% endfor %}
@@ -125,20 +170,20 @@
             </div>
 
         </section>
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const buttons = document.querySelectorAll('.watchlist-btn');
-
-                buttons.forEach(function (button) {
-                    button.addEventListener('click', function (event) {
-                        event.stopPropagation(); // Prevent the click event from propagating to the parent <a> element
-                        const auctionId = button.getAttribute('data-auction-id');
-                        const url = `{% url 'watchlist_edit' 0 'auction_details_view' %}`.replace('0', auctionId);
-                        window.location.href = url;
-                    });
-                });
-            });
-        </script>
+        {#        <script>#}
+        {#            document.addEventListener('DOMContentLoaded', function () {#}
+        {#                const buttons = document.querySelectorAll('.watchlist-btn');#}
+        {##}
+        {#                buttons.forEach(function (button) {#}
+        {#                    button.addEventListener('click', function (event) {#}
+        {#                        event.stopPropagation(); // Prevent the click event from propagating to the parent <a> element#}
+        {#                        const auctionId = button.getAttribute('data-auction-id');#}
+        {#                        const url = `{% url 'watchlist_edit' 0 'active_auctions_with_id' %}`.replace('0', auctionId);#}
+        {#                        window.location.href = url;#}
+        {#                    });#}
+        {#                });#}
+        {#            });#}
+        {#        </script>#}
 
 
         {#        <section class="testimonials">#}

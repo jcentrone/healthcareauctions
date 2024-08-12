@@ -111,9 +111,13 @@
                                     Dashboard
                                 </a>
                             </li>
-                            <li class="nav-item p-2">Recently Viewed</li>
+                            <li class="nav-item p-2">
+                                <a class='nav-link' href="{% url 'active_auctions_view' %}?recent_views=1">
+                                    Recently Viewed
+                                </a>
+                            </li>
                             <li class='nav-item p-2'>
-                                <a class='nav-link' href="{% url 'watchlist_view' %}">
+                                <a class='nav-link' href="{% url 'active_auctions_view' %}?watchlist=true">
                                     Watchlist
                                 </a>
                             </li>
@@ -167,7 +171,7 @@
         <div class="container" id="lower-header-container">
             <a class="logo" id="logo-container" href="{% url 'index' %}">
                 <img src="{% static "images/logo.png" %}" alt="Healthcare Auctions Logo">
-                <div class="">
+                <div class="logo-text">
                     <div>Healthcare</div>
                     <div>Auctions</div>
                 </div>

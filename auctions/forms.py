@@ -138,15 +138,8 @@ class BidForm(forms.ModelForm):
 class AddToCartForm(forms.ModelForm):
     class Meta:
         model = CartItem
-        fields = ['quantity']
-        widgets = {
-            'quantity': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'min': 1
-            })
-        }
+        fields = []  # No fields required
 
     def __init__(self, *args, **kwargs):
         super(AddToCartForm, self).__init__(*args, **kwargs)
-        for visible in self.visible_fields():
-            visible.field.widget.attrs['class'] = 'form-control mt-2'
+
