@@ -28,15 +28,17 @@
 
 .auctions-header-container {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr;
 
 }
 
 #filter-form,
 #auction-filter-form {
-    display: flex;
+    display: grid;
     gap: 10px;
     align-items: center;
+    grid-template-columns: auto auto auto auto 1fr;
+    width: 100%;
 }
 
 #time-filter,

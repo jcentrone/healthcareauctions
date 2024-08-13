@@ -35,19 +35,7 @@
                 <!-- Filter Section -->
                 <div class="collapse d-md-block filters" id="filterCollapse">
                     <form id="auction-filter-form" method="get" class="form-inline">
-                        <!-- My Listings Checkbox -->
-                        {% if user.is_authenticated and has_active_auctions %}
-                            <div class="form-group mb-2">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="my-auctions-checkbox"
-                                           name="my_auctions" value="1"
-                                            {% if my_auctions %} checked {% endif %}>
-                                    <label class="form-check-label" for="my-auctions-checkbox">
-                                        My Listings
-                                    </label>
-                                </div>
-                            </div>
-                        {% endif %}
+
                         <!-- Filter By Time -->
                         <div class="form-group mb-2">
                             <div class="dropdown">
@@ -122,6 +110,19 @@
                             </div>
                             <input type="hidden" name="auction_type" id="auction-type-value">
                         </div>
+                        <!-- My Listings Checkbox -->
+                        {% if user.is_authenticated and has_active_auctions %}
+                            <div class="form-group mb-2 d-flex justify-content-end">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="my-auctions-checkbox"
+                                           name="my_auctions" value="1"
+                                            {% if my_auctions %} checked {% endif %}>
+                                    <label class="form-check-label" for="my-auctions-checkbox">
+                                        My Listings
+                                    </label>
+                                </div>
+                            </div>
+                        {% endif %}
                     </form>
                 </div>
             </div>

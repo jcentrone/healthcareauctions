@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.files.storage import get_storage_class
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import IntegrityError
-from django.db.models import Count, Q, QuerySet
+from django.db.models import Q, QuerySet, Case, When, BooleanField
 from django.http import HttpResponseRedirect, JsonResponse, FileResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
@@ -19,15 +19,15 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
 from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, ProductDetailFormSet
-from .models import Auction, Bid, Category, Image, User, Address, CartItem, Cart, ProductDetail, AuctionView
+from .models import Bid, Category, Image, User, Address, CartItem, Cart, ProductDetail
 from .utils.helpers import update_categories_from_fda
 
 # Set up logging
 logger = logging.getLogger(__name__)
 
-
 from django.db.models import Count
 from .models import Auction, AuctionView
+
 
 def index(request):
     """
@@ -53,24 +53,54 @@ def index(request):
     auctions_cat1 = Auction.objects.filter(category=random_category1)[:8]
     auctions_cat2 = Auction.objects.filter(category=random_category2)[:8]
 
+    watchlist = Auction.objects.none()
+    recent_views = Auction.objects.none()
+
     # Determine if the user is watching each auction
     if request.user.is_authenticated:
         watchlist = request.user.watchlist.all()
         recent_views = AuctionView.objects.filter(user=request.user).order_by('-viewed_at')[:8]
+
+        watchlist_ids = watchlist.values_list('id', flat=True)
+
+        auctions_cat1 = auctions_cat1.annotate(
+            is_watched=Case(
+                When(id__in=watchlist_ids, then=True),
+                default=False,
+                output_field=BooleanField()
+            )
+        )
+
+        auctions_cat2 = auctions_cat2.annotate(
+            is_watched=Case(
+                When(id__in=watchlist_ids, then=True),
+                default=False,
+                output_field=BooleanField()
+            )
+        )
+
+        recent_views = recent_views.annotate(
+            is_watched=Case(
+                When(auction__id__in=watchlist_ids, then=True),
+                default=False,
+                output_field=BooleanField()
+            )
+        )
 
         for auction in watchlist:
             auction.image = auction.get_images.first()
 
         for auction in auctions_cat1:
             auction.image = auction.get_images.first()
-            auction.is_watched = auction in watchlist
 
         for auction in auctions_cat2:
             auction.image = auction.get_images.first()
-            auction.is_watched = auction in watchlist
-    else:
-        watchlist = Auction.objects.none()
-        recent_views = Auction.objects.none()
+
+        # Debugging: Check the values being returned
+        # print("Watchlist IDs:", watchlist_ids)
+        # print("Auction Cat 1 - is_watched:", auctions_cat1.values('id', 'is_watched'))
+        # print("Auction Cat 2 - is_watched:", auctions_cat2.values('id', 'is_watched'))
+        # print("Recent Views - is_watched:", recent_views.values('id', 'is_watched'))
 
     # Paginate if you still want to show auctions with pagination
     page = request.GET.get('page', 1)
@@ -104,7 +134,6 @@ def index(request):
         'watchlist': watchlist,
         'recent_views': recent_views,
     })
-
 
 
 def header(request):
@@ -412,7 +441,6 @@ def active_auctions_view(request, auction_id=None):
     recent_views_filter = request.GET.get('recent_views', None)
     has_active_auctions = Auction.objects.filter(creator=request.user, active=True).exists()
 
-
     title = 'Active Auctions'
 
     now = timezone.now()
@@ -424,7 +452,8 @@ def active_auctions_view(request, auction_id=None):
         title = f'{auction_type}s'
 
     if recent_views_filter:
-        recent_views = AuctionView.objects.filter(user=request.user).order_by('-viewed_at').values_list('auction', flat=True)
+        recent_views = AuctionView.objects.filter(user=request.user).order_by('-viewed_at').values_list('auction',
+                                                                                                        flat=True)
         auctions = auctions.filter(id__in=recent_views)
         title = 'Recently Viewed Listings'
 
@@ -467,11 +496,11 @@ def active_auctions_view(request, auction_id=None):
             auctions = auctions.annotate(bid_count=Count('bid')).order_by('-bid_count')
         title = 'Sorted By: ' + sort_by
 
+    specific_auction = None
     if auction_id:
         try:
             specific_auction = Auction.objects.get(id=auction_id, active=True)
-            auctions = auctions.exclude(id=auction_id)  # Remove the specific auction from the queryset
-            auctions = [specific_auction] + list(auctions)  # Add it at the start of the list
+            auctions = auctions.exclude(id=auction_id)  # Exclude the specific auction from the queryset
         except Auction.DoesNotExist:
             pass
 
@@ -496,15 +525,19 @@ def active_auctions_view(request, auction_id=None):
         auction.image = auction.get_images.first()
         auction.is_watched = request.user in auction.watchers.all()
 
-    # Show 10 active auctions per page
-    page = request.GET.get('page', 1)
-    paginator = Paginator(auctions, 10)
-    try:
-        pages = paginator.page(page)
-    except PageNotAnInteger:
-        pages = paginator.page(1)
-    except EmptyPage:
-        pages = paginator.page(paginator.num_pages)
+        # Pagination
+        page = request.GET.get('page', 1)
+        paginator = Paginator(auctions, 10)
+        try:
+            pages = paginator.page(page)
+        except PageNotAnInteger:
+            pages = paginator.page(1)
+        except EmptyPage:
+            pages = paginator.page(paginator.num_pages)
+
+        # If on the first page, prepend the specific auction
+        if specific_auction and page == 1:
+            pages.object_list = [specific_auction] + list(pages.object_list)
 
     if isinstance(auctions, QuerySet):
         auctions_count = auctions.count()

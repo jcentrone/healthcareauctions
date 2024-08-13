@@ -36,6 +36,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function getAuctionIdFromUrl() {
     const urlParts = window.location.pathname.split('/');
+    console.log('urlpart', urlParts[urlParts.length - 2]);
     return urlParts[urlParts.length - 2]; // This gets the auction ID from the URL
 }
 
