@@ -38,13 +38,19 @@
                                             <h3>
                                                 {% if view.auction.current_bid %}
                                                     ${{ view.auction.current_bid }}
+                                                    <div class="fs-5 fw-light fst-italic">Current Bid</div>
                                                 {% else %}
                                                     ${{ view.auction.starting_bid }}
+                                                    <div class="fs-5 fw-light fst-italic">Starting Bid</div>
                                                 {% endif %}
+                                                <div class="lead time-remaining">{{ view.auction.formatted_time_remaining }}
+                                                    Remaining
+                                                </div>
                                             </h3>
                                         {% else %}
                                             <h3>
                                                 ${{ view.auction.buyItNowPrice }}
+                                                <div class="fs-5 fw-light fst-italic">Get it Now</div>
                                             </h3>
                                         {% endif %}
                                     </a>
@@ -81,13 +87,19 @@
                                             <h3>
                                                 {% if view.auction.current_bid %}
                                                     ${{ auction.current_bid }}
+                                                    <div class="fs-5 fw-light fst-italic">Current Bid</div>
                                                 {% else %}
                                                     ${{ auction.starting_bid }}
+                                                    <div class="fs-5 fw-light fst-italic">Starting Bid</div>
                                                 {% endif %}
+                                                <div class="lead time-remaining">{{ auction.formatted_time_remaining }}
+                                                    Remaining
+                                                </div>
                                             </h3>
                                         {% else %}
                                             <h3>
                                                 ${{ auction.buyItNowPrice }}
+                                                <div class="fs-5 fw-light fst-italic">Get it Now</div>
                                             </h3>
                                         {% endif %}
                                     </a>
@@ -119,13 +131,20 @@
                                     <h3>
                                         {% if view.auction.current_bid %}
                                             ${{ auction.current_bid }}
+                                            <div class="fs-5 fw-light fst-italic">Current Bid</div>
                                         {% else %}
                                             ${{ auction.starting_bid }}
+                                            <div class="fs-5 fw-light fst-italic">Starting Bid</div>
                                         {% endif %}
+                                        <div class="lead time-remaining">{{ view.auction.formatted_time_remaining }}
+                                            Remaining
+                                        </div>
                                     </h3>
                                 {% else %}
                                     <h3>
                                         ${{ auction.buyItNowPrice }}
+                                        <div class="fs-5 fw-light fst-italic">Get it Now</div>
+
                                     </h3>
                                 {% endif %}
                             </a>
@@ -158,13 +177,20 @@
                                     <h3>
                                         {% if view.auction.current_bid %}
                                             ${{ auction.current_bid }}
+                                            <div class="fs-5 fw-light fst-italic">Current Bid</div>
+
                                         {% else %}
                                             ${{ auction.starting_bid }}
+                                            <div class="fs-5 fw-light fst-italic">Starting Bid</div>
                                         {% endif %}
+                                        <div class="lead time-remaining">{{ view.auction.formatted_time_remaining }}
+                                            Remaining
+                                        </div>
                                     </h3>
                                 {% else %}
                                     <h3>
                                         ${{ auction.buyItNowPrice }}
+                                        <div class="fs-5 fw-light fst-italic">Get it Now</div>
                                     </h3>
                                 {% endif %}
                             </a>

@@ -101,7 +101,7 @@ header .logo {
 .mini-watchlist {
     display: grid;
     grid-template-columns: 1fr;
-    max-width: 350px;
+    max-width: 500px;
     max-height: 500px;
     overflow: auto;
     scrollbar-width: thin;
@@ -136,6 +136,7 @@ header .logo {
     position: relative;
     text-decoration: none;
     margin: auto;
+    width: 400px;
 }
 
 .mini-watchlist-item img {

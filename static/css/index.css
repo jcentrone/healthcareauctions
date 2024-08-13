@@ -191,7 +191,8 @@ h2 a {
 
 .auctions-category .grid {
     display: grid;
-    grid-template-columns: repeat(8, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-auto-flow: column;
     justify-content: flex-start;
     align-items: center;
     gap: 20px;
@@ -203,27 +204,30 @@ h2 a {
 
 /* Customize scrollbar for WebKit browsers (Chrome, Safari) */
 .auctions-category .grid::-webkit-scrollbar {
-    height: 12px;
+    height: 12px; /* Height for horizontal scrollbar */
+
 }
 
 .auctions-category .grid::-webkit-scrollbar-track {
     background: #f1f1f1;
-    border-radius: 10px;
+    border-radius: 10px; /* Ensure the track is rounded */
 }
 
 .auctions-category .grid::-webkit-scrollbar-thumb {
     background: #888;
-    border-radius: 10px;
+    border-radius: 10px; /* Ensure the thumb is rounded */
 }
 
 .auctions-category .grid::-webkit-scrollbar-thumb:hover {
     background: #555;
+    border-radius: 10px;
 }
 
 /* Customize scrollbar for Firefox */
 .auctions-category .grid {
     scrollbar-width: thin;
     scrollbar-color: #888 #f1f1f1;
+    border-radius: 10px;
 }
 
 /* Customize scrollbar for IE and Edge */
@@ -238,7 +242,7 @@ h2 a {
     border-radius: var(--border-radius);
     padding: 20px;
     width: 300px;
-    height: 400px;
+    height: 415px;
     /*box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);*/
     box-shadow: 2px 6px 8px rgba(0, 0, 0, 0.1);
     position: relative;
@@ -269,6 +273,10 @@ h2 a {
     position: absolute;
     top: 20px;
     right: 20px;
+}
+
+.time-remaining {
+    color: #C12947;
 }
 
 .featured-auctions .button {

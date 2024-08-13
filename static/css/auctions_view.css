@@ -126,13 +126,13 @@
 .additional-images {
     display: grid;
     gap: 20px;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, 185px);
 }
 
 
 img.img-thumbnail {
-    /* max-width: calc(100% / 5); */
-    height: 150px;
+    width: 185px;
+    height: 100%;
     object-fit: cover;
 }
 

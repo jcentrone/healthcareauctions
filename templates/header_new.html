@@ -57,25 +57,29 @@
                                 aria-expanded="false">
                             Watchlist
                         </button>
-                        <div class="dropdown-menu p-2">
+                        <div class="dropdown-menu dropdown-menu-end p-2">
                             <div class="mini-watchlist">
                                 {% for auction in watchlist %}
                                     <a class="mini-watchlist-item" href="{% url 'auction_details_view' auction.id %}">
                                         {% if auction.image %}
                                             <img src="{{ auction.image.image.url }}" alt="{{ auction.title }}">
                                         {% else %}
-                                            <img src="path/to/default/image.jpg" alt="Default Image">
+                                            <img src="{% static 'images/no_image.png' %}" alt="Default Image">
                                         {% endif %}
                                         <div>
-                                            <h6>{{ auction.title }}</h6>
-                                            <div>
-                                                <!-- Product price-->
+                                            <h6>{{ auction.title|truncatechars:30 }}</h6>
+                                            <h3>
                                                 {% if auction.current_bid %}
                                                     ${{ auction.current_bid }}
+                                                    <div class="fs-6 fw-light fst-italic">Current Bid</div>
                                                 {% else %}
                                                     ${{ auction.starting_bid }}
+                                                    <div class="fs-6 fw-light fst-italic">Starting Bid</div>
                                                 {% endif %}
-                                            </div>
+                                                <div class="lead fs-6 time-remaining">{{ auction.formatted_time_remaining }}
+                                                    Remaining
+                                                </div>
+                                            </h3>
                                         </div>
                                     </a>
                                     <div class="dropdown-divider"></div>
