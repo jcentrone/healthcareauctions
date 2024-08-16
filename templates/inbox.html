@@ -25,12 +25,23 @@
                              style="display: {% if forloop.first %}block{% else %}none{% endif %};">
                             <h5 class="border-bottom pb-3">{{ thread.subject }}</h5>
                             <div class="message-thread">
-                                {% for reply in thread.get_thread reversed %}
-                                    <div class="message-reply p-2 my-2 card {% if reply.sender_id == request.user.id %}text-end{% else %}text-start{% endif %}">
-                                        <div class="">{{ reply.body }}</div>
-                                        <small class="text-muted">{{ reply.sender.username }}
-                                            - {{ reply.date_sent|date:"M d, Y H:i" }}</small>
-                                    </div>
+                                {% for reply in thread.get_thread.reverse %}
+                                    {% if reply.message_type == 'question' %}
+                                        <div class="message-reply p-2 my-2 card {% if reply.sender_id == request.user.id %}text-end{% else %}text-start{% endif %}">
+                                            <div class="">{{ reply.body }}</div>
+                                            <small class="text-muted">{{ reply.sender.username }}
+                                                - {{ reply.date_sent }}</small>
+                                        </div>
+                                        {% endif %}
+                                {% endfor %}
+                                    {% for reply in thread.get_thread %}
+                                    {% if reply.message_type != 'question' %}
+                                        <div class="message-reply p-2 my-2 card {% if reply.sender_id == request.user.id %}text-end{% else %}text-start{% endif %}">
+                                            <div class="">{{ reply.body }}</div>
+                                            <small class="text-muted">{{ reply.sender.username }}
+                                                - {{ reply.date_sent }}</small>
+                                        </div>
+                                    {% endif %}
                                 {% endfor %}
                             </div>
                             <form method="post" action="{% url 'send_reply' thread.id %}">
