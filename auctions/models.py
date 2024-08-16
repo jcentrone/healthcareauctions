@@ -180,6 +180,10 @@ class Auction(models.Model):
     def total_views(self):
         return self.views.count()
 
+    def get_image(self):
+        # Returns the first image associated with the auction
+        return self.get_images.first()
+
 
 class AuctionView(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='auction_views')

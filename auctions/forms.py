@@ -150,7 +150,12 @@ class MessageForm(forms.ModelForm):
         fields = ['subject', 'body']
         widgets = {
             'subject': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Subject'}),
-            'body': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Your message...'}),
+            'body': forms.Textarea(attrs={
+                'class': 'form-control',
+                'placeholder': 'Your message...',
+                'maxlength': '1000',  # Limits the text area to 1000 characters
+                'rows': 3
+            }),
         }
         labels = {
             'subject': 'Subject',

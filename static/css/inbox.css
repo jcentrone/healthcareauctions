@@ -1,3 +1,45 @@
+.message-thread{
+    height: 400px;
+    overflow-y: auto;
+    padding-right: 15px;
+}
+
+
+/* Customize scrollbar for WebKit browsers (Chrome, Safari) */
+.message-thread::-webkit-scrollbar {
+    height: 12px; /* Height for horizontal scrollbar */
+
+}
+
+.message-thread::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px; /* Ensure the track is rounded */
+}
+
+.message-thread::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px; /* Ensure the thumb is rounded */
+}
+
+.message-thread::-webkit-scrollbar-thumb:hover {
+    background: #555;
+    border-radius: 10px;
+}
+
+/* Customize scrollbar for Firefox */
+.message-thread  {
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f1f1f1;
+    border-radius: 10px;
+}
+
+/* Customize scrollbar for IE and Edge */
+.message-thread  {
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+}
+
+
+
 .message-reply{
     width: fit-content;
 }

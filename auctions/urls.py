@@ -36,5 +36,6 @@ urlpatterns = [
     path('message/<int:message_id>/', views.message_detail, name='message_detail'),
     path('send_message/<int:auction_id>/', views.send_message, name='send_message'),
     path('message/reply/<int:message_id>/', views.send_reply, name='send_reply'),
+    path('message/validate/<str:message>/', views.validate_message, name='validate_message'),
 
 ]

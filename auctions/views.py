@@ -21,6 +21,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, ProductDetailFormSet, MessageForm
 from .models import Bid, Category, Image, User, Address, CartItem, Cart, ProductDetail, Message
 from .utils.helpers import update_categories_from_fda
+from .utils.openai import get_chat_completion_request
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -54,10 +55,10 @@ def index(request):
     auctions_cat2 = Auction.objects.filter(category=random_category2)[:8]
 
     for auction in auctions_cat1:
-        auction.image = auction.get_images.first()
+        auction.image = auction.get_image()  # Use the model's method to get the image
 
     for auction in auctions_cat2:
-        auction.image = auction.get_images.first()
+        auction.image = auction.get_image()  # Use the model's method to get the image
 
     watchlist = Auction.objects.none()
     recent_views = Auction.objects.none()
@@ -94,13 +95,7 @@ def index(request):
         )
 
         for auction in watchlist:
-            auction.image = auction.get_images.first()
-
-        # Debugging: Check the values being returned
-        # print("Watchlist IDs:", watchlist_ids)
-        # print("Auction Cat 1 - is_watched:", auctions_cat1.values('id', 'is_watched'))
-        # print("Auction Cat 2 - is_watched:", auctions_cat2.values('id', 'is_watched'))
-        # print("Recent Views - is_watched:", recent_views.values('id', 'is_watched'))
+            auction.image = auction.get_image()  # Use the model's method to get the image
 
     # Paginate if you still want to show auctions with pagination
     page = request.GET.get('page', 1)
@@ -134,6 +129,7 @@ def index(request):
         'watchlist': watchlist,
         'recent_views': recent_views,
     })
+
 
 
 def header(request):
@@ -933,3 +929,31 @@ def send_reply(request, message_id):
                 message_type='reply'
             )
     return redirect('inbox')
+
+
+@login_required
+def validate_message(request, message):
+    messages = [
+        {
+            'role': 'system',
+            'content': 'You are a helpful assistant that is adept at determining if a message contains personally identifiable information.'
+        },
+        {
+            'role': 'user',
+            'content': f'Determine if this message has any information that can be used to identify the sender, recipient, or any company information: {message}. Except for first names, wrap any and all personally identified text in double hash tag symbols. Wrap first names in double exclamation symbols and last names in double hash tag symbols in your json response.'
+        }
+    ]
+
+    try:
+        response = get_chat_completion_request(messages=messages, tools=None, tool_choice=None)
+        response_content = response.choices[0].message.content
+        parsed_content = json.loads(response_content)
+        processed_message = parsed_content.get('message', '')
+
+        contains_pii = "##" in processed_message or "!!" in processed_message
+
+        return JsonResponse({'validated_message': processed_message, 'contains_pii': contains_pii})
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+

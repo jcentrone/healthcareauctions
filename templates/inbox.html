@@ -12,7 +12,7 @@
                             onclick="showMessage({{ thread.id }})">
                             <div class="d-flex justify-content-between">
                                 <span>{{ thread.subject }}</span>
-                                <span class="text-muted">{{ thread.date_sent|date:"M d, Y" }}</span>
+                                <span class="">{{ thread.date_sent|date:"M d, Y" }}</span>
                             </div>
                         </li>
                     {% endfor %}
@@ -32,9 +32,9 @@
                                             <small class="text-muted">{{ reply.sender.username }}
                                                 - {{ reply.date_sent }}</small>
                                         </div>
-                                        {% endif %}
+                                    {% endif %}
                                 {% endfor %}
-                                    {% for reply in thread.get_thread %}
+                                {% for reply in thread.get_thread %}
                                     {% if reply.message_type != 'question' %}
                                         <div class="message-reply p-2 my-2 card {% if reply.sender_id == request.user.id %}text-end{% else %}text-start{% endif %}">
                                             <div class="">{{ reply.body }}</div>
@@ -44,13 +44,17 @@
                                     {% endif %}
                                 {% endfor %}
                             </div>
-                            <form method="post" action="{% url 'send_reply' thread.id %}">
+                            <form class="submitForm" method="post" action="{% url 'send_reply' thread.id %}">
                                 {% csrf_token %}
-                                <div class="form-group mt-3">
+                                <div class="form-group mt-3 ">
                                     <textarea name="reply" class="form-control" rows="3"
-                                              placeholder="Write your reply..."></textarea>
+                                              placeholder="Write your reply..." maxlength="1000"></textarea>
+
                                 </div>
-                                <button type="submit" class="btn btn-primary mt-2">Send Reply</button>
+                                <div class="d-flex justify-content-between">
+                                    <small id="charCount" class="form-text text-muted ps-1">0/1000 characters used</small>
+                                    <button type="submit" class="btn btn-primary mt-2">Send Reply</button>
+                                </div>
                             </form>
                         </div>
                     {% endfor %}
@@ -59,6 +63,8 @@
         </div>
     </div>
     <link href='{% static "css/inbox.css" %}' rel='stylesheet'>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         function showMessage(messageId) {
             document.querySelectorAll('.message-content').forEach(function (content) {
@@ -70,5 +76,57 @@
             document.getElementById('message-content-' + messageId).style.display = 'block';
             document.getElementById('message-' + messageId).classList.add('active');
         }
+
+
+        const textarea = document.querySelector('textarea[name="reply"]');
+        const charCount = document.getElementById('charCount');
+
+        textarea.addEventListener('input', function () {
+            const currentLength = textarea.value.length;
+            charCount.textContent = `${currentLength}/1000 characters used`;
+        });
+
+        document.querySelector('.submitForm').addEventListener('submit', function (e) {
+            e.preventDefault(); // Prevent the form from submitting immediately
+
+            const messageText = textarea.value;
+
+            // Send the message to the validation endpoint
+            fetch(`/message/validate/${encodeURIComponent(messageText)}/`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    if (data.contains_pii) {
+                        // Highlight the PII in the message
+                        const highlightedMessage = data.validated_message.replace(/##(.*?)##/g, '<span style="background-color: yellow;">$1</span>').replace(/!!(.*?)!!/g, '<span>$1</span>');
+
+                        // Display the highlighted message in SweetAlert2
+                        Swal.fire({
+                            title: 'Sensitive Information Detected',
+                            html: `In accordance with our terms and conditions, this auction platform is blind, and sharing personally identifiable information (PII) is not permitted. Please review and remove the highlighted information before sending your message: <br><br>${highlightedMessage}`,
+                            icon: 'warning',
+                            showCancelButton: false,
+                            confirmButtonText: 'OK, I will edit it',
+                            customClass: {
+                                confirmButton: 'btn btn-primary',
+                            },
+
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // If the user chooses to edit, update the textarea with the validated message
+                                textarea.value = data.validated_message.replace(/##/g, '').replace(/!!/g, '');
+                                charCount.textContent = `${textarea.value.length}/1000 characters used`; // Update the character count
+                            }
+                        });
+                    } else {
+                        // No PII detected, submit the form
+                        document.querySelector('.submitForm').submit();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
     </script>
+
 {% endblock %}
