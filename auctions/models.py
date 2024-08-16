@@ -20,15 +20,11 @@ class User(AbstractUser):
         return self.username
 
 
-
-
-
 class Address(models.Model):
     ADDRESS_TYPE_CHOICES = [
         ('billing', 'Billing'),
         ('shipping', 'Shipping'),
     ]
-
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='addresses')
     address_type = models.CharField(max_length=10, choices=ADDRESS_TYPE_CHOICES)
     street = models.CharField(max_length=255)

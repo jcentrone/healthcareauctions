@@ -34,7 +34,8 @@ def index(request):
     """
     The default route which renders a Dashboard page
     """
-    # Filter categories to include only those with at least one auction
+
+    # # Filter categories to include only those with at least one auction
     categories_with_auctions = Category.objects.filter(auction_category__isnull=False).distinct().order_by(
         'category_name')
     category_count = categories_with_auctions.count()
@@ -54,14 +55,13 @@ def index(request):
     auctions_cat1 = Auction.objects.filter(category=random_category1)[:8]
     auctions_cat2 = Auction.objects.filter(category=random_category2)[:8]
 
-    for auction in auctions_cat1:
-        auction.image = auction.get_image()  # Use the model's method to get the image
-
-    for auction in auctions_cat2:
-        auction.image = auction.get_image()  # Use the model's method to get the image
-
     watchlist = Auction.objects.none()
     recent_views = Auction.objects.none()
+
+    def add_images_to_auctions(auctions):
+        for auction in auctions:
+            auction.image = auction.get_image()
+        return auctions
 
     # Determine if the user is watching each auction
     if request.user.is_authenticated:
@@ -94,84 +94,26 @@ def index(request):
             )
         )
 
-        for auction in watchlist:
-            auction.image = auction.get_image()  # Use the model's method to get the image
-
-    # Paginate if you still want to show auctions with pagination
-    page = request.GET.get('page', 1)
-    paginator_cat1 = Paginator(auctions_cat1, 8)
-    paginator_cat2 = Paginator(auctions_cat2, 8)
-
-    try:
-        pages_cat1 = paginator_cat1.page(page)
-        pages_cat2 = paginator_cat2.page(page)
-    except PageNotAnInteger:
-        pages_cat1 = paginator_cat1.page(1)
-        pages_cat2 = paginator_cat2.page(1)
-    except EmptyPage:
-        pages_cat1 = paginator_cat1.page(paginator_cat1.num_pages)
-        pages_cat2 = paginator_cat2.page(paginator_cat2.num_pages)
+        watchlist = add_images_to_auctions(watchlist)
+        auctions_cat1 = add_images_to_auctions(auctions_cat1)
+        auctions_cat2 = add_images_to_auctions(auctions_cat2)
+    else:
+        auctions_cat1 = add_images_to_auctions(auctions_cat1)
+        auctions_cat2 = add_images_to_auctions(auctions_cat2)
 
     return render(request, 'index.html', {
         'categories': categories_with_auctions,
         'auctions_cat1': auctions_cat1,
+        'auctions_cat1_name': random_category1,
         'auctions_cat2': auctions_cat2,
+        'auctions_cat2_name': random_category2,
         'expensive_auctions': Auction.objects.order_by('-starting_bid')[:4],
         'auctions_count': Auction.objects.all().count(),
         'bids_count': Bid.objects.all().count(),
-        'categories_count': category_count,
         'users_count': User.objects.all().count(),
-        'pages_cat1': pages_cat1,
-        'pages_cat2': pages_cat2,
         'title': 'Home',
-        'random_category1': random_category1,
-        'random_category2': random_category2,
         'watchlist': watchlist,
         'recent_views': recent_views,
-    })
-
-
-
-def header(request):
-    """
-    The default route which renders a Dashboard page
-    """
-    auctions = Auction.objects.all()
-
-    expensive_auctions = Auction.objects.order_by('-starting_bid')[:4]
-
-    watchlist = Auction.objects.none()
-
-    if request.user.is_authenticated:
-        watchlist = request.user.watchlist.all()
-        for auction in watchlist:
-            auction.image = auction.get_images.first()
-
-    for auction in auctions:
-        auction.image = auction.get_images.first()
-
-    # Show 5 auctions per page
-    page = request.GET.get('page', 1)
-    paginator = Paginator(auctions, 5)
-
-    try:
-        pages = paginator.page(page)
-    except PageNotAnInteger:
-        pages = paginator.page(1)
-    except EmptyPage:
-        pages = paginator.page(paginator.num_pages)
-
-    return render(request, 'header_new.html', {
-        'categories': Category.objects.all(),
-        'auctions': auctions,
-        'expensive_auctions': expensive_auctions,
-        'auctions_count': Auction.objects.all().count(),
-        'bids_count': Bid.objects.all().count(),
-        'categories_count': Category.objects.all().count(),
-        'users_count': User.objects.all().count(),
-        'pages': pages,
-        'watchlist': watchlist,
-        'title': 'Dashboard',
     })
 
 
@@ -956,4 +898,3 @@ def validate_message(request, message):
 
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-

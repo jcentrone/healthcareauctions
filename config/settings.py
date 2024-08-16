@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     # Local
     'auctions',
     # other apps
-    # 'storages',
+    'storages',
 ]
 
 # Cronjobs

@@ -115,9 +115,9 @@
             {% endif %}
 
             <div class="auctions-category mb-5">
-                <h2>{{ random_category1 }}</h2>
+            <h2>{{ auctions_cat1_name }}</h2>
                 <div class="auction-items grid">
-                    {% for auction in pages_cat1 %}
+                    {% for auction in auctions_cat1 %}
                         <div class="auction-item-container">
                             <a class="auction-item" href="{% url 'active_auctions_with_id' auction.id %}">
                                 {% if auction.image %}
@@ -161,9 +161,9 @@
                 </div>
             </div>
             <div class="auctions-category mb-5">
-                <h2>{{ random_category2 }}</h2>
+                <h2>{{ auctions_cat2_name }}</h2>
                 <div class="auction-items grid">
-                    {% for auction in pages_cat2 %}
+                    {% for auction in auctions_cat2 %}
                         <div class="auction-item-container">
                             <a class="auction-item" href="{% url 'active_auctions_with_id' auction.id %}">
                                 {% if auction.image %}
