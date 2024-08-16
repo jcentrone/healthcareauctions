@@ -1,0 +1,14 @@
+{% extends 'new_base.html' %}
+{% load static %}
+{% block body %}
+<div class="container mt-5">
+    <h2>Send a Message about "{{ auction.title }}"</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Send</button>
+    </form>
+</div>
+{#    <link href='{% static "css/styles.css" %}' rel='stylesheet'>#}
+{#    <link href='{% static "css/header.css" %}' rel='stylesheet'>#}
+{% endblock %}

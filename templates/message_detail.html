@@ -1,0 +1,19 @@
+{% extends 'new_base.html' %}
+{% load static %}
+{% block body %}
+<div class="container mt-5">
+    <h2>{{ message.subject }}</h2>
+    <p><strong>From:</strong> {{ message.sender.username }}</p>
+    <p><strong>Date:</strong> {{ message.date_sent }}</p>
+    <hr>
+    <p>{{ message.body }}</p>
+
+    {% if message.response_to %}
+    <hr>
+    <h4>Response:</h4>
+    <p>{{ message.response_to.body }}</p>
+    {% endif %}
+    
+    <a href="{% url 'inbox' %}" class="btn btn-secondary">Back to Inbox</a>
+</div>
+{% endblock %}

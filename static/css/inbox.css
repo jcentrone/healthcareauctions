@@ -1,0 +1,16 @@
+.message-reply{
+    width: fit-content;
+}
+
+.text-end {
+    margin-left: auto;
+    background-color: #cce5ff; /* Light blue */
+    border-right: 5px solid #007bff; /* Bold blue border */
+    color: #000; /* Dark text for readability */
+}
+
+.text-start {
+    background-color: #d4edda; /* Light green */
+    border-left: 5px solid #28a745; /* Bold green border */
+    color: #000; /* Dark text for readability */
+}

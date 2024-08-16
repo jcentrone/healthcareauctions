@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.files.storage import get_storage_class
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import IntegrityError
-from django.db.models import Q, QuerySet, Case, When, BooleanField
+from django.db.models import Q, QuerySet, Case, When, BooleanField, DecimalField, Max, F
 from django.http import HttpResponseRedirect, JsonResponse, FileResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
@@ -18,8 +18,8 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
-from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, ProductDetailFormSet
-from .models import Bid, Category, Image, User, Address, CartItem, Cart, ProductDetail
+from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, ProductDetailFormSet, MessageForm
+from .models import Bid, Category, Image, User, Address, CartItem, Cart, ProductDetail, Message
 from .utils.helpers import update_categories_from_fda
 
 # Set up logging
@@ -52,6 +52,12 @@ def index(request):
     # Get up to 8 auctions from each of the random categories
     auctions_cat1 = Auction.objects.filter(category=random_category1)[:8]
     auctions_cat2 = Auction.objects.filter(category=random_category2)[:8]
+
+    for auction in auctions_cat1:
+        auction.image = auction.get_images.first()
+
+    for auction in auctions_cat2:
+        auction.image = auction.get_images.first()
 
     watchlist = Auction.objects.none()
     recent_views = Auction.objects.none()
@@ -88,12 +94,6 @@ def index(request):
         )
 
         for auction in watchlist:
-            auction.image = auction.get_images.first()
-
-        for auction in auctions_cat1:
-            auction.image = auction.get_images.first()
-
-        for auction in auctions_cat2:
             auction.image = auction.get_images.first()
 
         # Debugging: Check the values being returned
@@ -144,6 +144,13 @@ def header(request):
 
     expensive_auctions = Auction.objects.order_by('-starting_bid')[:4]
 
+    watchlist = Auction.objects.none()
+
+    if request.user.is_authenticated:
+        watchlist = request.user.watchlist.all()
+        for auction in watchlist:
+            auction.image = auction.get_images.first()
+
     for auction in auctions:
         auction.image = auction.get_images.first()
 
@@ -167,25 +174,51 @@ def header(request):
         'categories_count': Category.objects.all().count(),
         'users_count': User.objects.all().count(),
         'pages': pages,
+        'watchlist': watchlist,
         'title': 'Dashboard',
     })
 
 
+@login_required
 def dashboard(request):
     """
     The default route which renders a Dashboard page
     """
-    auctions = Auction.objects.all()
+    # Get all bids made by the user
+    bids = Bid.objects.filter(user=request.user)
 
-    expensive_auctions = Auction.objects.order_by('-starting_bid')[:4]
+    # Get auction count where the user is the creator
+    auction_count = Auction.objects.filter(creator=request.user, active=True).count()
 
-    for auction in auctions:
+    # Get watchlist items
+    watchlist = request.user.watchlist.all() if request.user.is_authenticated else Auction.objects.none()
+
+    # Get the highest bid for each auction and annotate if the user is the highest bidder
+    auctions_with_user_bids = Auction.objects.filter(
+        bid__user=request.user,
+        active=True
+    ).annotate(
+        highest_bid=Max('bid__amount'),
+        user_highest_bid=Max(Case(
+            When(bid__user=request.user, then='bid__amount'),
+            output_field=DecimalField()
+        )),
+        user_is_highest_bidder=Case(
+            When(user_highest_bid=F('highest_bid'), then=True),
+            default=False,
+            output_field=BooleanField()
+        )
+    ).distinct()
+
+    # Print the auctions for debugging purposes
+    for auction in auctions_with_user_bids:
         auction.image = auction.get_images.first()
+        print(
+            f"Auction: {auction.title}, Highest Bid: {auction.highest_bid}, User is Highest Bidder: {auction.user_is_highest_bidder}")
 
-    # Show 5 auctions per page
+    # Paginate the results
     page = request.GET.get('page', 1)
-    paginator = Paginator(auctions, 5)
-
+    paginator = Paginator(auctions_with_user_bids, 5)
     try:
         pages = paginator.page(page)
     except PageNotAnInteger:
@@ -195,12 +228,10 @@ def dashboard(request):
 
     return render(request, 'dashboard.html', {
         'categories': Category.objects.all(),
-        'auctions': auctions,
-        'expensive_auctions': expensive_auctions,
-        'auctions_count': Auction.objects.all().count(),
-        'bids_count': Bid.objects.all().count(),
-        'categories_count': Category.objects.all().count(),
-        'users_count': User.objects.all().count(),
+        'auctions': auctions_with_user_bids,
+        'auction_count': auction_count,
+        'watchlist_count': watchlist.count(),
+        'bids_count': bids.count(),
         'pages': pages,
         'title': 'Dashboard',
     })
@@ -323,6 +354,13 @@ def logout_view(request):
 def auction_create(request):
     ImageFormSet = forms.modelformset_factory(Image, form=ImageForm, extra=5)
 
+    watchlist = Auction.objects.none()
+
+    if request.user.is_authenticated:
+        watchlist = request.user.watchlist.all()
+        for auction in watchlist:
+            auction.image = auction.get_images.first()
+
     if request.method == 'POST':
         auction_form = AuctionForm(request.POST, request.FILES)
         image_formset = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.none())
@@ -388,6 +426,7 @@ def auction_create(request):
         'auction_form': auction_form,
         'image_formset': image_formset,
         'product_detail_formset': product_detail_formset,
+        'watchlist': watchlist,
         'title': 'Create Auction',
     })
 
@@ -447,6 +486,21 @@ def active_auctions_view(request, auction_id=None):
 
     auctions = Auction.objects.filter(active=True)
 
+    watchlist = Auction.objects.none()
+
+    if request.user.is_authenticated:
+        watchlist = request.user.watchlist.all()
+        for auction in watchlist:
+            auction.image = auction.get_images.first()
+
+    specific_auction = None
+    if auction_id:
+        try:
+            specific_auction = Auction.objects.get(id=auction_id, active=True)
+            auctions = auctions.exclude(id=auction_id)  # Exclude the specific auction from the queryset
+        except Auction.DoesNotExist:
+            pass
+
     if auction_type:
         auctions = auctions.filter(auction_type=auction_type)
         title = f'{auction_type}s'
@@ -495,14 +549,6 @@ def active_auctions_view(request, auction_id=None):
         elif sort_by == 'most_bids':
             auctions = auctions.annotate(bid_count=Count('bid')).order_by('-bid_count')
         title = 'Sorted By: ' + sort_by
-
-    specific_auction = None
-    if auction_id:
-        try:
-            specific_auction = Auction.objects.get(id=auction_id, active=True)
-            auctions = auctions.exclude(id=auction_id)  # Exclude the specific auction from the queryset
-        except Auction.DoesNotExist:
-            pass
 
     manufacturers = [str(auction.manufacturer) for auction in auctions]
     unique_manufacturers = sorted(set(manufacturers))
@@ -557,6 +603,7 @@ def active_auctions_view(request, auction_id=None):
         'sort_by': sort_by,
         'manufacturer_filter': manufacturer_filter,
         'my_auctions': my_auctions,
+        'watchlist': watchlist,
         'has_active_auctions': has_active_auctions,
     })
 
@@ -802,8 +849,19 @@ def add_to_cart(request, auction_id):
 
 
 def view_cart(request):
+    watchlist = Auction.objects.none()
+
+    if request.user.is_authenticated:
+        watchlist = request.user.watchlist.all()
+        for auction in watchlist:
+            auction.image = auction.get_images.first()
+
     cart = get_object_or_404(Cart, user=request.user)
-    return render(request, 'view_cart.html', {'cart': cart})
+
+    return render(request, 'view_cart.html', {
+        'cart': cart,
+        'watchlist': watchlist,
+    })
 
 
 def remove_from_cart(request, item_id):
@@ -821,3 +879,57 @@ def track_auction_view(request):
         AuctionView.objects.create(user=request.user, auction=auction)
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'fail'}, status=400)
+
+
+@login_required
+def inbox(request):
+    threads = Message.objects.filter(
+        parent__isnull=True
+    ).filter(
+        Q(recipient=request.user) | Q(sender=request.user)
+    ).order_by('-date_sent')
+
+    # threads = Message.objects.filter(parent__isnull=True, recipient=request.user).order_by(
+    #     '-date_responded', '-date_sent')
+    return render(request, 'inbox.html', {'threads': threads})
+
+
+@login_required
+def message_detail(request, message_id):
+    message = get_object_or_404(Message, id=message_id, recipient=request.user)
+    message.read = True
+    message.save()
+    return render(request, 'message_detail.html', {'message': message})
+
+
+@login_required
+def send_message(request, auction_id):
+    if request.method == 'POST':
+        form = MessageForm(request.POST)
+        if form.is_valid():
+            message = form.save(commit=False)
+            message.sender = request.user
+            message.listing_id = auction_id
+            message.message_type = 'question'
+            message.save()
+            return redirect('inbox')
+    else:
+        form = MessageForm()
+    return render(request, 'send_message.html', {'form': form})
+
+
+@login_required
+def send_reply(request, message_id):
+    parent_message = get_object_or_404(Message, id=message_id)
+    if request.method == 'POST':
+        reply_body = request.POST.get('reply')
+        if reply_body:
+            Message.objects.create(
+                sender=request.user,
+                recipient=parent_message.sender if parent_message.sender != request.user else parent_message.recipient,
+                subject=f"Re: {parent_message.subject}",
+                body=reply_body,
+                parent=parent_message,
+                message_type='reply'
+            )
+    return redirect('inbox')

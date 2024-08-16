@@ -1,44 +1,45 @@
 {% extends 'new_base.html' %}
-
+{% load static %}
 {% block body %}
     <div class="container mt-5" style="min-height:80vh">
         <h2 class="mb-4">Your Cart</h2>
-        <div class="table-responsive">
-            <table class="table table-bordered">
-                <thead class="table-light">
-                <tr>
-                    <th scope="col">Product</th>
-                    <th scope="col">Quantity</th>
-                    <th scope="col">Total Price</th>
-                    <th scope="col"></th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for item in cart.items.all %}
-                    <tr>
-                        <td>
-                            <a style="color: #000" href="{% url 'active_auctions_with_id' auction_id=item.auction.id %}">
-                                {{ item.auction.title }}
-                            </a>
-                        </td>
-                        <td>{{ item.auction.quantity_available }}</td>
-                        <td>${{ item.auction.buyItNowPrice }}</td>
-                        <td>
-                            <form method="post" action="{% url 'remove_from_cart' item.id %}">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-danger btn-sm">
-                                    <i class="fa-regular fa-trash-can"></i>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+        <div class="div-table table-bordered">
+            <div class="div-table-row div-table-header">
+                <div class="div-table-col">Product</div>
+                <div class="div-table-col"></div>
+                <div class="div-table-col">Quantity</div>
+                <div class="div-table-col">Total Price</div>
+                <div class="div-table-col"></div>
+            </div>
+            {% for item in cart.items.all %}
+                <div class="div-table-row">
+                    <div class="div-table-col">
+                        {% with item.get_image as image %}
+                            {% if image %}
+                                <img src="{{ image.image.url }}" alt="{{ item.auction.title }}">
+                            {% else %}
+                                <img src="{% static 'images/no_image.png' %}" alt="Default Image">
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                    <div class="div-table-col">{{ item.auction.title }}</div>
+                    <div class="div-table-col">{{ item.auction.quantity_available }}</div>
+                    <div class="div-table-col">${{ item.total_price }}</div>
+                    <div class="div-table-col">
+                        <form method="post" action="{% url 'remove_from_cart' item.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                <i class="fa-regular fa-trash-can"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
         <div class="mt-4 d-flex justify-content-end">
             <h4>Total: ${{ cart.total_cost }}</h4>
-            {#            <a href="{% url 'checkout' %}" class="btn btn-success">Proceed to Checkout</a>#}
+            {# <a href="{% url 'checkout' %}" class="btn btn-success">Proceed to Checkout</a> #}
         </div>
     </div>
+    <link href='{% static "css/cart.css" %}' rel='stylesheet'>
 {% endblock %}

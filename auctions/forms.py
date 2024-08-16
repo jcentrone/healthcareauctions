@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import modelformset_factory
 
-from .models import Auction, Bid, Comment, Image, Category, CartItem, ProductDetail
+from .models import Auction, Bid, Comment, Image, Category, CartItem, ProductDetail, Message
 
 
 class AuctionForm(forms.ModelForm):
@@ -143,3 +143,16 @@ class AddToCartForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(AddToCartForm, self).__init__(*args, **kwargs)
 
+
+class MessageForm(forms.ModelForm):
+    class Meta:
+        model = Message
+        fields = ['subject', 'body']
+        widgets = {
+            'subject': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Subject'}),
+            'body': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Your message...'}),
+        }
+        labels = {
+            'subject': 'Subject',
+            'body': 'Message',
+        }

@@ -32,5 +32,9 @@ urlpatterns = [
     path('auction/<int:auction_id>/product-details/', views.get_auction_product_details,
          name='get_auction_additional_details'),
     path('track-auction-view/', views.track_auction_view, name='track_auction_view'),
+    path('inbox/', views.inbox, name='inbox'),
+    path('message/<int:message_id>/', views.message_detail, name='message_detail'),
+    path('send_message/<int:auction_id>/', views.send_message, name='send_message'),
+    path('message/reply/<int:message_id>/', views.send_reply, name='send_reply'),
 
 ]

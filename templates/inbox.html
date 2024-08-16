@@ -1,0 +1,63 @@
+{% extends 'new_base.html' %}
+{% load static %}
+{% block body %}
+    <div class="container">
+        <div class="row">
+            <h5>Your Messages</h5>
+            <div class="col-md-4">
+                <ul class="list-group" id="message-list">
+                    {% for thread in threads %}
+                        <li class="list-group-item {% if not thread.is_read %}font-weight-bold{% endif %} {% if forloop.first %}active{% endif %}"
+                            id="message-{{ thread.id }}"
+                            onclick="showMessage({{ thread.id }})">
+                            <div class="d-flex justify-content-between">
+                                <span>{{ thread.subject }}</span>
+                                <span class="text-muted">{{ thread.date_sent|date:"M d, Y" }}</span>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-md-8">
+                <div id="message-preview" class="card p-3">
+                    {% for thread in threads %}
+                        <div id="message-content-{{ thread.id }}" class="message-content"
+                             style="display: {% if forloop.first %}block{% else %}none{% endif %};">
+                            <h5 class="border-bottom pb-3">{{ thread.subject }}</h5>
+                            <div class="message-thread">
+                                {% for reply in thread.get_thread reversed %}
+                                    <div class="message-reply p-2 my-2 card {% if reply.sender_id == request.user.id %}text-end{% else %}text-start{% endif %}">
+                                        <div class="">{{ reply.body }}</div>
+                                        <small class="text-muted">{{ reply.sender.username }}
+                                            - {{ reply.date_sent|date:"M d, Y H:i" }}</small>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <form method="post" action="{% url 'send_reply' thread.id %}">
+                                {% csrf_token %}
+                                <div class="form-group mt-3">
+                                    <textarea name="reply" class="form-control" rows="3"
+                                              placeholder="Write your reply..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary mt-2">Send Reply</button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <link href='{% static "css/inbox.css" %}' rel='stylesheet'>
+    <script>
+        function showMessage(messageId) {
+            document.querySelectorAll('.message-content').forEach(function (content) {
+                content.style.display = 'none';
+            });
+            document.querySelectorAll('.list-group-item').forEach(function (item) {
+                item.classList.remove('active');
+            });
+            document.getElementById('message-content-' + messageId).style.display = 'block';
+            document.getElementById('message-' + messageId).classList.add('active');
+        }
+    </script>
+{% endblock %}

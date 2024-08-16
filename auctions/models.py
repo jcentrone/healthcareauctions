@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 
 from config.storage_backends import ProfileImageStorage, CompanyLogoStorage
@@ -252,3 +253,37 @@ class CartItem(models.Model):
 
     def total_price(self):
         return self.auction.buyItNowPrice if self.auction.buyItNowPrice else 0
+
+    def get_image(self):
+        # Returns the first image associated with the auction
+        return self.auction.get_images.first()
+
+
+class Message(models.Model):
+    MESSAGE_TYPE_CHOICES = [
+        ('question', 'Question'),
+        ('system', 'System Message'),
+    ]
+
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages', null=True, blank=True)
+    listing = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name='messages', null=True, blank=True)
+    message_type = models.CharField(max_length=10, choices=MESSAGE_TYPE_CHOICES)
+    subject = models.CharField(max_length=255)
+    body = models.TextField()
+    date_sent = models.DateTimeField(default=timezone.now)
+    date_responded = models.DateTimeField(null=True, blank=True)
+    date_read = models.DateTimeField(null=True, blank=True)
+    read = models.BooleanField(default=False)
+    response_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='responses')
+    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='replies')
+
+    def __str__(self):
+        return f'{self.subject} from {self.sender.username} to {self.recipient.username if self.recipient else "System"}'
+
+    def get_thread(self):
+        return Message.objects.filter(Q(id=self.id) | Q(parent=self)).order_by('date_sent')
+
+    @property
+    def is_read(self):
+        return self.date_read is not None
