@@ -79,5 +79,8 @@
 
 .date-sent{
     font-size: small;
+}
 
+#message-list li {
+    cursor: pointer;
 }
