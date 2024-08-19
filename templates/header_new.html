@@ -143,14 +143,15 @@
                         </a>
                     </div>
                     <!-- Nav Item - Alerts -->
-                    <div class='nav-item mx-1'>
-                        <a class='nav-link' id="alert-container" href='#'>
-                            <i class='fa-regular fa-bell fa-lg'></i>
-                            <!-- Counter - Alerts -->
-                            <span class='badge rounded-pill bg-danger badge-counter light'>5+</span>
-                        </a>
-                    </div>
-
+                    {% if unread_message_count %}
+                        <div class='nav-item mx-1'>
+                            <a class='nav-link' id="alert-container" href='{% url 'inbox' %}'>
+                                <i class='fa-regular fa-bell fa-lg'></i>
+                                <!-- Counter - Alerts -->
+                                <span class='badge rounded-pill bg-danger badge-counter light'>{{ unread_message_count }} </span>
+                            </a>
+                        </div>
+                    {% endif %}
                 </div>
             {% else %}
                 <div class="dropdown" id="logged-in-dropdown">

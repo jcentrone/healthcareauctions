@@ -2,6 +2,7 @@
     height: 400px;
     overflow-y: auto;
     padding-right: 15px;
+    position: relative;
 }
 
 
@@ -38,10 +39,20 @@
     -ms-overflow-style: -ms-autohiding-scrollbar;
 }
 
+.new-message{
+    font-weight: 600;
+}
+
+.question{
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
 
 
 .message-reply{
     width: fit-content;
+    max-width: 60%;
 }
 
 .text-end {
@@ -55,4 +66,18 @@
     background-color: #d4edda; /* Light green */
     border-left: 5px solid #28a745; /* Bold green border */
     color: #000; /* Dark text for readability */
+}
+#messages-col{
+    position: relative;
+}
+
+#cs-button{
+    position: absolute;
+    bottom: 1rem;
+    width: calc(100% - 1.5rem);
+}
+
+.date-sent{
+    font-size: small;
+
 }

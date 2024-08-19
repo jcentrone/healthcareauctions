@@ -263,6 +263,7 @@ class Message(models.Model):
     MESSAGE_TYPE_CHOICES = [
         ('question', 'Question'),
         ('system', 'System Message'),
+        ('cs', 'Customer Service'),
     ]
 
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
@@ -270,7 +271,7 @@ class Message(models.Model):
     listing = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name='messages', null=True, blank=True)
     message_type = models.CharField(max_length=10, choices=MESSAGE_TYPE_CHOICES)
     subject = models.CharField(max_length=255)
-    body = models.TextField()
+    body = models.TextField(null=True, blank=True)
     # date_sent = models.DateTimeField(default=timezone.now)
     date_sent = models.DateTimeField(auto_now_add=True)
     date_responded = models.DateTimeField(null=True, blank=True)
@@ -282,9 +283,13 @@ class Message(models.Model):
     def __str__(self):
         return f'{self.subject} from {self.sender.username} to {self.recipient.username if self.recipient else "System"}'
 
+    @classmethod
+    def unread_count(cls, user):
+        return cls.objects.filter(recipient=user, read=False).count()
+
     def get_thread(self):
         return Message.objects.filter(Q(id=self.id) | Q(parent=self)).order_by('date_sent')
 
     @property
     def is_read(self):
-        return self.date_read is not None
+        return self.read

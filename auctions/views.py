@@ -17,6 +17,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
 from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, ProductDetailFormSet, MessageForm
 from .models import Bid, Category, Image, User, Address, CartItem, Cart, ProductDetail, Message
@@ -34,6 +35,7 @@ def index(request):
     """
     The default route which renders a Dashboard page
     """
+    unread_message_count = 0
 
     # # Filter categories to include only those with at least one auction
     categories_with_auctions = Category.objects.filter(auction_category__isnull=False).distinct().order_by(
@@ -66,9 +68,9 @@ def index(request):
     # Determine if the user is watching each auction
     if request.user.is_authenticated:
         watchlist = request.user.watchlist.all()
-        recent_views = AuctionView.objects.filter(user=request.user).order_by('-viewed_at')[:8]
-
         watchlist_ids = watchlist.values_list('id', flat=True)
+        recent_views = AuctionView.objects.filter(user=request.user).order_by('-viewed_at')[:8]
+        unread_message_count = Message.unread_count(request.user)
 
         auctions_cat1 = auctions_cat1.annotate(
             is_watched=Case(
@@ -114,6 +116,7 @@ def index(request):
         'title': 'Home',
         'watchlist': watchlist,
         'recent_views': recent_views,
+        'unread_message_count': unread_message_count,
     })
 
 
@@ -182,7 +185,12 @@ def register(request):
         password = request.POST['password']
         confirmation = request.POST['confirmation']
         company_name = request.POST['company_name']
-        phone_number = request.POST['phone_number']
+        first_name = request.POST['first_name']
+        last_name = request.POST['last_name']
+        phone_number = request.POST['phone']
+        print('first_name', first_name)
+        print('last_name', last_name)
+        print('phone_number', phone_number)
 
         # Billing Address
         billing_street = request.POST['billing_street']
@@ -212,7 +220,10 @@ def register(request):
         try:
             user = User.objects.create_user(username, email, password)
             user.company_name = company_name
+            user.first_name = first_name
+            user.last_name = last_name
             user.phone_number = phone_number
+
             if profile_image:
                 profile_image_storage = get_storage_class('myapp.custom_storage_backend.ProfileImageStorage')()
                 user.profile_image = profile_image_storage.save(profile_image.name, profile_image)
@@ -220,6 +231,9 @@ def register(request):
             if company_logo:
                 company_logo_storage = get_storage_class('myapp.custom_storage_backend.CompanyLogoStorage')()
                 user.company_logo = company_logo_storage.save(company_logo.name, company_logo)
+
+            # Save the user object to persist changes
+            user.save()
 
             # Save billing address
             Address.objects.create(
@@ -242,6 +256,27 @@ def register(request):
                 zip_code=shipping_zip,
                 country=shipping_country
             )
+
+            # Message Center Info
+            Message.objects.create(
+                message_type='info',
+                subject='Message Center Guidelines',
+                body='Welcome to our message center, where you can communicate securely with other users and our customer service team. '
+                     'Please keep in mind that our auctions are blind, so avoid sharing personal or company information during communication.',
+                sender=User.objects.get(username='CustomerService'),
+                recipient=user,
+            )
+
+            # Welcome Message
+            Message.objects.create(
+                message_type='welcome',
+                subject='Welcome to Healthcare Auctions',
+                body=f'We’re thrilled to have you as part of our community! At Healthcare Auctions, we aim to make your experience as rewarding and enjoyable as possible. Whether you’re here to browse, bid, or sell, we’re here to support you every step of the way. '
+                     f'\n\nDon’t hesitate to reach out to our team if you have any questions or need assistance getting started. Happy auctioning!',
+                sender=User.objects.get(username='CustomerService'),  # Assuming a system user
+                recipient=user,
+            )
+
         except IntegrityError:
             return render(request, 'register.html', {
                 'message': 'Username already taken.',
@@ -293,6 +328,7 @@ def auction_create(request):
     ImageFormSet = forms.modelformset_factory(Image, form=ImageForm, extra=5)
 
     watchlist = Auction.objects.none()
+    unread_message_count = Message.unread_count(request.user)
 
     if request.user.is_authenticated:
         watchlist = request.user.watchlist.all()
@@ -366,6 +402,7 @@ def auction_create(request):
         'product_detail_formset': product_detail_formset,
         'watchlist': watchlist,
         'title': 'Create Auction',
+        'unread_message_count': unread_message_count,
     })
 
 
@@ -425,6 +462,8 @@ def active_auctions_view(request, auction_id=None):
     auctions = Auction.objects.filter(active=True)
 
     watchlist = Auction.objects.none()
+
+    unread_message_count = Message.unread_count(request.user)
 
     if request.user.is_authenticated:
         watchlist = request.user.watchlist.all()
@@ -543,6 +582,7 @@ def active_auctions_view(request, auction_id=None):
         'my_auctions': my_auctions,
         'watchlist': watchlist,
         'has_active_auctions': has_active_auctions,
+        'unread_message_count': unread_message_count,
     })
 
 
@@ -768,13 +808,14 @@ def classify_device_view(request):
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
-@login_required()
+@login_required
 def download_excel(request):
     filepath = 'static/downloads/sample.xlsx'
     response = FileResponse(open(filepath, 'rb'), as_attachment=True, filename='sample.xlsx')
     return response
 
 
+@login_required
 def add_to_cart(request, auction_id):
     auction = get_object_or_404(Auction, id=auction_id)
     cart, created = Cart.objects.get_or_create(user=request.user)
@@ -786,6 +827,7 @@ def add_to_cart(request, auction_id):
     return render(request, 'add_to_cart.html', {'auction': auction})
 
 
+@login_required
 def view_cart(request):
     watchlist = Auction.objects.none()
 
@@ -802,6 +844,7 @@ def view_cart(request):
     })
 
 
+@login_required
 def remove_from_cart(request, item_id):
     cart_item = get_object_or_404(CartItem, id=item_id)
     cart_item.delete()
@@ -826,10 +869,12 @@ def inbox(request):
     ).filter(
         Q(recipient=request.user) | Q(sender=request.user)
     ).order_by('-date_sent')
+    unread_message_count = Message.unread_count(request.user)
 
-    # threads = Message.objects.filter(parent__isnull=True, recipient=request.user).order_by(
-    #     '-date_responded', '-date_sent')
-    return render(request, 'inbox.html', {'threads': threads})
+    return render(request, 'inbox.html', {
+        'threads': threads,
+        'unread_message_count': unread_message_count,
+    })
 
 
 @login_required
@@ -854,6 +899,16 @@ def send_message(request, auction_id):
     else:
         form = MessageForm()
     return render(request, 'send_message.html', {'form': form})
+
+
+@login_required
+@require_POST
+def mark_messages_as_read(request, thread_id):
+    # Retrieve the thread by ID and mark all messages as read
+    thread = Message.objects.filter(id=thread_id).first()
+    if thread:
+        thread.get_thread().update(read=True, date_read=timezone.now())
+    return JsonResponse({'status': 'success'})
 
 
 @login_required
@@ -882,7 +937,10 @@ def validate_message(request, message):
         },
         {
             'role': 'user',
-            'content': f'Determine if this message has any information that can be used to identify the sender, recipient, or any company information: {message}. Except for first names, wrap any and all personally identified text in double hash tag symbols. Wrap first names in double exclamation symbols and last names in double hash tag symbols in your json response.'
+            'content': f'In the following message, wrap all personally identifiable information (Pii) in the following schema: '
+                       f'Wrap first names in double exclamation point symbols and last '
+                       f'names as well as any other Pii in double hash tag symbols in your json response. '
+                       f'Here is the message: {message}.'
         }
     ]
 
@@ -898,3 +956,19 @@ def validate_message(request, message):
 
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def send_customer_service_message(request):
+    if request.method == 'POST':
+        message_body = request.POST.get('message')
+        customer_service_user = User.objects.get(username='CustomerService')  # Replace with actual username or ID
+
+        Message.objects.create(
+            sender=request.user,
+            recipient=customer_service_user,
+            message_type='cs',
+            subject='Customer Service Inquiry',
+            body=message_body
+        )
+        return redirect('inbox')

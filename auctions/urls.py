@@ -36,5 +36,7 @@ urlpatterns = [
     path('send_message/<int:auction_id>/', views.send_message, name='send_message'),
     path('message/reply/<int:message_id>/', views.send_reply, name='send_reply'),
     path('message/validate/<str:message>/', views.validate_message, name='validate_message'),
+    path('messages/mark-as-read/<int:thread_id>/', views.mark_messages_as_read, name='mark_messages_as_read'),
+    path('send-customer-service-message/', views.send_customer_service_message, name='send_customer_service_message'),
 
 ]
