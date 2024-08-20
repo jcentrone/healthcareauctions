@@ -57,7 +57,9 @@
                                         {% if reply.message_type == 'question' %}
                                             <div class="message-reply p-2 my-2 card {% if reply.sender_id == request.user.id %}text-end{% else %}text-start{% endif %}">
                                                 <div class="">{{ reply.body }}</div>
-                                                <small class="text-muted">{{ reply.sender.username }}
+                                                <small class="text-muted">{% if reply.sender_id == request.user.id %}
+                                                    Me{% elif reply.sender.username  == 'CustomerService' %}Customer
+                                                    Service{% else %}Buyer{% endif %}
                                                     - {{ reply.date_sent }}</small>
                                             </div>
                                         {% endif %}

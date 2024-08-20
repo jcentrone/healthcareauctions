@@ -548,6 +548,8 @@ def active_auctions_view(request, auction_id=None):
         auction.image = auction.get_images.first()
         auction.is_watched = request.user in auction.watchers.all()
 
+        auction.message_form = MessageForm(initial={'subject': f'Question about {auction.title}'})
+
         # Pagination
         page = request.GET.get('page', 1)
         paginator = Paginator(auctions, 10)
@@ -583,6 +585,7 @@ def active_auctions_view(request, auction_id=None):
         'watchlist': watchlist,
         'has_active_auctions': has_active_auctions,
         'unread_message_count': unread_message_count,
+        'message_form': MessageForm(),
     })
 
 
@@ -890,8 +893,11 @@ def send_message(request, auction_id):
     if request.method == 'POST':
         form = MessageForm(request.POST)
         if form.is_valid():
+            auction = Auction.objects.get(id=auction_id)
+            auction_creator = auction.creator
             message = form.save(commit=False)
             message.sender = request.user
+            message.recipient = auction_creator
             message.listing_id = auction_id
             message.message_type = 'question'
             message.save()
@@ -950,7 +956,7 @@ def validate_message(request, message):
         parsed_content = json.loads(response_content)
         processed_message = parsed_content.get('message', '')
 
-        contains_pii = "##" in processed_message or "!!" in processed_message
+        contains_pii = "##" in processed_message in processed_message
 
         return JsonResponse({'validated_message': processed_message, 'contains_pii': contains_pii})
 

@@ -400,7 +400,32 @@
                             <!-- Images will be loaded here via AJAX -->
                         </div>
                     </div>
-                    <div class="modal-footer">
+                    <div class="modal-footer d-flex justify-content-between">
+                        <!-- Question Mark Icon -->
+                        <button type="button" class="btn btn-outline-primary fs-3" id="question-icon-{{ auction.id }}"
+                                data-bs-toggle="tooltip" title="Ask a Question">
+                            <i class="fa-solid fa-question-circle"></i>
+                        </button>
+
+                        <!-- Question Form (Initially hidden) -->
+                        <form id="questionForm-{{ auction.id }}" class="message-form card shadow-sm d-flex gap-3" method="POST"
+                              action="{% url 'send_message' auction.id %}" style="display: none !important;">
+                            {% csrf_token %}
+                            <div class="card-header">
+                                <div>New Message</div>
+                            </div>
+                            <div class="card-body">
+                                <div>Subject:</div>
+                                <div class="pb-3">{{ auction.message_form.subject }}</div>
+                                <div>Message:</div>
+                                <div class="">{{ auction.message_form.body }}</div>
+                                <small id="charCount" class="form-text text-muted pe-1 text-end">0/1000 characters used</small>
+
+                            </div>
+                            <div class="card-footer text-end">
+                                <button type="submit" class="btn btn-primary">Send Question</button>
+                            </div>
+                        </form>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     </div>
                 </div>
@@ -515,6 +540,23 @@
                         });
                     }
                 });
+            });
+        });
+
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('[id^="question-icon-"]').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    const auctionId = this.id.split('-')[2];
+                    const form = document.getElementById('questionForm-' + auctionId);
+                    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+                });
+            });
+
+            let tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            let tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
             });
         });
 

@@ -224,5 +224,61 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+// Function to handle character count
+document.addEventListener('DOMContentLoaded', function () {
+    function updateCharCount(textarea, charCount) {
+        const currentLength = textarea.value.length;
+        charCount.textContent = `${currentLength}/1000 characters used`;
+    }
+
+    document.querySelectorAll('textarea.form-control').forEach(function (textarea) {
+        const charCount = textarea.closest('form').querySelector('.form-text');
+
+        textarea.addEventListener('input', function () {
+            updateCharCount(textarea, charCount);
+        });
+
+        updateCharCount(textarea, charCount);
+    });
+});
+
+
+document.querySelectorAll('.message-form').forEach(function (form) {
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const textarea = form.querySelector('textarea[name="body"]');
+        const messageText = textarea.value;
+
+        fetch(`/message/validate/${encodeURIComponent(messageText)}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.contains_pii) {
+                    const highlightedMessage = data.validated_message.replace(/##(.*?)##/g, '<span style="background-color: yellow;">$1</span>').replace(/!!(.*?)!!/g, '<span>$1</span>');
+                    Swal.fire({
+                        title: 'Sensitive Information Detected',
+                        html: `In accordance with our terms and conditions, this auction platform is blind, and sharing personally identifiable information (PII) is not permitted. Please review and remove the highlighted information before sending your message: <br><br>${highlightedMessage}`,
+                        icon: 'warning',
+                        confirmButtonText: 'OK, I will edit it',
+                        customClass: {
+                            confirmButton: 'btn btn-primary',
+                        },
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            textarea.value = data.validated_message.replace(/##/g, '').replace(/!!/g, '');
+                            const charCount = form.querySelector('.form-text');
+                            charCount.textContent = `${textarea.value.length}/1000 characters used`;
+                        }
+                    });
+                } else {
+                    form.submit();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    });
+});
+
 
 

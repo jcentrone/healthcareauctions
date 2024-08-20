@@ -114,7 +114,7 @@
     color: #555; /* Adjust based on your design */
 }
 
-.Sale{
+.Sale {
     background: #f8f8f8;
 }
 
@@ -136,11 +136,11 @@ img.img-thumbnail {
     object-fit: cover;
 }
 
-.additional-details{
+.additional-details {
     overflow-x: auto;
 }
 
-.thumb-img{
+.thumb-img {
     min-width: 185px;
 }
 
@@ -164,7 +164,7 @@ img.img-thumbnail {
     }
 
     .additional-images {
-         /*grid-template-columns: 1fr;*/
+        /*grid-template-columns: 1fr;*/
     }
 
     .card-body {
@@ -206,7 +206,8 @@ img.img-thumbnail {
     .listing {
         grid-template-columns: 1fr;
     }
-    .auctions-header-container{
+
+    .auctions-header-container {
         grid-template-columns: 1fr;
     }
 }
@@ -236,6 +237,17 @@ img.img-thumbnail {
 .medium-zoom-image--opened {
     z-index: 1052; /* Ensure this is higher than your Bootstrap modal z-index */
 }
+
+.modal-footer {
+    position: relative;
+}
+
+.modal-footer form{
+    position: absolute;
+    bottom: 90px;
+}
+
+
 
 
 
