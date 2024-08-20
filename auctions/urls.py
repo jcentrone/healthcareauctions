@@ -38,5 +38,6 @@ urlpatterns = [
     path('message/validate/<str:message>/', views.validate_message, name='validate_message'),
     path('messages/mark-as-read/<int:thread_id>/', views.mark_messages_as_read, name='mark_messages_as_read'),
     path('send-customer-service-message/', views.send_customer_service_message, name='send_customer_service_message'),
+    path('messages/archive/<int:message_id>/', views.archive_message, name='archive_message'),
 
 ]

@@ -74,7 +74,7 @@
 #cs-button{
     position: absolute;
     bottom: 1rem;
-    width: calc(100% - 1.5rem);
+    width: calc(100% - 2rem);
 }
 
 .date-sent{
@@ -83,4 +83,26 @@
 
 #message-list li {
     cursor: pointer;
+}
+
+.custom-archive-btn {
+     /* Border color similar to danger */
+    background-color: #f8d7da; /* A lighter shade of red */
+    color: #dc3545; /* Text color similar to danger */
+}
+
+.custom-archive-btn:hover {
+    background-color: #e6b7b9; /* Darker shade for hover effect */
+    /*border: 1px solid #dc3545 !important;*/
+    color: #dc3545;
+}
+
+.list-group-item.active {
+    background-color: #e2e3e5; /* A soft neutral color */
+    border-color: #ced4da;
+    color: #495057;
+}
+
+.list-group-item{
+     color: #495057;
 }

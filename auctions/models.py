@@ -279,6 +279,7 @@ class Message(models.Model):
     read = models.BooleanField(default=False)
     response_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='responses')
     parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='replies')
+    archived = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.subject} from {self.sender.username} to {self.recipient.username if self.recipient else "System"}'

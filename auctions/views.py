@@ -865,7 +865,7 @@ def track_auction_view(request):
 @login_required
 def inbox(request):
     threads = Message.objects.filter(
-        parent__isnull=True
+        parent__isnull=True, archived=False
     ).filter(
         Q(recipient=request.user) | Q(sender=request.user)
     ).order_by('-date_sent')
@@ -972,3 +972,11 @@ def send_customer_service_message(request):
             body=message_body
         )
         return redirect('inbox')
+
+
+@login_required
+def archive_message(request, message_id):
+    message = get_object_or_404(Message, id=message_id, recipient=request.user)
+    message.archived = True
+    message.save()
+    return JsonResponse({'status': 'success'})

@@ -6,225 +6,117 @@
         <div class="row">
             <h5>Your Messages</h5>
             <div class="col-md-4 rounded-3 border p-3 pt-3" id="messages-col">
-                <ul class="list-group" id="message-list">
-                    {% for thread in threads %}
-                        <li class="list-group-item {% if not thread.is_read %}new-message{% endif %} {% if forloop.first %}active{% endif %}"
-                            id="message-{{ thread.id }}"
-                            onclick="showMessage({{ thread.id }})">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="d-flex flex-column justify-content-between">
-                                    <span>{{ thread.subject }}</span>
-                                    <span class="date-sent fst-italic ">{{ thread.date_sent|date:"M d, Y" }}</span>
+                {% if threads %}
+                    <ul class="list-group" id="message-list">
+                        {% for thread in threads %}
+                            <li class="list-group-item {% if not thread.is_read %}new-message{% endif %} {% if forloop.first %}active{% endif %}"
+                                id="message-{{ thread.id }}"
+                                onclick="showMessage({{ thread.id }})">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex flex-column justify-content-between">
+                                        <span>{{ thread.subject }}</span>
+                                        <span class="date-sent fst-italic ">{{ thread.date_sent|date:"M d, Y" }}</span>
+                                    </div>
+                                    <button class="fs-5 fw-normal btn custom-archive-btn"
+                                            data-bs-toggle="tooltip"
+                                            title="Archive"
+                                            data-message-id="{{ thread.id }}">
+                                        <i class="fa-solid fa-box-archive"></i>
+                                    </button>
                                 </div>
-                                <button class="fs-5 fw-normal btn btn-outline-danger">
-                                    <i class="fa-regular fa-trash-can "></i>
-                                </button>
-                            </div>
-                        </li>
-                    {% endfor %}
-                </ul>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fa-solid fa-envelope-open-text fa-3x mb-3"></i>
+                        <h4>No Messages</h4>
+                        <p>It looks like you don't have any messages at the moment.</p>
+                        <p>Once you start bidding or receive inquiries, you'll see them here.</p>
+                        <p>You can contact customer service using the message window.</p>
 
-                <!-- CUSTOMER SERVICE BUTTON -->
-                <button class="btn btn-secondary mt-3" id="cs-button" onclick="contactCustomerService()">Contact
+                    </div>
+                {% endif %}
+                <button class="btn btn-secondary mt-3" id="cs-button" onclick="contactCustomerService()"
+                        style="{% if not threads %}display:none;{% endif %}">Contact
                     Customer Service
                 </button>
+
             </div>
+
+
             <div class="col-md-8">
-                <div id="message-preview" class="rounded-3 border p-3">
-                    {% for thread in threads %}
-                        <div id="message-content-{{ thread.id }}" class="message-content"
-                             style="display: {% if forloop.first %}block{% else %}none{% endif %};">
-                            <h5 class="border-bottom pb-3">{{ thread.subject }}</h5>
-                            <div class="message-thread">
-                                {% for reply in thread.get_thread.reverse %}
-                                    {% if reply.message_type == 'question' %}
-                                        <div class="message-reply p-2 my-2 card {% if reply.sender_id == request.user.id %}text-end{% else %}text-start{% endif %}">
-                                            <div class="">{{ reply.body }}</div>
-                                            <small class="text-muted">{{ reply.sender.username }}
-                                                - {{ reply.date_sent }}</small>
-                                        </div>
-                                    {% endif %}
-                                {% endfor %}
-                                {% for reply in thread.get_thread %}
-                                    {% if reply.message_type != 'question' %}
-                                        <div class="message-reply p-2 my-2 card {% if reply.sender_id == request.user.id %}text-end{% else %}text-start{% endif %}">
-                                            <div class="">{{ reply.body }}</div>
-                                            <small class="text-muted">{% if reply.sender_id == request.user.id %}
-                                                Me{% elif reply.sender.username  == 'CustomerService' %}Customer
-                                                Service{% else %}Buyer{% endif %}
-                                                - {{ reply.date_sent }}</small>
-                                        </div>
-                                    {% endif %}
-                                {% endfor %}
-                            </div>
-                            <form class="submitForm" method="post" action="{% url 'send_reply' thread.id %}">
-                                {% csrf_token %}
-                                <div class="form-group mt-3 ">
+                {% if threads %}
+                    <div id="message-preview" class="rounded-3 border p-3">
+                        {% for thread in threads %}
+                            <div id="message-content-{{ thread.id }}" class="message-content"
+                                 style="display: {% if forloop.first %}block{% else %}none{% endif %};">
+                                <h5 class="border-bottom pb-3">{{ thread.subject }}</h5>
+                                <div class="message-thread">
+                                    {% for reply in thread.get_thread.reverse %}
+                                        {% if reply.message_type == 'question' %}
+                                            <div class="message-reply p-2 my-2 card {% if reply.sender_id == request.user.id %}text-end{% else %}text-start{% endif %}">
+                                                <div class="">{{ reply.body }}</div>
+                                                <small class="text-muted">{{ reply.sender.username }}
+                                                    - {{ reply.date_sent }}</small>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% for reply in thread.get_thread %}
+                                        {% if reply.message_type != 'question' %}
+                                            <div class="message-reply p-2 my-2 card {% if reply.sender_id == request.user.id %}text-end{% else %}text-start{% endif %}">
+                                                <div class="">{{ reply.body }}</div>
+                                                <small class="text-muted">{% if reply.sender_id == request.user.id %}
+                                                    Me{% elif reply.sender.username  == 'CustomerService' %}Customer
+                                                    Service{% else %}Buyer{% endif %}
+                                                    - {{ reply.date_sent }}</small>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <form class="submitForm" method="post" action="{% url 'send_reply' thread.id %}">
+                                    {% csrf_token %}
+                                    <div class="form-group mt-3 ">
                                     <textarea name="reply" class="form-control" rows="3"
                                               placeholder="Write your reply..." maxlength="1000"></textarea>
 
-                                </div>
-                                <div class="d-flex justify-content-between">
-                                    <small id="charCount" class="form-text text-muted ps-1">0/1000 characters
-                                        used</small>
-                                    <button type="submit" class="btn btn-primary mt-2">Send Reply</button>
-                                </div>
-                            </form>
-                        </div>
-                    {% endfor %}
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <small id="charCount" class="form-text text-muted ps-1">0/1000 characters
+                                            used</small>
+                                        <button type="submit" class="btn btn-primary mt-2">Send Reply</button>
+                                    </div>
+                                </form>
+                            </div>
+                        {% endfor %}
 
 
-                    <!-- CUSTOMER SERVICE FORM -->
-                    <div id="customer-service-form" class="message-content" style="display:none;">
-                        <h5 class="border-bottom pb-3">Contact Customer Service</h5>
-                        <form class="submitForm" method="post" action="{% url 'send_customer_service_message' %}">
-                            {% csrf_token %}
-                            <div class="form-group mt-3">
+                    </div>
+                {% endif %}
+
+                <!-- CUSTOMER SERVICE FORM -->
+                <div id="customer-service-form" class="message-content rounded-3 border p-3"
+                     style="{% if threads %}display:none;{% endif %}">
+                    <h5 class="border-bottom pb-3">Contact Customer Service</h5>
+                    <div class="message-thread"></div>
+                    <form class="submitForm" method="post" action="{% url 'send_customer_service_message' %}">
+                        {% csrf_token %}
+                        <div class="form-group mt-3">
                                 <textarea name="reply" class="form-control" rows="3"
                                           placeholder="Describe your issue..." maxlength="1000"></textarea>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <small id="charCount" class="form-text text-muted ps-1">0/1000 characters used</small>
-                                <button type="submit" class="btn btn-primary mt-2">Send to Customer Service</button>
-                            </div>
-                        </form>
-                    </div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <small id="charCount" class="form-text text-muted ps-1">0/1000 characters used</small>
+                            <button type="submit" class="btn btn-primary mt-2">Send to Customer Service</button>
+                        </div>
+                    </form>
                 </div>
             </div>
+
+
         </div>
     </div>
     <link href='{% static "css/inbox.css" %}' rel='stylesheet'>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <script>
-        function showMessage(messageId) {
-            document.querySelectorAll('.message-content').forEach(function (content) {
-                content.style.display = 'none';
-            });
-            document.querySelectorAll('.list-group-item').forEach(function (item) {
-                item.classList.remove('active');
-            });
-
-            // If messageId is passed, show the corresponding message
-            if (messageId) {
-                document.getElementById('message-content-' + messageId).style.display = 'block';
-                document.getElementById('message-' + messageId).classList.add('active');
-
-                // Send AJAX request to mark messages as read
-                fetch(`/messages/mark-as-read/${messageId}/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken'),
-                    },
-                }).then(response => {
-                    if (response.ok) {
-                        document.getElementById('message-' + messageId).classList.remove('new-message');
-                    }
-                });
-            } else {
-                // Show the customer service form
-                document.getElementById('customer-service-form').style.display = 'block';
-
-                // Send AJAX request to mark customer service messages as read
-                fetch(`/messages/mark-customer-service-read/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken'),
-                    },
-                }).then(response => {
-                    if (response.ok) {
-                        // You can update the UI here if needed
-                    }
-                });
-            }
-        }
-
-
-        function contactCustomerService() {
-            document.querySelectorAll('.message-content').forEach(function (content) {
-                content.style.display = 'none';
-            });
-            document.getElementById('customer-service-form').style.display = 'block';
-        }
-
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-
-        document.querySelectorAll('.submitForm').forEach(function (form) {
-            form.addEventListener('submit', function (e) {
-                e.preventDefault(); // Prevent the form from submitting immediately
-
-                const textarea = form.querySelector('textarea[name="reply"]');
-                const messageText = textarea.value;
-
-                // Send the message to the validation endpoint
-                fetch(`/message/validate/${encodeURIComponent(messageText)}/`)
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log(data);
-                        if (data.contains_pii) {
-                            const highlightedMessage = data.validated_message.replace(/##(.*?)##/g, '<span style="background-color: yellow;">$1</span>').replace(/!!(.*?)!!/g, '<span>$1</span>');
-                            Swal.fire({
-                                title: 'Sensitive Information Detected',
-                                html: `In accordance with our terms and conditions, this auction platform is blind, and sharing personally identifiable information (PII) is not permitted. Please review and remove the highlighted information before sending your message: <br><br>${highlightedMessage}`,
-                                icon: 'warning',
-                                showCancelButton: false,
-                                confirmButtonText: 'OK, I will edit it',
-                                customClass: {
-                                    confirmButton: 'btn btn-primary',
-                                },
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    textarea.value = data.validated_message.replace(/##/g, '').replace(/!!/g, '');
-                                    const charCount = form.querySelector('.form-text');
-                                    charCount.textContent = `${textarea.value.length}/1000 characters used`; // Update the character count
-                                }
-                            });
-                        } else {
-                            form.submit();
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                    });
-            });
-        });
-
-
-        document.addEventListener('DOMContentLoaded', function () {
-            // Function to handle the character count
-            function updateCharCount(textarea, charCount) {
-                const currentLength = textarea.value.length;
-                charCount.textContent = `${currentLength}/1000 characters used`;
-            }
-
-            // Attach event listeners to all textareas with the class 'form-control'
-            document.querySelectorAll('textarea.form-control').forEach(function (textarea) {
-                const charCount = textarea.closest('form').querySelector('.form-text');
-
-                textarea.addEventListener('input', function () {
-                    updateCharCount(textarea, charCount);
-                });
-
-                // Initialize the character count on page load
-                updateCharCount(textarea, charCount);
-            });
-        });
-
-    </script>
-
+    <script src="{% static 'js/inbox.js' %}"></script>
 {% endblock %}
