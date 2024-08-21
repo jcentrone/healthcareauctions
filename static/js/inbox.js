@@ -149,3 +149,37 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+
+// Handle message overflow
+window.onload = function() {
+    const listGroup = document.querySelector('.list-group');
+
+    function checkOverflow() {
+        if (listGroup.scrollHeight > listGroup.clientHeight) {
+            listGroup.style.paddingRight = '15px';
+        } else {
+            listGroup.style.paddingRight = '0';
+        }
+    }
+
+    // Run on page load
+    checkOverflow();
+
+    // Add a resize listener if the content might change
+    window.addEventListener('resize', checkOverflow);
+
+    // Set up a MutationObserver to watch for changes in the listGroup
+    const observer = new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+            checkOverflow();
+        });
+    });
+
+    // Configure the observer to watch for child list items being added/removed or style changes
+    observer.observe(listGroup, {
+        childList: true, // watches for the addition or removal of child elements
+        subtree: true,   // watches the subtree rooted at listGroup
+        attributes: true, // watches for attribute changes, such as style changes
+        attributeFilter: ['style'], // watches specifically for style changes
+    });
+};

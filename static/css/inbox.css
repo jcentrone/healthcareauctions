@@ -1,4 +1,4 @@
-.message-thread{
+.message-thread {
     height: 400px;
     overflow-y: auto;
     padding-right: 15px;
@@ -28,29 +28,29 @@
 }
 
 /* Customize scrollbar for Firefox */
-.message-thread  {
+.message-thread {
     scrollbar-width: thin;
     scrollbar-color: #888 #f1f1f1;
     border-radius: 10px;
 }
 
 /* Customize scrollbar for IE and Edge */
-.message-thread  {
+.message-thread {
     -ms-overflow-style: -ms-autohiding-scrollbar;
 }
 
-.new-message{
+.new-message {
     font-weight: 600;
 }
 
-.question{
+.question {
     position: sticky;
     top: 0;
     z-index: 1000;
 }
 
 
-.message-reply{
+.message-reply {
     width: fit-content;
     max-width: 60%;
 }
@@ -67,17 +67,18 @@
     border-left: 5px solid #28a745; /* Bold green border */
     color: #000; /* Dark text for readability */
 }
-#messages-col{
+
+#messages-col {
     position: relative;
 }
 
-#cs-button{
+#cs-button {
     position: absolute;
     bottom: 1rem;
     width: calc(100% - 2rem);
 }
 
-.date-sent{
+.date-sent {
     font-size: small;
 }
 
@@ -86,7 +87,7 @@
 }
 
 .custom-archive-btn {
-     /* Border color similar to danger */
+    /* Border color similar to danger */
     background-color: #f8d7da; /* A lighter shade of red */
     color: #dc3545; /* Text color similar to danger */
 }
@@ -97,12 +98,60 @@
     color: #dc3545;
 }
 
+.list-group {
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 0;
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f1f1f1;
+    border-radius: 10px;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+}
+
 .list-group-item.active {
     background-color: #e2e3e5; /* A soft neutral color */
     border-color: #ced4da;
     color: #495057;
 }
 
-.list-group-item{
-     color: #495057;
+.list-group-item {
+    color: #495057;
+}
+
+/* Customize scrollbar for WebKit browsers (Chrome, Safari) */
+.list-group::-webkit-scrollbar {
+    height: 12px; /* Height for horizontal scrollbar */
+
+}
+
+.list-group::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px; /* Ensure the track is rounded */
+}
+
+.list-group::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px; /* Ensure the thumb is rounded */
+}
+
+.list-group::-webkit-scrollbar-thumb:hover {
+    background: #555;
+    border-radius: 10px;
+}
+
+@media (max-width: 768px) {
+    .list-group {
+        max-height: 200px;
+        margin-bottom: 60px;
+    }
+
+    #messages-col {
+        margin-bottom: 20px;
+    }
+
+    .col-md-8 {
+        padding: 0;
+    }
+
+
 }

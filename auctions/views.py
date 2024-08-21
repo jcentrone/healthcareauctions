@@ -36,6 +36,7 @@ def index(request):
     The default route which renders a Dashboard page
     """
     unread_message_count = 0
+    watchlist, cart_count = None, None
 
     # # Filter categories to include only those with at least one auction
     categories_with_auctions = Category.objects.filter(auction_category__isnull=False).distinct().order_by(
@@ -57,7 +58,6 @@ def index(request):
     auctions_cat1 = Auction.objects.filter(category=random_category1)[:8]
     auctions_cat2 = Auction.objects.filter(category=random_category2)[:8]
 
-    watchlist = Auction.objects.none()
     recent_views = Auction.objects.none()
 
     def add_images_to_auctions(auctions):
@@ -68,9 +68,9 @@ def index(request):
     # Determine if the user is watching each auction
     if request.user.is_authenticated:
         watchlist = request.user.watchlist.all()
+        watchlist = add_images_to_auctions(watchlist)
         watchlist_ids = watchlist.values_list('id', flat=True)
         recent_views = AuctionView.objects.filter(user=request.user).order_by('-viewed_at')[:8]
-        unread_message_count = Message.unread_count(request.user)
 
         auctions_cat1 = auctions_cat1.annotate(
             is_watched=Case(
@@ -96,7 +96,6 @@ def index(request):
             )
         )
 
-        watchlist = add_images_to_auctions(watchlist)
         auctions_cat1 = add_images_to_auctions(auctions_cat1)
         auctions_cat2 = add_images_to_auctions(auctions_cat2)
     else:
@@ -104,19 +103,13 @@ def index(request):
         auctions_cat2 = add_images_to_auctions(auctions_cat2)
 
     return render(request, 'index.html', {
-        'categories': categories_with_auctions,
         'auctions_cat1': auctions_cat1,
         'auctions_cat1_name': random_category1,
         'auctions_cat2': auctions_cat2,
         'auctions_cat2_name': random_category2,
-        'expensive_auctions': Auction.objects.order_by('-starting_bid')[:4],
-        'auctions_count': Auction.objects.all().count(),
-        'bids_count': Bid.objects.all().count(),
-        'users_count': User.objects.all().count(),
         'title': 'Home',
         'watchlist': watchlist,
         'recent_views': recent_views,
-        'unread_message_count': unread_message_count,
     })
 
 
@@ -281,7 +274,6 @@ def register(request):
             return render(request, 'register.html', {
                 'message': 'Username already taken.',
                 'title': 'Register',
-                'categories': Category.objects.all()
             })
 
         login(request, user)
@@ -289,7 +281,6 @@ def register(request):
     else:
         return render(request, 'register.html', {
             'title': 'Register',
-            'categories': Category.objects.all()
         })
 
 
@@ -309,12 +300,10 @@ def login_view(request):
             return render(request, 'login.html', {
                 'message': 'Invalid username and/or password.',
                 'title': 'Log in',
-                'categories': Category.objects.all()
             })
     else:
         return render(request, 'login.html', {
             'title': 'Log in',
-            'categories': Category.objects.all()
         })
 
 
@@ -327,13 +316,10 @@ def logout_view(request):
 def auction_create(request):
     ImageFormSet = forms.modelformset_factory(Image, form=ImageForm, extra=5)
 
-    watchlist = Auction.objects.none()
-    unread_message_count = Message.unread_count(request.user)
-
-    if request.user.is_authenticated:
-        watchlist = request.user.watchlist.all()
-        for auction in watchlist:
-            auction.image = auction.get_images.first()
+    # if request.user.is_authenticated:
+    #     watchlist = request.user.watchlist.all()
+    #     for auction in watchlist:
+    #         auction.image = auction.get_images.first()
 
     if request.method == 'POST':
         auction_form = AuctionForm(request.POST, request.FILES)
@@ -396,13 +382,10 @@ def auction_create(request):
         product_detail_formset = ProductDetailFormSet(queryset=ProductDetail.objects.none())
 
     return render(request, 'auction_create.html', {
-        'categories': Category.objects.all(),
         'auction_form': auction_form,
         'image_formset': image_formset,
         'product_detail_formset': product_detail_formset,
-        'watchlist': watchlist,
-        'title': 'Create Auction',
-        'unread_message_count': unread_message_count,
+        'title': 'Create Listing',
     })
 
 
@@ -444,95 +427,76 @@ def active_auctions_view(request, auction_id=None):
     Renders a page that displays all of the currently active auction listings.
     Active auctions are paginated: 10 per page.
     """
-    category_name = request.GET.get('category_name', None)
-    time_filter = request.GET.get('time_filter', None)
-    sort_by = request.GET.get('sort_by', None)
-    manufacturer_filter = request.GET.get('mfg_filter', None)
-    my_auctions = request.GET.get('my_auctions', None)
-    search_query = request.GET.get('search_query', None)
-    auction_type = request.GET.get('auction_type', None)
-    watchlist_filter = request.GET.get('watchlist', None)
-    recent_views_filter = request.GET.get('recent_views', None)
-    has_active_auctions = Auction.objects.filter(creator=request.user, active=True).exists()
+    # Get request parameters
+    category_name = request.GET.get('category_name')
+    time_filter = request.GET.get('time_filter')
+    sort_by = request.GET.get('sort_by')
+    manufacturer_filter = request.GET.get('mfg_filter')
+    my_auctions = request.GET.get('my_auctions')
+    search_query = request.GET.get('search_query')
+    auction_type = request.GET.get('auction_type')
+    watchlist_filter = request.GET.get('watchlist')
+    recent_views_filter = request.GET.get('recent_views')
+    page = request.GET.get('page', 1)
 
-    title = 'Active Auctions'
-
-    now = timezone.now()
-
+    # Base QuerySet
     auctions = Auction.objects.filter(active=True)
 
-    watchlist = Auction.objects.none()
-
-    unread_message_count = Message.unread_count(request.user)
-
-    if request.user.is_authenticated:
-        watchlist = request.user.watchlist.all()
-        for auction in watchlist:
-            auction.image = auction.get_images.first()
-
+    # Handle specific auction display
     specific_auction = None
     if auction_id:
         try:
             specific_auction = Auction.objects.get(id=auction_id, active=True)
+            specific_auction.image = specific_auction.get_images.first()
+            specific_auction.is_watched = request.user.is_authenticated and request.user in specific_auction.watchers.all()
             auctions = auctions.exclude(id=auction_id)  # Exclude the specific auction from the queryset
         except Auction.DoesNotExist:
             pass
 
+    # Apply filters
     if auction_type:
         auctions = auctions.filter(auction_type=auction_type)
-        title = f'{auction_type}s'
 
-    if recent_views_filter:
-        recent_views = AuctionView.objects.filter(user=request.user).order_by('-viewed_at').values_list('auction',
-                                                                                                        flat=True)
+    if recent_views_filter and request.user.is_authenticated:
+        recent_views = AuctionView.objects.filter(user=request.user).order_by('-viewed_at').values_list('auction', flat=True)
         auctions = auctions.filter(id__in=recent_views)
-        title = 'Recently Viewed Listings'
 
-    if my_auctions:
+    if my_auctions and request.user.is_authenticated:
         auctions = auctions.filter(creator=request.user)
-        title = 'My Listings'
 
-    if watchlist_filter:
+    if watchlist_filter and request.user.is_authenticated:
         auctions = request.user.watchlist.all()
-        title = 'My Watchlist'
 
     if category_name:
         auctions = auctions.filter(category__category_name=category_name)
 
-    if time_filter:
-        if time_filter == 'today':
-            end_date = now + timedelta(days=1)
-            auctions = auctions.filter(date_created__lte=end_date)
-        elif time_filter == 'tomorrow':
-            start_date = now + timedelta(days=1)
-            end_date = now + timedelta(days=2)
-            auctions = auctions.filter(date_created__range=(start_date, end_date))
-        elif time_filter == 'next_3_days':
-            end_date = now + timedelta(days=3)
-            auctions = auctions.filter(date_created__lte=end_date)
-        title = 'Ending: ' + time_filter
+    # Apply time filters using a dictionary mapping
+    time_deltas = {
+        'today': timedelta(days=1),
+        'tomorrow': timedelta(days=2),
+        'next_3_days': timedelta(days=3),
+    }
+    if time_filter in time_deltas:
+        end_date = timezone.now() + time_deltas[time_filter]
+        auctions = auctions.filter(date_created__lte=end_date)
 
-    if sort_by:
-        if sort_by == 'ending_soonest':
-            auctions = auctions.order_by('expiration_date')
-        elif sort_by == 'newly_listed':
-            auctions = auctions.order_by('-date_created')
-        elif sort_by == 'price_highest':
-            auctions = auctions.order_by('-starting_bid')
-        elif sort_by == 'price_lowest':
-            auctions = auctions.order_by('starting_bid')
-        elif sort_by == 'fewest_bids':
-            auctions = auctions.annotate(bid_count=Count('bid')).order_by('bid_count')
-        elif sort_by == 'most_bids':
-            auctions = auctions.annotate(bid_count=Count('bid')).order_by('-bid_count')
-        title = 'Sorted By: ' + sort_by
-
-    manufacturers = [str(auction.manufacturer) for auction in auctions]
-    unique_manufacturers = sorted(set(manufacturers))
+    # Apply sort options
+    sort_options = {
+        'ending_soonest': 'expiration_date',
+        'newly_listed': '-date_created',
+        'price_highest': '-starting_bid',
+        'price_lowest': 'starting_bid',
+        'fewest_bids': 'bid_count',
+        'most_bids': '-bid_count',
+    }
+    if sort_by in sort_options:
+        if 'bids' in sort_by:
+            auctions = auctions.annotate(bid_count=Count('bid')).order_by(sort_options[sort_by])
+        else:
+            auctions = auctions.order_by(sort_options[sort_by])
 
     if manufacturer_filter:
         auctions = auctions.filter(manufacturer=manufacturer_filter)
-        title = manufacturer_filter
 
     if search_query:
         auctions = auctions.filter(
@@ -542,51 +506,43 @@ def active_auctions_view(request, auction_id=None):
             Q(reference_number__icontains=search_query) |
             Q(lot_number__icontains=search_query)
         )
-        title = search_query
 
-    for auction in auctions:
-        auction.image = auction.get_images.first()
-        auction.is_watched = request.user in auction.watchers.all()
+    # Add additional fields to auctions
+    if request.user.is_authenticated:
+        for auction in auctions:
+            auction.image = auction.get_images.first()
+            auction.is_watched = request.user in auction.watchers.all()
+            auction.message_form = MessageForm(initial={'subject': f'Question about {auction.title}'})
 
-        auction.message_form = MessageForm(initial={'subject': f'Question about {auction.title}'})
+    # Pagination
+    paginator = Paginator(auctions, 10)
+    try:
+        pages = paginator.page(page)
+    except PageNotAnInteger:
+        pages = paginator.page(1)
+    except EmptyPage:
+        pages = paginator.page(paginator.num_pages)
 
-        # Pagination
-        page = request.GET.get('page', 1)
-        paginator = Paginator(auctions, 10)
-        try:
-            pages = paginator.page(page)
-        except PageNotAnInteger:
-            pages = paginator.page(1)
-        except EmptyPage:
-            pages = paginator.page(paginator.num_pages)
-
-        # If on the first page, prepend the specific auction
-        if specific_auction and page == 1:
-            pages.object_list = [specific_auction] + list(pages.object_list)
-
-    if isinstance(auctions, QuerySet):
-        auctions_count = auctions.count()
-    else:
-        auctions_count = len(auctions)
+    # If on the first page, prepend the specific auction
+    if specific_auction and page == '1':
+        pages.object_list = [specific_auction] + list(pages.object_list)
 
     return render(request, 'auctions_active.html', {
-        'categories': Category.objects.all(),
+        # 'categories': Category.objects.all(),
         'auctions': pages,
         'bid_form': BidForm(),
         'add_to_cart_form': AddToCartForm(),
-        'auctions_count': auctions_count,
+        'auctions_count': auctions.count(),
         'pages': pages,
-        'title': title.replace("_", " "),
-        'unique_manufacturers': unique_manufacturers,
+        'title': 'Active Auctions',
+        'unique_manufacturers': sorted(set(auctions.values_list('manufacturer', flat=True))),
         'time_filter': time_filter,
         'sort_by': sort_by,
         'manufacturer_filter': manufacturer_filter,
         'my_auctions': my_auctions,
-        'watchlist': watchlist,
-        'has_active_auctions': has_active_auctions,
-        'unread_message_count': unread_message_count,
-        'message_form': MessageForm(),
+        # 'has_active_auctions': Auction.objects.filter(creator=request.user, active=True).exists(),
     })
+
 
 
 @login_required
@@ -693,6 +649,13 @@ def privacy_policy(request):
     return render(request, 'privacy_policy.html', {
         'categories': Category.objects.all(),
         'title': 'Privacy Policy'
+    })
+
+
+def terms_and_conditions(request):
+    return render(request, 'terms_and_conditions.html', {
+        'categories': Category.objects.all(),
+        'title': 'Terms and Conditions'
     })
 
 
@@ -874,9 +837,21 @@ def inbox(request):
     ).order_by('-date_sent')
     unread_message_count = Message.unread_count(request.user)
 
+    def add_images_to_auctions(auctions):
+        for auction in auctions:
+            auction.image = auction.get_image()
+        return auctions
+
+    watchlist = Auction.objects.none()
+
+    if request.user.is_authenticated:
+        watchlist = request.user.watchlist.all()
+        watchlist = add_images_to_auctions(watchlist)
+
     return render(request, 'inbox.html', {
         'threads': threads,
         'unread_message_count': unread_message_count,
+        'watchlist': watchlist,
     })
 
 
@@ -982,7 +957,7 @@ def send_customer_service_message(request):
 
 @login_required
 def archive_message(request, message_id):
-    message = get_object_or_404(Message, id=message_id, recipient=request.user)
+    message = Message.objects.get(id=message_id)
     message.archived = True
     message.save()
     return JsonResponse({'status': 'success'})

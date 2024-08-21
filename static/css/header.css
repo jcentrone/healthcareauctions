@@ -86,6 +86,15 @@ header .logo {
     width: auto;
 }
 
+.watch-button {
+    position: absolute;
+    bottom: 20px;
+    right: 21px;
+}
+
+.watch-button i{
+    color:#FFFFFF !important;
+}
 
 .input-group .fa-search {
     position: absolute;
@@ -96,6 +105,10 @@ header .logo {
     z-index: 10;
 }
 
+#discover-drop-menu{
+    width: 234px;
+    text-align: right;
+}
 
 .input-group-append {
     flex: 0 0 auto;
@@ -244,6 +257,17 @@ footer .social-media a:hover {
 .scroll-to-top i {
     font-weight: 800;
     color: white !important;
+}
+
+.nav-link{
+    position: relative;
+}
+
+.cart{
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    font-size: 8px;
 }
 
 

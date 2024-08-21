@@ -1,13 +1,5 @@
 {% load static %}
-<!DOCTYPE html>
-<html lang='en'>
-<head>
 
-
-    {% block links %}
-    {% endblock %}
-</head>
-<body>
 <header class="border-bottom pb-3 mb-5">
     <div class="section border-bottom">
         <div class="container" id="header_container">
@@ -60,35 +52,44 @@
                                 aria-expanded="false">
                             Watchlist
                         </button>
-                        <div class="dropdown-menu dropdown-menu-end p-2">
+                        <div class="dropdown-menu dropdown-menu-end shadow p-2">
                             <div class="mini-watchlist">
-                                {% for auction in watchlist %}
-                                    <a class="mini-watchlist-item"
-                                       href="{% url 'active_auctions_with_id' auction.id %}">
-                                        {% if auction.image %}
-                                            <img src="{{ auction.image.image.url }}" alt="{{ auction.title }}">
-                                        {% else %}
-                                            <img src="{% static 'images/no_image.png' %}" alt="Default Image">
-                                        {% endif %}
-                                        <div>
-                                            <h6>{{ auction.title|truncatechars:30 }}</h6>
-                                            <h3>
-                                                {% if auction.current_bid %}
-                                                    ${{ auction.current_bid }}
-                                                    <div class="fs-6 fw-light fst-italic">Current Bid</div>
-                                                {% else %}
-                                                    ${{ auction.starting_bid }}
-                                                    <div class="fs-6 fw-light fst-italic">Starting Bid</div>
-                                                {% endif %}
-                                                <div class="lead fs-6 time-remaining">{{ auction.formatted_time_remaining }}
-                                                    Remaining
+                                {% if watchlist %}
+                                    {% for auction in watchlist %}
+                                        <a class="mini-watchlist-item"
+                                           href="{% url 'active_auctions_with_id' auction.id %}">
+                                            {% if auction.image %}
+                                                <img src="{{ auction.image.image.url }}" alt="{{ auction.title }}">
+                                            {% else %}
+                                                <img src="{% static 'images/no_image.png' %}" alt="Default Image">
+                                            {% endif %}
+                                            <div>
+                                                <h6>{{ auction.title|truncatechars:30 }}</h6>
+                                                <h3>
+                                                    {% if auction.current_bid %}
+                                                        ${{ auction.current_bid }}
+                                                        <div class="fs-6 fw-light fst-italic">Current Bid</div>
+                                                    {% else %}
+                                                        ${{ auction.starting_bid }}
+                                                        <div class="fs-6 fw-light fst-italic">Starting Bid</div>
+                                                    {% endif %}
+                                                    <div class="lead fs-6 time-remaining">{{ auction.formatted_time_remaining }}
+                                                        Remaining
+                                                    </div>
+                                                </h3>
+                                                <div class='btn btn-secondary mt-auto rounded watch-button'
+                                                     onclick="window.location.href='{% url 'watchlist_edit' auction.id 'index' %}'">
+                                                    <i class="fa-solid fa-eye-slash"></i>
                                                 </div>
-                                            </h3>
-                                        </div>
-                                    </a>
-                                    <div class="dropdown-divider"></div>
-
-                                {% endfor %}
+                                            </div>
+                                        </a>
+                                        <div class="dropdown-divider"></div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="text-center p-3">
+                                        <p class="mb-0">Your watchlist is currently empty.</p>
+                                    </div>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -98,37 +99,54 @@
                                 aria-expanded="false">
                             Discover
                         </button>
-                        <ul class="dropdown-menu p-2">
+                        <ul class="dropdown-menu dropdown-menu-end p-2 shadow" id="discover-drop-menu">
                             <li class='nav-item p-2'>
                                 <a class='nav-link' href="{% url 'active_auctions_view' %}">
-                                    All Auctions
+                                    All Listings
                                 </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
                             </li>
                             <li class='nav-item p-2'>
                                 <a class='nav-link' href="{% url 'active_auctions_view' %}?my_auctions=true">
-                                    My Auctions
+                                    My Listings
                                 </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li class="nav-item p-2">
+                                <a class='nav-link' href="{% url 'active_auctions_view' %}?recent_views=1">
+                                    Recently Viewed Listings
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
                             </li>
                             <li class='nav-item p-2'>
                                 <a class='nav-link' href="{% url 'auction_create' %}">
-                                    Create Auction
+                                    Post a Listing
                                 </a>
                             </li>
-
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
                             <li class='nav-item p-2'>
                                 <a class='nav-link' href="{% url 'dashboard' %}">
                                     Dashboard
                                 </a>
                             </li>
-                            <li class="nav-item p-2">
-                                <a class='nav-link' href="{% url 'active_auctions_view' %}?recent_views=1">
-                                    Recently Viewed
-                                </a>
+                            <li>
+                                <hr class="dropdown-divider">
                             </li>
                             <li class='nav-item p-2'>
-                                <a class='nav-link' href="{% url 'active_auctions_view' %}?watchlist=true">
-                                    Watchlist
+                                <a class='nav-link' href="{% url 'inbox' %}">
+                                    Messages
                                 </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
                             </li>
 
                             <li class="nav-item p-2">Purchase History</li>
@@ -140,6 +158,8 @@
                     <div class="nav-item pe-1 mx-1">
                         <a class='nav-link' href="{% url 'view_cart' %}">
                             <i class="fa-solid fa-cart-shopping"></i>
+                            <span class='cart badge rounded-pill bg-danger badge-counter light'>{{ cart_count }} </span>
+
                         </a>
                     </div>
                     <!-- Nav Item - Alerts -->
@@ -231,8 +251,7 @@
 </header>
 
 <link href='{% static "css/header.css" %}' rel='stylesheet'>
-</body>
-</html>
+
 
 
 
