@@ -421,7 +421,6 @@ def import_excel(request):
     })
 
 
-@login_required
 def active_auctions_view(request, auction_id=None):
     """
     Renders a page that displays all of the currently active auction listings.
@@ -508,11 +507,11 @@ def active_auctions_view(request, auction_id=None):
         )
 
     # Add additional fields to auctions
-    if request.user.is_authenticated:
-        for auction in auctions:
-            auction.image = auction.get_images.first()
-            auction.is_watched = request.user in auction.watchers.all()
-            auction.message_form = MessageForm(initial={'subject': f'Question about {auction.title}'})
+    # if request.user.is_authenticated:
+    for auction in auctions:
+        auction.image = auction.get_images.first()
+        auction.is_watched = request.user in auction.watchers.all()
+        auction.message_form = MessageForm(initial={'subject': f'Question about {auction.title}'})
 
     # Pagination
     paginator = Paginator(auctions, 10)
@@ -544,8 +543,6 @@ def active_auctions_view(request, auction_id=None):
     })
 
 
-
-@login_required
 def get_auction_images(request, auction_id):
     auction = get_object_or_404(Auction, id=auction_id)
     images = auction.get_images.all()
@@ -553,7 +550,6 @@ def get_auction_images(request, auction_id):
     return (JsonResponse({'image_urls': image_urls}))
 
 
-@login_required
 def get_auction_product_details(request, auction_id):
     auction = get_object_or_404(Auction, id=auction_id)
     product_details = auction.product_details.all()
