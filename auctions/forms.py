@@ -1,7 +1,8 @@
 from django import forms
 from django.forms import modelformset_factory
 
-from .models import Auction, Bid, Comment, Image, Category, CartItem, ProductDetail, Message
+from .models import Auction, Bid, Comment, Image, Category, CartItem, ProductDetail, Message, Order, ShippingAddress, \
+    BillingAddress
 
 
 class AuctionForm(forms.ModelForm):
@@ -32,7 +33,6 @@ class AuctionForm(forms.ModelForm):
              f"{category.parent.category_name} / {category.category_name}" if category.parent else f"{category.category_name}")
             for category in Category.objects.all().order_by('parent__category_name', 'category_name')
         ]
-
 
     def clean(self):
         cleaned_data = super().clean()
@@ -81,9 +81,9 @@ ProductDetailFormSet = modelformset_factory(ProductDetail, form=ProductDetailFor
 
 
 class ImageForm(forms.ModelForm):
-    '''
+    """
     A ModelForm class for adding an image to the auction
-    '''
+    """
 
     class Meta:
         model = Image
@@ -95,9 +95,9 @@ class ImageForm(forms.ModelForm):
 
 
 class CommentForm(forms.ModelForm):
-    '''
+    """
     A ModelForm class for adding a new comment to the auction
-    '''
+    """
 
     class Meta:
         model = Comment
@@ -116,9 +116,9 @@ class CommentForm(forms.ModelForm):
 
 
 class BidForm(forms.ModelForm):
-    '''
+    """
     A ModelForm class for placing a bid
-    '''
+    """
 
     class Meta:
         model = Bid
@@ -135,16 +135,11 @@ class BidForm(forms.ModelForm):
             visible.field.widget.attrs['class'] = 'form-control mt-2'
 
 
-class AddToCartForm(forms.ModelForm):
-    class Meta:
-        model = CartItem
-        fields = []  # No fields required
-
-    def __init__(self, *args, **kwargs):
-        super(AddToCartForm, self).__init__(*args, **kwargs)
-
-
 class MessageForm(forms.ModelForm):
+    """
+        A ModelForm class for sending a message
+    """
+
     class Meta:
         model = Message
         fields = ['subject', 'body']
@@ -161,3 +156,93 @@ class MessageForm(forms.ModelForm):
             'subject': 'Subject',
             'body': 'Message',
         }
+
+
+class AddToCartForm(forms.ModelForm):
+    class Meta:
+        model = CartItem
+        fields = []  # No fields required
+
+    def __init__(self, *args, **kwargs):
+        super(AddToCartForm, self).__init__(*args, **kwargs)
+
+
+class ShippingMethodForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = ['shipping_method', 'special_instructions']
+        widgets = {
+            'shipping_method': forms.Select(
+                choices=[('standard', 'Standard Shipping'), ('expedited', 'Expedited Shipping')],
+                attrs={'class': 'form-control'}),
+            'special_instructions': forms.Textarea(
+                attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Any special instructions...'}),
+        }
+
+
+class ShippingAddressForm(forms.ModelForm):
+    class Meta:
+        model = ShippingAddress
+        fields = ['shipping_full_name', 'shipping_street_address', 'shipping_apartment_suite', 'shipping_city', 'shipping_state', 'shipping_zip_code', 'shipping_country',
+                  'shipping_phone_number', 'shipping_email']
+        widgets = {
+            'shipping_full_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'shipping_street_address': forms.TextInput(attrs={'class': 'form-control'}),
+            'shipping_apartment_suite': forms.TextInput(attrs={'class': 'form-control'}),
+            'shipping_city': forms.TextInput(attrs={'class': 'form-control'}),
+            'shipping_state': forms.TextInput(attrs={'class': 'form-control'}),
+            'shipping_zip_code': forms.TextInput(attrs={'class': 'form-control'}),
+            'shipping_country': forms.TextInput(attrs={'class': 'form-control'}),
+            'shipping_phone_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'shipping_email': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+
+class BillingAddressForm(forms.ModelForm):
+    class Meta:
+        model = BillingAddress
+        fields = ['billing_full_name', 'billing_street_address', 'billing_apartment_suite', 'billing_city', 'billing_state', 'billing_zip_code', 'billing_country',
+                  'billing_phone_number', 'billing_email']
+        widgets = {
+            'billing_full_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'billing_street_address': forms.TextInput(attrs={'class': 'form-control'}),
+            'billing_apartment_suite': forms.TextInput(attrs={'class': 'form-control'}),
+            'billing_city': forms.TextInput(attrs={'class': 'form-control'}),
+            'billing_state': forms.TextInput(attrs={'class': 'form-control'}),
+            'billing_zip_code': forms.TextInput(attrs={'class': 'form-control'}),
+            'billing_country': forms.TextInput(attrs={'class': 'form-control'}),
+            'billing_phone_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'billing_email': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+
+class CreditCardForm(forms.Form):
+    card_number = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control mb-2 text-capitalize', 'placeholder': 'Credit Card Number'}))
+    expiration_date = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'MM/YY'}))
+    cvv = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'CVV'}))
+
+
+class ACHForm(forms.Form):
+    # ACH doesn't need a form, so we'll just notify the user after order confirmation.
+    pass
+
+
+class ZelleForm(forms.Form):
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email for Zelle Payment'}))
+
+
+class VenmoForm(forms.Form):
+    venmo_username = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Venmo Username'}))
+
+
+class PayPalForm(forms.Form):
+    paypal_email = forms.EmailField(
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'PayPal Email'}))
+
+
+class CashAppForm(forms.Form):
+    cashapp_username = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'CashApp Username'}))

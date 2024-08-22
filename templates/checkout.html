@@ -1,0 +1,464 @@
+{% extends 'new_base.html' %}
+{% load static %}
+{% block title %}Checkout{% endblock %}
+{% block body %}
+    <div class="container">
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Tabs Navigation -->
+            <ul class="nav nav-tabs border-0" id="checkoutTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact"
+                            type="button" role="tab" aria-controls="contact" aria-selected="true">Contact & Shipping
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="confirmation-tab" data-bs-toggle="tab" data-bs-target="#confirmation"
+                            type="button" role="tab" aria-controls="confirmation" aria-selected="false">Order
+                        Confirmation
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="payment-tab" data-bs-toggle="tab" data-bs-target="#payment"
+                            type="button" role="tab" aria-controls="payment" aria-selected="false">Payment & Submit
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content card " id="checkoutTabContent">
+                <!-- Contact & Shipping -->
+                <div class="tab-pane fade show active" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+                    <div class="card-header">
+                        <h3 class="m-0">Order Contact Information</h3>
+                    </div>
+                    <div class="card-body">
+
+                        <div class="form-group mb-3 row align-items-center">
+                            <div class="col-2">
+                                <label for="id_email">Name</label>
+                            </div>
+                            <div class="col-4">
+                                <input type="email" class="form-control" id="id_email" name="name"
+                                       placeholder="Enter Name"
+                                       value="{{ request.user.first_name }} {{ request.user.last_name }} " required>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3 row align-items-center">
+                            <div class="col-2">
+                                <label for="id_email">Email Address</label>
+                            </div>
+                            <div class="col-4">
+                                <input type="email" class="form-control" id="id_email" name="email"
+                                       placeholder="Enter email"
+                                       value="{{ request.user.email }}" required>
+                            </div>
+                        </div>
+                        <div class="form-group  mb-3 row align-items-center">
+                            <div class="col-2">
+                                <label for="id_phone_number">Phone Number</label>
+                            </div>
+                            <div class="col-4">
+                                <input type="text" class="form-control" id="id_phone_number" name="phone_number"
+                                       placeholder="Enter phone number" value="{{ request.user.phone_number }}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-header border-top">
+                        <h3 class="m-0">Shipping & Billing Information</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col pe-5">
+                                <h4 class="text-muted mt-3">Ship To Contact</h4>
+                                <div class="ps-3">
+                                    <div class="form-group mb-3 row align-items-center">
+                                        <div class="col-4">
+                                            <label for="{{ shipping_form.shipping_full_name.id_for_label }}">Attention</label>
+                                        </div>
+                                        <div class="col-8">
+                                            {{ shipping_form.shipping_full_name }}
+                                            {% if shipping_form.shipping_full_name.errors %}
+                                                <div class="text-danger">{{ shipping_form.shipping_full_name.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="form-group mb-3 row align-items-center">
+                                        <div class="col-4">
+                                            <label for="{{ shipping_form.shipping_phone_number.id_for_label }}">Shipping
+                                                Phone</label>
+                                        </div>
+                                        <div class="col-8">
+                                            {{ shipping_form.shipping_phone_number }}
+                                            {% if shipping_form.shipping_phone_number.errors %}
+                                                <div class="text-danger">{{ shipping_form.shipping_phone_number.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="form-group mb-3 row align-items-center">
+                                        <div class="col-4">
+                                            <label for="{{ shipping_form.shipping_email.id_for_label }}">Shipping
+                                                Email</label>
+                                        </div>
+                                        <div class="col-8">
+                                            {{ shipping_form.shipping_email }}
+                                            {% if shipping_form.shipping_email.errors %}
+                                                <div class="text-danger">{{ shipping_form.shipping_email.errors }}</div>
+                                            {% endif %}
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <h4 class="text-muted">Ship To Address</h4>
+                                <div class="ps-3">
+                                    <div class="form-group mb-3 row align-items-center">
+                                        <div class="col-4">
+                                            <label for="{{ shipping_form.shipping_street_address.id_for_label }}">Street
+                                                Address
+                                                1</label>
+                                        </div>
+                                        <div class="col-8">
+                                            {{ shipping_form.shipping_street_address }}
+                                            {% if shipping_form.shipping_street_address.errors %}
+                                                <div class="text-danger">{{ shipping_form.shipping_street_address.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="form-group mb-3 row align-items-center">
+                                        <div class="col-4">
+                                            <label for="{{ shipping_form.shipping_apartment_suite.id_for_label }}">Street
+                                                Address 2</label>
+                                        </div>
+                                        <div class="col-8">
+                                            {{ shipping_form.shipping_apartment_suite }}
+                                            {% if shipping_form.shipping_apartment_suite.errors %}
+                                                <div class="text-danger">{{ shipping_form.shipping_apartment_suite.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="form-group mb-3 row align-items-center">
+                                        <div class="col-5">
+                                            <div class="form-group row align-items-center">
+                                                <div class="col-2">
+                                                    <label for="{{ shipping_form.shipping_city.id_for_label }}">City</label>
+                                                </div>
+                                                <div class="col-10">
+                                                    {{ shipping_form.shipping_city }}
+                                                    {% if shipping_form.shipping_city.errors %}
+                                                        <div class="text-danger">{{ shipping_form.shipping_city.errors }}</div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="form-group row align-items-center">
+                                                <div class="col-4">
+                                                    <label for="{{ shipping_form.shipping_state.id_for_label }}">State</label>
+                                                </div>
+                                                <div class="col-8">
+                                                    {{ shipping_form.shipping_state }}
+                                                    {% if shipping_form.shipping_state.errors %}
+                                                        <div class="text-danger">{{ shipping_form.shipping_state.errors }}</div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="form-group row align-items-center">
+                                                <div class="col-6">
+                                                    <label for="{{ shipping_form.shipping_zip_code.id_for_label }}">Zip
+                                                        Code</label>
+                                                </div>
+                                                <div class="col-6">
+                                                    {{ shipping_form.shipping_zip_code }}
+                                                    {% if shipping_form.shipping_zip_code.errors %}
+                                                        <div class="text-danger">{{ shipping_form.shipping_zip_code.errors }}</div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="col ps-5">
+                                <h4 class="text-muted mt-3">Bill To Contact</h4>
+                                <div class="ps-3">
+                                    <div class="form-group mb-3 row align-items-center">
+                                        <div class="col-4">
+                                            <label for="{{ billing_form.billing_full_name.id_for_label }}">Attention</label>
+                                        </div>
+                                        <div class="col-8">
+                                            {{ billing_form.billing_full_name }}
+                                            {% if billing_form.billing_full_name.errors %}
+                                                <div class="text-danger">{{ billing_form.billing_full_name.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="form-group mb-3 row align-items-center">
+                                        <div class="col-4">
+                                            <label for="{{ billing_form.billing_phone_number.id_for_label }}">Billing
+                                                Phone</label>
+                                        </div>
+                                        <div class="col-8">
+                                            {{ billing_form.billing_phone_number }}
+                                            {% if billing_form.billing_phone_number.errors %}
+                                                <div class="text-danger">{{ billing_form.billing_phone_number.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="form-group mb-3 row align-items-center">
+                                        <div class="col-4">
+                                            <label for="{{ billing_form.billing_email.id_for_label }}">Billing
+                                                Email</label>
+                                        </div>
+                                        <div class="col-8">
+                                            {{ billing_form.billing_email }}
+                                            {% if billing_form.billing_email.errors %}
+                                                <div class="text-danger">{{ billing_form.billing_email.errors }}</div>
+                                            {% endif %}
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <h4 class="text-muted">Bill To Address</h4>
+                                <div class="ps-3">
+                                    <div class="form-group mb-3 row align-items-center">
+                                        <div class="col-4">
+                                            <label for="{{ billing_form.billing_street_address.id_for_label }}">Street
+                                                Address
+                                                1</label>
+                                        </div>
+                                        <div class="col-8">
+                                            {{ billing_form.billing_street_address }}
+                                            {% if billing_form.billing_street_address.errors %}
+                                                <div class="text-danger">{{ billing_form.billing_street_address.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="form-group mb-3 row align-items-center">
+                                        <div class="col-4">
+                                            <label for="{{ billing_form.billing_apartment_suite.id_for_label }}">Street
+                                                Address 2</label>
+                                        </div>
+                                        <div class="col-8">
+                                            {{ billing_form.billing_apartment_suite }}
+                                            {% if billing_form.billing_apartment_suite.errors %}
+                                                <div class="text-danger">{{ billing_form.billing_apartment_suite.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="form-group mb-3 row align-items-center">
+                                        <div class="col-5">
+                                            <div class="form-group mb-3 row align-items-center">
+                                                <div class="col-2">
+                                                    <label for="{{ billing_form.billing_city.id_for_label }}">City</label>
+                                                </div>
+                                                <div class="col-10">
+                                                    {{ billing_form.billing_city }}
+                                                    {% if billing_form.billing_city.errors %}
+                                                        <div class="text-danger">{{ billing_form.billing_city.errors }}</div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="form-group mb-3 row align-items-center">
+                                                <div class="col-4">
+                                                    <label for="{{ billing_form.billing_state.id_for_label }}">State</label>
+                                                </div>
+                                                <div class="col-8">
+                                                    {{ billing_form.billing_state }}
+                                                    {% if billing_form.billing_state.errors %}
+                                                        <div class="text-danger">{{ billing_form.billing_state.errors }}</div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="form-group mb-3 row align-items-center">
+                                                <div class="col-6">
+                                                    <label for="{{ billing_form.billing_zip_code.id_for_label }}">Zip
+                                                        Code</label>
+                                                </div>
+                                                <div class="col-6">
+                                                    {{ billing_form.billing_zip_code }}
+                                                    {% if billing_form.billing_zip_code.errors %}
+                                                        <div class="text-danger">{{ billing_form.billing_zip_code.errors }}</div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-header border-top">
+                        <h3 class="m-0">Shipping Method</h3>
+                    </div>
+                    <div class="card-body p-3">
+                        {{ shipping_method_form.as_p }}
+                    </div>
+                    <div class="card-footer">
+                        <button type="button" class="btn btn-primary" data-bs-toggle="tab"
+                                data-bs-target="#confirmation">Next
+                        </button>
+                    </div>
+                </div>
+                <!-- Order Confirmation -->
+                <div class="tab-pane fade" id="confirmation" role="tabpanel" aria-labelledby="confirmation-tab">
+                    <div class="card-header">
+                        <h3 class="m-0">Order Summary</h3>
+                    </div>
+                    <div class="card-body position-relative">
+                        <div class="table p-3">
+                            <div class="row fw-bold">
+                                <div class="col-6">Item</div>
+                                <div class="col-2 text-end">Quantity</div>
+                                <div class="col-2 text-end">Price</div>
+                                <div class="col-2 text-end">Total</div>
+                            </div>
+                            {% for item in cart.items.all %}
+                                <div class="row">
+                                    <div class="col-6">{{ item.auction.title }}</div>
+                                    <div class="col-2 text-end">{{ item.quantity }}</div>
+                                    <!-- Assuming 'quantity' is a field in CartItem model -->
+                                    <div class="col-2 text-end">${{ item.auction.buyItNowPrice }}</div>
+                                    <!-- Adjust field name as needed -->
+                                    <div class="col-2 text-end">${{ item.total_price }}</div>
+                                </div>
+                            {% endfor %}
+
+                            <div class="row fw-bold border-top pt-3">
+                                <div class="col text-end">Subtotal:</div>
+                                <div class="col-1 text-end">${{ cart.total_cost }}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col text-end">Shipping:</div>
+                                <div class="col-1 text-end">TBD</div>
+                            </div>
+                            <div class="row">
+                                <div class="col text-end">Taxes:</div>
+                                <div class="col-1 text-end">TBD</div>
+                            </div>
+                            <div class="row fw-bold pt-2">
+                                <div class="col"></div>
+                                <div class="col-1 border-top text-end">Total:</div>
+                                <div class="col-1 border-top text-end">TBD</div>
+                            </div>
+                        </div>
+                    <p class="position-absolute bottom-0 end-0 me-3">Please note: The final total will be provided at the time of order confirmation once shipping
+                            has been calculated.</p>
+                    </div>
+
+                    <div class="card-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-toggle="tab" data-bs-target="#contact">
+                            Back
+                        </button>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="tab" data-bs-target="#payment">
+                            Next
+                        </button>
+                    </div>
+                </div>
+                <!-- Payment & Submit -->
+                <div class="tab-pane fade" id="payment" role="tabpanel" aria-labelledby="payment-tab">
+                    <div class="card-header">
+                        <h3 class="m-0">Payment Method</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group mb-3">
+                            <label for="payment_method">Choose Payment Method</label>
+                            <select id="payment_method" class="form-control">
+                                <option value="credit-card">Credit Card</option>
+                                <option value="ach">ACH</option>
+                                <option value="zelle">Zelle</option>
+                                <option value="venmo">Venmo</option>
+                                <option value="paypal">PayPal</option>
+                                <option value="cashapp">CashApp</option>
+                            </select>
+                        </div>
+
+                        <div id="credit-card-form" class="payment-form">
+                            {{ credit_card_form.as_p }}
+                        </div>
+                        <div id="ach-form" class="payment-form" style="display: none;">
+                            <p class="ms-3">ACH instructions will be sent to your email address along with the order
+                                confirmation.
+                                Please check your inbox for further details on how to complete your payment.</p>
+
+                        </div>
+                        <div id="zelle-form" class="payment-form" style="display: none;">
+                            {{ zelle_form.as_p }}
+                        </div>
+                        <div id="venmo-form" class="payment-form" style="display: none;">
+                            {{ venmo_form.as_p }}
+                        </div>
+                        <div id="paypal-form" class="payment-form" style="display: none;">
+                            {{ paypal_form.as_p }}
+                        </div>
+                        <div id="cashapp-form" class="payment-form" style="display: none;">
+                            {{ cashapp_form.as_p }}
+                        </div>
+
+                        <div class="form-group form-check mt-3 ms-3">
+                            <input type="checkbox" class="form-check-input" id="id_agree_terms" required>
+                            <label class="form-check-label" for="id_agree_terms">
+                                I agree to the
+                                <a href="{% url 'terms_and_conditions' %}" target="_blank">Terms and Conditions</a>
+                                and
+                                <a href="{% url 'privacy_policy' %}" target="_blank">Privacy Policy</a>.
+                            </label>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-toggle="tab"
+                                data-bs-target="#confirmation">Back
+                        </button>
+                        <button type="submit" class="btn btn-primary">Place Order</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <link href='{% static "css/checkout.css" %}' rel='stylesheet'>
+
+    <script>
+        document.getElementById('payment_method').addEventListener('change', function () {
+            let selectedMethod = this.value;
+            document.querySelectorAll('.payment-form').forEach(function (form) {
+                form.style.display = 'none';
+            });
+            document.getElementById(selectedMethod + '-form').style.display = 'block';
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            // Target the 'Next' button on the "Contact & Shipping" tab
+            document.querySelector("#contact .btn-primary").addEventListener("click", function () {
+                var nextTab = new bootstrap.Tab(document.querySelector('#confirmation-tab'));
+                nextTab.show();
+            });
+
+            // Target the 'Back' and 'Next' buttons on the "Order Confirmation" tab
+            document.querySelector("#confirmation .btn-secondary").addEventListener("click", function () {
+                var prevTab = new bootstrap.Tab(document.querySelector('#contact-tab'));
+                prevTab.show();
+            });
+
+            document.querySelector("#confirmation .btn-primary").addEventListener("click", function () {
+                var nextTab = new bootstrap.Tab(document.querySelector('#payment-tab'));
+                nextTab.show();
+            });
+
+            // Target the 'Back' button on the "Payment & Submit" tab
+            document.querySelector("#payment .btn-secondary").addEventListener("click", function () {
+                var prevTab = new bootstrap.Tab(document.querySelector('#confirmation-tab'));
+                prevTab.show();
+            });
+        });
+
+    </script>
+
+{% endblock %}

@@ -27,6 +27,8 @@ urlpatterns = [
     path('download-excel/', views.download_excel, name='download_excel'),
     path('add-to-cart/<int:auction_id>/', views.add_to_cart, name='add_to_cart'),
     path('cart/', views.view_cart, name='view_cart'),
+    path('checkout/', views.checkout, name='checkout'),
+    path('order-confirmation/<int:order_id>/', views.order_confirmation, name='order_confirmation'),
     path('remove-from-cart/<int:item_id>/', views.remove_from_cart, name='remove_from_cart'),
     path('api/get-auction-images/<int:auction_id>/', views.get_auction_images, name='get_auction_images'),
     path('auction/<int:auction_id>/product-details/', views.get_auction_product_details,

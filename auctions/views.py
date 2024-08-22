@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.files.storage import get_storage_class
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import IntegrityError
-from django.db.models import Q, QuerySet, Case, When, BooleanField, DecimalField, Max, F
+from django.db.models import Q, Case, When, BooleanField, DecimalField, Max, F
 from django.http import HttpResponseRedirect, JsonResponse, FileResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
@@ -19,8 +19,10 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, ProductDetailFormSet, MessageForm
-from .models import Bid, Category, Image, User, Address, CartItem, Cart, ProductDetail, Message
+from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, ProductDetailFormSet, MessageForm, \
+    ShippingMethodForm, ShippingAddressForm, BillingAddressForm, CreditCardForm, ACHForm, ZelleForm, VenmoForm, \
+    PayPalForm, CashAppForm
+from .models import Bid, Category, Image, User, Address, CartItem, Cart, ProductDetail, Message, Order, Payment
 from .utils.helpers import update_categories_from_fda
 from .utils.openai import get_chat_completion_request
 
@@ -457,7 +459,8 @@ def active_auctions_view(request, auction_id=None):
         auctions = auctions.filter(auction_type=auction_type)
 
     if recent_views_filter and request.user.is_authenticated:
-        recent_views = AuctionView.objects.filter(user=request.user).order_by('-viewed_at').values_list('auction', flat=True)
+        recent_views = AuctionView.objects.filter(user=request.user).order_by('-viewed_at').values_list('auction',
+                                                                                                        flat=True)
         auctions = auctions.filter(id__in=recent_views)
 
     if my_auctions and request.user.is_authenticated:
@@ -777,6 +780,131 @@ def download_excel(request):
     return response
 
 
+# ORDER MANAGEMENT
+@login_required
+def checkout(request):
+    cart = request.user.cart
+
+    # Populate initial data from the user profile
+    initial_data = {
+        'email': request.user.email,
+        'phone_number': request.user.phone_number,
+    }
+
+    # Assuming you have a default address saved in the User profile
+    default_shipping_address = request.user.addresses.filter(address_type='shipping').first()
+    default_billing_address = request.user.addresses.filter(address_type='billing').first()
+
+    if default_shipping_address:
+        initial_data.update({
+            'shipping_full_name': request.user.first_name + " " + request.user.last_name,
+            'shipping_street_address': default_shipping_address.street,
+            'shipping_apartment_suite': default_shipping_address.suite,
+            'shipping_city': default_shipping_address.city,
+            'shipping_state': default_shipping_address.state,
+            'shipping_zip_code': default_shipping_address.zip_code,
+            'shipping_country': default_shipping_address.country,
+
+        })
+
+    if default_billing_address:
+        initial_data.update({
+            'billing_full_name': request.user.first_name + request.user.last_name,
+            'billing_street_address': default_billing_address.street,
+            'billing_apartment_suite': default_billing_address.suite,
+            'billing_city': default_billing_address.city,
+            'billing_state': default_billing_address.state,
+            'billing_zip_code': default_billing_address.zip_code,
+            'billing_country': default_billing_address.country,
+
+        })
+
+    # Define forms for each payment type
+    credit_card_form = CreditCardForm(request.POST or None)
+    ach_form = ACHForm(request.POST or None)
+    zelle_form = ZelleForm(request.POST or None)
+    venmo_form = VenmoForm(request.POST or None)
+    paypal_form = PayPalForm(request.POST or None)
+    cashapp_form = CashAppForm(request.POST or None)
+
+    shipping_method_form = ShippingMethodForm(request.POST or None, initial=initial_data)
+    shipping_form = ShippingAddressForm(request.POST or None, initial=initial_data)
+    billing_form = BillingAddressForm(request.POST or None, initial=initial_data)
+
+    if request.method == 'POST':
+        if shipping_method_form.is_valid() and shipping_form.is_valid() and billing_form.is_valid():
+            order = shipping_method_form.save(commit=False)
+            order.user = request.user
+            order.cart = cart
+            order.total_amount = cart.total_cost()
+            order.save()
+
+            # Save shipping and billing addresses
+            shipping_address = shipping_form.save(commit=False)
+            shipping_address.order = order
+            shipping_address.save()
+
+            billing_address = billing_form.save(commit=False)
+            billing_address.order = order
+            billing_address.save()
+
+            # Determine which payment method was used
+            payment_method = request.POST.get('payment_method')
+            payment = Payment.objects.create(order=order, payment_method=payment_method)
+
+            # Process and save payment details
+            if payment_method == 'credit-card' and credit_card_form.is_valid():
+                # Create or retrieve the payment instance
+                payment = Payment(order=order, payment_method='credit_card')
+
+                # Encrypt and save the card number and expiration date
+                card_number = credit_card_form.cleaned_data.get('card_number')
+                expiration_date = credit_card_form.cleaned_data.get('expiration_date')
+
+                payment.set_card_number(card_number)
+                payment.set_expiration_date(expiration_date)
+            elif payment_method == 'zelle' and zelle_form.is_valid():
+                payment.payer_email = payment.encrypt_data(zelle_form.cleaned_data.get('email'))
+                # Process Zelle payment
+
+            elif payment_method == 'venmo' and venmo_form.is_valid():
+                payment.payer_email = payment.encrypt_data(venmo_form.cleaned_data.get('email'))
+                # Process Venmo payment
+
+            elif payment_method == 'paypal' and paypal_form.is_valid():
+                payment.payer_email = payment.encrypt_data(paypal_form.cleaned_data.get('email'))
+                # Process PayPal payment
+
+            elif payment_method == 'cashapp' and cashapp_form.is_valid():
+                payment.payer_email = payment.encrypt_data(cashapp_form.cleaned_data.get('email'))
+                # Process CashApp payment
+
+            payment.save()
+
+            # Handle the cart checkout logic here (e.g., marking auctions as sold, reducing inventory, etc.)
+
+            return redirect('order_confirmation', order_id=order.id)
+
+    return render(request, 'checkout.html', {
+        'shipping_method_form': shipping_method_form,
+        'shipping_form': shipping_form,
+        'billing_form': billing_form,
+        'credit_card_form': credit_card_form,
+        'ach_form': ach_form,
+        'zelle_form': zelle_form,
+        'venmo_form': venmo_form,
+        'paypal_form': paypal_form,
+        'cashapp_form': cashapp_form,
+        'cart': cart,
+    })
+
+
+@login_required
+def order_confirmation(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    return render(request, 'order_confirmation.html', {'order': order})
+
+
 @login_required
 def add_to_cart(request, auction_id):
     auction = get_object_or_404(Auction, id=auction_id)
@@ -823,6 +951,8 @@ def track_auction_view(request):
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'fail'}, status=400)
 
+
+# MESSAGING
 
 @login_required
 def inbox(request):

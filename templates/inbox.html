@@ -45,8 +45,9 @@
 
 
             <div class="col-md-8">
-                {% if threads %}
-                    <div id="message-preview" class="rounded-3 border p-3">
+                <div id="message-preview" class="rounded-3 border p-3">
+                    {% if threads %}
+
                         {% for thread in threads %}
                             <div id="message-content-{{ thread.id }}" class="message-content"
                                  style="display: {% if forloop.first %}block{% else %}none{% endif %};">
@@ -92,28 +93,28 @@
                         {% endfor %}
 
 
-                    </div>
-                {% endif %}
 
-                <!-- CUSTOMER SERVICE FORM -->
-                <div id="customer-service-form" class="message-content rounded-3 border p-3"
-                     style="{% if threads %}display:none;{% endif %}">
-                    <h5 class="border-bottom pb-3">Contact Customer Service</h5>
-                    <div class="message-thread"></div>
-                    <form class="submitForm" method="post" action="{% url 'send_customer_service_message' %}">
-                        {% csrf_token %}
-                        <div class="form-group mt-3">
+                    {% endif %}
+
+                    <!-- CUSTOMER SERVICE FORM -->
+                    <div id="customer-service-form" class="message-content rounded-3"
+                         style="{% if threads %}display:none;{% endif %}">
+                        <h5 class="border-bottom pb-3">Contact Customer Service</h5>
+                        <div class="message-thread"></div>
+                        <form class="submitForm" method="post" action="{% url 'send_customer_service_message' %}">
+                            {% csrf_token %}
+                            <div class="form-group mt-3">
                                 <textarea name="reply" class="form-control" rows="3"
                                           placeholder="Describe your issue..." maxlength="1000"></textarea>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <small id="charCount" class="form-text text-muted ps-1">0/1000 characters used</small>
-                            <button type="submit" class="btn btn-primary mt-2">Send to Customer Service</button>
-                        </div>
-                    </form>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <small id="charCount" class="form-text text-muted ps-1">0/1000 characters used</small>
+                                <button type="submit" class="btn btn-primary mt-2">Send to Customer Service</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
-
 
         </div>
     </div>

@@ -1,0 +1,8 @@
+#confirmation .card-body,
+#payment-tab .card-body {
+    min-height: 60vh;
+}
+
+label{
+    text-transform: capitalize;
+}

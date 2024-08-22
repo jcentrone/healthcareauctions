@@ -1,0 +1,27 @@
+{% extends 'new_base.html' %}
+{% load static %}
+{% block title %}Order Confirmation{% endblock %}
+{% block body %}
+    <div class="container">
+        <h2>Thank you for your order!</h2>
+        <p>Your order number is <strong>{{ order.id }}</strong>.</p>
+        <p>You will receive an email confirmation shortly at <strong>{{ order.user.email }}</strong>.</p>
+
+        <h3>Order Summary</h3>
+        <ul>
+            {% for item in order.items.all %}
+                <li>{{ item.quantity }} x {{ item.auction.title }} - ${{ item.price }}</li>
+            {% endfor %}
+        </ul>
+
+        <p>Total: ${{ order.total_amount }}</p>
+
+        <h3>Shipping Information</h3>
+        <p>{{ order.shipping_address.full_name }}</p>
+        <p>{{ order.shipping_address.street_address }}</p>
+        <p>{{ order.shipping_address.city }}, {{ order.shipping_address.state }} {{ order.shipping_address.zip_code }}</p>
+        <p>{{ order.shipping_address.country }}</p>
+
+        <p>If you have any questions about your order, please contact us.</p>
+    </div>
+{% endblock %}

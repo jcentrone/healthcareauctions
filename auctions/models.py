@@ -2,10 +2,12 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+from django.db.models import JSONField
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
+from cryptography.fernet import Fernet
 
 from config.storage_backends import ProfileImageStorage, CompanyLogoStorage
 
@@ -28,6 +30,7 @@ class Address(models.Model):
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='addresses')
     address_type = models.CharField(max_length=10, choices=ADDRESS_TYPE_CHOICES)
     street = models.CharField(max_length=255)
+    suite = models.CharField(null=True, blank=True, max_length=255)
     city = models.CharField(max_length=255)
     state = models.CharField(max_length=255)
     zip_code = models.CharField(max_length=10)
@@ -233,6 +236,7 @@ class Comment(models.Model):
         return f'Comment #{self.id}: {self.user.username} on {self.auction.title}: {self.comment}'
 
 
+# ORDER MANAGEMENT
 class Cart(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='cart')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -262,6 +266,122 @@ class CartItem(models.Model):
         return self.auction.get_images.first()
 
 
+class Order(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    cart = models.OneToOneField(Cart, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    status = models.CharField(max_length=20,
+                              choices=[('pending', 'Pending'), ('processing', 'Processing'), ('shipped', 'Shipped'),
+                                       ('completed', 'Completed')], default='pending')
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    shipping_method = models.CharField(max_length=50, null=True, blank=True)
+    special_instructions = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f'Order #{self.id} for {self.user.username}'
+
+    def calculate_total(self):
+        # Logic to calculate total based on cart items and shipping
+        return sum(item.total_price() for item in self.cart.items.all())  # plus any additional charges
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
+    auction = models.ForeignKey(Auction, on_delete=models.CASCADE)
+    quantity = models.IntegerField(default=1)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f'{self.quantity}x {self.auction.title}'
+
+
+class ShippingAddress(models.Model):
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='shipping_address')
+    shipping_full_name = models.CharField(max_length=255)
+    shipping_email = models.CharField(max_length=255, blank=True)
+    shipping_street_address = models.CharField(max_length=255)
+    shipping_apartment_suite = models.CharField('Suite', max_length=255, null=True, blank=True)
+    shipping_city = models.CharField(max_length=255)
+    shipping_state = models.CharField(max_length=255)
+    shipping_zip_code = models.CharField(max_length=10)
+    shipping_country = models.CharField(max_length=255)
+    shipping_phone_number = models.CharField(max_length=15, blank=True)
+
+    def __str__(self):
+        return f'Shipping Address for Order #{self.order.id}'
+
+
+class BillingAddress(models.Model):
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='billing_address')
+    billing_full_name = models.CharField(max_length=255)
+    billing_email = models.CharField(max_length=255, blank=True)
+    billing_street_address = models.CharField(max_length=255)
+    billing_apartment_suite = models.CharField('Suite', max_length=255, null=True, blank=True)
+    billing_city = models.CharField(max_length=255)
+    billing_state = models.CharField(max_length=255)
+    billing_zip_code = models.CharField(max_length=10)
+    billing_country = models.CharField(max_length=255)
+    billing_phone_number = models.CharField(max_length=15, blank=True)
+
+    def __str__(self):
+        return f'Billing Address for Order #{self.order.id}'
+
+
+class Payment(models.Model):
+    PAYMENT_METHOD_CHOICES = [
+        ('credit_card', 'Credit Card'),
+        ('ach', 'ACH'),
+        ('zelle', 'Zelle'),
+        ('paypal', 'PayPal'),
+        ('venmo', 'Venmo'),
+        ('cashapp', 'CashApp'),
+    ]
+
+    PAYMENT_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+    ]
+
+    order = models.OneToOneField('Order', on_delete=models.CASCADE, related_name='payment')
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
+    status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
+    transaction_id = models.CharField(max_length=100, null=True, blank=True)
+
+    # Payment-specific fields
+    card_last_four = models.CharField(max_length=4, null=True, blank=True)
+    encrypted_card_number = models.BinaryField('Card Number', null=True, blank=True)
+    encrypted_expiration_date = models.BinaryField(null=True, blank=True)
+    payer_email = models.EmailField(null=True, blank=True)  # For PayPal/Zelle, etc.
+    additional_info = models.JSONField(null=True, blank=True)  # For any other details, as JSON
+
+    def __str__(self):
+        return f'Payment for Order #{self.order.id} via {self.payment_method}'
+
+    def encrypt_data(self, data):
+        cipher_suite = Fernet(settings.ENCRYPTION_KEY)
+        return cipher_suite.encrypt(data.encode())
+
+    def decrypt_data(self, encrypted_data):
+        cipher_suite = Fernet(settings.ENCRYPTION_KEY)
+        return cipher_suite.decrypt(encrypted_data).decode()
+
+    def set_card_number(self, card_number):
+        self.card_last_four = card_number[-4:]
+        self.encrypted_card_number = self.encrypt_data(card_number)
+
+    def get_card_number(self):
+        return self.decrypt_data(self.encrypted_card_number)
+
+    def set_expiration_date(self, expiration_date):
+        self.encrypted_expiration_date = self.encrypt_data(expiration_date)
+
+    def get_expiration_date(self):
+        return self.decrypt_data(self.encrypted_expiration_date)
+
+
+# MESSAGING
 class Message(models.Model):
     MESSAGE_TYPE_CHOICES = [
         ('question', 'Question'),
@@ -270,7 +390,8 @@ class Message(models.Model):
     ]
 
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
-    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages', null=True, blank=True)
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages', null=True,
+                                  blank=True)
     listing = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name='messages', null=True, blank=True)
     message_type = models.CharField(max_length=10, choices=MESSAGE_TYPE_CHOICES)
     subject = models.CharField(max_length=255)
