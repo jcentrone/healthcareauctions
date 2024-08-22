@@ -177,8 +177,8 @@ MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/'
 STATIC_URL = '/static/'
 
 # # Retrieve the encryption key from the environment variable
-# ENCRYPTION_KEY = os.getenv('ENCRYPTION_KEY')
-#
-# # Ensure the key is not missing
-# if not ENCRYPTION_KEY:
-#     raise ValueError("No ENCRYPTION_KEY set for Fernet symmetric encryption.")
+ENCRYPTION_KEY = os.getenv('ENCRYPTION_KEY')
+
+# Ensure the key is not missing
+if not ENCRYPTION_KEY:
+    raise ValueError("No ENCRYPTION_KEY set for Fernet symmetric encryption.")
