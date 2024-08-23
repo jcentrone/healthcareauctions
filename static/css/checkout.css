@@ -12,7 +12,13 @@ label {
     flex-direction: row;
 
 }
+.required {
+    border-left: 3px solid red;
+}
 
+.hidden-field{
+    display:none;
+}
 
 @media (max-width: 768px) {
     .shipping-billing-container {
@@ -46,5 +52,30 @@ label {
         display: none;
     }
 
+    .city-col {
+        padding-right: calc(var(--bs-gutter-x) * .25);
+    }
+    .state-col {
+        padding-left: calc(var(--bs-gutter-x) * .25);
+        padding-right: calc(var(--bs-gutter-x) * .25);
+    }
+    .zip-col {
+        padding-left: calc(var(--bs-gutter-x) * .25);
+    }
+    .nav-tabs{
+        display: none;
+    }
 
+    #checkoutTabContent{
+        overflow-y: auto;
+    }
+    #confirmation{
+        min-width: 700px;
+    }
+    p.position-absolute.bottom-0.end-0.me-3{
+        margin-left: 25px;
+    }
+    .total-column{
+        width: 100px;
+    }
 }

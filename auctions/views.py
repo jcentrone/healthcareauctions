@@ -803,7 +803,7 @@ def checkout(request):
             'shipping_city': default_shipping_address.city,
             'shipping_state': default_shipping_address.state,
             'shipping_zip_code': default_shipping_address.zip_code,
-            'shipping_country': default_shipping_address.country,
+            'shipping_country': 'USA',
 
         })
 
@@ -815,7 +815,7 @@ def checkout(request):
             'billing_city': default_billing_address.city,
             'billing_state': default_billing_address.state,
             'billing_zip_code': default_billing_address.zip_code,
-            'billing_country': default_billing_address.country,
+            'billing_country': "USA",
 
         })
 
@@ -833,6 +833,7 @@ def checkout(request):
 
     if request.method == 'POST':
         if shipping_method_form.is_valid() and shipping_form.is_valid() and billing_form.is_valid():
+            print("All forms are valid.")
             order = shipping_method_form.save(commit=False)
             order.user = request.user
             order.cart = cart
@@ -884,6 +885,12 @@ def checkout(request):
             # Handle the cart checkout logic here (e.g., marking auctions as sold, reducing inventory, etc.)
 
             return redirect('order_confirmation', order_id=order.id)
+
+        else:
+            print("Form errors:")
+            print("Shipping Method Form Errors:", shipping_method_form.errors)
+            print("Shipping Form Errors:", shipping_form.errors)
+            print("Billing Form Errors:", billing_form.errors)
 
     return render(request, 'checkout.html', {
         'shipping_method_form': shipping_method_form,

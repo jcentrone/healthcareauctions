@@ -174,7 +174,7 @@ class ShippingMethodForm(forms.ModelForm):
         widgets = {
             'shipping_method': forms.Select(
                 choices=[('standard', 'Standard Shipping'), ('expedited', 'Expedited Shipping')],
-                attrs={'class': 'form-control'}),
+                attrs={'class': 'form-control required'}),
             'special_instructions': forms.Textarea(
                 attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Any special instructions...'}),
         }
@@ -186,15 +186,15 @@ class ShippingAddressForm(forms.ModelForm):
         fields = ['shipping_full_name', 'shipping_street_address', 'shipping_apartment_suite', 'shipping_city', 'shipping_state', 'shipping_zip_code', 'shipping_country',
                   'shipping_phone_number', 'shipping_email']
         widgets = {
-            'shipping_full_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'shipping_street_address': forms.TextInput(attrs={'class': 'form-control'}),
+            'shipping_full_name': forms.TextInput(attrs={'class': 'form-control required'}),
+            'shipping_street_address': forms.TextInput(attrs={'class': 'form-control required'}),
             'shipping_apartment_suite': forms.TextInput(attrs={'class': 'form-control'}),
-            'shipping_city': forms.TextInput(attrs={'class': 'form-control'}),
-            'shipping_state': forms.Select(choices=STATE_CHOICES, attrs={'class': 'form-control'}),
-            'shipping_zip_code': forms.TextInput(attrs={'class': 'form-control'}),
+            'shipping_city': forms.TextInput(attrs={'class': 'form-control required'}),
+            'shipping_state': forms.Select(choices=STATE_CHOICES, attrs={'class': 'form-control required'}),
+            'shipping_zip_code': forms.TextInput(attrs={'class': 'form-control required'}),
             'shipping_country': forms.TextInput(attrs={'class': 'form-control'}),
-            'shipping_phone_number': forms.TextInput(attrs={'class': 'form-control'}),
-            'shipping_email': forms.TextInput(attrs={'class': 'form-control'}),
+            'shipping_phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'If different than above'}),
+            'shipping_email': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'If different than above'}),
         }
 
 
@@ -204,15 +204,15 @@ class BillingAddressForm(forms.ModelForm):
         fields = ['billing_full_name', 'billing_street_address', 'billing_apartment_suite', 'billing_city', 'billing_state', 'billing_zip_code', 'billing_country',
                   'billing_phone_number', 'billing_email']
         widgets = {
-            'billing_full_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'billing_street_address': forms.TextInput(attrs={'class': 'form-control'}),
+            'billing_full_name': forms.TextInput(attrs={'class': 'form-control required'}),
+            'billing_street_address': forms.TextInput(attrs={'class': 'form-control required'}),
             'billing_apartment_suite': forms.TextInput(attrs={'class': 'form-control'}),
-            'billing_city': forms.TextInput(attrs={'class': 'form-control'}),
-            'billing_state': forms.Select(choices=STATE_CHOICES, attrs={'class': 'form-control'}),
-            'billing_zip_code': forms.TextInput(attrs={'class': 'form-control'}),
+            'billing_city': forms.TextInput(attrs={'class': 'form-control required'}),
+            'billing_state': forms.Select(choices=STATE_CHOICES, attrs={'class': 'form-control required'}),
+            'billing_zip_code': forms.TextInput(attrs={'class': 'form-control required'}),
             'billing_country': forms.TextInput(attrs={'class': 'form-control'}),
-            'billing_phone_number': forms.TextInput(attrs={'class': 'form-control'}),
-            'billing_email': forms.TextInput(attrs={'class': 'form-control'}),
+            'billing_phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'If different than above'}),
+            'billing_email': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'If different than above'}),
         }
 
 

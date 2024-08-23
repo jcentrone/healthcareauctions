@@ -270,6 +270,10 @@ footer .social-media a:hover {
     font-size: 8px;
 }
 
+#content{
+    min-height: 60vh;
+}
+
 
 @media (max-width: 991.98px) {
     .input-group {
