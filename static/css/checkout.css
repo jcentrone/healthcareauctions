@@ -3,6 +3,48 @@
     min-height: 60vh;
 }
 
-label{
+label {
     text-transform: capitalize;
+}
+
+.shipping-billing-container {
+    display: flex;
+    flex-direction: row;
+
+}
+
+
+@media (max-width: 768px) {
+    .shipping-billing-container {
+        flex-direction: column;
+
+    }
+
+    .order-contact-info {
+        flex-direction: column;
+    }
+
+    .col-4,
+    .col-8,
+    .col-2,
+    .city-state-zip-container {
+        flex: 1;
+        width: 100%;
+    }
+
+    .city-state-zip-container {
+        padding: 0 !important;
+        margin-left: calc(-.5 * var(--bs-gutter-x)) !important;
+    }
+
+    .bs-contact-container {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    .filler-column {
+        display: none;
+    }
+
+
 }
