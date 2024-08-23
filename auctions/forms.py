@@ -2,7 +2,7 @@ from django import forms
 from django.forms import modelformset_factory
 
 from .models import Auction, Bid, Comment, Image, Category, CartItem, ProductDetail, Message, Order, ShippingAddress, \
-    BillingAddress
+    BillingAddress, STATE_CHOICES
 
 
 class AuctionForm(forms.ModelForm):
@@ -190,7 +190,7 @@ class ShippingAddressForm(forms.ModelForm):
             'shipping_street_address': forms.TextInput(attrs={'class': 'form-control'}),
             'shipping_apartment_suite': forms.TextInput(attrs={'class': 'form-control'}),
             'shipping_city': forms.TextInput(attrs={'class': 'form-control'}),
-            'shipping_state': forms.TextInput(attrs={'class': 'form-control'}),
+            'shipping_state': forms.Select(choices=STATE_CHOICES, attrs={'class': 'form-control'}),
             'shipping_zip_code': forms.TextInput(attrs={'class': 'form-control'}),
             'shipping_country': forms.TextInput(attrs={'class': 'form-control'}),
             'shipping_phone_number': forms.TextInput(attrs={'class': 'form-control'}),
@@ -208,7 +208,7 @@ class BillingAddressForm(forms.ModelForm):
             'billing_street_address': forms.TextInput(attrs={'class': 'form-control'}),
             'billing_apartment_suite': forms.TextInput(attrs={'class': 'form-control'}),
             'billing_city': forms.TextInput(attrs={'class': 'form-control'}),
-            'billing_state': forms.TextInput(attrs={'class': 'form-control'}),
+            'billing_state': forms.Select(choices=STATE_CHOICES, attrs={'class': 'form-control'}),
             'billing_zip_code': forms.TextInput(attrs={'class': 'form-control'}),
             'billing_country': forms.TextInput(attrs={'class': 'form-control'}),
             'billing_phone_number': forms.TextInput(attrs={'class': 'form-control'}),

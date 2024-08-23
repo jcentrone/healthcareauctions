@@ -12,6 +12,60 @@ from cryptography.fernet import Fernet
 from config.storage_backends import ProfileImageStorage, CompanyLogoStorage
 
 
+STATE_CHOICES = (
+    ('AL', 'AL'),
+    ('AK', 'AK'),
+    ('AZ', 'AZ'),
+    ('AR', 'AR'),
+    ('CA', 'CA'),
+    ('CO', 'CO'),
+    ('CT', 'CT'),
+    ('DE', 'DE'),
+    ('FL', 'FL'),
+    ('GA', 'GA'),
+    ('HI', 'HI'),
+    ('ID', 'ID'),
+    ('IL', 'IL'),
+    ('IN', 'IN'),
+    ('IA', 'IA'),
+    ('KS', 'KS'),
+    ('KY', 'KY'),
+    ('LA', 'LA'),
+    ('ME', 'ME'),
+    ('MD', 'MD'),
+    ('MA', 'MA'),
+    ('MI', 'MI'),
+    ('MN', 'MN'),
+    ('MS', 'MS'),
+    ('MO', 'MO'),
+    ('MT', 'MT'),
+    ('NE', 'NE'),
+    ('NV', 'NV'),
+    ('NH', 'NH'),
+    ('NJ', 'NJ'),
+    ('NM', 'NM'),
+    ('NY', 'NY'),
+    ('NC', 'NC'),
+    ('ND', 'ND'),
+    ('OH', 'OH'),
+    ('OK', 'OK'),
+    ('OR', 'OR'),
+    ('PA', 'PA'),
+    ('RI', 'RI'),
+    ('SC', 'SC'),
+    ('SD', 'SD'),
+    ('TN', 'TN'),
+    ('TX', 'TX'),
+    ('UT', 'UT'),
+    ('VT', 'VT'),
+    ('VA', 'VA'),
+    ('WA', 'WA'),
+    ('WV', 'WV'),
+    ('WI', 'WI'),
+    ('WY', 'WY'),
+)
+
+
 class User(AbstractUser):
     company_name = models.CharField(max_length=255, blank=True)
     phone_number = models.CharField(max_length=15, blank=True)
@@ -303,7 +357,7 @@ class ShippingAddress(models.Model):
     shipping_street_address = models.CharField(max_length=255)
     shipping_apartment_suite = models.CharField('Suite', max_length=255, null=True, blank=True)
     shipping_city = models.CharField(max_length=255)
-    shipping_state = models.CharField(max_length=255)
+    shipping_state = models.CharField(max_length=2, choices=STATE_CHOICES)
     shipping_zip_code = models.CharField(max_length=10)
     shipping_country = models.CharField(max_length=255)
     shipping_phone_number = models.CharField(max_length=15, blank=True)
@@ -319,7 +373,7 @@ class BillingAddress(models.Model):
     billing_street_address = models.CharField(max_length=255)
     billing_apartment_suite = models.CharField('Suite', max_length=255, null=True, blank=True)
     billing_city = models.CharField(max_length=255)
-    billing_state = models.CharField(max_length=255)
+    billing_state = models.CharField(max_length=2, choices=STATE_CHOICES)
     billing_zip_code = models.CharField(max_length=10)
     billing_country = models.CharField(max_length=255)
     billing_phone_number = models.CharField(max_length=15, blank=True)

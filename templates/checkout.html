@@ -39,7 +39,7 @@
                                 <label for="id_email">Name</label>
                             </div>
                             <div class="col-4">
-                                <input type="email" class="form-control" id="id_email" name="name"
+                                <input type="text" class="form-control" id="id_name" name="name"
                                        placeholder="Enter Name"
                                        value="{{ request.user.first_name }} {{ request.user.last_name }} " required>
                             </div>
@@ -101,14 +101,17 @@
                                             <label for="{{ shipping_form.shipping_email.id_for_label }}">Shipping
                                                 Email</label>
                                         </div>
-                                        <div class="col-8">
+                                        <div class="col-8 d-flex align-items-center">
                                             {{ shipping_form.shipping_email }}
+                                            {#                                            <button type="button" class="btn btn-secondary ms-2" id="copyEmailButton">#}
+                                            {#                                                Copy Email#}
+                                            {#                                            </button>#}
                                             {% if shipping_form.shipping_email.errors %}
                                                 <div class="text-danger">{{ shipping_form.shipping_email.errors }}</div>
                                             {% endif %}
-
                                         </div>
                                     </div>
+
                                 </div>
                                 <h4 class="text-muted">Ship To Address</h4>
                                 <div class="ps-3">
@@ -138,43 +141,40 @@
                                         </div>
                                     </div>
                                     <div class="form-group mb-3 row align-items-center">
-                                        <div class="col-5">
-                                            <div class="form-group row align-items-center">
-                                                <div class="col-2">
-                                                    <label for="{{ shipping_form.shipping_city.id_for_label }}">City</label>
-                                                </div>
-                                                <div class="col-10">
-                                                    {{ shipping_form.shipping_city }}
-                                                    {% if shipping_form.shipping_city.errors %}
-                                                        <div class="text-danger">{{ shipping_form.shipping_city.errors }}</div>
-                                                    {% endif %}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-3">
-                                            <div class="form-group row align-items-center">
-                                                <div class="col-4">
-                                                    <label for="{{ shipping_form.shipping_state.id_for_label }}">State</label>
-                                                </div>
-                                                <div class="col-8">
-                                                    {{ shipping_form.shipping_state }}
-                                                    {% if shipping_form.shipping_state.errors %}
-                                                        <div class="text-danger">{{ shipping_form.shipping_state.errors }}</div>
-                                                    {% endif %}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-4">
-                                            <div class="form-group row align-items-center">
-                                                <div class="col-6">
-                                                    <label for="{{ shipping_form.shipping_zip_code.id_for_label }}">Zip
-                                                        Code</label>
-                                                </div>
-                                                <div class="col-6">
-                                                    {{ shipping_form.shipping_zip_code }}
-                                                    {% if shipping_form.shipping_zip_code.errors %}
-                                                        <div class="text-danger">{{ shipping_form.shipping_zip_code.errors }}</div>
-                                                    {% endif %}
+                                        
+
+                                        <div class="row p-0 ms-0">
+                                            <div class="col-4"></div>
+                                            <div class="col-8">
+                                                <div class="row">
+                                                    <div class="col-6">
+                                                        <div class="form-group align-items-center">
+                                                            {{ shipping_form.shipping_city }}
+                                                            <label class="ps-2" for="{{ shipping_form.shipping_city.id_for_label }}">City</label>
+                                                            {% if shipping_form.shipping_city.errors %}
+                                                                <div class="text-danger">{{ shipping_form.shipping_city.errors }}</div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-3">
+                                                        <div class="form-group align-items-center">
+                                                            {{ shipping_form.shipping_state }}
+                                                            <label class="ps-2" for="{{ shipping_form.shipping_state.id_for_label }}">State</label>
+                                                            {% if shipping_form.shipping_state.errors %}
+                                                                <div class="text-danger">{{ shipping_form.shipping_state.errors }}</div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-3">
+                                                        <div class="form-group align-items-center">
+                                                            {{ shipping_form.shipping_zip_code }}
+                                                            <label class="ps-2" for="{{ shipping_form.shipping_zip_code.id_for_label }}">Zip</label>
+                                                            {% if shipping_form.shipping_zip_code.errors %}
+                                                                <div class="text-danger">{{ shipping_form.shipping_zip_code.errors }}</div>
+                                                            {% endif %}
+
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -251,43 +251,41 @@
                                         </div>
                                     </div>
                                     <div class="form-group mb-3 row align-items-center">
-                                        <div class="col-5">
-                                            <div class="form-group mb-3 row align-items-center">
-                                                <div class="col-2">
-                                                    <label for="{{ billing_form.billing_city.id_for_label }}">City</label>
-                                                </div>
-                                                <div class="col-10">
-                                                    {{ billing_form.billing_city }}
-                                                    {% if billing_form.billing_city.errors %}
-                                                        <div class="text-danger">{{ billing_form.billing_city.errors }}</div>
-                                                    {% endif %}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-3">
-                                            <div class="form-group mb-3 row align-items-center">
-                                                <div class="col-4">
-                                                    <label for="{{ billing_form.billing_state.id_for_label }}">State</label>
-                                                </div>
-                                                <div class="col-8">
-                                                    {{ billing_form.billing_state }}
-                                                    {% if billing_form.billing_state.errors %}
-                                                        <div class="text-danger">{{ billing_form.billing_state.errors }}</div>
-                                                    {% endif %}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-4">
-                                            <div class="form-group mb-3 row align-items-center">
-                                                <div class="col-6">
-                                                    <label for="{{ billing_form.billing_zip_code.id_for_label }}">Zip
-                                                        Code</label>
-                                                </div>
-                                                <div class="col-6">
-                                                    {{ billing_form.billing_zip_code }}
-                                                    {% if billing_form.billing_zip_code.errors %}
-                                                        <div class="text-danger">{{ billing_form.billing_zip_code.errors }}</div>
-                                                    {% endif %}
+                                        <div class="row p-0 ms-0">
+                                            <div class="col-4"></div>
+                                            <div class="col-8">
+                                                <div class="row">
+                                                    <div class="col-6">
+                                                        <div class="form-group align-items-center">
+
+                                                            {{ billing_form.billing_city }}
+                                                            <label class="ps-2" for="{{ billing_form.billing_city.id_for_label }}">City</label>
+                                                            {% if billing_form.billing_city.errors %}
+                                                                <div class="text-danger">{{ billing_form.billing_city.errors }}</div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-3">
+                                                        <div class="form-group align-items-center">
+                                                            {{ billing_form.billing_state }}
+                                                            <label  class="ps-2"for="{{ billing_form.billing_state.id_for_label }}">State</label>
+                                                            {% if billing_form.billing_state.errors %}
+                                                                <div class="text-danger">{{ billing_form.billing_state.errors }}</div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-3">
+                                                        <div class="form-group align-items-center">
+
+                                                            {{ billing_form.billing_zip_code }}
+                                                            <label  class="ps-2"for="{{ billing_form.billing_zip_code.id_for_label }}">Zip</label>
+
+                                                            {% if billing_form.billing_zip_code.errors %}
+                                                                <div class="text-danger">{{ billing_form.billing_zip_code.errors }}</div>
+                                                            {% endif %}
+
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -350,7 +348,8 @@
                                 <div class="col-1 border-top text-end">TBD</div>
                             </div>
                         </div>
-                    <p class="position-absolute bottom-0 end-0 me-3">Please note: The final total will be provided at the time of order confirmation once shipping
+                        <p class="position-absolute bottom-0 end-0 me-3">Please note: The final total will be provided
+                            at the time of order confirmation once shipping
                             has been calculated.</p>
                     </div>
 
@@ -423,42 +422,87 @@
             </div>
         </form>
     </div>
+
     <link href='{% static "css/checkout.css" %}' rel='stylesheet'>
-
+    <script src='{% static "js/checkout.js" %}'></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.maskedinput/1.4.1/jquery.maskedinput.min.js"></script>
     <script>
-        document.getElementById('payment_method').addEventListener('change', function () {
-            let selectedMethod = this.value;
-            document.querySelectorAll('.payment-form').forEach(function (form) {
-                form.style.display = 'none';
-            });
-            document.getElementById(selectedMethod + '-form').style.display = 'block';
-        });
+        $(document).ready(function () {
+            $('#id_phone_number').mask("(999) 999-9999");
+            $('#id_shipping_phone_number').mask("(999) 999-9999");
+            $('#id_billing_phone_number').mask("(999) 999-9999");
 
-        document.addEventListener("DOMContentLoaded", function () {
+            // Handle tab navigation
+            $('#checkoutTabs button').on('click', function () {
+                let target = $(this).data('bs-target');
+                let tab = new bootstrap.Tab($(target)[0]);
+                tab.show();
+            });
+
+            // Manually trigger tab change when clicking Next/Back buttons
+            $("#contact .btn-primary").on("click", function () {
+                let nextTab = new bootstrap.Tab("#confirmation-tab");
+                nextTab.show();
+            });
+
+            $("#confirmation .btn-secondary").on("click", function () {
+                let prevTab = new bootstrap.Tab("#contact-tab");
+                prevTab.show();
+            });
+
+            $("#confirmation .btn-primary").on("click", function () {
+                let nextTab = new bootstrap.Tab("#payment-tab");
+                nextTab.show();
+            });
+
+            $("#payment .btn-secondary").on("click", function () {
+                let prevTab = new bootstrap.Tab("#confirmation-tab");
+                prevTab.show();
+            });
+
+            $('#copyEmailButton').click(function () {
+                // Get the value from the email input field
+                let emailValue = $('#id_email').val();
+                // Set the value to the shipping email input field
+                $('#id_shipping_email').val(emailValue);
+            });
+
+        });
+    </script>
+    <script>
+        document.addEventListener(" DOMContentLoaded", function () {
             // Target the 'Next' button on the "Contact & Shipping" tab
             document.querySelector("#contact .btn-primary").addEventListener("click", function () {
-                var nextTab = new bootstrap.Tab(document.querySelector('#confirmation-tab'));
+                let nextTab = new bootstrap.Tab(document.querySelector('#confirmation-tab'));
                 nextTab.show();
             });
 
             // Target the 'Back' and 'Next' buttons on the "Order Confirmation" tab
             document.querySelector("#confirmation .btn-secondary").addEventListener("click", function () {
-                var prevTab = new bootstrap.Tab(document.querySelector('#contact-tab'));
+                let prevTab = new bootstrap.Tab(document.querySelector('#contact-tab'));
                 prevTab.show();
             });
 
             document.querySelector("#confirmation .btn-primary").addEventListener("click", function () {
-                var nextTab = new bootstrap.Tab(document.querySelector('#payment-tab'));
+                let nextTab = new bootstrap.Tab(document.querySelector('#payment-tab'));
                 nextTab.show();
             });
 
             // Target the 'Back' button on the "Payment & Submit" tab
             document.querySelector("#payment .btn-secondary").addEventListener("click", function () {
-                var prevTab = new bootstrap.Tab(document.querySelector('#confirmation-tab'));
+                let prevTab = new bootstrap.Tab(document.querySelector('#confirmation-tab'));
                 prevTab.show();
             });
+            // Payment method change
+            document.getElementById('payment_method').addEventListener('change', function () {
+                let selectedMethod = this.value;
+                document.querySelectorAll('.payment-form').forEach(function (form) {
+                    form.style.display = 'none';
+                });
+                document.getElementById(selectedMethod + '-form').style.display = 'block';
+            });
         });
-
     </script>
 
 {% endblock %}
