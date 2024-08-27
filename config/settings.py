@@ -16,7 +16,7 @@ SECRET_KEY = os.environ.get(
 )
 
 # DEBUG = config('DEBUG', default=False, cast=bool)
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     'localhost',
@@ -24,7 +24,14 @@ ALLOWED_HOSTS = [
     'medical-auctions-757e84a2ed6f.herokuapp.com',  # Note: Remove the 'https://' prefix
     '[::1]',
     '0.0.0.0',
+    'healthcareauctions.com',
+    'www.healthcareauctions.com',
     '*'
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://healthcareauctions.com',
+    'https://www.healthcareauctions.com',
 ]
 
 # Application definition
@@ -177,8 +184,8 @@ MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/'
 STATIC_URL = '/static/'
 
 # # Retrieve the encryption key from the environment variable
-# ENCRYPTION_KEY = os.getenv('ENCRYPTION_KEY')
-#
-# # Ensure the key is not missing
-# if not ENCRYPTION_KEY:
-#     raise ValueError("No ENCRYPTION_KEY set for Fernet symmetric encryption.")
+ENCRYPTION_KEY = os.getenv('ENCRYPTION_KEY')
+
+# Ensure the key is not missing
+if not ENCRYPTION_KEY:
+    raise ValueError("No ENCRYPTION_KEY set for Fernet symmetric encryption.")
