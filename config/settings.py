@@ -26,7 +26,7 @@ ALLOWED_HOSTS = [
     '0.0.0.0',
     'healthcareauctions.com',
     'www.healthcareauctions.com',
-    '*'
+    # '*'
 ]
 
 CSRF_COOKIE_SECURE = True
