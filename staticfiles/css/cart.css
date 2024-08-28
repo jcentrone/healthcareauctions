@@ -1,0 +1,29 @@
+td img {
+    width: 150px;
+}
+
+.div-table {
+    display: table;
+    width: 100%;
+}
+
+.div-table-row {
+    display: table-row;
+}
+
+.div-table-col {
+    display: table-cell;
+    padding: 8px;
+    border: 1px solid #dee2e6;
+    vertical-align: middle;
+}
+
+.div-table-header .div-table-col {
+    font-weight: bold;
+    background-color: #f8f9fa;
+}
+
+.div-table img {
+    max-width: 100px;
+    height: auto;
+}

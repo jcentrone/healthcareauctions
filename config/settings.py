@@ -101,14 +101,6 @@ DATABASES = {
         'PORT': '',  # leave blank so the default port is selected
     }
 }
-# DATABASES = {
-#         "default": dj_database_url.config(
-#             env="DATABASE_URL",
-#             conn_max_age=600,
-#             conn_health_checks=True,
-#             ssl_require=True,
-#         ),
-#     }
 
 AUTH_USER_MODEL = 'auctions.User'
 
@@ -143,6 +135,11 @@ USE_L10N = True
 
 USE_TZ = True
 
+# Default primary key field type
+# https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
@@ -154,20 +151,12 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # Location where we will store our static files
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# Use default file storage for static files (local filesystem or another backend)
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 # Google Cloud Storage settings
 GS_BUCKET_NAME = 'healthcare_auctions_auction_images'
 GS_PROJECT_ID = 'healthcare-auctions'
-
-# Use default file storage for static files (local filesystem or another backend)
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 # Use GCS for media files
 DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
@@ -183,10 +172,11 @@ GS_CREDENTIALS = credentials
 
 # Additional settings
 MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/'
-STATIC_URL = '/static/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# # Retrieve the encryption key from the environment variable
-ENCRYPTION_KEY = os.getenv('ENCRYPTION_KEY')
+# Retrieve the encryption key from the environment variable
+ENCRYPTION_KEY = os.getenv('ENCRYPTION_KEY',
+                           default=secrets.token_urlsafe(nbytes=64))
 
 # Ensure the key is not missing
 if not ENCRYPTION_KEY:

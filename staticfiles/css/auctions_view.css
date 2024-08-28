@@ -1,0 +1,254 @@
+.auction_image_third {
+    height: 250px;
+    width: 250px;
+    object-fit: cover;
+    /*pointer-events: none;*/
+    border-radius: 8px;
+    margin: 15px 0 15px 10px;
+}
+
+
+.auction_image_first:hover {
+
+}
+
+.auction-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    flex: 1;
+    text-decoration: none !important;
+    color: #333333;
+}
+
+.auction-card:hover > .listing {
+    color: #333333;
+    /*border: 1px solid #86B7FE;*/
+}
+
+.auctions-header-container {
+    display: grid;
+    grid-template-columns: 1fr;
+
+}
+
+#auction-filter-form {
+    display: grid;
+    gap: 10px;
+    align-items: center;
+    grid-template-columns: auto auto auto auto 1fr;
+    width: 100%;
+}
+
+#time-filter,
+#sort-by,
+#mfg-filter {
+    /*width: 180px;*/
+}
+
+.listing {
+    display: grid;
+    grid-template-columns: 1fr minmax(300px, 300px);
+    align-items: center;
+    border-top: 1px solid #cccccc;
+    position: relative;
+    justify-content: center;
+}
+
+.listing:hover {
+    color: #333333;
+    /*border: 1px solid #86B7FE;*/
+    text-decoration: none;
+}
+
+.listing:hover > .auction-card > .card-body {
+    color: #333333;
+}
+
+.auction-title {
+    font-size: 2rem;
+    font-weight: 300;
+    width: 100%; /* Adjust the width as needed */
+    max-width: 700px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.display-8 {
+    font-size: 1.5rem;
+    font-weight: 300;
+    text-align: left;
+}
+
+.bid-form {
+    width: 200px;
+    position: absolute;
+    right: 0;
+}
+
+.two-grid-auto-columns {
+    display: grid;
+    grid-template-columns: auto auto;
+    width: fit-content;
+    gap: 10px;
+    font-family: Montserrat, sans-serif;
+    align-items: center;
+}
+
+.time-remaining {
+    color: #C12947;
+}
+
+.form-group.with-symbol {
+    position: relative;
+}
+
+.form-group.with-symbol::before {
+    content: "$";
+    position: absolute;
+    left: 10px; /* Adjust based on your design */
+    top: 50px;
+    transform: translateY(-50%);
+    font-size: 16px; /* Adjust based on your design */
+    color: #555; /* Adjust based on your design */
+}
+
+.Sale {
+    background: #f8f8f8;
+}
+
+
+.form-group.with-symbol input {
+    padding-left: 25px; /* Adjust based on your design */
+}
+
+.additional-images {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, 185px);
+}
+
+
+img.img-thumbnail {
+    width: 185px;
+    height: 100%;
+    object-fit: cover;
+}
+
+.additional-details {
+    overflow-x: auto;
+}
+
+.thumb-img {
+    min-width: 185px;
+}
+
+@media (max-width: 767.98px) {
+    .auction-card {
+        grid-template-columns: 1fr;
+        grid-template-rows: 250px 1fr;
+    }
+
+    .listing {
+        grid-template-columns: 1fr;
+    }
+
+    .auction-title {
+        max-width: 350px;
+    }
+
+    #auction-attributes {
+        display: grid !important;
+        grid-template-columns: auto auto;
+    }
+
+    .additional-images {
+        /*grid-template-columns: 1fr;*/
+    }
+
+    .card-body {
+        padding: 0;
+    }
+
+    .bid-form {
+        position: relative;
+        margin-left: 15px;
+    }
+
+    .auctions-header-container {
+        grid-template-columns: 1fr;
+    }
+
+    #filter-form, #auction-filter-form {
+        flex-direction: column;
+    }
+
+    .product-detail-form {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media (min-width: 576px) {
+    .auction-title {
+        max-width: 460px;
+    }
+}
+
+@media (min-width: 768px) {
+    .auction-title {
+        max-width: 400px;
+    }
+}
+
+@media (max-width: 992px) {
+    .listing {
+        grid-template-columns: 1fr;
+    }
+
+    .auctions-header-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width: 992px) {
+    .auction-title {
+        max-width: 335px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .auction-title {
+        max-width: 515px;
+    }
+}
+
+@media (min-width: 1400px) {
+    .auction-title {
+        max-width: 659px;
+    }
+}
+
+.medium-zoom-overlay {
+    z-index: 1051; /* Ensure this is higher than your Bootstrap modal z-index */
+}
+
+.medium-zoom-image--opened {
+    z-index: 1052; /* Ensure this is higher than your Bootstrap modal z-index */
+}
+
+.modal-footer {
+    position: relative;
+}
+
+.modal-footer form{
+    position: absolute;
+    bottom: 90px;
+}
+
+
+
+
+
+

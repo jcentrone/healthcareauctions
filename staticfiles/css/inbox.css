@@ -1,0 +1,157 @@
+.message-thread {
+    height: 400px;
+    overflow-y: auto;
+    padding-right: 15px;
+    position: relative;
+}
+
+
+/* Customize scrollbar for WebKit browsers (Chrome, Safari) */
+.message-thread::-webkit-scrollbar {
+    height: 12px; /* Height for horizontal scrollbar */
+
+}
+
+.message-thread::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px; /* Ensure the track is rounded */
+}
+
+.message-thread::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px; /* Ensure the thumb is rounded */
+}
+
+.message-thread::-webkit-scrollbar-thumb:hover {
+    background: #555;
+    border-radius: 10px;
+}
+
+/* Customize scrollbar for Firefox */
+.message-thread {
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f1f1f1;
+    border-radius: 10px;
+}
+
+/* Customize scrollbar for IE and Edge */
+.message-thread {
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+}
+
+.new-message {
+    font-weight: 600;
+}
+
+.question {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+
+.message-reply {
+    width: fit-content;
+    max-width: 60%;
+}
+
+.text-end {
+    margin-left: auto;
+    background-color: #cce5ff; /* Light blue */
+    border-right: 5px solid #007bff; /* Bold blue border */
+    color: #000; /* Dark text for readability */
+}
+
+.text-start {
+    background-color: #d4edda; /* Light green */
+    border-left: 5px solid #28a745; /* Bold green border */
+    color: #000; /* Dark text for readability */
+}
+
+#messages-col {
+    position: relative;
+}
+
+#cs-button {
+    position: absolute;
+    bottom: 1rem;
+    width: calc(100% - 2rem);
+}
+
+.date-sent {
+    font-size: small;
+}
+
+#message-list li {
+    cursor: pointer;
+}
+
+.custom-archive-btn {
+    /* Border color similar to danger */
+    background-color: #f8d7da; /* A lighter shade of red */
+    color: #dc3545; /* Text color similar to danger */
+}
+
+.custom-archive-btn:hover {
+    background-color: #e6b7b9; /* Darker shade for hover effect */
+    /*border: 1px solid #dc3545 !important;*/
+    color: #dc3545;
+}
+
+.list-group {
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 0;
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f1f1f1;
+    border-radius: 10px;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+}
+
+.list-group-item.active {
+    background-color: #e2e3e5; /* A soft neutral color */
+    border-color: #ced4da;
+    color: #495057;
+}
+
+.list-group-item {
+    color: #495057;
+}
+
+/* Customize scrollbar for WebKit browsers (Chrome, Safari) */
+.list-group::-webkit-scrollbar {
+    height: 12px; /* Height for horizontal scrollbar */
+
+}
+
+.list-group::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px; /* Ensure the track is rounded */
+}
+
+.list-group::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px; /* Ensure the thumb is rounded */
+}
+
+.list-group::-webkit-scrollbar-thumb:hover {
+    background: #555;
+    border-radius: 10px;
+}
+
+@media (max-width: 768px) {
+    .list-group {
+        max-height: 200px;
+        margin-bottom: 60px;
+    }
+
+    #messages-col {
+        margin-bottom: 20px;
+    }
+
+    .col-md-8 {
+        padding: 0;
+    }
+
+
+}
