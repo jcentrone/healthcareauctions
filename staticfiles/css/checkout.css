@@ -19,6 +19,12 @@ label {
 .hidden-field{
     display:none;
 }
+.payment-logo{
+    /*max-width: 250px;*/
+    /*height: auto;*/
+    max-height: 35px;
+    margin-top: 15px;
+}
 
 @media (max-width: 768px) {
     .shipping-billing-container {

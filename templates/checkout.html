@@ -81,7 +81,7 @@
                                             {% if shipping_form.shipping_full_name.errors %}
                                                 <div class="text-danger">{{ shipping_form.shipping_full_name.errors }}</div>
                                             {% endif %}
-                                            
+
                                         </div>
                                     </div>
                                     <div class="form-group mb-3 row align-items-center order-contact-info">
@@ -179,10 +179,20 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <div class="form-group mb-3 row align-items-center order-contact-info">
+                                        <div class="col-4">
+                                            <label for="{{ shipping_form.shipping_country.id_for_label }}">Shipping
+                                                Country</label>
+                                        </div>
+                                        <div class="col-8">
+                                            {{ shipping_form.shipping_country }}
+                                            {% if shipping_form.shipping_country.errors %}
+                                                <div class="text-danger">{{ shipping_form.shipping_country.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-
-
                             <div class="col ps-5 bs-contact-container">
                                 <h4 class="text-muted mt-3">Bill To Contact</h4>
                                 <div class="ps-3 bs-contact-container">
@@ -292,6 +302,18 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <div class="form-group mb-3 row align-items-center order-contact-info">
+                                        <div class="col-4">
+                                            <label for="{{ billing_form.billing_country.id_for_label }}">Shipping
+                                                Country</label>
+                                        </div>
+                                        <div class="col-8">
+                                            {{ billing_form.billing_country }}
+                                            {% if billing_form.billing_country.errors %}
+                                                <div class="text-danger">{{ billing_form.billing_country.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -316,16 +338,16 @@
                         <div class="table p-3">
                             <div class="row fw-bold">
                                 <div class="col-6">Item</div>
-                                <div class="col-2 text-end">Quantity</div>
-                                <div class="col-2 text-end">Price</div>
+                                <div class="col-2 text-center">Quantity</div>
+                                <div class="col-2 text-start">Price</div>
                                 <div class="col-2 text-end">Total</div>
                             </div>
                             {% for item in cart.items.all %}
                                 <div class="row">
                                     <div class="col-6">{{ item.auction.title }}</div>
-                                    <div class="col-2 text-end">{{ item.quantity }}</div>
+                                    <div class="col-2 text-center">{{ item.quantity }}</div>
                                     <!-- Assuming 'quantity' is a field in CartItem model -->
-                                    <div class="col-2 text-end">${{ item.auction.buyItNowPrice }}</div>
+                                    <div class="col-2 text-start">${{ item.auction.buyItNowPrice }}</div>
                                     <!-- Adjust field name as needed -->
                                     <div class="col-2 text-end">${{ item.total_price }}</div>
                                 </div>
@@ -371,7 +393,7 @@
                     <div class="card-body">
                         <div class="form-group mb-3">
                             <label for="payment_method">Choose Payment Method</label>
-                            <select id="payment_method" class="form-control">
+                            <select id="payment_method" name="payment_method" class="form-control">
                                 <option value="credit-card">Credit Card</option>
                                 <option value="ach">ACH</option>
                                 <option value="zelle">Zelle</option>
@@ -379,6 +401,21 @@
                                 <option value="paypal">PayPal</option>
                                 <option value="cashapp">CashApp</option>
                             </select>
+                            <div id="cc-logo-container">
+                                <img class="payment-logo" src="{% static "images/credit-card-logos.png" %}">
+                            </div>
+                            <div id="zelle-logo-container">
+                                <img class="payment-logo" src="{% static "images/zelle-logo.png" %}">
+                            </div>
+                            <div id="venmo-logo-container">
+                                <img class="payment-logo" src="{% static "images/venmo-logo.png" %}">
+                            </div>
+                            <div id="paypal-logo-container">
+                                <img class="payment-logo" src="{% static "images/paypal-logo.png" %}">
+                            </div>
+                            <div id="cashapp-logo-container">
+                                <img class="payment-logo" src="{% static "images/cashapp-logo.png" %}">
+                            </div>
                         </div>
 
                         <div id="credit-card-form" class="payment-form">
@@ -469,40 +506,46 @@
                 // Set the value to the shipping email input field
                 $('#id_shipping_email').val(emailValue);
             });
+
+            $('#zelle-logo-container').hide();
+            $('#venmo-logo-container').hide();
+            $('#paypal-logo-container').hide();
+            $('#cashapp-logo-container').hide();
+
+
             $('#payment_method').on('change', function () {
                 let selectedMethod = $(this).val();
                 $('.payment-form').hide();
                 $('#' + selectedMethod + '-form').show();
+                if (selectedMethod == 'credit-card') {
+                    $('#cc-logo-container').show();
+                } else {
+                    $('#cc-logo-container').hide();
+                }
+                if (selectedMethod == 'zelle') {
+                    $('#zelle-logo-container').show();
+                } else {
+                    $('#zelle-logo-container').hide();
+                }
+                if (selectedMethod == 'venmo') {
+                    $('#venmo-logo-container').show();
+                } else {
+                    $('#venmo-logo-container').hide();
+                }
+                if (selectedMethod == 'paypal') {
+                    $('#paypal-logo-container').show();
+                } else {
+                    $('#paypal-logo-container').hide();
+                }
+                if (selectedMethod == 'cashapp') {
+                    $('#cashapp-logo-container').show();
+                } else {
+                    $('#cashapp-logo-container').hide();
+                }
             });
 
 
-            {#function applyCardMask() {#}
-            {#    let cardInput = $('#id_card_number');#}
-            {#    let cardValue = cardInput.val();#}
-            {##}
-            {##}
-            {#    if (cardValue.startsWith('3')) {#}
-            {#        cardInput.data('mask').remove();#}
-            {#        cardInput.unmask().mask("9999-999999-99999");#}
-            {#    } else {#}
-            {##}
-            {#        cardInput.unmask().mask("9999-9999-9999-9999");#}
-            {#    }#}
-            {#}#}
-                {##}
-                {#// Apply the mask when the page loads#}
-                {#applyCardMask();#}
-                {##}
-                {#// Apply the mask as the user types#}
-                {#$('#id_card_number').on('input', function () {#}
-                {#    applyCardMask();#}
-                {#})
-                    ;
-                    #}
-
-                }
-            )
-                ;
+        });
     </script>
     <script>
         $(document).ready(function () {

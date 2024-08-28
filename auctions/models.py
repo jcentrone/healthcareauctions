@@ -315,6 +315,9 @@ class CartItem(models.Model):
     def total_price(self):
         return self.auction.buyItNowPrice if self.auction.buyItNowPrice else 0
 
+    def quantity(self):
+        return self.auction.quantity_available if self.auction.quantity_available else 0
+
     def get_image(self):
         # Returns the first image associated with the auction
         return self.auction.get_images.first()
@@ -407,6 +410,7 @@ class Payment(models.Model):
     card_last_four = models.CharField(max_length=4, null=True, blank=True)
     encrypted_card_number = models.BinaryField('Card Number', null=True, blank=True)
     encrypted_expiration_date = models.BinaryField(null=True, blank=True)
+    encrypted_cvv_number = models.BinaryField(null=True, blank=True)
     payer_email = models.EmailField(null=True, blank=True)  # For PayPal/Zelle, etc.
     additional_info = models.JSONField(null=True, blank=True)  # For any other details, as JSON
 
@@ -433,6 +437,12 @@ class Payment(models.Model):
 
     def get_expiration_date(self):
         return self.decrypt_data(self.encrypted_expiration_date)
+
+    def set_cvv_number(self, cvv_number):
+        self.encrypted_cvv_number = self.encrypt_data(cvv_number)
+
+    def get_cvv(self):
+        return self.decrypt_data(self.encrypted_cvv_number)
 
 
 # MESSAGING

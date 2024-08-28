@@ -781,6 +781,8 @@ def download_excel(request):
 
 
 # ORDER MANAGEMENT
+from django.shortcuts import get_object_or_404
+
 @login_required
 def checkout(request):
     cart = request.user.cart
@@ -804,19 +806,17 @@ def checkout(request):
             'shipping_state': default_shipping_address.state,
             'shipping_zip_code': default_shipping_address.zip_code,
             'shipping_country': 'USA',
-
         })
 
     if default_billing_address:
         initial_data.update({
-            'billing_full_name': request.user.first_name + request.user.last_name,
+            'billing_full_name': f"{request.user.first_name} {request.user.last_name}",
             'billing_street_address': default_billing_address.street,
             'billing_apartment_suite': default_billing_address.suite,
             'billing_city': default_billing_address.city,
             'billing_state': default_billing_address.state,
             'billing_zip_code': default_billing_address.zip_code,
             'billing_country': "USA",
-
         })
 
     # Define forms for each payment type
@@ -828,17 +828,35 @@ def checkout(request):
     cashapp_form = CashAppForm(request.POST or None)
 
     shipping_method_form = ShippingMethodForm(request.POST or None, initial=initial_data)
-    shipping_form = ShippingAddressForm(request.POST or None, initial=initial_data)
-    billing_form = BillingAddressForm(request.POST or None, initial=initial_data)
 
     if request.method == 'POST':
+        print('POST Data', request.POST)
+        shipping_form = ShippingAddressForm(request.POST)
+        billing_form = BillingAddressForm(request.POST)
+
         if shipping_method_form.is_valid() and shipping_form.is_valid() and billing_form.is_valid():
             print("All forms are valid.")
-            order = shipping_method_form.save(commit=False)
-            order.user = request.user
-            order.cart = cart
-            order.total_amount = cart.total_cost()
-            order.save()
+
+            # Retrieve shipping method and special instructions from cleaned_data
+            shipping_method = shipping_method_form.cleaned_data.get('shipping_method')
+            special_instructions = shipping_method_form.cleaned_data.get('special_instructions')
+
+            # Check if an order already exists for the cart
+            order, created = Order.objects.get_or_create(
+                cart=cart,
+                defaults={
+                    'user': request.user,
+                    'total_amount': cart.total_cost(),
+                    'shipping_method': shipping_method,
+                    'special_instructions': special_instructions,
+                }
+            )
+
+            if not created:
+                print(f"Order already exists for cart {cart.id}. Using the existing order.")
+                order.shipping_method = shipping_method
+                order.special_instructions = special_instructions
+                order.save()
 
             # Save shipping and billing addresses
             shipping_address = shipping_form.save(commit=False)
@@ -849,40 +867,47 @@ def checkout(request):
             billing_address.order = order
             billing_address.save()
 
-            # Determine which payment method was used
+            # Retrieve the payment method from the POST data
             payment_method = request.POST.get('payment_method')
+
+            if not payment_method:
+                print("No payment method selected.")
+                return render(request, 'checkout.html', {
+                    'error_message': 'Please select a payment method.',
+                    'shipping_method_form': shipping_method_form,
+                    'shipping_form': shipping_form,
+                    'billing_form': billing_form,
+                    'credit_card_form': credit_card_form,
+                    'ach_form': ach_form,
+                    'zelle_form': zelle_form,
+                    'venmo_form': venmo_form,
+                    'paypal_form': paypal_form,
+                    'cashapp_form': cashapp_form,
+                    'cart': cart,
+                })
+
+            # Create Payment object after confirming payment method is provided
             payment = Payment.objects.create(order=order, payment_method=payment_method)
 
             # Process and save payment details
             if payment_method == 'credit-card' and credit_card_form.is_valid():
-                # Create or retrieve the payment instance
-                payment = Payment(order=order, payment_method='credit_card')
-
-                # Encrypt and save the card number and expiration date
                 card_number = credit_card_form.cleaned_data.get('card_number')
                 expiration_date = credit_card_form.cleaned_data.get('expiration_date')
-
+                cvv_number = credit_card_form.cleaned_data.get('cvv')
                 payment.set_card_number(card_number)
                 payment.set_expiration_date(expiration_date)
+                payment.set_cvv_number(cvv_number)
+                payment.payer_email = payment.encrypt_data(request.POST.get('billing_email'))
             elif payment_method == 'zelle' and zelle_form.is_valid():
                 payment.payer_email = payment.encrypt_data(zelle_form.cleaned_data.get('email'))
-                # Process Zelle payment
-
             elif payment_method == 'venmo' and venmo_form.is_valid():
-                payment.payer_email = payment.encrypt_data(venmo_form.cleaned_data.get('email'))
-                # Process Venmo payment
-
+                payment.payer_email = payment.encrypt_data(venmo_form.cleaned_data.get('venmo_username'))
             elif payment_method == 'paypal' and paypal_form.is_valid():
-                payment.payer_email = payment.encrypt_data(paypal_form.cleaned_data.get('email'))
-                # Process PayPal payment
-
+                payment.payer_email = payment.encrypt_data(paypal_form.cleaned_data.get('paypal_email'))
             elif payment_method == 'cashapp' and cashapp_form.is_valid():
-                payment.payer_email = payment.encrypt_data(cashapp_form.cleaned_data.get('email'))
-                # Process CashApp payment
+                payment.payer_email = payment.encrypt_data(cashapp_form.cleaned_data.get('cashapp_username'))
 
             payment.save()
-
-            # Handle the cart checkout logic here (e.g., marking auctions as sold, reducing inventory, etc.)
 
             return redirect('order_confirmation', order_id=order.id)
 
@@ -891,6 +916,10 @@ def checkout(request):
             print("Shipping Method Form Errors:", shipping_method_form.errors)
             print("Shipping Form Errors:", shipping_form.errors)
             print("Billing Form Errors:", billing_form.errors)
+
+    else:
+        shipping_form = ShippingAddressForm(initial=initial_data)
+        billing_form = BillingAddressForm(initial=initial_data)
 
     return render(request, 'checkout.html', {
         'shipping_method_form': shipping_method_form,
@@ -904,6 +933,10 @@ def checkout(request):
         'cashapp_form': cashapp_form,
         'cart': cart,
     })
+
+
+
+
 
 
 @login_required

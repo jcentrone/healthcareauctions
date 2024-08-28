@@ -21,13 +21,17 @@ DEBUG = False
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    'medical-auctions-757e84a2ed6f.herokuapp.com',  # Note: Remove the 'https://' prefix
+    'medical-auctions-757e84a2ed6f.herokuapp.com',
     '[::1]',
     '0.0.0.0',
     'healthcareauctions.com',
     'www.healthcareauctions.com',
     '*'
 ]
+
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = False
 
 CSRF_TRUSTED_ORIGINS = [
     'https://healthcareauctions.com',
@@ -57,13 +61,14 @@ CRONJOBS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+
 ]
 
 ROOT_URLCONF = 'config.urls'
