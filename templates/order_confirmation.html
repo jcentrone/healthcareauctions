@@ -17,10 +17,18 @@
         <p>Total: ${{ order.total_amount }}</p>
 
         <h3>Shipping Information</h3>
-        <p>{{ order.shipping_address.full_name }}</p>
-        <p>{{ order.shipping_address.street_address }}</p>
-        <p>{{ order.shipping_address.city }}, {{ order.shipping_address.state }} {{ order.shipping_address.zip_code }}</p>
-        <p>{{ order.shipping_address.country }}</p>
+        {# Debugging output to inspect the shipping address fields #}
+        {% if order.shipping_address %}
+            <p>Full Name: {{ order.shipping_address.shipping_full_name }}</p>
+            <p>Street Address: {{ order.shipping_address.shipping_street_address }}</p>
+            <p>Apartment/Suite: {{ order.shipping_address.shipping_apartment_suite }}</p>
+            <p>City: {{ order.shipping_address.shipping_city }}</p>
+            <p>State: {{ order.shipping_address.shipping_state }}</p>
+            <p>Zip Code: {{ order.shipping_address.shipping_zip_code }}</p>
+            <p>Country: {{ order.shipping_address.shipping_country }}</p>
+        {% else %}
+            <p>No shipping address available.</p>
+        {% endif %}
 
         <p>If you have any questions about your order, please contact us.</p>
     </div>

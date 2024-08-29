@@ -22,7 +22,8 @@ from django.views.decorators.http import require_POST
 from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, ProductDetailFormSet, MessageForm, \
     ShippingMethodForm, ShippingAddressForm, BillingAddressForm, CreditCardForm, ACHForm, ZelleForm, VenmoForm, \
     PayPalForm, CashAppForm
-from .models import Bid, Category, Image, User, Address, CartItem, Cart, ProductDetail, Message, Order, Payment
+from .models import Bid, Category, Image, User, Address, CartItem, Cart, ProductDetail, Message, Order, Payment, \
+    OrderItem
 from .utils.helpers import update_categories_from_fda
 from .utils.openai import get_chat_completion_request
 
@@ -781,8 +782,6 @@ def download_excel(request):
 
 
 # ORDER MANAGEMENT
-from django.shortcuts import get_object_or_404
-
 @login_required
 def checkout(request):
     cart = request.user.cart
@@ -857,6 +856,15 @@ def checkout(request):
                 order.shipping_method = shipping_method
                 order.special_instructions = special_instructions
                 order.save()
+
+            # Create OrderItems from the Cart Items
+            for item in cart.items.all():
+                OrderItem.objects.create(
+                    order=order,
+                    auction=item.auction,
+                    quantity=item.quantity(),
+                    price=item.total_price()
+                )
 
             # Save shipping and billing addresses
             shipping_address = shipping_form.save(commit=False)
@@ -933,9 +941,6 @@ def checkout(request):
         'cashapp_form': cashapp_form,
         'cart': cart,
     })
-
-
-
 
 
 

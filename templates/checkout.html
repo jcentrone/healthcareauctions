@@ -465,6 +465,8 @@
     <script src='{% static "js/checkout.js" %}'></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.maskedinput/1.4.1/jquery.maskedinput.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Masks and Tab Controls -->
     <script>
         $(document).ready(function () {
             $('#id_phone_number').mask("(999) 999-9999");
@@ -547,16 +549,22 @@
 
         });
     </script>
+    <!-- Payment Field Controls -->
     <script>
         $(document).ready(function () {
             function updateRequiredFields() {
                 // Clear all required attributes first
                 $('#credit-card-form input').removeAttr('required');
+                $('#credit-card-form input').removeClass('required');
                 $('#ach-form input').removeAttr('required');
                 $('#zelle-form input').removeAttr('required');
+                $('#zelle-form input').removeClass('required');
                 $('#venmo-form input').removeAttr('required');
+                $('#venmo-form input').removeClass('required');
                 $('#paypal-form input').removeAttr('required');
+                $('#paypal-form input').removeClass('required');
                 $('#cashapp-form input').removeAttr('required');
+                $('#cashapp-form input').removeClass('required');
 
                 // Get the selected payment method
                 let selectedMethod = $('#payment_method').val();
@@ -564,16 +572,21 @@
                 // Add required attribute to the relevant fields based on the selected method
                 if (selectedMethod === 'credit-card') {
                     $('#credit-card-form input').attr('required', 'required');
+                    $('#credit-card-form input').addClass('required');
                 } else if (selectedMethod === 'ach') {
                     $('#ach-form input').attr('required', 'required');
                 } else if (selectedMethod === 'zelle') {
                     $('#zelle-form input').attr('required', 'required');
+                    $('#zelle-form input').addClass('required');
                 } else if (selectedMethod === 'venmo') {
                     $('#venmo-form input').attr('required', 'required');
+                    $('#venmo-form input').addClass('required');
                 } else if (selectedMethod === 'paypal') {
                     $('#paypal-form input').attr('required', 'required');
+                    $('#paypal-form input').addClass('required');
                 } else if (selectedMethod === 'cashapp') {
                     $('#cashapp-form input').attr('required', 'required');
+                    $('#cashapp-form input').addClass('required');
                 }
             }
 
@@ -586,5 +599,78 @@
             updateRequiredFields();
         });
     </script>
+    <!-- Order Validation -->
+    <script>
+        $(document).ready(function () {
+            function validateAndSubmitForm() {
+                let missingFields = [];
 
+                // Loop through all required fields
+                $('.required').each(function () {
+                    if (!$(this).val()) {
+                        // Find the corresponding label using the input's id and the label's for attribute
+                        let label = $(`label[for="${$(this).attr('id')}"]`).text();
+                        missingFields.push({
+                            id: $(this).attr('id'),
+                            label: label || 'Field' // Fallback if label is not found
+                        });
+                    }
+                });
+
+                // If there are missing fields, show SweetAlert2
+                if (missingFields.length > 0) {
+                    let inputsHtml = '';
+                    // Generate HTML for SweetAlert2 input fields based on missing fields
+                    missingFields.forEach(field => {
+                        inputsHtml += `
+                            <div class="mb-2">
+                                <label class="text-body text-start w-100 fs-6 mb-1" for="swal-input-${field.id}">${field.label}</label>
+                                <input type="text" id="swal-input-${field.id}" class="form-control swal-input" placeholder="Enter ${field.label.toLowerCase()}">
+                            </div>
+                        `;
+                    });
+
+                    // Show SweetAlert2 with the inputs for missing fields
+                    Swal.fire({
+                        title: 'Please fill the required fields',
+                        html: inputsHtml,
+                        showCancelButton: true,
+                        focusConfirm: false,
+                        confirmButtonText: 'Submit',
+                        customClass: {
+                            popup: 'rounded',
+                            confirmButton: 'btn btn-primary me-2',  // Apply Bootstrap primary button class
+                            cancelButton: 'btn btn-secondary ms-2',   // Optional: Apply Bootstrap secondary button class
+                            title: 'h3 border-bottom pb-2 bg-light rounded-top',
+                        },
+                        buttonsStyling: false,  // Disable default SweetAlert2 styling for buttons
+                        preConfirm: () => {
+                            // Update form fields with SweetAlert2 inputs
+                            missingFields.forEach(field => {
+                                let value = $(`#swal-input-${field.id}`).val();
+                                if (value) {
+                                    $(`#${field.id}`).val(value);
+                                }
+                            });
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Submit the form after updating the fields
+                            $('form').submit();
+                        }
+                    });
+                } else {
+                    // Submit the form directly if no missing fields
+                    $('form').submit();
+                }
+            }
+
+            // Bind the validate function to the submit button click event
+            $('button[type="submit"]').on('click', function (e) {
+                e.preventDefault(); // Prevent the default form submission
+                validateAndSubmitForm(); // Call the validation function
+            });
+        });
+
+    </script>
 {% endblock %}

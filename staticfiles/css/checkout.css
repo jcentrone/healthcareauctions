@@ -12,18 +12,32 @@ label {
     flex-direction: row;
 
 }
+
 .required {
     border-left: 3px solid red;
 }
 
-.hidden-field{
-    display:none;
+.hidden-field {
+    display: none;
 }
-.payment-logo{
+
+.payment-logo {
     /*max-width: 250px;*/
     /*height: auto;*/
     max-height: 35px;
     margin-top: 15px;
+}
+
+.swal-label {
+    text-align: left;
+    font-size: var(--bs-body-font-size);
+    font-weight: var(--bs-body-font-weight);
+    line-height: var(--bs-body-line-height);
+    width: 100%;
+}
+
+#swal2-title{
+    font-size: 12px;
 }
 
 @media (max-width: 768px) {
@@ -61,27 +75,33 @@ label {
     .city-col {
         padding-right: calc(var(--bs-gutter-x) * .25);
     }
+
     .state-col {
         padding-left: calc(var(--bs-gutter-x) * .25);
         padding-right: calc(var(--bs-gutter-x) * .25);
     }
+
     .zip-col {
         padding-left: calc(var(--bs-gutter-x) * .25);
     }
-    .nav-tabs{
+
+    .nav-tabs {
         display: none;
     }
 
-    #checkoutTabContent{
+    #checkoutTabContent {
         overflow-y: auto;
     }
-    #confirmation{
+
+    #confirmation {
         min-width: 700px;
     }
-    p.position-absolute.bottom-0.end-0.me-3{
+
+    p.position-absolute.bottom-0.end-0.me-3 {
         margin-left: 25px;
     }
-    .total-column{
+
+    .total-column {
         width: 100px;
     }
 }
