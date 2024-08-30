@@ -158,8 +158,9 @@
                     <div class="nav-item pe-1 mx-1">
                         <a class='nav-link' href="{% url 'view_cart' %}">
                             <i class="fa-solid fa-cart-shopping"></i>
-                            <span class='cart badge rounded-pill bg-danger badge-counter light'>{{ cart_count }} </span>
-
+                            {% if cart_count > 0 %}
+                                <span class='cart badge rounded-pill bg-danger badge-counter light'>{{ cart_count }} </span>
+                            {% endif %}
                         </a>
                     </div>
                     <!-- Nav Item - Alerts -->

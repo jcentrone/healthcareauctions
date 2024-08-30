@@ -882,17 +882,19 @@ def checkout(request):
                 payment.set_card_number(card_number)
                 payment.set_expiration_date(expiration_date)
                 payment.set_cvv_number(cvv_number)
-                payment.payer_email = payment.encrypt_data(request.POST.get('billing_email'))
             elif payment_method == 'zelle' and zelle_form.is_valid():
-                payment.payer_email = payment.encrypt_data(zelle_form.cleaned_data.get('email'))
+                payment.payer_email = zelle_form.cleaned_data.get('email')
             elif payment_method == 'venmo' and venmo_form.is_valid():
-                payment.payer_email = payment.encrypt_data(venmo_form.cleaned_data.get('venmo_username'))
+                payment.payer_email = venmo_form.cleaned_data.get('venmo_username')
             elif payment_method == 'paypal' and paypal_form.is_valid():
-                payment.payer_email = payment.encrypt_data(paypal_form.cleaned_data.get('paypal_email'))
+                payment.payer_email = paypal_form.cleaned_data.get('paypal_email')
             elif payment_method == 'cashapp' and cashapp_form.is_valid():
-                payment.payer_email = payment.encrypt_data(cashapp_form.cleaned_data.get('cashapp_username'))
+                payment.payer_email = cashapp_form.cleaned_data.get('cashapp_username')
 
             payment.save()
+
+            # Clear the user's cart after the order is successfully placed
+            cart.items.all().delete()
 
             # Serialize the order
             order_data = model_to_dict(order)
