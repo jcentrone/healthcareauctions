@@ -480,13 +480,13 @@
         </form>
     </div>
 
-    <link href='{% static "css/checkout.css" %}' rel='stylesheet'>
+    
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.maskedinput/1.4.1/jquery.maskedinput.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/payform@1.4.0/dist/payform.min.js"></script>
     <script src='{% static "js/checkout.js" %}'></script>
-        
+        <link href='{% static "css/checkout.css" %}' rel='stylesheet'>
     <!-- Masks and Tab Controls -->
     <script>
         $(document).ready(function () {
@@ -623,75 +623,221 @@
     <!-- Order Validation -->
     <script>
         $(document).ready(function () {
-            function validateAndSubmitForm() {
-                let missingFields = [];
+    function validateAndSubmitForm() {
+        let missingFields = [];
 
-                // Loop through all required fields
-                $('.required').each(function () {
-                    if (!$(this).val()) {
-                        // Find the corresponding label using the input's id and the label's for attribute
-                        let label = $(`label[for="${$(this).attr('id')}"]`).text();
-                        missingFields.push({
-                            id: $(this).attr('id'),
-                            label: label || 'Field' // Fallback if label is not found
-                        });
-                    }
+        // Loop through all required fields
+        $('.required').each(function () {
+            if (!$(this).val()) {
+                // Find the corresponding label using the input's id and the label's for attribute
+                let label = $(`label[for="${$(this).attr('id')}"]`).text();
+                missingFields.push({
+                    id: $(this).attr('id'),
+                    label: label || 'Field' // Fallback if label is not found
                 });
-
-                // If there are missing fields, show SweetAlert2
-                if (missingFields.length > 0) {
-                    let inputsHtml = '';
-                    // Generate HTML for SweetAlert2 input fields based on missing fields
-                    missingFields.forEach(field => {
-                        inputsHtml += `
-                            <div class="mb-2">
-                                <label class="text-body text-start w-100 fs-6 mb-1" for="swal-input-${field.id}">${field.label}</label>
-                                <input type="text" id="swal-input-${field.id}" class="form-control swal-input" placeholder="Enter ${field.label.toLowerCase()}">
-                            </div>
-                        `;
-                    });
-
-                    // Show SweetAlert2 with the inputs for missing fields
-                    Swal.fire({
-                        title: 'Please fill the required fields',
-                        html: inputsHtml,
-                        showCancelButton: true,
-                        focusConfirm: false,
-                        confirmButtonText: 'Submit',
-                        customClass: {
-                            popup: 'rounded',
-                            confirmButton: 'btn btn-primary me-2',  // Apply Bootstrap primary button class
-                            cancelButton: 'btn btn-secondary ms-2',   // Optional: Apply Bootstrap secondary button class
-                            title: 'h3 border-bottom pb-2 bg-light rounded-top',
-                        },
-                        buttonsStyling: false,  // Disable default SweetAlert2 styling for buttons
-                        preConfirm: () => {
-                            // Update form fields with SweetAlert2 inputs
-                            missingFields.forEach(field => {
-                                let value = $(`#swal-input-${field.id}`).val();
-                                if (value) {
-                                    $(`#${field.id}`).val(value);
-                                }
-                            });
-                        }
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // Submit the form after updating the fields
-                            $('form').submit();
-                        }
-                    });
-                } else {
-                    // Submit the form directly if no missing fields
-                    $('form').submit();
-                }
             }
-
-            // Bind the validate function to the submit button click event
-            $('button[type="submit"]').on('click', function (e) {
-                e.preventDefault(); // Prevent the default form submission
-                validateAndSubmitForm(); // Call the validation function
-            });
         });
+
+        // If there are missing fields, show SweetAlert2
+        if (missingFields.length > 0) {
+            let inputsHtml = '';
+            // Generate HTML for SweetAlert2 input fields based on missing fields
+            missingFields.forEach(field => {
+                inputsHtml += `
+                    <div class="mb-2">
+                        <label class="text-body text-start w-100 fs-6 mb-1" for="swal-input-${field.id}">${field.label}</label>
+                        <input type="text" id="swal-input-${field.id}" class="form-control swal-input" placeholder="Enter ${field.label.toLowerCase()}">
+                    </div>
+                `;
+            });
+
+            // Show SweetAlert2 with the inputs for missing fields
+            Swal.fire({
+                title: 'Please fill the required fields',
+                html: inputsHtml,
+                showCancelButton: true,
+                focusConfirm: false,
+                confirmButtonText: 'Submit',
+                customClass: {
+                    popup: 'rounded',
+                    confirmButton: 'btn btn-primary me-2',  // Apply Bootstrap primary button class
+                    cancelButton: 'btn btn-secondary ms-2',   // Optional: Apply Bootstrap secondary button class
+                    title: 'h3 border-bottom pb-2 bg-light rounded-top',
+                },
+                buttonsStyling: false,  // Disable default SweetAlert2 styling for buttons
+                preConfirm: () => {
+                    // Update form fields with SweetAlert2 inputs
+                    missingFields.forEach(field => {
+                        let value = $(`#swal-input-${field.id}`).val();
+                        if (value) {
+                            $(`#${field.id}`).val(value);
+                        }
+                    });
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Submit the form via AJAX after updating the fields
+                    submitFormViaAjax();
+                }
+            });
+        } else {
+            // No missing fields, submit the form via AJAX
+            submitFormViaAjax();
+        }
+    }
+
+  function submitFormViaAjax() {
+    let form = $('form');  // Reference to the form
+    let formData = form.serialize();  // Serialize the form data
+
+    $.ajax({
+        type: 'POST',
+        url: form.attr('action'),  // Use the form's action attribute as the URL
+        data: formData,
+        dataType: 'json',
+        success: function (response) {
+    console.log('Response received:', response);  // Debugging line
+
+    if (response.status === 'success') {
+        const order = response.order;
+
+        // Check if order exists and has the expected structure
+        if (order && order.items && order.items.length > 0) {
+            // Generate order details HTML
+            let orderDetailsHtml = `
+                <div id="order-confirmation-content">
+                    <h2 class="w-100 text-center fw-bold pb-3 mb-3 border-bottom">Thank you for your order!</h2>
+                    <h3 class="w-100 text-start" style="margin-top: 20px; font-weight: bold;">Shipping Information</h3>
+                    ${order.shipping_address ? `
+                        <div class="row">
+                            <div class="col-auto text-start">
+                                <div>${order.shipping_address.shipping_full_name}</div> 
+                                <div>${order.shipping_address.shipping_street_address}, ${order.shipping_address.shipping_apartment_suite}</div>
+
+                                <div class="row"> 
+                                    <div class="col-auto">${order.shipping_address.shipping_city},</div>
+                                    <div class="col-auto">${order.shipping_address.shipping_state}</div>
+                                    <div class="col-auto">${order.shipping_address.shipping_zip_code}</div>
+                                </div>
+                                <div>${order.shipping_address.shipping_country}</div>
+                            </div>
+                        </div>
+                    ` : `<p>No shipping address available.</p>`}
+            
+
+                 <h3 class="w-100 text-start" style="margin-top: 20px; font-weight: bold;">Order Summary</h3>
+                <ul style="list-style-type: none; padding: 0;">
+            `;
+
+            order.items.forEach(item => {
+                orderDetailsHtml += `
+                    <li style="border-bottom: 1px solid #ccc; padding: 10px 0;">
+                        <div class="row">
+                            <div class="col-2 text-center">Quantity</div>
+                            <div class="col-8 text-start">Description</div>
+                            <div class="col-2 text-end">Price</div>
+                        </div>
+                    </li>
+                    <li style="border-bottom: 1px solid #ccc; padding: 10px 0;">
+                        <div class="row">
+                            <div class="col-2 text-center">${item.quantity}</div>
+                            <div class="col-8 text-start">${item.auction_title}</div>
+                            <div class="col-2 text-end">$${item.price}</div>
+                        </div>
+                    </li>
+                `;
+            });
+            orderDetailsHtml += `
+                </ul>
+                <p style="font-weight: bold; text-align: right; margin-top: 20px;">Total: $${order.total_amount}</p>
+
+                <p class="text-start">Your order number is <strong>${order.id}</strong>.</p>
+                <p class="text-start">You will receive an email confirmation shortly at <strong>${order.email}</strong>.</p>
+                <p class="text-start">If you have any questions about your order, please <a href="{% url 'inbox' %}" target="_blank">contact us</a>.</p>
+            </div>`;
+
+            // Display order confirmation in SweetAlert2
+            Swal.fire({
+                title: '',
+                html: orderDetailsHtml,
+                icon: 'success',
+                showCancelButton: true,
+                confirmButtonText: 'OK',
+                cancelButtonText: 'Print',
+                customClass: {
+                    confirmButton: 'btn btn-primary me-2',
+                    cancelButton: 'btn btn-secondary ms-2',
+                    popup: 'custom-swal-width'
+                },
+                buttonsStyling: false,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Redirect to order confirmation page or any other action
+                    window.location.href = `/auction/active`;
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    // Handle print action
+                    printOrderConfirmation();
+                }
+            });
+        } else {
+            console.error('Order data is missing or invalid:', order);  // Debugging line
+        }
+    } else if (response.status === 'error') {
+        Swal.fire({
+            title: 'Error',
+            text: response.message,
+            icon: 'error',
+            confirmButtonText: 'OK',
+            customClass: {
+                confirmButton: 'btn btn-primary'
+            },
+            buttonsStyling: false
+        });
+    }
+},
+
+        error: function (xhr, status, error) {
+            Swal.fire({
+                title: 'Submission Failed',
+                text: 'There was an error processing your order. Please try again.',
+                icon: 'error',
+                confirmButtonText: 'OK',
+                customClass: {
+                    confirmButton: 'btn btn-primary'
+                },
+                buttonsStyling: false
+            });
+        }
+    });
+}
+
+function printOrderConfirmation() {
+    const orderContent = document.getElementById('order-confirmation-content').innerHTML;
+    const printWindow = window.open('', '', 'height=600,width=800');
+    printWindow.document.write('<html><head><title>Order Confirmation</title>');
+    printWindow.document.write('<link rel="stylesheet" href="{% static "css/checkout.css" %}" type="text/css"/>'); // Adjust the path to your CSS file
+    printWindow.document.write('<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" type="text/css"/>'); // Bootstrap CDN
+    printWindow.document.write('</head><body >');
+    printWindow.document.write(orderContent);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+    
+    // Navigate to auction/active after a slight delay
+    setTimeout(() => {
+        window.location.href = '/auction/active';
+    }, 1000); // Adjust the delay time as needed
+}
+
+
+
+    // Bind the validate function to the submit button click event
+    $('button[type="submit"]').on('click', function (e) {
+        e.preventDefault(); // Prevent the default form submission
+        validateAndSubmitForm(); // Call the validation function
+    });
+});
+
 
     </script>
 {% endblock %}

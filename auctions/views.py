@@ -11,6 +11,7 @@ from django.core.files.storage import get_storage_class
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import IntegrityError
 from django.db.models import Q, Case, When, BooleanField, DecimalField, Max, F
+from django.forms import model_to_dict
 from django.http import HttpResponseRedirect, JsonResponse, FileResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
@@ -829,18 +830,13 @@ def checkout(request):
     shipping_method_form = ShippingMethodForm(request.POST or None, initial=initial_data)
 
     if request.method == 'POST':
-        print('POST Data', request.POST)
         shipping_form = ShippingAddressForm(request.POST)
         billing_form = BillingAddressForm(request.POST)
 
         if shipping_method_form.is_valid() and shipping_form.is_valid() and billing_form.is_valid():
-            print("All forms are valid.")
-
-            # Retrieve shipping method and special instructions from cleaned_data
             shipping_method = shipping_method_form.cleaned_data.get('shipping_method')
             special_instructions = shipping_method_form.cleaned_data.get('special_instructions')
 
-            # Check if an order already exists for the cart
             order, created = Order.objects.get_or_create(
                 cart=cart,
                 defaults={
@@ -852,12 +848,10 @@ def checkout(request):
             )
 
             if not created:
-                print(f"Order already exists for cart {cart.id}. Using the existing order.")
                 order.shipping_method = shipping_method
                 order.special_instructions = special_instructions
                 order.save()
 
-            # Create OrderItems from the Cart Items
             for item in cart.items.all():
                 OrderItem.objects.create(
                     order=order,
@@ -866,7 +860,6 @@ def checkout(request):
                     price=item.total_price()
                 )
 
-            # Save shipping and billing addresses
             shipping_address = shipping_form.save(commit=False)
             shipping_address.order = order
             shipping_address.save()
@@ -875,29 +868,13 @@ def checkout(request):
             billing_address.order = order
             billing_address.save()
 
-            # Retrieve the payment method from the POST data
             payment_method = request.POST.get('payment_method')
 
             if not payment_method:
-                print("No payment method selected.")
-                return render(request, 'checkout.html', {
-                    'error_message': 'Please select a payment method.',
-                    'shipping_method_form': shipping_method_form,
-                    'shipping_form': shipping_form,
-                    'billing_form': billing_form,
-                    'credit_card_form': credit_card_form,
-                    'ach_form': ach_form,
-                    'zelle_form': zelle_form,
-                    'venmo_form': venmo_form,
-                    'paypal_form': paypal_form,
-                    'cashapp_form': cashapp_form,
-                    'cart': cart,
-                })
+                return JsonResponse({'status': 'error', 'message': 'Please select a payment method.'})
 
-            # Create Payment object after confirming payment method is provided
             payment = Payment.objects.create(order=order, payment_method=payment_method)
 
-            # Process and save payment details
             if payment_method == 'credit-card' and credit_card_form.is_valid():
                 card_number = credit_card_form.cleaned_data.get('card_number')
                 expiration_date = credit_card_form.cleaned_data.get('expiration_date')
@@ -917,13 +894,26 @@ def checkout(request):
 
             payment.save()
 
-            return redirect('order_confirmation', order_id=order.id)
+            # Serialize the order
+            order_data = model_to_dict(order)
+            order_data['items'] = []
+            for item in order.items.all():
+                item_data = model_to_dict(item)
+                item_data['auction_title'] = item.auction.title
+                order_data['items'].append(item_data)
+            order_data['shipping_address'] = model_to_dict(shipping_address)
+            order_data['billing_address'] = model_to_dict(billing_address)
+            order_data['email'] = request.user.email
+
+            return JsonResponse({'status': 'success', 'order': order_data})
 
         else:
-            print("Form errors:")
-            print("Shipping Method Form Errors:", shipping_method_form.errors)
-            print("Shipping Form Errors:", shipping_form.errors)
-            print("Billing Form Errors:", billing_form.errors)
+            errors = {
+                'shipping_method_form': shipping_method_form.errors,
+                'shipping_form': shipping_form.errors,
+                'billing_form': billing_form.errors,
+            }
+            return JsonResponse({'status': 'error', 'message': 'Form validation failed.', 'errors': errors})
 
     else:
         shipping_form = ShippingAddressForm(initial=initial_data)
@@ -941,7 +931,6 @@ def checkout(request):
         'cashapp_form': cashapp_form,
         'cart': cart,
     })
-
 
 
 @login_required
