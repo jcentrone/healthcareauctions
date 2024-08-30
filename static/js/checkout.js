@@ -70,9 +70,7 @@ function disableEnableSubmit() {
 
     // Workaround for handling clicks on a disabled button
     parentElement.addEventListener('click', function (event) {
-        console.log(event.target );
-        if (event.target === submitButton) {
-            console.log('Disabled submit button clicked.');
+        if (event.target === parentElement) {
             event.preventDefault();  // Prevent any default action
             agreeTermsCheckbox.focus();  // Set focus to the checkbox
 
@@ -80,14 +78,14 @@ function disableEnableSubmit() {
             const tooltip = document.createElement('div');
             tooltip.innerText = 'Please accept the terms and conditions';
             tooltip.style.position = 'absolute';
-            tooltip.style.backgroundColor = '#ffc107';
-            tooltip.style.padding = '5px 10px';
+            tooltip.style.padding = '10px';
             tooltip.style.borderRadius = '5px';
             tooltip.style.color = '#000';
             tooltip.style.fontSize = '12px';
+            tooltip.classList.add('bg-info');
 
             const checkboxRect = agreeTermsCheckbox.getBoundingClientRect();
-            tooltip.style.top = `${window.scrollY + checkboxRect.top - 30}px`;
+            tooltip.style.top = `${window.scrollY + checkboxRect.top - 45}px`;
             tooltip.style.left = `${window.scrollX + checkboxRect.left}px`;
 
             document.body.appendChild(tooltip);
@@ -95,7 +93,7 @@ function disableEnableSubmit() {
             // Remove the tooltip after 3 seconds
             setTimeout(() => {
                 tooltip.remove();
-            }, 3000);
+            }, 4000);
         }
     });
 }
