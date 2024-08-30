@@ -25,7 +25,7 @@
                     </button>
                 </li>
             </ul>
-
+            <!-- Tabs Content -->
             <div class="tab-content card " id="checkoutTabContent">
                 <!-- Contact & Shipping -->
                 <div class="tab-pane fade show active" id="contact" role="tabpanel" aria-labelledby="contact-tab">
@@ -391,6 +391,7 @@
                         <h3 class="m-0">Payment Method</h3>
                     </div>
                     <div class="card-body">
+                        <!-- Payment Method -->
                         <div class="form-group mb-3">
                             <label for="payment_method">Choose Payment Method</label>
                             <select id="payment_method" name="payment_method" class="form-control">
@@ -417,25 +418,41 @@
                                 <img class="payment-logo" src="{% static "images/cashapp-logo.png" %}">
                             </div>
                         </div>
-
+                        <!-- Credit Card Form -->
                         <div id="credit-card-form" class="payment-form">
-                            {{ credit_card_form.as_p }}
+                            <div class="form-group" id="card-number-field">
+                                <label for="{{ credit_card_form.card_number.id_for_label }}">{{ credit_card_form.card_number.label }}</label>
+                                {{ credit_card_form.card_number }}
+                            </div>
+                            <div class="form-group" id="expiration-date">
+                                <label for="{{ credit_card_form.expiration_date.id_for_label }}">{{ credit_card_form.expiration_date.label }}</label>
+                                {{ credit_card_form.expiration_date }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ credit_card_form.cvv.id_for_label }}">{{ credit_card_form.cvv.label }}</label>
+                                {{ credit_card_form.cvv }}
+                            </div>
                         </div>
+                        <!-- ACH Form -->
                         <div id="ach-form" class="payment-form" style="display: none;">
                             <p class="ms-3">ACH instructions will be sent to your email address along with the order
                                 confirmation.
                                 Please check your inbox for further details on how to complete your payment.</p>
 
                         </div>
+                        <!-- Zelle Form -->
                         <div id="zelle-form" class="payment-form" style="display: none;">
                             {{ zelle_form.as_p }}
                         </div>
+                        <!-- Venmo Form -->
                         <div id="venmo-form" class="payment-form" style="display: none;">
                             {{ venmo_form.as_p }}
                         </div>
+                        <!-- Paypal Form -->
                         <div id="paypal-form" class="payment-form" style="display: none;">
                             {{ paypal_form.as_p }}
                         </div>
+                        <!-- Cashapp Form -->
                         <div id="cashapp-form" class="payment-form" style="display: none;">
                             {{ cashapp_form.as_p }}
                         </div>
@@ -454,7 +471,9 @@
                         <button type="button" class="btn btn-secondary" data-bs-toggle="tab"
                                 data-bs-target="#confirmation">Back
                         </button>
-                        <button type="submit" class="btn btn-primary">Place Order</button>
+                        <div>
+                            <button type="submit" class="btn btn-primary" id="orderButton">Place Order</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -462,17 +481,19 @@
     </div>
 
     <link href='{% static "css/checkout.css" %}' rel='stylesheet'>
-    <script src='{% static "js/checkout.js" %}'></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.maskedinput/1.4.1/jquery.maskedinput.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/payform@1.4.0/dist/payform.min.js"></script>
+    <script src='{% static "js/checkout.js" %}'></script>
+        
     <!-- Masks and Tab Controls -->
     <script>
         $(document).ready(function () {
             $('#id_phone_number').mask("(999) 999-9999");
             $('#id_shipping_phone_number').mask("(999) 999-9999");
             $('#id_billing_phone_number').mask("(999) 999-9999");
-            $('#id_expiration_date').mask("99/99");
+            
 
             // Handle tab navigation
             $('#checkoutTabs button').on('click', function () {

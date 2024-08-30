@@ -32,6 +32,7 @@
     <orderEntry type="library" name="jquery.maskedinput" level="application" />
     <orderEntry type="library" name="jquery.maskedinput" level="application" />
     <orderEntry type="library" name="jquery" level="application" />
+    <orderEntry type="library" name="payform" level="application" />
   </component>
   <component name="PyDocumentationSettings">
     <option name="format" value="PLAIN" />
