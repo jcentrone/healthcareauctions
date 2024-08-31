@@ -335,5 +335,9 @@ footer .social-media a:hover {
         flex-direction: column;
     }
 
+    #header-nav-conatiner{
+        width:100% !important;
+    }
+
 
 }

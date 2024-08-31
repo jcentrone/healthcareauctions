@@ -435,6 +435,7 @@ def active_auctions_view(request, auction_id=None):
     time_filter = request.GET.get('time_filter')
     sort_by = request.GET.get('sort_by')
     manufacturer_filter = request.GET.get('mfg_filter')
+    expired_filter = request.GET.get('expired_filter')
     my_auctions = request.GET.get('my_auctions')
     search_query = request.GET.get('search_query')
     auction_type = request.GET.get('auction_type')
@@ -473,6 +474,13 @@ def active_auctions_view(request, auction_id=None):
 
     if category_name:
         auctions = auctions.filter(category__category_name=category_name)
+
+    if expired_filter:
+        today = timezone.now().date()
+        if expired_filter == 'expired':
+            auctions = auctions.filter(product_details__expiration_date__lt=today)
+        elif expired_filter == 'not_expired':
+            auctions = auctions.filter(product_details__expiration_date__gte=today)
 
     # Apply time filters using a dictionary mapping
     time_deltas = {
@@ -544,7 +552,8 @@ def active_auctions_view(request, auction_id=None):
         'sort_by': sort_by,
         'manufacturer_filter': manufacturer_filter,
         'my_auctions': my_auctions,
-        # 'has_active_auctions': Auction.objects.filter(creator=request.user, active=True).exists(),
+        'expired_filter': expired_filter,
+        'has_active_auctions': Auction.objects.filter(creator=request.user, active=True).exists(),
     })
 
 
@@ -562,7 +571,10 @@ def get_auction_product_details(request, auction_id):
     # Convert product details to a list of dictionaries
     product_details_list = list(product_details.values())
 
-    return JsonResponse({'product_details': product_details_list})
+    return JsonResponse({
+        'product_details': product_details_list,
+        'contains_expired_items': auction.contains_expired_items(),
+    })
 
 
 @login_required

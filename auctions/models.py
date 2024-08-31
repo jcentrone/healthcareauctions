@@ -136,6 +136,7 @@ class Auction(models.Model):
         ('VIAL', 'Vial'),
         ('OTHER', 'Other'),
     ]
+
     title = models.CharField('Title', max_length=100)
     description = models.TextField(max_length=2000, null=False, default='')
     creator = models.ForeignKey(User, on_delete=models.PROTECT, related_name='auction_creator')
@@ -235,14 +236,9 @@ class Auction(models.Model):
         # Returns the first image associated with the auction
         return self.get_images.first()
 
-
-class AuctionView(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='auction_views')
-    auction = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name='views')
-    viewed_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f'{self.user.username} viewed Auction #{self.auction.id} on {self.viewed_at}'
+    def contains_expired_items(self):
+        today = timezone.now().date()
+        return any(detail.expiration_date and detail.expiration_date < today for detail in self.product_details.all())
 
 
 class ProductDetail(models.Model):
@@ -255,6 +251,14 @@ class ProductDetail(models.Model):
 
     def __str__(self):
         return f'ProductDetail #{self.id} for Auction #{self.auction.id}'
+
+class AuctionView(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='auction_views')
+    auction = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name='views')
+    viewed_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user.username} viewed Auction #{self.auction.id} on {self.viewed_at}'
 
 
 class Image(models.Model):

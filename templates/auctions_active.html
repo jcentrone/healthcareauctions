@@ -20,286 +20,412 @@
                 {% endif %}
             </ol>
         </nav>
-        <div class="auctions-header-container">
-            <!-- Page Heading -->
-            <h1 class='h3 mb-4 text-gray-800'>{{ title|titlecase }} - {{ auctions_count }} Results</h1>
-            <!-- Filters and Sorting -->
+        <!-- Page Heading -->
+        <h1 class='h3 mb-4 text-gray-800'>{{ title|titlecase }} - {{ auctions_count }} Results</h1>
 
-            <div class="container mt-4">
-                <!-- Filter Button for Small Screens -->
-                <button class="btn btn-outline-primary d-md-none mb-3" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">
-                    <i class="fas fa-filter"></i> Filter
-                </button>
-
-                <!-- Filter Section -->
-                <div class="collapse d-md-block filters" id="filterCollapse">
-                    <form id="auction-filter-form" method="get" class="form-inline">
-
-                        <!-- Filter By Time -->
-                        <div class="form-group mb-2">
-                            <div class="dropdown">
-                                <button class="btn border dropdown-toggle d-flex align-items-center justify-content-between"
-                                        type="button" id="time-filter"
-                                        data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    Filter By: All Times
-                                </button>
-                                <div class="dropdown-menu" aria-labelledby="time-filter">
-                                    <a class="dropdown-item" href="#" data-value="">All Times</a>
-                                    <a class="dropdown-item" href="#" data-value="today">Today</a>
-                                    <a class="dropdown-item" href="#" data-value="tomorrow">Tomorrow</a>
-                                    <a class="dropdown-item" href="#" data-value="next_3_days">Next 3 Days</a>
-                                    <a class="dropdown-item" href="#" data-value="">Reset</a>
+        <div class="active-auctions-container">
+            <div class="auctions-header-container">
+                <!-- Filters and Sorting -->
+                <div class="container pt-4" id="filter-container">
+                    <!-- Filter Button for Small Screens -->
+                    <button class="btn btn-outline-primary d-md-none mb-3" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                    <!-- Filter Section -->
+                    <div class="collapse d-md-block filters" id="filterCollapse">
+                        <form id="auction-filter-form" method="get" class="form-inline">
+                            <!-- Filter By Time -->
+                            <div class="form-group mb-2">
+                                <h5>Filter By</h5>
+                                <div class="dropdown">
+                                    <button class="btn border dropdown-toggle d-flex align-items-center justify-content-between"
+                                            type="button" id="time-filter"
+                                            data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        All Times
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="time-filter">
+                                        <a class="dropdown-item" href="#" data-value="">All Times</a>
+                                        <a class="dropdown-item" href="#" data-value="today">Today</a>
+                                        <a class="dropdown-item" href="#" data-value="tomorrow">Tomorrow</a>
+                                        <a class="dropdown-item" href="#" data-value="next_3_days">Next 3 Days</a>
+                                        <a class="dropdown-item" href="#" data-value="">Reset</a>
+                                    </div>
                                 </div>
+                                <input type="hidden" name="time_filter" id="time-filter-value">
                             </div>
-                            <input type="hidden" name="time_filter" id="time-filter-value">
-                        </div>
-                        <!-- Sort By -->
-                        <div class="form-group mb-2">
-                            <div class="dropdown">
-                                <button class="btn border dropdown-toggle d-flex align-items-center justify-content-between"
-                                        type="button" id="sort-by"
-                                        data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    Sort By: Best Match
-                                </button>
-                                <div class="dropdown-menu" aria-labelledby="sort-by">
-                                    <a class="dropdown-item" href="#" data-value="">Best Match</a>
-                                    <a class="dropdown-item" href="#" data-value="ending_soonest">Ending Soonest</a>
-                                    <a class="dropdown-item" href="#" data-value="newly_listed">Newly Listed</a>
-                                    <a class="dropdown-item" href="#" data-value="price_highest">Price Highest</a>
-                                    <a class="dropdown-item" href="#" data-value="price_lowest">Price Lowest</a>
-                                    <a class="dropdown-item" href="#" data-value="fewest_bids">Fewest Bids</a>
-                                    <a class="dropdown-item" href="#" data-value="most_bids">Most Bids</a>
-                                    <a class="dropdown-item" href="#" data-value="">Reset</a>
+                            <!-- Sort By -->
+                            <div class="form-group mb-2">
+                                <h5>Sort By</h5>
+                                <div class="dropdown">
+                                    <button class="btn border dropdown-toggle d-flex align-items-center justify-content-between"
+                                            type="button" id="sort-by"
+                                            data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Best Match
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="sort-by">
+                                        <a class="dropdown-item" href="#" data-value="">Best Match</a>
+                                        <a class="dropdown-item" href="#" data-value="ending_soonest">Ending Soonest</a>
+                                        <a class="dropdown-item" href="#" data-value="newly_listed">Newly Listed</a>
+                                        <a class="dropdown-item" href="#" data-value="price_highest">Price Highest</a>
+                                        <a class="dropdown-item" href="#" data-value="price_lowest">Price Lowest</a>
+                                        <a class="dropdown-item" href="#" data-value="fewest_bids">Fewest Bids</a>
+                                        <a class="dropdown-item" href="#" data-value="most_bids">Most Bids</a>
+                                        <a class="dropdown-item" href="#" data-value="">Reset</a>
+                                    </div>
                                 </div>
+                                <input type="hidden" name="sort_by" id="sort-by-value">
                             </div>
-                            <input type="hidden" name="sort_by" id="sort-by-value">
-                        </div>
-                        <!-- Manufacturer Filter -->
-                        <div class="form-group mb-2">
-                            <div class="dropdown">
-                                <button class="btn border dropdown-toggle d-flex align-items-center justify-content-between"
-                                        type="button" id="mfg-filter"
-                                        data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    Select Manufacturer
-                                </button>
-                                <div class="dropdown-menu" aria-labelledby="mfg-filter">
-                                    <a class="dropdown-item" href="#" data-value="">Select Manufacturer</a>
-                                    {% for manufacturer in unique_manufacturers %}
-                                        <a class="dropdown-item" href="#"
-                                           data-value="{{ manufacturer }}">{{ manufacturer }}</a>
-                                    {% endfor %}
-                                    <a class="dropdown-item" href="#" data-value="">Reset</a>
+                            <!-- Manufacturer Filter -->
+                            <div class="form-group mb-2">
+                                <h5>Manufacturer</h5>
+                                <div class="dropdown">
+                                    <button class="btn border dropdown-toggle d-flex align-items-center justify-content-between"
+                                            type="button" id="mfg-filter"
+                                            data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Select Manufacturer
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="mfg-filter">
+                                        <a class="dropdown-item" href="#" data-value="">Select Manufacturer</a>
+                                        {% for manufacturer in unique_manufacturers %}
+                                            <a class="dropdown-item" href="#"
+                                               data-value="{{ manufacturer }}">{{ manufacturer }}</a>
+                                        {% endfor %}
+                                        <a class="dropdown-item" href="#" data-value="">Reset</a>
+                                    </div>
                                 </div>
+                                <input type="hidden" name="mfg_filter" id="mfg-filter-value">
                             </div>
-                            <input type="hidden" name="mfg_filter" id="mfg-filter-value">
-                        </div>
-                        <!-- Auction Type Filter -->
-                        <div class="form-group mb-2">
-                            <div class="dropdown">
-                                <button class="btn border dropdown-toggle d-flex align-items-center justify-content-between"
-                                        type="button" id="auction-type"
-                                        data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    Auction Type
-                                </button>
-                                <div class="dropdown-menu" aria-labelledby="auction-type">
-                                    <a class="dropdown-item" href="#" data-value="">All</a>
-                                    <a class="dropdown-item" href="#" data-value="Auction">Auction</a>
-                                    <a class="dropdown-item" href="#" data-value="Sale">Sale</a>
+                            <!-- Auction Type Filter -->
+                            <div class="form-group mb-2">
+                                <h5>Listing Type</h5>
+                                <div class="dropdown">
+                                    <button class="btn border dropdown-toggle d-flex align-items-center justify-content-between"
+                                            type="button" id="auction-type"
+                                            data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Listing Type
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="auction-type">
+                                        <a class="dropdown-item" href="#" data-value="">All</a>
+                                        <a class="dropdown-item" href="#" data-value="Auction">Auction</a>
+                                        <a class="dropdown-item" href="#" data-value="Sale">Sale</a>
+                                    </div>
                                 </div>
+                                <input type="hidden" name="auction_type" id="auction-type-value">
                             </div>
-                            <input type="hidden" name="auction_type" id="auction-type-value">
-                        </div>
-                        <!-- My Listings Checkbox -->
-                        {% if user.is_authenticated and has_active_auctions %}
-                            <div class="form-group mb-2 d-flex justify-content-end">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="my-auctions-checkbox"
-                                           name="my_auctions" value="1"
-                                            {% if my_auctions %} checked {% endif %}>
-                                    <label class="form-check-label" for="my-auctions-checkbox">
-                                        My Listings
-                                    </label>
+                            <!-- Filter By Expired Items -->
+                            <div class="form-group mb-2">
+                                <h5>Item Type</h5>
+                                <div class="dropdown">
+                                    <button class="btn border dropdown-toggle d-flex align-items-center justify-content-between"
+                                            type="button" id="expired-filter"
+                                            data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        All Items
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="expired-filter">
+                                        <a class="dropdown-item" href="#" data-value="">All Items</a>
+                                        <a class="dropdown-item" href="#" data-value="expired">Expired Items</a>
+                                        <a class="dropdown-item" href="#" data-value="not_expired">In Date Items</a>
+                                    </div>
                                 </div>
+                                <input type="hidden" name="expired_filter" id="expired-filter-value">
                             </div>
-                        {% endif %}
-                    </form>
+                            <!-- My Listings Checkbox -->
+                            {% if user.is_authenticated and has_active_auctions %}
+                                <div class="form-group mb-2">
+                                    <h5>My Listings</h5>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="my-auctions-checkbox"
+                                               name="my_auctions" value="1"
+                                                {% if my_auctions %} checked {% endif %}>
+                                        <label class="form-check-label" for="my-auctions-checkbox">
+                                            My Listings
+                                        </label>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </form>
+                    </div>
                 </div>
             </div>
+            {#            <div class="auctions-header-container">#}
+            {#                <!-- Filters and Sorting -->#}
+            {#                <div class="container mt-4">#}
+            {#                    <!-- Filter Button for Small Screens -->#}
+            {#                    <button class="btn btn-outline-primary d-md-none mb-3" type="button" data-bs-toggle="collapse"#}
+            {#                            data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">#}
+            {#                        <i class="fas fa-filter"></i> Filter#}
+            {#                    </button>#}
+            {#                    <!-- Filter Section -->#}
+            {#                    <div class="collapse d-md-block filters" id="filterCollapse">#}
+            {#                        <form id="auction-filter-form" method="get" class="form-inline">#}
+            {#                            <!-- Filter By Time -->#}
+            {#                            <div class="form-group mb-2 w-100">#}
+            {#                                <div class="filter-group">#}
+            {#                                    <h5 class="">Filter By:</h5>#}
+            {#                                    <ul id="time-filter" class="filter-list">#}
+            {#                                        <li><a href="#" data-value="">All Times</a></li>#}
+            {#                                        <li><a href="#" data-value="today">Today</a></li>#}
+            {#                                        <li><a href="#" data-value="tomorrow">Tomorrow</a></li>#}
+            {#                                        <li><a href="#" data-value="next_3_days">Next 3 Days</a></li>#}
+            {#                                        <li><a href="#" data-value="">Reset</a></li>#}
+            {#                                    </ul>#}
+            {#                                </div>#}
+            {#                                <input type="hidden" name="time_filter" id="time-filter-value">#}
+            {#                            </div>#}
+            {##}
+            {#                            <!-- Sort By -->#}
+            {#                            <div class="form-group mb-2 w-100">#}
+            {#                                <div class="filter-group">#}
+            {#                                    <h5 class="border-bottom pb-1">Sort By:</h5>#}
+            {#                                    <ul id="sort-by" class="filter-list">#}
+            {#                                        <li><a href="#" data-value="">Best Match</a></li>#}
+            {#                                        <li><a href="#" data-value="ending_soonest">Ending Soonest</a></li>#}
+            {#                                        <li><a href="#" data-value="newly_listed">Newly Listed</a></li>#}
+            {#                                        <li><a href="#" data-value="price_highest">Price Highest</a></li>#}
+            {#                                        <li><a href="#" data-value="price_lowest">Price Lowest</a></li>#}
+            {#                                        <li><a href="#" data-value="fewest_bids">Fewest Bids</a></li>#}
+            {#                                        <li><a href="#" data-value="most_bids">Most Bids</a></li>#}
+            {#                                        <li><a href="#" data-value="">Reset</a></li>#}
+            {#                                    </ul>#}
+            {#                                </div>#}
+            {#                                <input type="hidden" name="sort_by" id="sort-by-value">#}
+            {#                            </div>#}
+            {##}
+            {#                            <!-- Manufacturer Filter -->#}
+            {#                            <div class="form-group mb-2 w-100">#}
+            {#                                <div class="filter-group">#}
+            {#                                    <h5 class="border-bottom pb-1">Select Manufacturer:</h5>#}
+            {#                                    <ul id="mfg-filter" class="filter-list">#}
+            {#                                        <li><a href="#" data-value="">Select Manufacturer</a></li>#}
+            {#                                        {% for manufacturer in unique_manufacturers %}#}
+            {#                                            <li><a href="#" data-value="{{ manufacturer }}">{{ manufacturer }}</a></li>#}
+            {#                                        {% endfor %}#}
+            {#                                        <li><a href="#" data-value="">Reset</a></li>#}
+            {#                                    </ul>#}
+            {#                                </div>#}
+            {#                                <input type="hidden" name="mfg_filter" id="mfg-filter-value">#}
+            {#                            </div>#}
+            {##}
+            {#                            <!-- Auction Type Filter -->#}
+            {#                            <div class="form-group mb-2 w-100">#}
+            {#                                <div class="filter-group">#}
+            {#                                    <h5 class="border-bottom pb-1">Auction Type:</h5>#}
+            {#                                    <ul id="auction-type" class="filter-list">#}
+            {#                                        <li><a href="#" data-value="">All</a></li>#}
+            {#                                        <li><a href="#" data-value="Auction">Auction</a></li>#}
+            {#                                        <li><a href="#" data-value="Sale">Sale</a></li>#}
+            {#                                    </ul>#}
+            {#                                </div>#}
+            {#                                <input type="hidden" name="auction_type" id="auction-type-value">#}
+            {#                            </div>#}
+            {##}
+            {#                            <!-- Filter By Expired Items -->#}
+            {#                            <div class="form-group mb-2 w-100">#}
+            {#                                <div class="filter-group">#}
+            {#                                    <h5 class="border-bottom pb-1">Filter By:</h5>#}
+            {#                                    <ul id="expired-filter" class="filter-list">#}
+            {#                                        <li><a href="#" data-value="">All Items</a></li>#}
+            {#                                        <li><a href="#" data-value="expired">Expired Items</a></li>#}
+            {#                                        <li><a href="#" data-value="not_expired">In Date Items</a></li>#}
+            {#                                    </ul>#}
+            {#                                </div>#}
+            {#                                <input type="hidden" name="expired_filter" id="expired-filter-value">#}
+            {#                            </div>#}
+            {##}
+            {#                            <!-- My Listings Checkbox -->#}
+            {#                            {% if user.is_authenticated and has_active_auctions %}#}
+            {#                                <div class="form-group mb-2 w-100">#}
+            {#                                    <div class="form-check">#}
+            {#                                        <input class="form-check-input" type="checkbox" id="my-auctions-checkbox"#}
+            {#                                               name="my_auctions" value="1"#}
+            {#                                                {% if my_auctions %} checked {% endif %}>#}
+            {#                                        <label class="form-check-label" for="my-auctions-checkbox">#}
+            {#                                            My Listings#}
+            {#                                        </label>#}
+            {#                                    </div>#}
+            {#                                </div>#}
+            {#                            {% endif %}#}
+            {#                        </form>#}
+            {##}
+            {#                    </div>#}
+            {#                </div>#}
+            {#            </div>#}
+            <div class='auctions-container mb-4'>
+                <div class='card-body'>
+                    <div class='col align-items-center'>
+                        {% for auction in pages %}
+                            <div class='col {{ auction.auction_type }}'>
+                                <div class='listing'>
+                                    <a type="button" class="btn auction-card text-decoration-none"
+                                       data-bs-toggle="modal"
+                                       data-bs-target="#auctionModal{{ auction.id }}"
+                                       data-auction-id="{{ auction.id }}">
 
-        </div>
 
-        <div class='mb-4'>
-            <div class='card-body'>
-                <div class='col align-items-center'>
-                    {% for auction in pages %}
-                        <div class='col {{ auction.auction_type }}'>
-                            <div class='listing'>
-                                <a type="button" class="btn auction-card text-decoration-none"
-                                   data-bs-toggle="modal"
-                                   data-bs-target="#auctionModal{{ auction.id }}"
-                                   data-auction-id="{{ auction.id }}">
-
-
-                                    <!-- Product image-->
-                                    <div class='auction_image_first d-flex justify-content-center'>
-                                        <div class='auction_image_second'>
-                                            <img class='auction_image_third'
-                                                 src="{{ auction.image.image.url|default:'../static/images/no_image.png' }}"
-                                                 alt='Product image'>
-                                        </div>
-                                    </div>
-                                    <!-- Product details-->
-                                    <div class='card-body p-3'>
-                                        <div class='text-left'>
-                                            <!-- Product name-->
-                                            <div class='auction-title'>{{ auction.title }}</div>
-                                            <div class="display-8">{{ auction.category }}</div>
-                                            <h3>
-                                                <div class="two-grid-auto-columns mt-2 auction-price">
-                                                    {% if auction.auction_type == 'Auction' %}
-                                                        {% if auction.current_bid %}
-                                                            ${{ auction.current_bid }}
-                                                            <div class="fs-5">Current Bid</div>
-                                                        {% else %}
-                                                            ${{ auction.starting_bid }}
-                                                            <div class="fs-5 fw-light fst-italic">Starting Bid</div>
-                                                        {% endif %}
-                                                    {% else %}
-                                                        ${{ auction.buyItNowPrice }}
-                                                        <div class="fs-5 fw-light fst-italic">Get It Now</div>
-                                                    {% endif %}
-                                                </div>
-                                            </h3>
-                                            {% if  auction.auction_type == 'Auction' %}
-                                                <div class='two-grid-auto-columns'>
-
-                                                    <div class="lead time-remaining">{{ auction.formatted_time_remaining }}
-                                                        Remaining
-                                                    </div>
-                                                </div>
-                                            {% endif %}
-                                            <div class="two-grid-auto-columns mt-1">
-                                                <div class="">Quantity:</div>
-                                                <div>{{ auction.quantity_available }}</div>
+                                        <!-- Product image-->
+                                        <div class='auction_image_first d-flex justify-content-center'>
+                                            <div class='auction_image_second'>
+                                                <img class='auction_image_third'
+                                                     src="{{ auction.image.image.url|default:'../static/images/no_image.png' }}"
+                                                     alt='Product image'>
                                             </div>
+                                        </div>
+                                        <!-- Product details-->
+                                        <div class='card-body p-3'>
+                                            <div class='text-left'>
+                                                <!-- Product name-->
+                                                <div class='auction-title'>{{ auction.title }}</div>
+                                                <div class="display-8">{{ auction.category }}</div>
+                                                <h3>
+                                                    <div class="two-grid-auto-columns mt-2 auction-price">
+                                                        {% if auction.auction_type == 'Auction' %}
+                                                            {% if auction.current_bid %}
+                                                                ${{ auction.current_bid }}
+                                                                <div class="fs-5">Current Bid</div>
+                                                            {% else %}
+                                                                ${{ auction.starting_bid }}
+                                                                <div class="fs-5 fw-light fst-italic">Starting Bid</div>
+                                                            {% endif %}
+                                                        {% else %}
+                                                            ${{ auction.buyItNowPrice }}
+                                                            <div class="fs-5 fw-light fst-italic">Get It Now</div>
+                                                        {% endif %}
+                                                    </div>
+                                                </h3>
+                                                {% if  auction.auction_type == 'Auction' %}
+                                                    <div class='two-grid-auto-columns'>
 
-                                            <!-- Display watchers and bids count -->
-                                            <div class="two-grid-auto-columns mt-1" id="auction-stats">
-                                                <div>Watchers: {{ auction.watchers.count }}</div>
-                                                {% if auction.auction_type == 'Auction' %}
-                                                    <div>Bids: {{ auction.bid_set.count }}</div>
+                                                        <div class="lead time-remaining">{{ auction.formatted_time_remaining }}
+                                                            Remaining
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                                <div class="two-grid-auto-columns mt-1">
+                                                    <div class="">Quantity:</div>
+                                                    <div>{{ auction.quantity_available }}</div>
+                                                </div>
+
+                                                <!-- Display watchers and bids count -->
+                                                <div class="two-grid-auto-columns mt-1" id="auction-stats">
+                                                    <div>Watchers: {{ auction.watchers.count }}</div>
+                                                    {% if auction.auction_type == 'Auction' %}
+                                                        <div>Bids: {{ auction.bid_set.count }}</div>
+                                                    {% endif %}
+
+                                                </div>
+                                                {% if user.is_authenticated and auction.auction_type == 'Sale' %}
+                                                    <form class="py-2 d-flex justify-content-start" method="POST"
+                                                          action="{% url 'add_to_cart' auction.id %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-primary">Add to Cart
+                                                        </button>
+                                                    </form>
                                                 {% endif %}
 
                                             </div>
-                                            {% if user.is_authenticated and auction.auction_type == 'Sale' %}
-                                                <form class="py-2 d-flex justify-content-start" method="POST"
-                                                      action="{% url 'add_to_cart' auction.id %}">
-                                                    {% csrf_token %}
-                                                    <button type="submit" class="btn btn-primary">Add to Cart
-                                                    </button>
-                                                </form>
-                                            {% endif %}
-
                                         </div>
-                                    </div>
-                                </a>
-                                <!-- Admin Section -->
-                                {% if user.is_authenticated %}
-                                    <div class="p-3">
+                                    </a>
+                                    <!-- Admin Section -->
+                                    {% if user.is_authenticated %}
+                                        <div class="p-3">
 
-                                        {% if auction.auction_type == 'Auction' %}
-                                            <!-- Start Bid Form -->
-                                            <div class='card'>
-                                                <div class='card-header'>
-                                                    <div class="fw-bolder">Place Your Bid</div>
+                                            {% if auction.auction_type == 'Auction' %}
+                                                <!-- Start Bid Form -->
+                                                <div class='card'>
+                                                    <div class='card-header'>
+                                                        <div class="fw-bolder">Place Your Bid</div>
 
+                                                    </div>
+                                                    <div class='form-group'>
+                                                        <form class="p-3 " action="{% url 'auction_bid' auction.id %}"
+                                                              method='POST'
+                                                              data-auction-id="{{ auction.id }}"
+                                                              data-starting-bid="{{ auction.starting_bid }}"
+                                                              data-current-bid="{{ auction.current_bid }}">
+                                                            {% csrf_token %}
+                                                            <div class='form-group with-symbol extra-m'>
+                                                                {{ bid_form }}
+                                                                <br>
+                                                                <button type='submit' class='btn btn-primary'>
+                                                                    Place a Bid
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
                                                 </div>
-                                                <div class='form-group'>
-                                                    <form class="p-3 " action="{% url 'auction_bid' auction.id %}"
-                                                          method='POST'
-                                                          data-auction-id="{{ auction.id }}"
-                                                          data-starting-bid="{{ auction.starting_bid }}"
-                                                          data-current-bid="{{ auction.current_bid }}">
-                                                        {% csrf_token %}
-                                                        <div class='form-group with-symbol extra-m'>
-                                                            {{ bid_form }}
-                                                            <br>
-                                                            <button type='submit' class='btn btn-primary'>
-                                                                Place a Bid
-                                                            </button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                            <!-- End Bid Form -->
-                                        {% else %}
-                                            <!-- Start Get It Now Form -->
-                                            {#                                            <div class='card'>#}
-                                            {#                                                <div class='card-header'>#}
-                                            {#                                                    <div class="fw-bolder">Add to Cart</div>#}
-                                            {##}
-                                            {#                                                </div>#}
-                                            {#                                                <div class='form-group'>#}
-                                            {#                                                    <form class="p-3" method="POST"#}
-                                            {#                                                          action="{% url 'add_to_cart' auction.id %}">#}
-                                            {#                                                        {% csrf_token %}#}
-                                            {#                                                        <button type="submit" class="btn btn-primary">Add to Cart#}
-                                            {#                                                        </button>#}
-                                            {#                                                    </form>#}
-                                            {#                                                </div>#}
-                                            {#                                            </div>#}
+                                                <!-- End Bid Form -->
+                                            {% else %}
+                                                <!-- Start Get It Now Form -->
+                                                {#                                            <div class='card'>#}
+                                                {#                                                <div class='card-header'>#}
+                                                {#                                                    <div class="fw-bolder">Add to Cart</div>#}
+                                                {##}
+                                                {#                                                </div>#}
+                                                {#                                                <div class='form-group'>#}
+                                                {#                                                    <form class="p-3" method="POST"#}
+                                                {#                                                          action="{% url 'add_to_cart' auction.id %}">#}
+                                                {#                                                        {% csrf_token %}#}
+                                                {#                                                        <button type="submit" class="btn btn-primary">Add to Cart#}
+                                                {#                                                        </button>#}
+                                                {#                                                    </form>#}
+                                                {#                                                </div>#}
+                                                {#                                            </div>#}
 
-                                            <!-- End Get It Now Form -->
-                                        {% endif %}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    {% endfor %}
-
-                    {% if pages.has_other_pages %}
-                        <div class='d-flex justify-content-center'>
-                            <ul class='pagination'>
-                                {% if pages.has_previous %}
-                                    <li class='page-item'>
-                                        <a class='page-link' href='?page={{ pages.previous_page_number }}'>
-                                            &laquo;
-                                        </a>
-                                    </li>
-                                {% else %}
-                                    <li class='page-item disabled'>
-                                        <a class='page-link' href='#'>&laquo;</a>
-                                    </li>
-                                {% endif %}
-                                {% for i in pages.paginator.page_range %}
-                                    {% if pages.number == i %}
-                                        <li class='page-item active'>
-                                            <a class='page-link' href='#'>{{ i }}</a>
-                                        </li>
-                                    {% else %}
-                                        <li class='page-item'>
-                                            <a class='page-link' href='?page={{ i }}'>{{ i }}</a>
-                                        </li>
+                                                <!-- End Get It Now Form -->
+                                            {% endif %}
+                                        </div>
                                     {% endif %}
-                                {% endfor %}
-                                {% if pages.has_next %}
-                                    <li class='page-item'>
-                                        <a class='page-link' href='?page={{ pages.next_page_number }}'>
-                                            &raquo;
-                                        </a>
-                                    </li>
-                                {% else %}
-                                    <li class='page-item disabled'>
-                                        <a class='page-link' href='#'>&raquo;</a>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                        </div>
-                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+
+
+                    </div>
                 </div>
             </div>
+
         </div>
+        {% if pages.has_other_pages %}
+            <div class='d-flex align-items-center justify-content-center'>
+                <ul class='pagination'>
+                    {% if pages.has_previous %}
+                        <li class='page-item'>
+                            <a class='page-link' href='?page={{ pages.previous_page_number }}'>
+                                &laquo;
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class='page-item disabled'>
+                            <a class='page-link' href='#'>&laquo;</a>
+                        </li>
+                    {% endif %}
+                    {% for i in pages.paginator.page_range %}
+                        {% if pages.number == i %}
+                            <li class='page-item active'>
+                                <a class='page-link' href='#'>{{ i }}</a>
+                            </li>
+                        {% else %}
+                            <li class='page-item'>
+                                <a class='page-link' href='?page={{ i }}'>{{ i }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if pages.has_next %}
+                        <li class='page-item'>
+                            <a class='page-link' href='?page={{ pages.next_page_number }}'>
+                                &raquo;
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class='page-item disabled'>
+                            <a class='page-link' href='#'>&raquo;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        {% endif %}
+
     </div>
 
     <!-- Modals -->

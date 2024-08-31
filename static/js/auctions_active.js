@@ -11,9 +11,15 @@ document.querySelectorAll('.dropdown-menu a').forEach(item => {
 
 document.addEventListener('DOMContentLoaded', function () {
     // Submit form when the checkbox is toggled
-    document.getElementById('my-auctions-checkbox').addEventListener('change', function () {
-        document.getElementById('auction-filter-form').submit();
-    });
+    //My Auctions
+    let my_auctions = document.getElementById('my-auctions-checkbox');
+    if (my_auctions) {
+        my_auctions.addEventListener('change', function () {
+            document.getElementById('auction-filter-form').submit();
+        });
+    }
+
+
     // Update the hidden input and submit the form when a dropdown item is clicked
     document.querySelectorAll('#auction-filter-form .dropdown-menu a').forEach(item => {
         item.addEventListener('click', function (event) {
@@ -33,6 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+
 
 function getAuctionIdFromUrl() {
     const urlParts = window.location.pathname.split('/');
@@ -83,7 +90,18 @@ function getAdditionalDetails(auctionId) {
 
             if (data.product_details.length > 0) {
                 console.log('Product Details', data.product_details);
+
+                // Check if any item is expired
+                let containsExpiredItems = false;
+
                 data.product_details.forEach(function (detail, index) {
+                    // Check if the item is expired
+                    let expirationDate = new Date(detail.expiration_date);
+                    let today = new Date();
+                    if (expirationDate < today) {
+                        containsExpiredItems = true;
+                    }
+
                     // Create table if it doesn't exist yet
                     let table = detailsContainer.querySelector('table');
                     if (!table) {
@@ -119,11 +137,20 @@ function getAdditionalDetails(auctionId) {
                     table.querySelector('tbody').appendChild(row);
                 });
 
+                // If any item is expired, show the warning message
+                if (containsExpiredItems) {
+                    let warningMessage = document.createElement('div');
+                    warningMessage.className = 'alert alert-warning';
+                    warningMessage.textContent = 'This listing contains an expired item(s).';
+                    detailsContainer.append(warningMessage);
+                }
+
             } else {
                 detailsContainer.innerHTML = '<p>No additional product details available.</p>';
             }
         });
 }
+
 
 document.addEventListener('DOMContentLoaded', function () {
     // Extract auction ID from the URL

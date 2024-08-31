@@ -33,11 +33,10 @@
 }
 
 #auction-filter-form {
-    display: grid;
+    display: flex;
     gap: 10px;
-    align-items: center;
-    grid-template-columns: auto auto auto auto 1fr;
-    width: 100%;
+    align-items: flex-start;
+    flex-direction: column;
 }
 
 #time-filter,
@@ -144,6 +143,59 @@ img.img-thumbnail {
     min-width: 185px;
 }
 
+.active-auctions-container {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+}
+
+
+.filter-group {
+    position: relative;
+}
+
+.filter-list {
+    list-style-type: none;
+    padding: 0 10px 0;
+    margin: 0;
+
+    z-index: 1000;
+    background: #fff;
+    /*border: 1px solid #ccc;*/
+    width: 100%;
+}
+
+.filter-list li {
+    text-decoration: none !important;
+    padding: 8px;
+    cursor: pointer;
+}
+
+.filter-list li a {
+    text-decoration: none;
+    color: black;
+}
+
+.filter-list li:hover {
+    background-color: #f0f0f0;
+}
+
+.form-group > .dropdown {
+    width: 215px;
+}
+
+.form-group > .dropdown > button {
+    width: 100%;
+}
+
+#filter-container {
+    border-top: 1px solid #cccccc;
+}
+
+/*.filter-group:hover .filter-list {*/
+/*    display: block; !* Show the list on hover *!*/
+/*}*/
+
+
 @media (max-width: 767.98px) {
     .auction-card {
         grid-template-columns: 1fr;
@@ -156,6 +208,7 @@ img.img-thumbnail {
 
     .auction-title {
         max-width: 350px;
+        white-space: unset;
     }
 
     #auction-attributes {
@@ -176,8 +229,22 @@ img.img-thumbnail {
         margin-left: 15px;
     }
 
+    .active-auctions-container {
+        grid-template-columns: 1fr;
+    }
+
     .auctions-header-container {
         grid-template-columns: 1fr;
+    }
+
+    #filter-container {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+    #filter-container > .d-md-block.filters.collapse.show,
+    #filter-container > .d-md-block.filters.collapse{
+        align-self: center;
     }
 
     #filter-form, #auction-filter-form {
@@ -193,12 +260,14 @@ img.img-thumbnail {
 @media (min-width: 576px) {
     .auction-title {
         max-width: 460px;
+        /*white-space: unset;*/
     }
 }
 
 @media (min-width: 768px) {
     .auction-title {
         max-width: 400px;
+        /*white-space: unset;*/
     }
 }
 
@@ -220,13 +289,13 @@ img.img-thumbnail {
 
 @media (min-width: 1200px) {
     .auction-title {
-        max-width: 515px;
+        max-width: 400px;
     }
 }
 
 @media (min-width: 1400px) {
     .auction-title {
-        max-width: 659px;
+        max-width: 450px;
     }
 }
 
@@ -242,7 +311,7 @@ img.img-thumbnail {
     position: relative;
 }
 
-.modal-footer form{
+.modal-footer form {
     position: absolute;
     bottom: 90px;
 }

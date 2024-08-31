@@ -1,22 +1,33 @@
 from django.contrib import admin
 
 from .models import Auction, Image, Bid, Comment, Category, User, Message, Order, OrderItem, ShippingAddress, \
-    BillingAddress, Payment, Carrier, Parcel
+    BillingAddress, Payment, Carrier, Parcel, ProductDetail
 
-admin.site.register(Auction)
-admin.site.register(Image)
+# admin.site.register(Auction)
+# admin.site.register(Image)
 admin.site.register(Bid)
-admin.site.register(Comment)
-admin.site.register(Category)
+# admin.site.register(Comment)
+# admin.site.register(Category)
 admin.site.register(User)
 
 
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
     extra = 0  # Prevent extra empty forms
+    can_delete = False
 
     def get_readonly_fields(self, request, obj=None):
         return [field.name for field in self.model._meta.fields]
+
+    def get_max_num(self, request, obj=None, **kwargs):
+        # Set the max_num to the current number of items in the order
+        if obj:
+            return obj.items.count()
+        return 0  # No new items can be added
+
+    def has_add_permission(self, request, obj=None):
+        # Disable the add button
+        return False
 
 
 class ShippingAddressInline(admin.StackedInline):
@@ -32,6 +43,7 @@ class BillingAddressInline(admin.StackedInline):
 class PaymentInline(admin.TabularInline):
     model = Payment
     extra = 0  # Prevent extra empty forms
+    can_delete = False
 
     def get_fields(self, request, obj=None):
         payment = self.get_object_payment(obj)  # Ensure we are working with a Payment instance
@@ -97,17 +109,14 @@ class PaymentInline(admin.TabularInline):
     # Decrypt sensitive fields
     def decrypted_card_number(self, obj):
         return obj.get_card_number() if obj.encrypted_card_number else 'N/A'
-
     decrypted_card_number.short_description = 'Card Number'
 
     def decrypted_expiration_date(self, obj):
         return obj.get_expiration_date() if obj.encrypted_expiration_date else 'N/A'
-
     decrypted_expiration_date.short_description = 'Expiration Date'
 
     def decrypted_cvv(self, obj):
         return obj.get_cvv() if obj.encrypted_cvv_number else 'N/A'
-
     decrypted_cvv.short_description = 'CVV'
 
 
@@ -139,8 +148,6 @@ class OrderAdmin(admin.ModelAdmin):
         OrderItemInline,
         CarrierInline,
         ParcelInline,
-        # ShippingAddressInline,  # Comment out these lines
-        # BillingAddressInline,
     ]
 
     fieldsets = (
@@ -241,3 +248,74 @@ class MessageAdmin(admin.ModelAdmin):
         if not change:  # When creating a new message
             obj.sender = request.user
         super().save_model(request, obj, form, change)
+
+
+# AUCTIONS
+class ProductDetailInline(admin.TabularInline):
+    model = ProductDetail
+    extra = 0  # Prevent extra empty forms
+    readonly_fields = ('sku', 'reference_number', 'lot_number', 'production_date', 'expiration_date')
+    can_delete = False
+
+class BidInline(admin.TabularInline):
+    model = Bid
+    extra = 0  # Prevent extra empty forms
+    readonly_fields = ('user', 'amount', 'date')
+    can_delete = False  # Prevent deletion of bids from the admin interface
+
+
+class AuctionAdmin(admin.ModelAdmin):
+    list_display = (
+        'id', 'title', 'creator', 'category', 'date_created', 'quantity_available', 'starting_bid',
+        'reserve_bid', 'current_bid', 'buyItNowPrice', 'active', 'auction_end_date',
+        'days_remaining', 'highest_bid', 'highest_bidder'
+    )
+    list_filter = ('active', 'date_created', 'category', 'auction_duration')
+    search_fields = ('title', 'description', 'creator__username', 'category__category_name', 'id')
+    ordering = ('-date_created',)
+    readonly_fields = (
+        'creator', 'category', 'date_created', 'quantity_available', 'starting_bid', 'reserve_bid',
+        'current_bid', 'buyItNowPrice', 'active', 'auction_end_date', 'days_remaining', 'hours_remaining',
+        'formatted_time_remaining', 'count_watchers', 'total_views', 'get_image', 'highest_bid',
+        'highest_bidder'
+    )
+
+    fieldsets = (
+        ('General Information', {
+            'fields': (
+                'title', 'description', 'creator', 'category', 'date_created',
+                'quantity_available', 'starting_bid', 'reserve_bid', 'current_bid', 'buyItNowPrice',
+                'active', 'auction_type', 'package_type', 'auction_duration',
+                'product_name', 'manufacturer', 'implantable', 'deviceSterile',
+                'sterilizationPriorToUse', 'sell_full_lot', 'fullPackage', 'gmdnPTDefinition'
+            )
+        }),
+        ('Fields', {
+            'fields': (
+                'auction_end_date', 'days_remaining', 'hours_remaining', 'formatted_time_remaining',
+                'count_watchers', 'total_views', 'get_image', 'highest_bid', 'highest_bidder'
+            ),
+        }),
+    )
+
+    inlines = [
+        BidInline,
+        ProductDetailInline,
+    ]
+
+    # Custom method to display the highest bid
+    def highest_bid(self, obj):
+        highest_bid = obj.bid_set.order_by('-amount').first()
+        return highest_bid.amount if highest_bid else "No bids"
+
+    highest_bid.short_description = "Highest Bid"
+
+    # Custom method to display the highest bidder
+    def highest_bidder(self, obj):
+        highest_bid = obj.bid_set.order_by('-amount').first()
+        return highest_bid.user.username if highest_bid else "No bids"
+
+    highest_bidder.short_description = "Highest Bidder"
+
+
+admin.site.register(Auction, AuctionAdmin)
