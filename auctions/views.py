@@ -612,7 +612,7 @@ def watchlist_view(request):
         'title': 'Watchlist'
     })
 
-
+# Should be able to remove
 @login_required
 def watchlist_edit(request, auction_id, reverse_method):
     """
@@ -631,7 +631,7 @@ def watchlist_edit(request, auction_id, reverse_method):
     else:
         return HttpResponseRedirect(reverse(reverse_method))
 
-
+# Should be able to remove
 def auction_details_view(request, auction_id):
     """
     It renders a page that displays the details of a selected auction
@@ -907,6 +907,8 @@ def checkout(request):
 
             # Clear the user's cart after the order is successfully placed
             cart.items.all().delete()
+            # Mark the listing inactive
+            order.auction.active = False
 
             # Serialize the order
             order_data = model_to_dict(order)
