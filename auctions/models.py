@@ -1,16 +1,14 @@
 from datetime import timedelta
 
+from cryptography.fernet import Fernet
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
-from django.db.models import JSONField
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
-from cryptography.fernet import Fernet
 
 from config.storage_backends import ProfileImageStorage, CompanyLogoStorage
-
 
 STATE_CHOICES = (
     ('AL', 'AL'),
@@ -328,19 +326,34 @@ class Order(models.Model):
     cart = models.OneToOneField(Cart, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    status = models.CharField(max_length=20,
-                              choices=[('pending', 'Pending'), ('processing', 'Processing'), ('shipped', 'Shipped'),
-                                       ('completed', 'Completed')], default='pending')
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('pending', 'Pending'),
+            ('processing', 'Processing'),
+            ('shipped', 'Shipped'),
+            ('completed', 'Completed')
+        ],
+        default='pending'
+    )
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     shipping_method = models.CharField(max_length=50, null=True, blank=True)
     special_instructions = models.TextField(null=True, blank=True)
+    tax_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0.00)
 
     def __str__(self):
         return f'Order #{self.id} for {self.user.username}'
 
     def calculate_total(self):
-        # Logic to calculate total based on cart items and shipping
-        return sum(item.total_price() for item in self.cart.items.all())  # plus any additional charges
+        # Logic to calculate total based on cart items, tax, and shipping
+        items_total = sum(item.total_price() for item in self.cart.items.all())
+        shipping_charges = self.get_shipping_charges()
+        return items_total + self.tax_amount + shipping_charges
+
+    def get_shipping_charges(self):
+        carrier = self.carrier
+        return carrier.shipping_cost if carrier else 0.00
+
 
 
 class OrderItem(models.Model):
@@ -482,3 +495,43 @@ class Message(models.Model):
     @property
     def is_read(self):
         return self.read
+
+
+class Carrier(models.Model):
+    CARRIER_CHOICES = [
+        ('UPS', 'UPS'),
+        ('FedEx', 'FedEx'),
+        ('DHL', 'DHL'),
+    ]
+
+    DELIVERY_METHOD_CHOICES = [
+        ('Ground', 'Ground'),
+        ('Overnight', 'Overnight'),
+        ('2 Day', '2 Day'),
+        ('3 Day', '3 Day'),
+    ]
+
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='carrier')
+    carrier = models.CharField(max_length=50, choices=CARRIER_CHOICES, default='UPS')
+    delivery_method = models.CharField(max_length=50, choices=DELIVERY_METHOD_CHOICES, default='Ground')
+    tracking_number = models.CharField(max_length=100, null=True, blank=True)
+    shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.carrier} - {self.delivery_method} (Order #{self.order.id})'
+
+
+class Parcel(models.Model):
+    carrier = models.ForeignKey(Carrier, on_delete=models.CASCADE, related_name='parcels')
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='parcels', null=True, blank=True)
+    height = models.DecimalField(max_digits=6, decimal_places=2)
+    length = models.DecimalField(max_digits=6, decimal_places=2)
+    width = models.DecimalField(max_digits=6, decimal_places=2)
+    weight = models.DecimalField(max_digits=6, decimal_places=2)
+
+    def __str__(self):
+        return f'Parcel for {self.carrier} (Order #{self.carrier.order.id})'
+
+    @property
+    def volume(self):
+        return self.height * self.length * self.width
