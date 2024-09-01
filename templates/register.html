@@ -41,7 +41,6 @@
                             </div>
                         </div>
 
-
                         <div id="form-page-1" class="form-page">
 
                             <div class='form-group input-group mb-3'>
@@ -82,7 +81,9 @@
                                 <input class='form-control rounded' type='text' name='company_name'
                                        placeholder='Company Name'>
                             </div>
-                            <button type="button" class="btn btn-primary next-btn">Next</button>
+                            <div class="registration-nav">
+                                <button type="button" class="btn btn-primary next-btn">Next</button>
+                            </div>
                         </div>
 
                         <div id="form-page-2" class="form-page" style="display:none;">
@@ -107,8 +108,10 @@
                                 <input class='form-control' type='text' name='shipping_country' placeholder='Country'
                                        required>
                             </div>
-                            <button type="button" class="btn btn-secondary prev-btn">Previous</button>
-                            <button type="button" class="btn btn-primary next-btn">Next</button>
+                            <div class="registration-nav">
+                                <button type="button" class="btn btn-secondary prev-btn">Previous</button>
+                                <button type="button" class="btn btn-primary next-btn">Next</button>
+                            </div>
                         </div>
 
                         <div id="form-page-3" class="form-page" style="display:none;">
@@ -138,8 +141,10 @@
                                 <input class='form-control' type='text' name='billing_country' placeholder='Country'
                                        required>
                             </div>
-                            <button type="button" class="btn btn-secondary prev-btn">Previous</button>
-                            <button type="button" class="btn btn-primary next-btn">Next</button>
+                            <div class="registration-nav">
+                                <button type="button" class="btn btn-secondary prev-btn">Previous</button>
+                                <button type="button" class="btn btn-primary next-btn">Next</button>
+                            </div>
                         </div>
 
                         <div id="form-page-4a" class="form-page" style="display:none;">
@@ -166,7 +171,11 @@
                                        placeholder='Phone' autofocus required>
                             </div>
                             <div id="w9-container">
-                                <h5>W9</h5>
+                                <div class="d-flex align-items-center gap-1">
+                                    <h5 class="m-0">Documentation</h5>
+                                    <small class="text-muted"> - You can add these later.</small>
+                                </div>
+                                <div class="form-label mt-2">IRS Form W-9</div>
                                 <div class='form-group input-group mb-3'>
                                     <div class='input-group-prepend'>
                                         <span class='input-group-text'><i class="fa fa-file"></i></span>
@@ -174,9 +183,19 @@
                                     <input class='form-control rounded' type='file' name='company_w9'
                                            accept=".pdf,.doc,.docx,.jpg,.png,.jpeg" required>
                                 </div>
+                                <div class="form-label">Reseller/Tax Exempt Certificate</div>
+                                <div class='form-group input-group mb-3'>
+                                    <div class='input-group-prepend'>
+                                        <span class='input-group-text'><i class="fa fa-file"></i></span>
+                                    </div>
+                                    <input class='form-control rounded' type='file' name='reseller_certificate'
+                                           accept=".pdf,.doc,.docx,.jpg,.png,.jpeg" required placeholder="">
+                                </div>
                             </div>
-                            <button type="button" class="btn btn-secondary prev-btn">Previous</button>
-                            <button type="button" class="btn btn-primary next-btn">Next</button>
+                            <div class="registration-nav">
+                                <button type="button" class="btn btn-secondary prev-btn">Previous</button>
+                                <button type="button" class="btn btn-primary next-btn">Next</button>
+                            </div>
                         </div>
 
                         <div id="form-page-4" class="form-page" style="display:none;">
@@ -219,9 +238,10 @@
                                 By selecting Create personal account, you agree to our User Agreement and acknowledge
                                 reading our User Privacy Notice.
                             </p>
-
-                            <button type="button" class="btn btn-secondary prev-btn">Previous</button>
-                            <button type="submit" class="btn btn-primary">Create Account</button>
+                            <div class="registration-nav">
+                                <button type="button" class="btn btn-secondary prev-btn">Previous</button>
+                                <button type="submit" class="btn btn-primary">Create Account</button>
+                            </div>
                         </div>
                     </form>
                 </div>

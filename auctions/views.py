@@ -206,6 +206,9 @@ def register(request):
         # Handle profile image and company logo
         profile_image = request.FILES.get('profile_image')
         company_logo = request.FILES.get('company_logo')
+        company_w9 = request.FILES.get('company_w9')
+        reseller_certificate = request.FILES.get('reseller_certificate')
+
 
         if password != confirmation:
             return render(request, 'register.html', {
@@ -228,6 +231,14 @@ def register(request):
             if company_logo:
                 company_logo_storage = get_storage_class('myapp.custom_storage_backend.CompanyLogoStorage')()
                 user.company_logo = company_logo_storage.save(company_logo.name, company_logo)
+
+            if company_w9:
+                w9_storage = get_storage_class('myapp.custom_storage_backend.W9Storage')()
+                user.company_w9 = w9_storage.save(company_w9.name, company_w9)
+
+            if reseller_certificate:
+                reseller_certificate_storage = get_storage_class('myapp.custom_storage_backend.ResellerCertificateStorage')()
+                user.reseller_cert = reseller_certificate_storage.save(company_w9.name, company_w9)
 
             # Save the user object to persist changes
             user.save()

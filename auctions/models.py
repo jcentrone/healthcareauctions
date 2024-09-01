@@ -8,7 +8,7 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
-from config.storage_backends import ProfileImageStorage, CompanyLogoStorage, W9Storage
+from config.storage_backends import ProfileImageStorage, CompanyLogoStorage, W9Storage, ResellerCertificateStorage
 
 STATE_CHOICES = (
     ('AL', 'AL'),
@@ -70,6 +70,8 @@ class User(AbstractUser):
     profile_image = models.ImageField(storage=ProfileImageStorage(), blank=True, null=True)
     company_logo = models.ImageField(storage=CompanyLogoStorage(), blank=True, null=True)
     company_w9 = models.FileField(storage=W9Storage(), blank=True, null=True)
+    reseller_cert = models.FileField(storage=ResellerCertificateStorage(), blank=True, null=True)
+    tax_exempt = models.BooleanField(default=False)
 
     def __str__(self):
         return self.username

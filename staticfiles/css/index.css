@@ -585,7 +585,7 @@ footer .social-media a:hover {
 #registration-image,
 #login-image {
     width: 100%;
-    height: 500px;
+    height: 525px;
     border-radius: 8px;
     object-fit: cover;
     object-position: top;
@@ -593,11 +593,16 @@ footer .social-media a:hover {
 
 #registration-card,
 #login-card {
-    height: 500px;
+    height: 525px;
 }
 
 #login-card {
     position: relative;
+}
+
+.registration-nav{
+    position: absolute;
+    bottom: 15px;
 }
 
 #welcome-message {

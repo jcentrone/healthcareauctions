@@ -26,3 +26,8 @@ class W9Storage(GoogleCloudStorage):
     location = 'w9_storage'
     bucket_name = 'healthcare_auctions_w9_storage'
     credentials = credentials
+
+class ResellerCertificateStorage(GoogleCloudStorage):
+    location = 'reseller_certificate_storage'
+    bucket_name = 'healthcare_auctions_w9_storage'
+    credentials = credentials
