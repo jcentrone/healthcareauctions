@@ -20,15 +20,16 @@
 
             <div class='card' id="registration-card">
                 <div class='card-body'>
-                    <h1 class='h3 mb-4 text-gray-800'>Create an Account</h1>
+
                     <form id="registration-form" action="{% url 'register' %}" method='POST'
                           enctype="multipart/form-data">
                         {% csrf_token %}
 
-                        <div id="form-page-1" class="form-page">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <h1 class='h3 mb-4 text-gray-800 text-nowrap'>Create an Account</h1>
                             <div class="form-group input-group">
                                 {#                            <label for="account_type">Account Type:</label>    #}
-                                <div class="input-group mb-3" id="account-type-buttons">
+                                <div class="input-group mb-3 justify-content-end" id="account-type-buttons">
                                     <button type="button" class="btn btn-primary" id="business-account-selector">
                                         Business
                                     </button>
@@ -38,6 +39,11 @@
                                 </div>
                                 <input type="hidden" id="account_type" name="account_type" value="business">
                             </div>
+                        </div>
+
+
+                        <div id="form-page-1" class="form-page">
+
                             <div class='form-group input-group mb-3'>
                                 <div class='input-group-prepend'>
                                     <span class='input-group-text'><i class='fa fa-user'></i></span>
@@ -159,10 +165,19 @@
                                 <input class='form-control rounded' type='text' name='phone'
                                        placeholder='Phone' autofocus required>
                             </div>
+                            <div id="w9-container">
+                                <h5>W9</h5>
+                                <div class='form-group input-group mb-3'>
+                                    <div class='input-group-prepend'>
+                                        <span class='input-group-text'><i class="fa fa-file"></i></span>
+                                    </div>
+                                    <input class='form-control rounded' type='file' name='company_w9'
+                                           accept=".pdf,.doc,.docx,.jpg,.png,.jpeg" required>
+                                </div>
+                            </div>
                             <button type="button" class="btn btn-secondary prev-btn">Previous</button>
                             <button type="button" class="btn btn-primary next-btn">Next</button>
                         </div>
-
 
                         <div id="form-page-4" class="form-page" style="display:none;">
                             <div id="registration-image-container">

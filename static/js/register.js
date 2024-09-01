@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const companyNameGroup = document.getElementById('company_name_group');
     const companyLogoGroup = document.getElementById('company_logo_group');
     const sameAsShippingCheckbox = document.getElementById('same-as-shipping');
+    const w9Container = document.getElementById('w9-container');
 
     let currentPage = 0;
 
@@ -62,8 +63,10 @@ document.addEventListener('DOMContentLoaded', function () {
         businessButton.classList.add('btn-primary');
         personalButton.classList.remove('btn-primary');
         personalButton.classList.add('btn-secondary');
-        companyNameGroup.style.display = 'block';
+        companyNameGroup.style.display = 'flex';
+        w9Container.style.display = 'block';
         companyLogoGroup.style.display = 'block';
+
     });
 
     personalButton.addEventListener('click', function () {
@@ -73,6 +76,7 @@ document.addEventListener('DOMContentLoaded', function () {
         businessButton.classList.remove('btn-primary');
         businessButton.classList.add('btn-secondary');
         companyNameGroup.style.display = 'none';
+        w9Container.style.display = 'none';
         companyLogoGroup.style.display = 'none';
     });
 

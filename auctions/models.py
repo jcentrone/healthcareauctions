@@ -8,7 +8,7 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
-from config.storage_backends import ProfileImageStorage, CompanyLogoStorage
+from config.storage_backends import ProfileImageStorage, CompanyLogoStorage, W9Storage
 
 STATE_CHOICES = (
     ('AL', 'AL'),
@@ -69,6 +69,7 @@ class User(AbstractUser):
     phone_number = models.CharField(max_length=15, blank=True)
     profile_image = models.ImageField(storage=ProfileImageStorage(), blank=True, null=True)
     company_logo = models.ImageField(storage=CompanyLogoStorage(), blank=True, null=True)
+    company_w9 = models.FileField(storage=W9Storage(), blank=True, null=True)
 
     def __str__(self):
         return self.username

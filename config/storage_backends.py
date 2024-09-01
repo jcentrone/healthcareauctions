@@ -21,3 +21,8 @@ class CompanyLogoStorage(GoogleCloudStorage):
     location = 'company_logos'
     bucket_name = 'healthcare_auctions_auction_images'
     credentials = credentials
+
+class W9Storage(GoogleCloudStorage):
+    location = 'w9_storage'
+    bucket_name = 'healthcare_auctions_w9_storage'
+    credentials = credentials
