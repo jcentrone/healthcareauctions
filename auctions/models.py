@@ -1,4 +1,5 @@
 from datetime import timedelta
+from decimal import Decimal
 
 from cryptography.fernet import Fernet
 from django.conf import settings
@@ -255,6 +256,7 @@ class ProductDetail(models.Model):
     def __str__(self):
         return f'ProductDetail #{self.id} for Auction #{self.auction.id}'
 
+
 class AuctionView(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='auction_views')
     auction = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name='views')
@@ -295,6 +297,45 @@ class Comment(models.Model):
         return f'Comment #{self.id}: {self.user.username} on {self.auction.title}: {self.comment}'
 
 
+# MESSAGING
+class Message(models.Model):
+    MESSAGE_TYPE_CHOICES = [
+        ('question', 'Question'),
+        ('system', 'System Message'),
+        ('cs', 'Customer Service'),
+    ]
+
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages', null=True,
+                                  blank=True)
+    listing = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name='messages', null=True, blank=True)
+    message_type = models.CharField(max_length=10, choices=MESSAGE_TYPE_CHOICES)
+    subject = models.CharField(max_length=255)
+    body = models.TextField(null=True, blank=True)
+    # date_sent = models.DateTimeField(default=timezone.now)
+    date_sent = models.DateTimeField(auto_now_add=True)
+    date_responded = models.DateTimeField(null=True, blank=True)
+    date_read = models.DateTimeField(null=True, blank=True)
+    read = models.BooleanField(default=False)
+    response_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='responses')
+    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='replies')
+    archived = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'{self.subject} from {self.sender.username} to {self.recipient.username if self.recipient else "System"}'
+
+    @classmethod
+    def unread_count(cls, user):
+        return cls.objects.filter(recipient=user, read=False).count()
+
+    def get_thread(self):
+        return Message.objects.filter(Q(id=self.id) | Q(parent=self)).order_by('date_sent')
+
+    @property
+    def is_read(self):
+        return self.read
+
+
 # ORDER MANAGEMENT
 class Cart(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='cart')
@@ -328,6 +369,9 @@ class CartItem(models.Model):
         return self.auction.get_images.first()
 
 
+
+
+
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     auction = models.ForeignKey(Auction, on_delete=models.CASCADE)
@@ -355,13 +399,16 @@ class Order(models.Model):
     def calculate_total(self):
         # Logic to calculate total based on cart items, tax, and shipping
         items_total = sum(item.total_price() for item in self.cart.items.all())
-        shipping_charges = self.get_shipping_charges()
+        shipping_charges = self.carrier.shipping_cost if self.carrier else 0.00
         return items_total + self.tax_amount + shipping_charges
 
     def get_shipping_charges(self):
-        carrier = self.carrier
-        return carrier.shipping_cost if carrier else 0.00
-
+        # If there's a carrier associated with the order, return its shipping cost
+        if self.carriers.exists():
+            carrier = self.carriers.first()  # Assuming there is only one carrier per order
+            total_shipping_cost = sum(carrier.shipping_cost for parcel in self.parcels.all())
+            return total_shipping_cost if total_shipping_cost else Decimal(0.00)
+        return Decimal(0.00)
 
 
 class OrderItem(models.Model):
@@ -372,6 +419,9 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f'{self.quantity}x {self.auction.title}'
+
+    def total_price(self):
+        return self.price
 
 
 class ShippingAddress(models.Model):
@@ -465,46 +515,6 @@ class Payment(models.Model):
     def get_cvv(self):
         return self.decrypt_data(self.encrypted_cvv_number)
 
-
-# MESSAGING
-class Message(models.Model):
-    MESSAGE_TYPE_CHOICES = [
-        ('question', 'Question'),
-        ('system', 'System Message'),
-        ('cs', 'Customer Service'),
-    ]
-
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
-    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages', null=True,
-                                  blank=True)
-    listing = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name='messages', null=True, blank=True)
-    message_type = models.CharField(max_length=10, choices=MESSAGE_TYPE_CHOICES)
-    subject = models.CharField(max_length=255)
-    body = models.TextField(null=True, blank=True)
-    # date_sent = models.DateTimeField(default=timezone.now)
-    date_sent = models.DateTimeField(auto_now_add=True)
-    date_responded = models.DateTimeField(null=True, blank=True)
-    date_read = models.DateTimeField(null=True, blank=True)
-    read = models.BooleanField(default=False)
-    response_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='responses')
-    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='replies')
-    archived = models.BooleanField(default=False)
-
-    def __str__(self):
-        return f'{self.subject} from {self.sender.username} to {self.recipient.username if self.recipient else "System"}'
-
-    @classmethod
-    def unread_count(cls, user):
-        return cls.objects.filter(recipient=user, read=False).count()
-
-    def get_thread(self):
-        return Message.objects.filter(Q(id=self.id) | Q(parent=self)).order_by('date_sent')
-
-    @property
-    def is_read(self):
-        return self.read
-
-
 class Carrier(models.Model):
     CARRIER_CHOICES = [
         ('UPS', 'UPS'),
@@ -519,7 +529,7 @@ class Carrier(models.Model):
         ('3 Day', '3 Day'),
     ]
 
-    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='carrier')
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='carriers')
     carrier = models.CharField(max_length=50, choices=CARRIER_CHOICES, default='UPS')
     delivery_method = models.CharField(max_length=50, choices=DELIVERY_METHOD_CHOICES, default='Ground')
     shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -527,10 +537,8 @@ class Carrier(models.Model):
     def __str__(self):
         return f'{self.carrier} - {self.delivery_method} (Order #{self.order.id})'
 
-
 class Parcel(models.Model):
-    carrier = models.ForeignKey(Carrier, on_delete=models.CASCADE, related_name='parcels')
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='parcels', null=True, blank=True)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='parcels')
     height = models.DecimalField(max_digits=6, decimal_places=2)
     length = models.DecimalField(max_digits=6, decimal_places=2)
     width = models.DecimalField(max_digits=6, decimal_places=2)
@@ -551,8 +559,15 @@ class Parcel(models.Model):
     ], default='pending')
 
     def __str__(self):
-        return f'Parcel for {self.carrier} (Order #{self.carrier.order.id})'
+        return f'Parcel for Order #{self.order.id}'
 
     @property
     def volume(self):
         return self.height * self.length * self.width
+
+    def save(self, *args, **kwargs):
+        # Check if the order has a carrier and set it for the parcel
+        if not hasattr(self, 'carrier') and self.order.carriers.exists():
+            self.carrier = self.order.carriers.first()
+        super().save(*args, **kwargs)
+

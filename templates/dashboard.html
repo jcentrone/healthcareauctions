@@ -149,6 +149,29 @@
 
                                                 <dt class="col-sm-4">Shipping Method</dt>
                                                 <dd class="col-sm-8">{{ order.shipping_method }}</dd>
+
+                                                <!-- Carrier and Parcel Info -->
+                                                <dt class="col-sm-4">Carrier</dt>
+                                                <dd class="col-sm-8">{{ order.carrier.carrier }}
+                                                    - {{ order.carrier.delivery_method }}</dd>
+
+                                                <dt class="col-sm-4">Shipping Cost</dt>
+                                                <dd class="col-sm-8">${{ order.carrier.shipping_cost }}</dd>
+
+                                                <dt class="col-sm-4">Tracking Number(s)</dt>
+                                                <dd class="col-sm-8">
+                                                    <div>
+                                                        {% for parcel in order.parcels.all %}
+                                                            <div>
+                                                                Tracking Number: {{ parcel.tracking_number }}<br>
+                                                                Status: {{ parcel.delivery_status|capfirst }}<br>
+                                                                Dimensions: {{ parcel.length }} x {{ parcel.width }}
+                                                                x {{ parcel.height }}<br>
+                                                                Weight: {{ parcel.weight }} lbs
+                                                            </div>
+                                                        {% endfor %}
+                                                    </div>
+                                                </dd>
                                             </dl>
 
                                             <h6>Item Info</h6>
@@ -167,6 +190,7 @@
                                     </div>
                                 </div>
                             </div>
+
 
                         {% empty %}
                             <tr>

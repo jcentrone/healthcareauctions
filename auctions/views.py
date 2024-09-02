@@ -24,9 +24,10 @@ from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, 
     ShippingMethodForm, ShippingAddressForm, BillingAddressForm, CreditCardForm, ACHForm, ZelleForm, VenmoForm, \
     PayPalForm, CashAppForm
 from .models import Bid, Category, Image, User, Address, CartItem, Cart, ProductDetail, Message, Order, Payment, \
-    OrderItem
+    OrderItem, Parcel
 from .utils.helpers import update_categories_from_fda
 from .utils.openai import get_chat_completion_request
+from .utils.ups import track_parcel
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -1174,3 +1175,18 @@ def archive_message(request, message_id):
     message.archived = True
     message.save()
     return JsonResponse({'status': 'success'})
+
+def track_parcel_view(request, parcel_id):
+    parcel = get_object_or_404(Parcel, id=parcel_id)
+
+    try:
+        tracking_info = track_parcel(parcel)
+        return JsonResponse({
+            'status': 'success',
+            'tracking_info': tracking_info,
+        })
+    except ValueError as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e),
+        })

@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.contrib import admin
 
 from .models import Auction, Image, Bid, Comment, Category, User, Message, Order, OrderItem, ShippingAddress, \
@@ -120,21 +122,28 @@ class PaymentInline(admin.TabularInline):
     decrypted_cvv.short_description = 'CVV'
 
 
+class CarrierInline(admin.TabularInline):
+    model = Carrier
+    can_delete = True
+    extra = 0
+    # max_num = 1  # Limit to one Carrier
+    #
+    # def get_max_num(self, request, obj=None, **kwargs):
+    #     if obj and obj.carriers.exists():
+    #         return 1  # Prevent adding more than one Carrier
+    #     return super().get_max_num(request, obj, **kwargs)
+
+    # def has_add_permission(self, request, obj=None):
+    #     # Allow adding a Carrier only if one doesn't exist
+    #     if obj and obj.carriers.exists():
+    #         return False
+    #     return super().has_add_permission(request, obj)
+
+
+
 class ParcelInline(admin.TabularInline):
     model = Parcel
-    extra = 1
-    fields = (
-        'height',
-        'length',
-        'width',
-        'weight',
-    )
-
-
-class CarrierInline(admin.StackedInline):
-    model = Carrier
     extra = 0
-    # readonly_fields = ('order',)
 
 
 class OrderAdmin(admin.ModelAdmin):
@@ -206,13 +215,12 @@ class OrderAdmin(admin.ModelAdmin):
     user_email.short_description = 'User Email'
 
     def save_model(self, request, obj, form, change):
-        # Update total amount by recalculating it using tax and shipping charges
-        if obj.tax_amount is None:
-            obj.tax_amount = 0
-
-        items_total = sum(item.price * item.quantity for item in obj.items.all())
-        obj.total_amount = items_total + obj.tax_amount + obj.get_shipping_charges()
-
+        # Calculate items total
+        items_total = sum(item.total_price() for item in obj.items.all())
+        # Ensure shipping charges are a Decimal
+        shipping_charges = Decimal(obj.get_shipping_charges())
+        # Calculate total amount
+        obj.total_amount = items_total + obj.tax_amount + shipping_charges
         super().save_model(request, obj, form, change)
 
 
