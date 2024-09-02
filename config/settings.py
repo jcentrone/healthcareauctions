@@ -191,3 +191,8 @@ ENCRYPTION_KEY = os.getenv('ENCRYPTION_KEY',
 # Ensure the key is not missing
 if not ENCRYPTION_KEY:
     raise ValueError("No ENCRYPTION_KEY set for Fernet symmetric encryption.")
+
+# UPS Credentials
+UPS_ACCESS_LICENSE_NUMBER = os.eviron.get('UPS_ACCESS_LICENSE_NUMBER')
+UPS_USERNAME = os.eviron.get('UPS_USERNAME')
+UPS_PASSWORD = os.eviron.get('UPS_PASSWORD')

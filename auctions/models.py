@@ -330,6 +330,7 @@ class CartItem(models.Model):
 
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    auction = models.ForeignKey(Auction, on_delete=models.CASCADE)
     cart = models.OneToOneField(Cart, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -518,25 +519,9 @@ class Carrier(models.Model):
         ('3 Day', '3 Day'),
     ]
 
-    DELIVERY_STATUS = [
-        ('pending', 'Pending'),
-        ('shipped', 'Shipped'),
-        ('in_transit', 'In Transit'),
-        ('out_for_delivery', 'Out for Delivery'),
-        ('delivered', 'Delivered'),
-        ('delayed', 'Delayed'),
-        ('failed_attempt', 'Failed Attempt'),
-        ('returned_to_sender', 'Returned to Sender'),
-        ('held_at_location', 'Held at Location'),
-        ('exception', 'Exception'),
-        ('cancelled', 'Cancelled'),
-    ]
-
     order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='carrier')
     carrier = models.CharField(max_length=50, choices=CARRIER_CHOICES, default='UPS')
     delivery_method = models.CharField(max_length=50, choices=DELIVERY_METHOD_CHOICES, default='Ground')
-    tracking_number = models.CharField(max_length=100, null=True, blank=True)
-    delivery_status = models.CharField(max_length=50, choices=DELIVERY_STATUS, default='pending')
     shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def __str__(self):
@@ -550,6 +535,20 @@ class Parcel(models.Model):
     length = models.DecimalField(max_digits=6, decimal_places=2)
     width = models.DecimalField(max_digits=6, decimal_places=2)
     weight = models.DecimalField(max_digits=6, decimal_places=2)
+    tracking_number = models.CharField(max_length=100, null=True, blank=True)
+    delivery_status = models.CharField(max_length=50, choices=[
+        ('pending', 'Pending'),
+        ('shipped', 'Shipped'),
+        ('in_transit', 'In Transit'),
+        ('out_for_delivery', 'Out for Delivery'),
+        ('delivered', 'Delivered'),
+        ('delayed', 'Delayed'),
+        ('failed_attempt', 'Failed Attempt'),
+        ('returned_to_sender', 'Returned to Sender'),
+        ('held_at_location', 'Held at Location'),
+        ('exception', 'Exception'),
+        ('cancelled', 'Cancelled'),
+    ], default='pending')
 
     def __str__(self):
         return f'Parcel for {self.carrier} (Order #{self.carrier.order.id})'

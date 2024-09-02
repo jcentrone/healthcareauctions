@@ -53,37 +53,127 @@
             </div>
             <!-- My Orders -->
             <div class='card mb-4'>
-                <div class='card-header'>
-                    <i class='fas fa-table me-1'></i>
-                    My Orders
+                <div class='card-header d-flex justify-content-between align-items-center'>
+                    <div>
+                        <i class='fas fa-table me-1'></i>
+                        My Orders
+                    </div>
+                    <div>
+                        <form method="GET" class="d-flex">
+                            <select name="status" class="form-select me-2">
+                                <option value="">All Orders</option>
+                                <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>
+                                    Pending
+                                </option>
+                                <option value="processing"
+                                        {% if request.GET.status == 'processing' %}selected{% endif %}>Processing
+                                </option>
+                                <option value="shipped" {% if request.GET.status == 'shipped' %}selected{% endif %}>
+                                    Shipped
+                                </option>
+                                <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>
+                                    Completed
+                                </option>
+                            </select>
+                            <input type="date" name="date" class="form-control me-2" value="{{ request.GET.date }}">
+                            <button type="submit" class="btn btn-primary">Filter</button>
+                        </form>
+                    </div>
                 </div>
                 <div class='card-body'>
                     <table class='table table-hover'>
-                        <!-- Order table headers and content here -->
-                        <table class="table table-hover">
-                            <thead>
+                        <thead>
+                        <tr>
+                            <th></th>
+                            <th>Order Details</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for order in orders %}
                             <tr>
-                                <th>Order ID</th>
-                                <th>Product</th>
-                                <th>Status</th>
-                                <th>Created At</th>
+                                <td class="align-items-center">
+                                    {% if order.auction.get_image %}
+                                        <img src="{{ order.auction.get_image.image.url }}"
+                                             alt="{{ order.auction.title }}"
+                                             style="width: 80px; height: 80px; object-fit: cover;">
+                                    {% else %}
+                                        <img src="{% static 'images/no_image.png' %}" alt="No Image"
+                                             style="width: 80px; height: 80px; object-fit: cover;">
+                                    {% endif %}
+                                </td>
+                                <td class="align-items-center">
+                                    <strong>Product:</strong> {{ order.auction.title }}<br>
+                                    <strong>Status:</strong> {{ order.status|capfirst }}<br>
+                                    <strong>Ordered:</strong> {{ order.created_at }}<br>
+                                    <strong>Order ID:</strong> {{ order.id }}<br>
+                                </td>
+
+                                <td class="align-items-center">
+                                    <button class="btn btn-info btn-sm" data-bs-toggle="modal"
+                                            data-bs-target="#orderModal{{ order.id }}">View Details
+                                    </button>
+                                    <button class="btn btn-warning btn-sm">Help</button>
+                                    <button class="btn btn-secondary btn-sm">Add Note</button>
+                                </td>
                             </tr>
-                            </thead>
-                            <tbody>
-                            {% for order in orders %}
-                                <tr>
-                                    <td>{{ order.id }}</td>
-                                    <td>{{ order.product_name }}</td>
-                                    <td>{{ order.status }}</td>
-                                    <td>{{ order.created_at }}</td>
-                                </tr>
-                            {% empty %}
-                                <tr>
-                                    <td colspan="4">No orders found.</td>
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
+
+                            <!-- Order Details Modal -->
+                            <div class="modal fade" id="orderModal{{ order.id }}" tabindex="-1"
+                                 aria-labelledby="orderModalLabel{{ order.id }}" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="orderModalLabel{{ order.id }}">Order Details
+                                                - {{ order.id }}</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <h6>Order Info</h6>
+                                            <dl class="row">
+                                                <dt class="col-sm-4">Order Number</dt>
+                                                <dd class="col-sm-8">{{ order.id }}</dd>
+
+                                                <dt class="col-sm-4">Total</dt>
+                                                <dd class="col-sm-8">${{ order.total_amount }}</dd>
+
+                                                <dt class="col-sm-4">Time Placed</dt>
+                                                <dd class="col-sm-8">{{ order.created_at }}</dd>
+                                            </dl>
+
+                                            <h6>Shipping Info</h6>
+                                            <dl class="row">
+                                                <dt class="col-sm-4">Shipping Address</dt>
+                                                <dd class="col-sm-8">{{ order.shipping_address }}</dd>
+
+                                                <dt class="col-sm-4">Shipping Method</dt>
+                                                <dd class="col-sm-8">{{ order.shipping_method }}</dd>
+                                            </dl>
+
+                                            <h6>Item Info</h6>
+                                            <ul>
+                                                {% for item in order.items.all %}
+                                                    <li>{{ item.quantity }}x {{ item.auction.title }} -
+                                                        ${{ item.price }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                Close
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        {% empty %}
+                            <tr>
+                                <td colspan="3">No orders found.</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
                     </table>
 
                     {% if orders.has_other_pages %}

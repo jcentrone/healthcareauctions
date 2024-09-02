@@ -119,6 +119,9 @@ def index(request):
 
 @login_required
 def dashboard(request):
+    """
+    The default route which renders a Dashboard page
+    """
     # Get all bids made by the user
     bids = Bid.objects.filter(user=request.user)
 
@@ -145,15 +148,25 @@ def dashboard(request):
         )
     ).distinct()
 
-    for auction in auctions_with_user_bids:
-        auction.image = auction.get_images.first()
+    # Filter orders by status and date
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')
 
-    # Get user orders before pagination
-    orders_queryset = Order.objects.filter(user=request.user).order_by('-created_at')
+    status_filter = request.GET.get('status')
+    date_filter = request.GET.get('date')
 
-    # Paginate auctions
+    if status_filter:
+        orders = orders.filter(status=status_filter)
+
+    if date_filter:
+        orders = orders.filter(created_at__date=date_filter)
+
+    # Paginate the results
     auction_page = request.GET.get('auction_page', 1)
+    orders_page = request.GET.get('order_page', 1)
+
     auction_paginator = Paginator(auctions_with_user_bids, 5)
+    orders_paginator = Paginator(orders, 5)
+
     try:
         auctions_with_user_bids = auction_paginator.page(auction_page)
     except PageNotAnInteger:
@@ -161,17 +174,12 @@ def dashboard(request):
     except EmptyPage:
         auctions_with_user_bids = auction_paginator.page(auction_paginator.num_pages)
 
-    # Paginate orders
-    order_page = request.GET.get('order_page', 1)
-    order_paginator = Paginator(orders_queryset, 5)
     try:
-        orders = order_paginator.page(order_page)
+        orders = orders_paginator.page(orders_page)
     except PageNotAnInteger:
-        orders = order_paginator.page(1)
+        orders = orders_paginator.page(1)
     except EmptyPage:
-        orders = order_paginator.page(order_paginator.num_pages)
-
-    print(orders)
+        orders = orders_paginator.page(orders_paginator.num_pages)
 
     return render(request, 'dashboard.html', {
         'categories': Category.objects.all(),
@@ -180,7 +188,7 @@ def dashboard(request):
         'watchlist_count': watchlist.count(),
         'bids_count': bids.count(),
         'orders': orders,
-        'orders_count': orders_queryset.count(),  # Using the original queryset for the count
+        'orders_count': orders_paginator.count,
         'title': 'Dashboard',
     })
 
@@ -872,10 +880,14 @@ def checkout(request):
             shipping_method = shipping_method_form.cleaned_data.get('shipping_method')
             special_instructions = shipping_method_form.cleaned_data.get('special_instructions')
 
+            # Assuming the cart contains items from the same auction (you might need to enforce this rule elsewhere)
+            auction = cart.items.first().auction
+
             order, created = Order.objects.get_or_create(
                 cart=cart,
                 defaults={
                     'user': request.user,
+                    'auction': auction,  # Set the auction field
                     'total_amount': cart.total_cost(),
                     'shipping_method': shipping_method,
                     'special_instructions': special_instructions,
@@ -930,8 +942,9 @@ def checkout(request):
 
             # Clear the user's cart after the order is successfully placed
             cart.items.all().delete()
-            # Mark the listing inactive
+            # Mark the auction as inactive
             order.auction.active = False
+            order.auction.save()
 
             # Serialize the order
             order_data = model_to_dict(order)
@@ -970,6 +983,7 @@ def checkout(request):
         'cashapp_form': cashapp_form,
         'cart': cart,
     })
+
 
 
 @login_required
