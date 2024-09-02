@@ -37,7 +37,7 @@ from .models import Auction, AuctionView
 
 def index(request):
     """
-    The default route which renders a Dashboard page
+    The default route which renders the home page
     """
     unread_message_count = 0
     watchlist, cart_count = None, None
@@ -119,9 +119,6 @@ def index(request):
 
 @login_required
 def dashboard(request):
-    """
-    The default route which renders a Dashboard page
-    """
     # Get all bids made by the user
     bids = Bid.objects.filter(user=request.user)
 
@@ -148,21 +145,33 @@ def dashboard(request):
         )
     ).distinct()
 
-    # Print the auctions for debugging purposes
     for auction in auctions_with_user_bids:
         auction.image = auction.get_images.first()
-        print(
-            f"Auction: {auction.title}, Highest Bid: {auction.highest_bid}, User is Highest Bidder: {auction.user_is_highest_bidder}")
 
-    # Paginate the results
-    page = request.GET.get('page', 1)
-    paginator = Paginator(auctions_with_user_bids, 5)
+    # Get user orders before pagination
+    orders_queryset = Order.objects.filter(user=request.user).order_by('-created_at')
+
+    # Paginate auctions
+    auction_page = request.GET.get('auction_page', 1)
+    auction_paginator = Paginator(auctions_with_user_bids, 5)
     try:
-        pages = paginator.page(page)
+        auctions_with_user_bids = auction_paginator.page(auction_page)
     except PageNotAnInteger:
-        pages = paginator.page(1)
+        auctions_with_user_bids = auction_paginator.page(1)
     except EmptyPage:
-        pages = paginator.page(paginator.num_pages)
+        auctions_with_user_bids = auction_paginator.page(auction_paginator.num_pages)
+
+    # Paginate orders
+    order_page = request.GET.get('order_page', 1)
+    order_paginator = Paginator(orders_queryset, 5)
+    try:
+        orders = order_paginator.page(order_page)
+    except PageNotAnInteger:
+        orders = order_paginator.page(1)
+    except EmptyPage:
+        orders = order_paginator.page(order_paginator.num_pages)
+
+    print(orders)
 
     return render(request, 'dashboard.html', {
         'categories': Category.objects.all(),
@@ -170,7 +179,8 @@ def dashboard(request):
         'auction_count': auction_count,
         'watchlist_count': watchlist.count(),
         'bids_count': bids.count(),
-        'pages': pages,
+        'orders': orders,
+        'orders_count': orders_queryset.count(),  # Using the original queryset for the count
         'title': 'Dashboard',
     })
 
@@ -209,7 +219,6 @@ def register(request):
         company_w9 = request.FILES.get('company_w9')
         reseller_certificate = request.FILES.get('reseller_certificate')
 
-
         if password != confirmation:
             return render(request, 'register.html', {
                 'message': 'Passwords must match.',
@@ -237,7 +246,8 @@ def register(request):
                 user.company_w9 = w9_storage.save(company_w9.name, company_w9)
 
             if reseller_certificate:
-                reseller_certificate_storage = get_storage_class('myapp.custom_storage_backend.ResellerCertificateStorage')()
+                reseller_certificate_storage = get_storage_class(
+                    'myapp.custom_storage_backend.ResellerCertificateStorage')()
                 user.reseller_cert = reseller_certificate_storage.save(company_w9.name, company_w9)
 
             # Save the user object to persist changes
@@ -623,6 +633,7 @@ def watchlist_view(request):
         'title': 'Watchlist'
     })
 
+
 # Should be able to remove
 @login_required
 def watchlist_edit(request, auction_id, reverse_method):
@@ -641,6 +652,7 @@ def watchlist_edit(request, auction_id, reverse_method):
         return HttpResponseRedirect(reverse('active_auctions_with_id', kwargs={'auction_id': auction_id}))
     else:
         return HttpResponseRedirect(reverse(reverse_method))
+
 
 # Should be able to remove
 def auction_details_view(request, auction_id):

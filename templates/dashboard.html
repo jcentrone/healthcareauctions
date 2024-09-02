@@ -51,6 +51,81 @@
                     </div>
                 </div>
             </div>
+            <!-- My Orders -->
+            <div class='card mb-4'>
+                <div class='card-header'>
+                    <i class='fas fa-table me-1'></i>
+                    My Orders
+                </div>
+                <div class='card-body'>
+                    <table class='table table-hover'>
+                        <!-- Order table headers and content here -->
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Product</th>
+                                <th>Status</th>
+                                <th>Created At</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for order in orders %}
+                                <tr>
+                                    <td>{{ order.id }}</td>
+                                    <td>{{ order.product_name }}</td>
+                                    <td>{{ order.status }}</td>
+                                    <td>{{ order.created_at }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4">No orders found.</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </table>
+
+                    {% if orders.has_other_pages %}
+                        <div class='d-flex justify-content-center'>
+                            <ul class='pagination'>
+                                {% if orders.has_previous %}
+                                    <li class='page-item'>
+                                        <a class='page-link' href='?order_page={{ orders.previous_page_number }}'>
+                                            &laquo;
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class='page-item disabled'>
+                                        <a class='page-link' href='#'>&laquo;</a>
+                                    </li>
+                                {% endif %}
+                                {% for i in orders.paginator.page_range %}
+                                    {% if orders.number == i %}
+                                        <li class='page-item active'>
+                                            <a class='page-link' href='#'>{{ i }}</a>
+                                        </li>
+                                    {% else %}
+                                        <li class='page-item'>
+                                            <a class='page-link' href='?order_page={{ i }}'>{{ i }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                {% if orders.has_next %}
+                                    <li class='page-item'>
+                                        <a class='page-link'
+                                           href='?order_page={{ orders.next_page_number }}'>&raquo;</a>
+                                    </li>
+                                {% else %}
+                                    <li class='page-item disabled'>
+                                        <a class='page-link' href='#'>&raquo;</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
 
 
             {#            <div class="recent-activity">#}
@@ -126,52 +201,39 @@
                     My Active Bids
                 </div>
                 <div class='card-body'>
-
                     <table class='table table-hover'>
-                        <thead>
-                        <tr>
-                            <th scope="col"></th>
-                            <th scope='col'>Title</th>
-                            <th scope='col'>Category</th>
-                            <th scope='col'>Date Created</th>
-                            <th scope='col'>Starting Bid</th>
-                            <th scope='col'>Current Bid</th>
-                            <th scope='col'>High Bidder</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% for auction in pages %}
+                        <table class="table table-hover">
+                            <thead>
                             <tr>
-                                <td>
-                                    {% if auction.image %}
-                                        <img class="dash-img" src="{{ auction.image.image.url }}"
-                                             alt="{{ auction.title }}">
-                                    {% else %}
-                                        <img class="dash-img" src="{% static 'images/no_image.png' %}"
-                                             alt="Default Image">
-                                    {% endif %}
-                                </td>
-                                <td>{{ auction.title }}</td>
-                                <td>{{ auction.category }}</td>
-                                <td>{{ auction.formatted_time_remaining }}</td>
-                                <td>{{ auction.starting_bid }}</td>
-                                <td>{{ auction.current_bid }}</td>
-                                <td>{% if auction.user_is_highest_bidder %}
-                                    <p>Yes</p>
-                                {% else %}
-                                    <p>No</p>
-                                {% endif %}</td>
+                                <th>Auction Title</th>
+                                <th>Highest Bid</th>
+                                <th>Your Bid</th>
+                                <th>Is Highest Bidder</th>
                             </tr>
-                        {% endfor %}
-                        </tbody>
+                            </thead>
+                            <tbody>
+                            {% for auction in auctions %}
+                                <tr>
+                                    <td>{{ auction.title }}</td>
+                                    <td>{{ auction.highest_bid }}</td>
+                                    <td>{{ auction.user_highest_bid }}</td>
+                                    <td>{{ auction.user_is_highest_bidder }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4">No active bids found.</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
                     </table>
 
-                    {% if pages.has_other_pages %}
+                    {% if auctions.has_other_pages %}
                         <div class='d-flex justify-content-center'>
                             <ul class='pagination'>
-                                {% if pages.has_previous %}
+                                {% if auctions.has_previous %}
                                     <li class='page-item'>
-                                        <a class='page-link' href='?page={{ pages.previous_page_number }}'>
+                                        <a class='page-link' href='?auction_page={{ auctions.previous_page_number }}'>
                                             &laquo;
                                         </a>
                                     </li>
@@ -180,20 +242,20 @@
                                         <a class='page-link' href='#'>&laquo;</a>
                                     </li>
                                 {% endif %}
-                                {% for i in pages.paginator.page_range %}
-                                    {% if pages.number == i %}
+                                {% for i in auctions.paginator.page_range %}
+                                    {% if auctions.number == i %}
                                         <li class='page-item active'>
                                             <a class='page-link' href='#'>{{ i }}</a>
                                         </li>
                                     {% else %}
                                         <li class='page-item'>
-                                            <a class='page-link' href='?page={{ i }}'>{{ i }}</a>
+                                            <a class='page-link' href='?auction_page={{ i }}'>{{ i }}</a>
                                         </li>
                                     {% endif %}
                                 {% endfor %}
-                                {% if pages.has_next %}
+                                {% if auctions.has_next %}
                                     <li class='page-item'>
-                                        <a class='page-link' href='?page={{ pages.next_page_number }}'>&raquo;</a>
+                                        <a class='page-link' href='?auction_page={{ auctions.next_page_number }}'>&raquo;</a>
                                     </li>
                                 {% else %}
                                     <li class='page-item disabled'>
@@ -203,7 +265,6 @@
                             </ul>
                         </div>
                     {% endif %}
-
                 </div>
             </div>
 
