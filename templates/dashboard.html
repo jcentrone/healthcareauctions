@@ -51,371 +51,858 @@
                     </div>
                 </div>
             </div>
-            <!-- My Orders -->
-            <div class='card mb-4'>
-                <div class='card-header d-flex justify-content-between align-items-center'>
-                    <div>
-                        <i class='fas fa-table me-1'></i>
-                        My Orders
-                    </div>
-                    <div>
-                        <form method="GET" class="d-flex">
-                            <select name="status" class="form-select me-2">
-                                <option value="">All Orders</option>
-                                <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>
-                                    Pending
-                                </option>
-                                <option value="processing"
-                                        {% if request.GET.status == 'processing' %}selected{% endif %}>Processing
-                                </option>
-                                <option value="shipped" {% if request.GET.status == 'shipped' %}selected{% endif %}>
-                                    Shipped
-                                </option>
-                                <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>
-                                    Completed
-                                </option>
-                            </select>
-                            <input type="date" name="date" class="form-control me-2" value="{{ request.GET.date }}">
-                            <button type="submit" class="btn btn-primary">Filter</button>
-                        </form>
-                    </div>
+            <!-- Tab Container -->
+            <div class="card mb-4">
+                <div class="ps-3">
+                    <ul class="nav nav-tabs card-header-tabs mb-1 mt-2" id="dashboardTabs" role="tablist">
+                        <li class="nav-item border-end" role="presentation">
+                            <button class="nav-link active" id="orders-tab" data-bs-toggle="tab"
+                                    data-bs-target="#orders" type="button" role="tab" aria-controls="orders"
+                                    aria-selected="true">
+                                My Orders
+                            </button>
+                        </li>
+                        <li class="nav-item border-end" role="presentation">
+                            <button class="nav-link" id="sales-tab" data-bs-toggle="tab" data-bs-target="#sales"
+                                    type="button" role="tab" aria-controls="sales" aria-selected="false">
+                                My Sales
+                            </button>
+                        </li>
+                        <li class="nav-item border-end" role="presentation">
+                            <button class="nav-link" id="my-bids-tab" data-bs-toggle="tab"
+                                    data-bs-target="#myActiveBids"
+                                    type="button" role="tab" aria-controls="myActiveBids" aria-selected="false">
+                                My Active Bids
+                            </button>
+                        </li>
+                    </ul>
                 </div>
-                <div class='card-body'>
-                    <table class='table table-hover'>
-                        <thead>
-                        <tr>
-                            <th></th>
-                            <th>Order Details</th>
-                            <th>Actions</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% for order in orders %}
-                            <tr>
-                                <td class="align-items-center">
-                                    {% if order.auction.get_image %}
-                                        <img src="{{ order.auction.get_image.image.url }}"
-                                             alt="{{ order.auction.title }}"
-                                             style="width: 80px; height: 80px; object-fit: cover;">
-                                    {% else %}
-                                        <img src="{% static 'images/no_image.png' %}" alt="No Image"
-                                             style="width: 80px; height: 80px; object-fit: cover;">
-                                    {% endif %}
-                                </td>
-                                <td class="align-items-center">
-                                    <strong>Product:</strong> {{ order.auction.title }}<br>
-                                    <strong>Status:</strong> {{ order.status|capfirst }}<br>
-                                    <strong>Ordered:</strong> {{ order.created_at }}<br>
-                                    <strong>Order ID:</strong> {{ order.id }}<br>
-                                </td>
+                <div class="">
+                    <div class="tab-content" id="dashboardTabsContent">
+                        <!-- My Orders Tab -->
+                        <div class="tab-pane fade show active" id="orders" role="tabpanel" aria-labelledby="orders-tab">
 
-                                <td class="align-items-center">
-                                    <button class="btn btn-info btn-sm" data-bs-toggle="modal"
-                                            data-bs-target="#orderModal{{ order.id }}">View Details
-                                    </button>
-                                    <button class="btn btn-warning btn-sm">Help</button>
-                                    <button class="btn btn-secondary btn-sm">Add Note</button>
-                                </td>
-                            </tr>
+                            <!-- My Orders -->
+                            <div class='my-2 border-top'>
+                                <div class='card-header d-flex justify-content-between align-items-center'>
+                                    <div>
+                                        <i class='fas fa-table me-1'></i>
+                                        My Orders
+                                    </div>
+                                    <div>
+                                        <form method="GET" class="d-flex">
+                                            <select name="status" class="form-select me-2">
+                                                <option value="">All Orders</option>
+                                                <option value="pending"
+                                                        {% if request.GET.status == 'pending' %}selected{% endif %}>
+                                                    Pending
+                                                </option>
+                                                <option value="processing"
+                                                        {% if request.GET.status == 'processing' %}selected{% endif %}>
+                                                    Processing
+                                                </option>
+                                                <option value="shipped"
+                                                        {% if request.GET.status == 'shipped' %}selected{% endif %}>
+                                                    Shipped
+                                                </option>
+                                                <option value="completed"
+                                                        {% if request.GET.status == 'completed' %}selected{% endif %}>
+                                                    Completed
+                                                </option>
+                                            </select>
+                                            <input type="date" name="date" class="form-control me-2"
+                                                   value="{{ request.GET.date }}">
+                                            <button type="submit" class="btn btn-primary">Filter</button>
+                                        </form>
+                                    </div>
+                                </div>
+                                <div class='card-body'>
+                                    <table class='table table-hover'>
+                                        <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>Order Details</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for order in orders %}
+                                            <tr>
+                                                <td class="align-items-center">
+                                                    {% if order.auction.get_image %}
+                                                        <img src="{{ order.auction.get_image.image.url }}"
+                                                             alt="{{ order.auction.title }}"
+                                                             style="width: 80px; height: 80px; object-fit: cover;">
+                                                    {% else %}
+                                                        <img src="{% static 'images/no_image.png' %}" alt="No Image"
+                                                             style="width: 80px; height: 80px; object-fit: cover;">
+                                                    {% endif %}
+                                                </td>
+                                                <td class="align-items-center">
+                                                    <strong>Product:</strong> {{ order.auction.title }}<br>
+                                                    <strong>Status:</strong> {{ order.status|capfirst }}<br>
+                                                    <strong>Ordered:</strong> {{ order.created_at }}<br>
+                                                    <strong>Order ID:</strong> {{ order.id }}<br>
+                                                </td>
 
-                            <!-- Order Details Modal -->
-                            <div class="modal fade" id="orderModal{{ order.id }}" tabindex="-1"
-                                 aria-labelledby="orderModalLabel{{ order.id }}" aria-hidden="true">
-                                <div class="modal-dialog modal-lg">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="orderModalLabel{{ order.id }}">
-                                                {{ order.auction.title }} - Order Details</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                    aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <!-- Order Progress Bar -->
-                                            <div class="progress mb-4">
-                                                {% if order.status == 'pending' %}
-                                                    <div class="progress-bar progress-bar-striped progress-bar-animated"
-                                                         role="progressbar"
-                                                         style="width: 25%;" aria-valuenow="25" aria-valuemin="0"
-                                                         aria-valuemax="100">
-                                                        Pending
-                                                    </div>
-                                                {% elif order.status == 'processing' %}
-                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-info"
-                                                         role="progressbar"
-                                                         style="width: 50%;" aria-valuenow="50" aria-valuemin="0"
-                                                         aria-valuemax="100">
-                                                        Processing
-                                                    </div>
-                                                {% elif order.status == 'shipped' %}
-                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning"
-                                                         role="progressbar"
-                                                         style="width: 75%;" aria-valuenow="75" aria-valuemin="0"
-                                                         aria-valuemax="100">
-                                                        Shipped
-                                                    </div>
-                                                {% elif order.status == 'completed' %}
-                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
-                                                         role="progressbar"
-                                                         style="width: 100%;" aria-valuenow="100" aria-valuemin="0"
-                                                         aria-valuemax="100">
-                                                        Complete
-                                                    </div>
-                                                {% endif %}
-                                            </div>
-                                            <!-- Order Details Section -->
-                                            <div class="card mb-3">
-                                                <div class="card-header bg-light">
-                                                    <h4 class="mb-0">Order Details</h4>
-                                                </div>
-                                                <div class="card-body">
-                                                    <dl class="row">
-                                                        <dt class="col-sm-4">Order Number</dt>
-                                                        <dd class="col-sm-8">{{ order.id }}</dd>
+                                                <td class="align-items-center">
+                                                    <button class="btn btn-info btn-sm" data-bs-toggle="modal"
+                                                            data-bs-target="#orderModal{{ order.id }}">View Details
+                                                    </button>
+                                                    <button class="btn btn-warning btn-sm">Help</button>
+                                                    <button class="btn btn-secondary btn-sm">Add Note</button>
+                                                </td>
+                                            </tr>
 
-                                                        <dt class="col-sm-4">Order Placed</dt>
-                                                        <dd class="col-sm-8">{{ order.created_at }}</dd>
-                                                    </dl>
-                                                </div>
-                                            </div>
-
-                                            <!-- Shipping Info Section -->
-                                            <div class="card mb-3">
-                                                <div class="card-header bg-light">
-                                                    <h4 class="mb-0">Shipping Info</h4>
-                                                </div>
-                                                <div class="card-body">
-                                                    <dl class="row">
-                                                        <dt class="col-sm-4">Shipping Address</dt>
-                                                        <dd class="col-sm-8">
-                                                            {{ order.shipping_address.shipping_full_name }}<br>
-                                                            {{ order.shipping_address.shipping_street_address }}, {{ order.shipping_address.shipping_apartment_suite|default:"" }}<br>
-                                                            {{ order.shipping_address.shipping_city }}, {{ order.shipping_address.shipping_state }} {{ order.shipping_address.shipping_zip_code }}<br>
-                                                            {{ order.shipping_address.shipping_country }}<br>
-                                                            {{ order.shipping_address.shipping_phone_number }}
-                                                        </dd>
-
-                                                        <dt class="col-sm-4">Shipping Method</dt>
-                                                        <dd class="col-sm-8">{{ order.shipping_method|capfirst }}</dd>
-                                                    </dl>
-                                                </div>
-                                            </div>
-
-
-                                            <!-- Items Ordered Section -->
-                                            <div class="card mb-3">
-                                                <div class="card-header bg-light">
-                                                    <h4 class="mb-0">Items Ordered</h4>
-                                                </div>
-                                                <div class="card-body">
-                                                    <div class="row font-weight-bold border-bottom">
-                                                        <div class="col-md-2"></div>
-                                                        <div class="col-md-6">Item</div>
-                                                        <div class="col-md-2">Quantity</div>
-                                                        <div class="col-md-2">Price</div>
-                                                    </div>
-                                                    {% for item in order.items.all %}
-                                                        <div class="row align-items-center border-bottom py-2">
-                                                            <div class="col-md-2">
-                                                                {% if item.auction.get_image %}
-                                                                    <img src="{{ item.auction.get_image.image.url }}"
-                                                                         alt="{{ item.auction.title }}"
-                                                                         style="width: 80px; height: 80px; object-fit: cover;">
-                                                                {% else %}
-                                                                    <img src="{% static 'images/no_image.png' %}"
-                                                                         alt="No Image"
-                                                                         style="width: 80px; height: 80px; object-fit: cover;">
-                                                                {% endif %}
-                                                            </div>
-
-                                                            <div class="col-md-6">
-                                                                {{ item.auction.title }}
-                                                            </div>
-                                                            <div class="col-md-2">
-                                                                {{ item.quantity }}
-                                                            </div>
-                                                            <div class="col-md-2">
-                                                                ${{ item.price }}
-                                                            </div>
+                                            <!-- Order Details Modal -->
+                                            <div class="modal fade" id="orderModal{{ order.id }}" tabindex="-1"
+                                                 aria-labelledby="orderModalLabel{{ order.id }}" aria-hidden="true">
+                                                <div class="modal-dialog modal-lg">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title"
+                                                                id="orderModalLabel{{ order.id }}">
+                                                                {{ order.auction.title }} - Order Details</h5>
+                                                            <button type="button" class="btn-close"
+                                                                    data-bs-dismiss="modal"
+                                                                    aria-label="Close"></button>
                                                         </div>
-                                                    {% endfor %}
-                                                    <dl class="row mb-0">
-                                                        <div class="col-md-2"></div>
-                                                        <div class="col-md-6"></div>
-                                                        <dt class="col-md-2">Shipping</dt>
-                                                        <dd class="col-md-2">
-                                                            {% if order.carriers.exists %}
-                                                                ${{ order.carriers.first.shipping_cost }}
-                                                            {% else %}
-                                                                $0.00
-                                                            {% endif %}
-                                                        </dd>
-                                                    </dl>
-                                                    <dl class="row mb-0">
-                                                        <div class="col-md-2"></div>
-                                                        <div class="col-md-6"></div>
-                                                        <dt class="col-md-2">Tax</dt>
-                                                        <dd class="col-md-2">
-                                                            {% if order.tax_amount %}
-                                                                ${{ order.carriers.first.shipping_cost }}
-                                                            {% else %}
-                                                                $0.00
-                                                            {% endif %}
-                                                        </dd>
-                                                    </dl>
-                                                    <dl class="row mb-0">
-                                                        <div class="col-md-2"></div>
-                                                        <div class="col-md-6"></div>
-                                                        <dt class="col-md-2">Total</dt>
-                                                        <dd class="col-md-2 fw-bold">${{ order.total_amount }}</dd>
-                                                    </dl>
-                                                </div>
-                                            </div>
-
-
-                                            <!-- Delivery Info Section -->
-                                            <div class="card">
-                                                <div class="card-header bg-light">
-                                                    <h4 class="mb-0">Delivery Info</h4>
-                                                </div>
-                                                <div class="card-body">
-                                                    {% if order.carriers %}
-                                                        <dl class="row">
-                                                            <dt class="col-sm-4">Carrier</dt>
-                                                            <dd class="col-sm-8">
-                                                                {% if order.carriers.exists %}
-                                                                    {{ order.carriers.first.carrier }} -
-                                                                    {{ order.carriers.first.delivery_method }}
-                                                                {% else %}
-                                                                    No carrier assigned
+                                                        <div class="modal-body">
+                                                            <!-- Order Progress Bar -->
+                                                            <div class="progress mb-4">
+                                                                {% if order.status == 'pending' %}
+                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                                                         role="progressbar"
+                                                                         style="width: 25%;" aria-valuenow="25"
+                                                                         aria-valuemin="0"
+                                                                         aria-valuemax="100">
+                                                                        Pending
+                                                                    </div>
+                                                                {% elif order.status == 'processing' %}
+                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-info"
+                                                                         role="progressbar"
+                                                                         style="width: 50%;" aria-valuenow="50"
+                                                                         aria-valuemin="0"
+                                                                         aria-valuemax="100">
+                                                                        Processing
+                                                                    </div>
+                                                                {% elif order.status == 'shipped' %}
+                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning"
+                                                                         role="progressbar"
+                                                                         style="width: 75%;" aria-valuenow="75"
+                                                                         aria-valuemin="0"
+                                                                         aria-valuemax="100">
+                                                                        Shipped
+                                                                    </div>
+                                                                {% elif order.status == 'completed' %}
+                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                                                                         role="progressbar"
+                                                                         style="width: 100%;" aria-valuenow="100"
+                                                                         aria-valuemin="0"
+                                                                         aria-valuemax="100">
+                                                                        Complete
+                                                                    </div>
                                                                 {% endif %}
-                                                            </dd>
+                                                            </div>
+                                                            <!-- Order Details Section -->
+                                                            <div class="card mb-3">
+                                                                <div class="card-header bg-light">
+                                                                    <h4 class="mb-0">Order Details</h4>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <dl class="row">
+                                                                        <dt class="col-sm-4">Order Number</dt>
+                                                                        <dd class="col-sm-8">{{ order.id }}</dd>
 
-{#                                                            <dt class="col-sm-4">Shipping Cost</dt>#}
-{#                                                            <dd class="col-sm-8">#}
-{#                                                                {% if order.carriers.exists %}#}
-{#                                                                    ${{ order.carriers.first.shipping_cost }}#}
-{#                                                                {% else %}#}
-{#                                                                    N/A#}
-{#                                                                {% endif %}#}
-{#                                                            </dd>#}
-                                                            <dt class="col-sm-4">Tracking Number(s)</dt>
-                                                            <dd class="col-sm-8">
-                                                                <div>
-                                                                    {% for parcel in order.parcels.all %}
-                                                                        <div class="mb-2">
-                                                                            Tracking
-                                                                            Number: {{ parcel.tracking_number }}<br>
-                                                                            Status: {{ parcel.delivery_status|capfirst }}<br>
-                                                                            Dimensions: {{ parcel.length }}
-                                                                            x {{ parcel.width }}
-                                                                            x {{ parcel.height }}<br>
-                                                                            Weight: {{ parcel.weight }} lbs
-                                                                            <div class="progress mb-4">
-                                                                                {% if parcel.delivery_status == 'pending' %}
-                                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated"
-                                                                                         role="progressbar"
-                                                                                         style="width: 25%;"
-                                                                                         aria-valuenow="25"
-                                                                                         aria-valuemin="0"
-                                                                                         aria-valuemax="100">
-                                                                                        Pending
-                                                                                    </div>
-                                                                                {% elif parcel.delivery_status == 'shipped' or parcel.delivery_status == 'in_transit' or parcel.delivery_status == 'out_for_delivery' %}
-                                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning"
-                                                                                         role="progressbar"
-                                                                                         style="width: 50%;"
-                                                                                         aria-valuenow="50"
-                                                                                         aria-valuemin="0"
-                                                                                         aria-valuemax="100">
-                                                                                        Shipped
-                                                                                    </div>
-                                                                                {% elif parcel.delivery_status == 'delivered' %}
-                                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
-                                                                                         role="progressbar"
-                                                                                         style="width: 100%;"
-                                                                                         aria-valuenow="100"
-                                                                                         aria-valuemin="0"
-                                                                                         aria-valuemax="100">
-                                                                                        Delivered
-                                                                                    </div>
-                                                                                {% elif parcel.delivery_status == 'delayed' or parcel.delivery_status == 'failed_attempt' or parcel.delivery_status == 'returned_to_sender' or parcel.delivery_status == 'held_at_location' or parcel.delivery_status == 'exception' or parcel.delivery_status == 'cancelled' %}
-                                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger"
-                                                                                         role="progressbar"
-                                                                                         style="width: 75%;"
-                                                                                         aria-valuenow="75"
-                                                                                         aria-valuemin="0"
-                                                                                         aria-valuemax="100">
-                                                                                        Issues
-                                                                                    </div>
+                                                                        <dt class="col-sm-4">Order Placed</dt>
+                                                                        <dd class="col-sm-8">{{ order.created_at }}</dd>
+                                                                    </dl>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Shipping Info Section -->
+                                                            <div class="card mb-3">
+                                                                <div class="card-header bg-light">
+                                                                    <h4 class="mb-0">Shipping Info</h4>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <dl class="row">
+                                                                        <dt class="col-sm-4">Shipping Address</dt>
+                                                                        <dd class="col-sm-8">
+                                                                            {{ order.shipping_address.shipping_full_name }}<br>
+                                                                            {{ order.shipping_address.shipping_street_address }}, {{ order.shipping_address.shipping_apartment_suite|default:"" }}<br>
+                                                                            {{ order.shipping_address.shipping_city }}, {{ order.shipping_address.shipping_state }} {{ order.shipping_address.shipping_zip_code }}<br>
+                                                                            {{ order.shipping_address.shipping_country }}<br>
+                                                                            {{ order.shipping_address.shipping_phone_number }}
+                                                                        </dd>
+
+                                                                        <dt class="col-sm-4">Shipping Method</dt>
+                                                                        <dd class="col-sm-8">{{ order.shipping_method|capfirst }}</dd>
+                                                                    </dl>
+                                                                </div>
+                                                            </div>
+
+
+                                                            <!-- Items Ordered Section -->
+                                                            <div class="card mb-3">
+                                                                <div class="card-header bg-light">
+                                                                    <h4 class="mb-0">Items Ordered</h4>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <div class="row font-weight-bold border-bottom">
+                                                                        <div class="col-md-2"></div>
+                                                                        <div class="col-md-6">Item</div>
+                                                                        <div class="col-md-2">Quantity</div>
+                                                                        <div class="col-md-2">Price</div>
+                                                                    </div>
+                                                                    {% for item in order.items.all %}
+                                                                        <div class="row align-items-center border-bottom py-2">
+                                                                            <div class="col-md-2">
+                                                                                {% if item.auction.get_image %}
+                                                                                    <img src="{{ item.auction.get_image.image.url }}"
+                                                                                         alt="{{ item.auction.title }}"
+                                                                                         style="width: 80px; height: 80px; object-fit: cover;">
+                                                                                {% else %}
+                                                                                    <img src="{% static 'images/no_image.png' %}"
+                                                                                         alt="No Image"
+                                                                                         style="width: 80px; height: 80px; object-fit: cover;">
                                                                                 {% endif %}
+                                                                            </div>
+
+                                                                            <div class="col-md-6">
+                                                                                {{ item.auction.title }}
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                {{ item.quantity }}
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                ${{ item.price }}
                                                                             </div>
                                                                         </div>
                                                                     {% endfor %}
+                                                                    <dl class="row mb-0">
+                                                                        <div class="col-md-2"></div>
+                                                                        <div class="col-md-6"></div>
+                                                                        <dt class="col-md-2">Shipping</dt>
+                                                                        <dd class="col-md-2">
+                                                                            {% if order.carriers.exists %}
+                                                                                $
+                                                                                {{ order.carriers.first.shipping_cost }}
+                                                                            {% else %}
+                                                                                $0.00
+                                                                            {% endif %}
+                                                                        </dd>
+                                                                    </dl>
+                                                                    <dl class="row mb-0">
+                                                                        <div class="col-md-2"></div>
+                                                                        <div class="col-md-6"></div>
+                                                                        <dt class="col-md-2">Tax</dt>
+                                                                        <dd class="col-md-2">
+                                                                            {% if order.tax_amount %}
+                                                                                $
+                                                                                {{ order.carriers.first.shipping_cost }}
+                                                                            {% else %}
+                                                                                $0.00
+                                                                            {% endif %}
+                                                                        </dd>
+                                                                    </dl>
+                                                                    <dl class="row mb-0">
+                                                                        <div class="col-md-2"></div>
+                                                                        <div class="col-md-6"></div>
+                                                                        <dt class="col-md-2">Total</dt>
+                                                                        <dd class="col-md-2 fw-bold">
+                                                                            ${{ order.total_amount }}</dd>
+                                                                    </dl>
                                                                 </div>
-                                                            </dd>
-                                                        </dl>
-                                                    {% endif %}
+                                                            </div>
+
+
+                                                            <!-- Delivery Info Section -->
+                                                            <div class="card">
+                                                                <div class="card-header bg-light">
+                                                                    <h4 class="mb-0">Delivery Info</h4>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    {% if order.carriers %}
+                                                                        <dl class="row">
+                                                                            <dt class="col-sm-4">Carrier</dt>
+                                                                            <dd class="col-sm-8">
+                                                                                {% if order.carriers.exists %}
+                                                                                    {{ order.carriers.first.carrier }}
+                                                                                    -
+                                                                                    {{ order.carriers.first.delivery_method }}
+                                                                                {% else %}
+                                                                                    No carrier assigned
+                                                                                {% endif %}
+                                                                            </dd>
+
+                                                                            {#                                                            <dt class="col-sm-4">Shipping Cost</dt>#}
+                                                                            {#                                                            <dd class="col-sm-8">#}
+                                                                            {#                                                                {% if order.carriers.exists %}#}
+                                                                            {#                                                                    ${{ order.carriers.first.shipping_cost }}#}
+                                                                            {#                                                                {% else %}#}
+                                                                            {#                                                                    N/A#}
+                                                                            {#                                                                {% endif %}#}
+                                                                            {#                                                            </dd>#}
+                                                                            <dt class="col-sm-4">Tracking
+                                                                                Number(s)
+                                                                            </dt>
+                                                                            <dd class="col-sm-8">
+                                                                                <div>
+                                                                                    {% for parcel in order.parcels.all %}
+                                                                                        <div class="mb-2">
+                                                                                            Tracking
+                                                                                            Number: {{ parcel.tracking_number }}<br>
+                                                                                            Status: {{ parcel.delivery_status|capfirst }}<br>
+                                                                                            Dimensions: {{ parcel.length }}
+                                                                                            x {{ parcel.width }}
+                                                                                            x {{ parcel.height }}<br>
+                                                                                            Weight: {{ parcel.weight }}
+                                                                                            lbs
+                                                                                            <div class="progress mb-4">
+                                                                                                {% if parcel.delivery_status == 'pending' %}
+                                                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                                                                                         role="progressbar"
+                                                                                                         style="width: 25%;"
+                                                                                                         aria-valuenow="25"
+                                                                                                         aria-valuemin="0"
+                                                                                                         aria-valuemax="100">
+                                                                                                        Pending
+                                                                                                    </div>
+                                                                                                {% elif parcel.delivery_status == 'shipped' or parcel.delivery_status == 'in_transit' or parcel.delivery_status == 'out_for_delivery' %}
+                                                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning"
+                                                                                                         role="progressbar"
+                                                                                                         style="width: 50%;"
+                                                                                                         aria-valuenow="50"
+                                                                                                         aria-valuemin="0"
+                                                                                                         aria-valuemax="100">
+                                                                                                        Shipped
+                                                                                                    </div>
+                                                                                                {% elif parcel.delivery_status == 'delivered' %}
+                                                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                                                                                                         role="progressbar"
+                                                                                                         style="width: 100%;"
+                                                                                                         aria-valuenow="100"
+                                                                                                         aria-valuemin="0"
+                                                                                                         aria-valuemax="100">
+                                                                                                        Delivered
+                                                                                                    </div>
+                                                                                                {% elif parcel.delivery_status == 'delayed' or parcel.delivery_status == 'failed_attempt' or parcel.delivery_status == 'returned_to_sender' or parcel.delivery_status == 'held_at_location' or parcel.delivery_status == 'exception' or parcel.delivery_status == 'cancelled' %}
+                                                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger"
+                                                                                                         role="progressbar"
+                                                                                                         style="width: 75%;"
+                                                                                                         aria-valuenow="75"
+                                                                                                         aria-valuemin="0"
+                                                                                                         aria-valuemax="100">
+                                                                                                        Issues
+                                                                                                    </div>
+                                                                                                {% endif %}
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    {% endfor %}
+                                                                                </div>
+                                                                            </dd>
+                                                                        </dl>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+
+
+                                                        </div>
+                                                        <div class="modal-footer bg-light">
+                                                            <button type="button" class="btn btn-secondary"
+                                                                    data-bs-dismiss="modal">
+                                                                Close
+                                                            </button>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
 
 
+                                        {% empty %}
+                                            <tr>
+                                                <td colspan="3">No orders found.</td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+
+                                    {% if orders.has_other_pages %}
+                                        <div class='d-flex justify-content-center'>
+                                            <ul class='pagination'>
+                                                {% if orders.has_previous %}
+                                                    <li class='page-item'>
+                                                        <a class='page-link'
+                                                           href='?order_page={{ orders.previous_page_number }}'>
+                                                            &laquo;
+                                                        </a>
+                                                    </li>
+                                                {% else %}
+                                                    <li class='page-item disabled'>
+                                                        <a class='page-link' href='#'>&laquo;</a>
+                                                    </li>
+                                                {% endif %}
+                                                {% for i in orders.paginator.page_range %}
+                                                    {% if orders.number == i %}
+                                                        <li class='page-item active'>
+                                                            <a class='page-link' href='#'>{{ i }}</a>
+                                                        </li>
+                                                    {% else %}
+                                                        <li class='page-item'>
+                                                            <a class='page-link'
+                                                               href='?order_page={{ i }}'>{{ i }}</a>
+                                                        </li>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                {% if orders.has_next %}
+                                                    <li class='page-item'>
+                                                        <a class='page-link'
+                                                           href='?order_page={{ orders.next_page_number }}'>&raquo;</a>
+                                                    </li>
+                                                {% else %}
+                                                    <li class='page-item disabled'>
+                                                        <a class='page-link' href='#'>&raquo;</a>
+                                                    </li>
+                                                {% endif %}
+                                            </ul>
                                         </div>
-                                        <div class="modal-footer bg-light">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                                Close
-                                            </button>
-                                        </div>
-                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
 
-
-                        {% empty %}
-                            <tr>
-                                <td colspan="3">No orders found.</td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-
-                    {% if orders.has_other_pages %}
-                        <div class='d-flex justify-content-center'>
-                            <ul class='pagination'>
-                                {% if orders.has_previous %}
-                                    <li class='page-item'>
-                                        <a class='page-link' href='?order_page={{ orders.previous_page_number }}'>
-                                            &laquo;
-                                        </a>
-                                    </li>
-                                {% else %}
-                                    <li class='page-item disabled'>
-                                        <a class='page-link' href='#'>&laquo;</a>
-                                    </li>
-                                {% endif %}
-                                {% for i in orders.paginator.page_range %}
-                                    {% if orders.number == i %}
-                                        <li class='page-item active'>
-                                            <a class='page-link' href='#'>{{ i }}</a>
-                                        </li>
-                                    {% else %}
-                                        <li class='page-item'>
-                                            <a class='page-link' href='?order_page={{ i }}'>{{ i }}</a>
-                                        </li>
-                                    {% endif %}
-                                {% endfor %}
-                                {% if orders.has_next %}
-                                    <li class='page-item'>
-                                        <a class='page-link'
-                                           href='?order_page={{ orders.next_page_number }}'>&raquo;</a>
-                                    </li>
-                                {% else %}
-                                    <li class='page-item disabled'>
-                                        <a class='page-link' href='#'>&raquo;</a>
-                                    </li>
-                                {% endif %}
-                            </ul>
                         </div>
-                    {% endif %}
+
+                        <!-- My Sales Tab -->
+                        <div class="tab-pane fade" id="sales" role="tabpanel" aria-labelledby="sales-tab">
+                            <!-- My Sales -->
+                            <div class='my-2 border-top'>
+                                <div class='card-header d-flex justify-content-between align-items-center'>
+                                    <div>
+                                        <i class='fas fa-table me-1'></i>
+                                        My Sales
+                                    </div>
+                                    <div>
+                                        <form method="GET" class="d-flex">
+                                            <select name="status" class="form-select me-2">
+                                                <option value="">All Sales</option>
+                                                <option value="pending"
+                                                        {% if request.GET.status == 'pending' %}selected{% endif %}>
+                                                    Pending
+                                                </option>
+                                                <option value="processing"
+                                                        {% if request.GET.status == 'processing' %}selected{% endif %}>
+                                                    Processing
+                                                </option>
+                                                <option value="shipped"
+                                                        {% if request.GET.status == 'shipped' %}selected{% endif %}>
+                                                    Shipped
+                                                </option>
+                                                <option value="completed"
+                                                        {% if request.GET.status == 'completed' %}selected{% endif %}>
+                                                    Completed
+                                                </option>
+                                            </select>
+                                            <input type="date" name="date" class="form-control me-2"
+                                                   value="{{ request.GET.date }}">
+                                            <button type="submit" class="btn btn-primary">Filter</button>
+                                        </form>
+                                    </div>
+                                </div>
+                                <div class='card-body'>
+                                    <table class='table table-hover'>
+                                        <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>Sale Details</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for sale in sales %}
+                                            <tr>
+                                                <td class="align-items-center">
+                                                    {% if sale.auction.get_image %}
+                                                        <img src="{{ sale.auction.get_image.image.url }}"
+                                                             alt="{{ sale.auction.title }}"
+                                                             style="width: 80px; height: 80px; object-fit: cover;">
+                                                    {% else %}
+                                                        <img src="{% static 'images/no_image.png' %}" alt="No Image"
+                                                             style="width: 80px; height: 80px; object-fit: cover;">
+                                                    {% endif %}
+                                                </td>
+                                                <td class="align-items-center">
+                                                    <strong>Product:</strong> {{ sale.auction.title }}<br>
+                                                    <strong>Status:</strong> {{ sale.status|capfirst }}<br>
+                                                    <strong>Sold On:</strong> {{ sale.created_at }}<br>
+                                                    <strong>Sale ID:</strong> {{ sale.id }}<br>
+                                                </td>
+
+                                                <td class="align-items-center">
+                                                    <button class="btn btn-info btn-sm" data-bs-toggle="modal"
+                                                            data-bs-target="#saleModal{{ sale.id }}">View Details
+                                                    </button>
+                                                    <button class="btn btn-warning btn-sm">Help</button>
+                                                    <button class="btn btn-secondary btn-sm">Add Note</button>
+                                                </td>
+                                            </tr>
+
+                                            <!-- Sale Details Modal -->
+                                            <div class="modal fade" id="saleModal{{ sale.id }}" tabindex="-1"
+                                                 aria-labelledby="saleModalLabel{{ sale.id }}" aria-hidden="true">
+                                                <div class="modal-dialog modal-lg">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="saleModalLabel{{ sale.id }}">
+                                                                {{ sale.auction.title }} - Sale Details</h5>
+                                                            <button type="button" class="btn-close"
+                                                                    data-bs-dismiss="modal"
+                                                                    aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <!-- Sale Progress Bar -->
+                                                            <div class="progress mb-4">
+                                                                {% if sale.status == 'pending' %}
+                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                                                         role="progressbar"
+                                                                         style="width: 25%;" aria-valuenow="25"
+                                                                         aria-valuemin="0"
+                                                                         aria-valuemax="100">
+                                                                        Pending
+                                                                    </div>
+                                                                {% elif sale.status == 'processing' %}
+                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-info"
+                                                                         role="progressbar"
+                                                                         style="width: 50%;" aria-valuenow="50"
+                                                                         aria-valuemin="0"
+                                                                         aria-valuemax="100">
+                                                                        Processing
+                                                                    </div>
+                                                                {% elif sale.status == 'shipped' %}
+                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning"
+                                                                         role="progressbar"
+                                                                         style="width: 75%;" aria-valuenow="75"
+                                                                         aria-valuemin="0"
+                                                                         aria-valuemax="100">
+                                                                        Shipped
+                                                                    </div>
+                                                                {% elif sale.status == 'completed' %}
+                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                                                                         role="progressbar"
+                                                                         style="width: 100%;" aria-valuenow="100"
+                                                                         aria-valuemin="0"
+                                                                         aria-valuemax="100">
+                                                                        Complete
+                                                                    </div>
+                                                                {% endif %}
+                                                            </div>
+                                                            <!-- Sale Details Section -->
+                                                            <div class="card mb-3">
+                                                                <div class="card-header bg-light">
+                                                                    <h4 class="mb-0">Sale Details</h4>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <dl class="row">
+                                                                        <dt class="col-sm-4">Sale Number</dt>
+                                                                        <dd class="col-sm-8">{{ sale.id }}</dd>
+
+                                                                        <dt class="col-sm-4">Sold On</dt>
+                                                                        <dd class="col-sm-8">{{ sale.created_at }}</dd>
+                                                                    </dl>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Shipping Info Section -->
+                                                            <div class="card mb-3">
+                                                                <div class="card-header bg-light">
+                                                                    <h4 class="mb-0">Shipping Info</h4>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <dl class="row">
+                                                                        <dt class="col-sm-4">Shipping Address</dt>
+                                                                        <dd class="col-sm-8">
+                                                                            {{ sale.shipping_address.shipping_full_name }}<br>
+                                                                            {{ sale.shipping_address.shipping_street_address }}, {{ sale.shipping_address.shipping_apartment_suite|default:"" }}<br>
+                                                                            {{ sale.shipping_address.shipping_city }}, {{ sale.shipping_address.shipping_state }} {{ sale.shipping_address.shipping_zip_code }}<br>
+                                                                            {{ sale.shipping_address.shipping_country }}<br>
+                                                                            {{ sale.shipping_address.shipping_phone_number }}
+                                                                        </dd>
+
+                                                                        <dt class="col-sm-4">Shipping Method</dt>
+                                                                        <dd class="col-sm-8">{{ sale.shipping_method|capfirst }}</dd>
+                                                                    </dl>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Items Sold Section -->
+                                                            <div class="card mb-3">
+                                                                <div class="card-header bg-light">
+                                                                    <h4 class="mb-0">Items Sold</h4>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <div class="row font-weight-bold border-bottom">
+                                                                        <div class="col-md-2"></div>
+                                                                        <div class="col-md-6">Item</div>
+                                                                        <div class="col-md-2">Quantity</div>
+                                                                        <div class="col-md-2">Price</div>
+                                                                    </div>
+                                                                    {% for item in sale.items.all %}
+                                                                        <div class="row align-items-center border-bottom py-2">
+                                                                            <div class="col-md-2">
+                                                                                {% if item.auction.get_image %}
+                                                                                    <img src="{{ item.auction.get_image.image.url }}"
+                                                                                         alt="{{ item.auction.title }}"
+                                                                                         style="width: 80px; height: 80px; object-fit: cover;">
+                                                                                {% else %}
+                                                                                    <img src="{% static 'images/no_image.png' %}"
+                                                                                         alt="No Image"
+                                                                                         style="width: 80px; height: 80px; object-fit: cover;">
+                                                                                {% endif %}
+                                                                            </div>
+
+                                                                            <div class="col-md-6">
+                                                                                {{ item.auction.title }}
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                {{ item.quantity }}
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                ${{ item.price }}
+                                                                            </div>
+                                                                        </div>
+                                                                    {% endfor %}
+                                                                    <dl class="row mb-0">
+                                                                        <div class="col-md-2"></div>
+                                                                        <div class="col-md-6"></div>
+                                                                        <dt class="col-md-2">Total</dt>
+                                                                        <dd class="col-md-2 fw-bold">
+                                                                            ${{ sale.total_amount }}</dd>
+                                                                    </dl>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Delivery Info Section -->
+                                                            <div class="card">
+                                                                <div class="card-header bg-light">
+                                                                    <h4 class="mb-0">Delivery Info</h4>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    {% if sale.carriers %}
+                                                                        <dl class="row">
+                                                                            <dt class="col-sm-4">Carrier</dt>
+                                                                            <dd class="col-sm-8">
+                                                                                {% if sale.carriers.exists %}
+                                                                                    {{ sale.carriers.first.carrier }} -
+                                                                                    {{ sale.carriers.first.delivery_method }}
+                                                                                {% else %}
+                                                                                    No carrier assigned
+                                                                                {% endif %}
+                                                                            </dd>
+
+                                                                            <dt class="col-sm-4">Tracking Number(s)</dt>
+                                                                            <dd class="col-sm-8">
+                                                                                <div>
+                                                                                    {% for parcel in sale.parcels.all %}
+                                                                                        <div class="mb-2">
+                                                                                            Tracking
+                                                                                            Number: {{ parcel.tracking_number }}<br>
+                                                                                            Status: {{ parcel.delivery_status|capfirst }}<br>
+                                                                                            Dimensions: {{ parcel.length }}
+                                                                                            x {{ parcel.width }}
+                                                                                            x {{ parcel.height }}<br>
+                                                                                            Weight: {{ parcel.weight }}
+                                                                                            lbs
+                                                                                            <div class="progress mb-4">
+                                                                                                {% if parcel.delivery_status == 'pending' %}
+                                                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                                                                                         role="progressbar"
+                                                                                                         style="width: 25%;"
+                                                                                                         aria-valuenow="25"
+                                                                                                         aria-valuemin="0"
+                                                                                                         aria-valuemax="100">
+                                                                                                        Pending
+                                                                                                    </div>
+                                                                                                {% elif parcel.delivery_status == 'shipped' or parcel.delivery_status == 'in_transit' or parcel.delivery_status == 'out_for_delivery' %}
+                                                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning"
+                                                                                                         role="progressbar"
+                                                                                                         style="width: 50%;"
+                                                                                                         aria-valuenow="50"
+                                                                                                         aria-valuemin="0"
+                                                                                                         aria-valuemax="100">
+                                                                                                        Shipped
+                                                                                                    </div>
+                                                                                                {% elif parcel.delivery_status == 'delivered' %}
+                                                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                                                                                                         role="progressbar"
+                                                                                                         style="width: 100%;"
+                                                                                                         aria-valuenow="100"
+                                                                                                         aria-valuemin="0"
+                                                                                                         aria-valuemax="100">
+                                                                                                        Delivered
+                                                                                                    </div>
+                                                                                                {% elif parcel.delivery_status == 'delayed' or parcel.delivery_status == 'failed_attempt' or parcel.delivery_status == 'returned_to_sender' or parcel.delivery_status == 'held_at_location' or parcel.delivery_status == 'exception' or parcel.delivery_status == 'cancelled' %}
+                                                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger"
+                                                                                                         role="progressbar"
+                                                                                                         style="width: 75%;"
+                                                                                                         aria-valuenow="75"
+                                                                                                         aria-valuemin="0"
+                                                                                                         aria-valuemax="100">
+                                                                                                        Issues
+                                                                                                    </div>
+                                                                                                {% endif %}
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    {% endfor %}
+                                                                                </div>
+                                                                            </dd>
+                                                                        </dl>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+
+                                                        </div>
+                                                        <div class="modal-footer bg-light">
+                                                            <button type="button" class="btn btn-secondary"
+                                                                    data-bs-dismiss="modal">
+                                                                Close
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        {% empty %}
+                                            <tr>
+                                                <td colspan="3">No sales found.</td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+
+                                    {% if sales.has_other_pages %}
+                                        <div class='d-flex justify-content-center'>
+                                            <ul class='pagination'>
+                                                {% if sales.has_previous %}
+                                                    <li class='page-item'>
+                                                        <a class='page-link'
+                                                           href='?sale_page={{ sales.previous_page_number }}'>
+                                                            &laquo;
+                                                        </a>
+                                                    </li>
+                                                {% else %}
+                                                    <li class='page-item disabled'>
+                                                        <a class='page-link' href='#'>&laquo;</a>
+                                                    </li>
+                                                {% endif %}
+                                                {% for i in sales.paginator.page_range %}
+                                                    {% if sales.number == i %}
+                                                        <li class='page-item active'>
+                                                            <a class='page-link' href='#'>{{ i }}</a>
+                                                        </li>
+                                                    {% else %}
+                                                        <li class='page-item'>
+                                                            <a class='page-link' href='?sale_page={{ i }}'>{{ i }}</a>
+                                                        </li>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                {% if sales.has_next %}
+                                                    <li class='page-item'>
+                                                        <a class='page-link'
+                                                           href='?sale_page={{ sales.next_page_number }}'>&raquo;</a>
+                                                    </li>
+                                                {% else %}
+                                                    <li class='page-item disabled'>
+                                                        <a class='page-link' href='#'>&raquo;</a>
+                                                    </li>
+                                                {% endif %}
+                                            </ul>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- My Active Bids Tab -->
+                        <div class="tab-pane fade" id="myActiveBids" role="tabpanel"
+                             aria-labelledby="my-bids-tab">
+
+                            <div class='my-2 border-top'>
+                                <div class='card-header d-flex justify-content-between align-items-center'>
+                                    <i class='fas fa-table me-1'></i>
+                                    My Active Bids
+                                </div>
+                                <div class='card-body'>
+                                    <table class='table table-hover'>
+                                        <table class="table table-hover">
+                                            <thead>
+                                            <tr>
+                                                <th>Auction Title</th>
+                                                <th>Highest Bid</th>
+                                                <th>Your Bid</th>
+                                                <th>Is Highest Bidder</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for auction in auctions %}
+                                                <tr>
+                                                    <td>{{ auction.title }}</td>
+                                                    <td>{{ auction.highest_bid }}</td>
+                                                    <td>{{ auction.user_highest_bid }}</td>
+                                                    <td>{{ auction.user_is_highest_bidder }}</td>
+                                                </tr>
+                                            {% empty %}
+                                                <tr>
+                                                    <td colspan="4">No active bids found.</td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </table>
+
+                                    {% if auctions.has_other_pages %}
+                                        <div class='d-flex justify-content-center'>
+                                            <ul class='pagination'>
+                                                {% if auctions.has_previous %}
+                                                    <li class='page-item'>
+                                                        <a class='page-link'
+                                                           href='?auction_page={{ auctions.previous_page_number }}'>
+                                                            &laquo;
+                                                        </a>
+                                                    </li>
+                                                {% else %}
+                                                    <li class='page-item disabled'>
+                                                        <a class='page-link' href='#'>&laquo;</a>
+                                                    </li>
+                                                {% endif %}
+                                                {% for i in auctions.paginator.page_range %}
+                                                    {% if auctions.number == i %}
+                                                        <li class='page-item active'>
+                                                            <a class='page-link' href='#'>{{ i }}</a>
+                                                        </li>
+                                                    {% else %}
+                                                        <li class='page-item'>
+                                                            <a class='page-link'
+                                                               href='?auction_page={{ i }}'>{{ i }}</a>
+                                                        </li>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                {% if auctions.has_next %}
+                                                    <li class='page-item'>
+                                                        <a class='page-link'
+                                                           href='?auction_page={{ auctions.next_page_number }}'>&raquo;</a>
+                                                    </li>
+                                                {% else %}
+                                                    <li class='page-item disabled'>
+                                                        <a class='page-link' href='#'>&raquo;</a>
+                                                    </li>
+                                                {% endif %}
+                                            </ul>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -486,79 +973,6 @@
             {#                </div>#}
             {#            </div>#}
 
-
-            <div class='card mb-4'>
-                <div class='card-header'>
-                    <i class='fas fa-table me-1'></i>
-                    My Active Bids
-                </div>
-                <div class='card-body'>
-                    <table class='table table-hover'>
-                        <table class="table table-hover">
-                            <thead>
-                            <tr>
-                                <th>Auction Title</th>
-                                <th>Highest Bid</th>
-                                <th>Your Bid</th>
-                                <th>Is Highest Bidder</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {% for auction in auctions %}
-                                <tr>
-                                    <td>{{ auction.title }}</td>
-                                    <td>{{ auction.highest_bid }}</td>
-                                    <td>{{ auction.user_highest_bid }}</td>
-                                    <td>{{ auction.user_is_highest_bidder }}</td>
-                                </tr>
-                            {% empty %}
-                                <tr>
-                                    <td colspan="4">No active bids found.</td>
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                    </table>
-
-                    {% if auctions.has_other_pages %}
-                        <div class='d-flex justify-content-center'>
-                            <ul class='pagination'>
-                                {% if auctions.has_previous %}
-                                    <li class='page-item'>
-                                        <a class='page-link' href='?auction_page={{ auctions.previous_page_number }}'>
-                                            &laquo;
-                                        </a>
-                                    </li>
-                                {% else %}
-                                    <li class='page-item disabled'>
-                                        <a class='page-link' href='#'>&laquo;</a>
-                                    </li>
-                                {% endif %}
-                                {% for i in auctions.paginator.page_range %}
-                                    {% if auctions.number == i %}
-                                        <li class='page-item active'>
-                                            <a class='page-link' href='#'>{{ i }}</a>
-                                        </li>
-                                    {% else %}
-                                        <li class='page-item'>
-                                            <a class='page-link' href='?auction_page={{ i }}'>{{ i }}</a>
-                                        </li>
-                                    {% endif %}
-                                {% endfor %}
-                                {% if auctions.has_next %}
-                                    <li class='page-item'>
-                                        <a class='page-link' href='?auction_page={{ auctions.next_page_number }}'>&raquo;</a>
-                                    </li>
-                                {% else %}
-                                    <li class='page-item disabled'>
-                                        <a class='page-link' href='#'>&raquo;</a>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
 
         </div>
     </div>

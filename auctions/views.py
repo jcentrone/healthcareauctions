@@ -151,22 +151,27 @@ def dashboard(request):
 
     # Filter orders by status and date
     orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    sales = Order.objects.filter(auction__creator=request.user).order_by('-created_at')
 
     status_filter = request.GET.get('status')
     date_filter = request.GET.get('date')
 
     if status_filter:
         orders = orders.filter(status=status_filter)
+        sales = sales.filter(status=status_filter)
 
     if date_filter:
         orders = orders.filter(created_at__date=date_filter)
+        sales = sales.filter(created_at__date=date_filter)
 
     # Paginate the results
     auction_page = request.GET.get('auction_page', 1)
     orders_page = request.GET.get('order_page', 1)
+    sales_page = request.GET.get('sales_page', 1)
 
     auction_paginator = Paginator(auctions_with_user_bids, 5)
     orders_paginator = Paginator(orders, 5)
+    sales_paginator = Paginator(sales, 5)
 
     try:
         auctions_with_user_bids = auction_paginator.page(auction_page)
@@ -182,6 +187,13 @@ def dashboard(request):
     except EmptyPage:
         orders = orders_paginator.page(orders_paginator.num_pages)
 
+    try:
+        sales = sales_paginator.page(sales_page)
+    except PageNotAnInteger:
+        sales = sales_paginator.page(1)
+    except EmptyPage:
+        sales = sales_paginator.page(sales_paginator.num_pages)
+
     return render(request, 'dashboard.html', {
         'categories': Category.objects.all(),
         'auctions': auctions_with_user_bids,
@@ -190,6 +202,8 @@ def dashboard(request):
         'bids_count': bids.count(),
         'orders': orders,
         'orders_count': orders_paginator.count,
+        'sales': sales,
+        'sales_count': sales_paginator.count,
         'title': 'Dashboard',
     })
 
@@ -986,7 +1000,6 @@ def checkout(request):
     })
 
 
-
 @login_required
 def order_confirmation(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
@@ -1175,6 +1188,7 @@ def archive_message(request, message_id):
     message.archived = True
     message.save()
     return JsonResponse({'status': 'success'})
+
 
 def track_parcel_view(request, parcel_id):
     parcel = get_object_or_404(Parcel, id=parcel_id)
