@@ -369,9 +369,6 @@ class CartItem(models.Model):
         return self.auction.get_images.first()
 
 
-
-
-
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     auction = models.ForeignKey(Auction, on_delete=models.CASCADE)
@@ -515,6 +512,7 @@ class Payment(models.Model):
     def get_cvv(self):
         return self.decrypt_data(self.encrypted_cvv_number)
 
+
 class Carrier(models.Model):
     CARRIER_CHOICES = [
         ('UPS', 'UPS'),
@@ -536,6 +534,7 @@ class Carrier(models.Model):
 
     def __str__(self):
         return f'{self.carrier} - {self.delivery_method} (Order #{self.order.id})'
+
 
 class Parcel(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='parcels')
