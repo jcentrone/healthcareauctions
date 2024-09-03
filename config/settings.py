@@ -54,14 +54,10 @@ INSTALLED_APPS = [
 
     # other apps
     'storages',
-    'django_crontab',
+
 
 ]
 
-# Cronjobs
-# CRONJOBS = [
-#     ('5 * * * *', 'django.core.management.call_command', ['deactivate_expired_auctions']),
-# ]
 
 
 MIDDLEWARE = [
