@@ -16,7 +16,7 @@ SECRET_KEY = os.environ.get(
 )
 
 # DEBUG = config('DEBUG', default=False, cast=bool)
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     'localhost',
