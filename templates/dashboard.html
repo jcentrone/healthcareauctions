@@ -17,62 +17,72 @@
         <div class="container-content">
             <h1 class='h3 mb-4 text-gray-800'>Dashboard</h1>
 
-            <div class="row mb-4">
-                <div class="col-md-3 col-sm-6">
-                    <div class="card text-center">
-                        <h5 class="card-header">Active Auctions</h5>
-                        <div class="card-body">
-                            <p class="card-text">{{ auction_count|default:"0" }}</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="card text-center">
-                        <h5 class="card-header">Bids</h5>
-                        <div class="card-body">
-                            <p class="card-text">{{ bids_count|default:"0" }}</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="card text-center">
-                        <h5 class="card-header">Watchlist</h5>
-                        <div class="card-body">
-                            <p class="card-text">{{ watchlist_count|default:"0" }}</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="card text-center">
-                        <h5 class="card-header">Orders</h5>
-                        <div class="card-body">
-                            <p class="card-text">{{ orders_count|default:"0" }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
             <!-- Tab Container -->
             <div class="card mb-4">
                 <div class="ps-3">
                     <ul class="nav nav-tabs card-header-tabs mb-1 mt-2" id="dashboardTabs" role="tablist">
-                        <li class="nav-item border-end" role="presentation">
-                            <button class="nav-link active" id="orders-tab" data-bs-toggle="tab"
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link {% if active_tab == 'orders' %}active{% endif %}" id="orders-tab"
+                                    data-bs-toggle="tab"
                                     data-bs-target="#orders" type="button" role="tab" aria-controls="orders"
                                     aria-selected="true">
-                                My Orders
+                                <div class="card text-center">
+                                    <h5 class="card-header">{{ order_status|capfirst }} Orders</h5>
+                                    <div class="card-body">
+                                        <p class="card-text">{{ orders_count|default:"0" }}</p>
+                                    </div>
+                                </div>
                             </button>
                         </li>
-                        <li class="nav-item border-end" role="presentation">
-                            <button class="nav-link" id="sales-tab" data-bs-toggle="tab" data-bs-target="#sales"
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link {% if active_tab == 'sales' %}active{% endif %}" id="sales-tab"
+                                    data-bs-toggle="tab" data-bs-target="#sales"
                                     type="button" role="tab" aria-controls="sales" aria-selected="false">
-                                My Sales
+                                <div class="card text-center">
+                                    <h5 class="card-header">{{ sales_status|capfirst }} Sales</h5>
+                                    <div class="card-body">
+                                        <p class="card-text">{{ sales_count|default:"0" }}</p>
+                                    </div>
+                                </div>
                             </button>
                         </li>
-                        <li class="nav-item border-end" role="presentation">
-                            <button class="nav-link" id="my-bids-tab" data-bs-toggle="tab"
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link {% if active_tab == 'activeBids' %}active{% endif %}"
+                                    id="my-bids-tab" data-bs-toggle="tab"
                                     data-bs-target="#myActiveBids"
                                     type="button" role="tab" aria-controls="myActiveBids" aria-selected="false">
-                                My Active Bids
+                                <div class="card text-center">
+                                    <h5 class="card-header">{{ bid_status|capfirst }} Active Bids</h5>
+                                    <div class="card-body">
+                                        <p class="card-text">{{ auction_count|default:"0" }}</p>
+                                    </div>
+                                </div>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link {% if active_tab == 'listings' %}active{% endif %}"
+                                    id="listings-tab" data-bs-toggle="tab"
+                                    data-bs-target="#listings"
+                                    type="button" role="tab" aria-controls="listings" aria-selected="false">
+                                <div class="card text-center">
+                                    <h5 class="card-header">{{ listing_status|capfirst }} Listings</h5>
+                                    <div class="card-body">
+                                        <p class="card-text">{{ listings_count|default:"0" }}</p>
+                                    </div>
+                                </div>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link {% if active_tab == 'listings' %}active{% endif %}"
+                                    id="settings-tab" data-bs-toggle="tab"
+                                    data-bs-target="#settings"
+                                    type="button" role="tab" aria-controls="settings" aria-selected="false">
+                                <div class="card text-center">
+                                    <h5 class="card-header">Settings</h5>
+                                    <div class="card-body">
+                                        <i class="fa-solid fa-gears"></i>
+                                    </div>
+                                </div>
                             </button>
                         </li>
                     </ul>
@@ -80,37 +90,41 @@
                 <div class="">
                     <div class="tab-content" id="dashboardTabsContent">
                         <!-- My Orders Tab -->
-                        <div class="tab-pane fade show active" id="orders" role="tabpanel" aria-labelledby="orders-tab">
+                        <div class="tab-pane fade {% if active_tab == 'orders' %}show active{% else %}{% endif %}"
+                             id="orders"
+                             role="tabpanel" aria-labelledby="orders-tab">
 
                             <!-- My Orders -->
                             <div class='my-2 border-top'>
                                 <div class='card-header d-flex justify-content-between align-items-center'>
                                     <div>
                                         <i class='fas fa-table me-1'></i>
-                                        My Orders
+                                        {{ order_status|capfirst }} Orders
                                     </div>
                                     <div>
                                         <form method="GET" class="d-flex">
-                                            <select name="status" class="form-select me-2">
+                                            <input type="hidden" name="active_tab" value="orders">
+
+                                            <select name="order_status" class="form-select me-2">
                                                 <option value="">All Orders</option>
                                                 <option value="pending"
-                                                        {% if request.GET.status == 'pending' %}selected{% endif %}>
+                                                        {% if order_status == 'pending' %}selected{% endif %}>
                                                     Pending
                                                 </option>
                                                 <option value="processing"
-                                                        {% if request.GET.status == 'processing' %}selected{% endif %}>
+                                                        {% if order_status == 'processing' %}selected{% endif %}>
                                                     Processing
                                                 </option>
                                                 <option value="shipped"
-                                                        {% if request.GET.status == 'shipped' %}selected{% endif %}>
+                                                        {% if order_status == 'shipped' %}selected{% endif %}>
                                                     Shipped
                                                 </option>
                                                 <option value="completed"
-                                                        {% if request.GET.status == 'completed' %}selected{% endif %}>
+                                                        {% if order_status == 'completed' %}selected{% endif %}>
                                                     Completed
                                                 </option>
                                             </select>
-                                            <input type="date" name="date" class="form-control me-2"
+                                            <input type="date" name="order_date" class="form-control me-2"
                                                    value="{{ request.GET.date }}">
                                             <button type="submit" class="btn btn-primary">Filter</button>
                                         </form>
@@ -474,36 +488,39 @@
                         </div>
 
                         <!-- My Sales Tab -->
-                        <div class="tab-pane fade" id="sales" role="tabpanel" aria-labelledby="sales-tab">
+                        <div class="tab-pane fade{% if active_tab == 'sales' %}show active{% endif %}" id="sales"
+                             role="tabpanel" aria-labelledby="sales-tab">
                             <!-- My Sales -->
                             <div class='my-2 border-top'>
                                 <div class='card-header d-flex justify-content-between align-items-center'>
                                     <div>
                                         <i class='fas fa-table me-1'></i>
-                                        My Sales
+                                        {{ sales_status|capfirst }} Sales
                                     </div>
                                     <div>
                                         <form method="GET" class="d-flex">
-                                            <select name="status" class="form-select me-2">
+                                            <input type="hidden" name="active_tab" value="sales">
+
+                                            <select name="sales_status" class="form-select me-2">
                                                 <option value="">All Sales</option>
                                                 <option value="pending"
-                                                        {% if request.GET.status == 'pending' %}selected{% endif %}>
+                                                        {% if sales_status == 'pending' %}selected{% endif %}>
                                                     Pending
                                                 </option>
                                                 <option value="processing"
-                                                        {% if request.GET.status == 'processing' %}selected{% endif %}>
+                                                        {% if sales_status == 'processing' %}selected{% endif %}>
                                                     Processing
                                                 </option>
                                                 <option value="shipped"
-                                                        {% if request.GET.status == 'shipped' %}selected{% endif %}>
+                                                        {% if sales_status == 'shipped' %}selected{% endif %}>
                                                     Shipped
                                                 </option>
                                                 <option value="completed"
-                                                        {% if request.GET.status == 'completed' %}selected{% endif %}>
+                                                        {% if sales_status == 'completed' %}selected{% endif %}>
                                                     Completed
                                                 </option>
                                             </select>
-                                            <input type="date" name="date" class="form-control me-2"
+                                            <input type="date" name="sales_date" class="form-control me-2"
                                                    value="{{ request.GET.date }}">
                                             <button type="submit" class="btn btn-primary">Filter</button>
                                         </form>
@@ -823,16 +840,37 @@
                         </div>
 
                         <!-- My Active Bids Tab -->
-                        <div class="tab-pane fade" id="myActiveBids" role="tabpanel"
-                             aria-labelledby="my-bids-tab">
+                        <div class="tab-pane fade {% if active_tab == 'activeBids' %}show active{% endif %}"
+                             id="myActiveBids"
+                             role="tabpanel" aria-labelledby="my-bids-tab">
 
                             <div class='my-2 border-top'>
                                 <div class='card-header d-flex justify-content-between align-items-center'>
-                                    <i class='fas fa-table me-1'></i>
-                                    My Active Bids
+                                    <div>
+                                        <i class='fas fa-table me-1'></i>
+                                        {{ bid_status|capfirst }} Active Bids
+                                    </div>
+                                    <div>
+                                        <form method="GET" class="d-flex">
+                                            <input type="hidden" name="active_tab" value="activeBids">
+
+                                            <select name="bid_status" class="form-select me-2">
+                                                <option value="">All Bids</option>
+                                                <option value="highest"
+                                                        {% if bid_status == 'highest' %}selected{% endif %}>
+                                                    Highest Bids
+                                                </option>
+                                                <option value="outbid"
+                                                        {% if bid_status == 'outbid' %}selected{% endif %}>
+                                                    Outbid
+                                                </option>
+                                            </select>
+
+                                            <button type="submit" class="btn btn-primary">Filter</button>
+                                        </form>
+                                    </div>
                                 </div>
                                 <div class='card-body'>
-
                                     <table class="table table-hover">
                                         <thead>
                                         <tr>
@@ -848,7 +886,7 @@
                                                 <td>{{ auction.title }}</td>
                                                 <td>{{ auction.highest_bid }}</td>
                                                 <td>{{ auction.user_highest_bid }}</td>
-                                                <td>{{ auction.user_is_highest_bidder }}</td>
+                                                <td>{{ auction.user_is_highest_bidder|yesno:"Yes,No" }}</td>
                                             </tr>
                                         {% empty %}
                                             <tr>
@@ -857,7 +895,6 @@
                                         {% endfor %}
                                         </tbody>
                                     </table>
-
 
                                     {% if auctions.has_other_pages %}
                                         <div class='d-flex justify-content-center'>
@@ -902,9 +939,348 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- My Listings -->
+                        <div class="tab-pane fade {% if active_tab == 'listings' %}show active{% endif %}"
+                             id="listings"
+                             role="tabpanel" aria-labelledby="listings-tab">
+
+                            <div class='my-2 border-top'>
+                                <div class='card-header d-flex justify-content-between align-items-center'>
+                                    <div>
+                                        <i class='fas fa-table me-1'></i>
+                                        {{ listing_status|capfirst }} Listings
+                                    </div>
+                                    <div>
+                                        <form method="GET" class="d-flex">
+                                            <input type="hidden" name="active_tab" value="listings">
+
+                                            <select name="listing_status" class="form-select me-2">
+                                                <option value="">All Listings</option>
+                                                <option value="active"
+                                                        {% if listing_status == 'active' %}selected{% endif %}>
+                                                    Active
+                                                </option>
+                                                <option value="inactive"
+                                                        {% if listing_status == 'inactive' %}selected{% endif %}>
+                                                    Inactive
+                                                </option>
+                                            </select>
+                                            <input type="date" name="listing_date" class="form-control me-2"
+                                                   value="{{ request.GET.date }}">
+                                            <button type="submit" class="btn btn-primary">Filter</button>
+                                        </form>
+                                    </div>
+                                </div>
+                                <div class='card-body'>
+                                    <table class='table table-hover'>
+                                        <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>Listing Details</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for listing in listings %}
+                                            <tr>
+                                                <td class="align-items-center">
+                                                    {% if listing.get_image %}
+                                                        <img src="{{ listing.get_image.image.url }}"
+                                                             alt="{{ listing.title }}"
+                                                             style="width: 80px; height: 80px; object-fit: cover;">
+                                                    {% else %}
+                                                        <img src="{% static 'images/no_image.png' %}" alt="No Image"
+                                                             style="width: 80px; height: 80px; object-fit: cover;">
+                                                    {% endif %}
+                                                </td>
+                                                <td class="align-items-center">
+                                                    <strong>Product:</strong> {{ listing.title }}<br>
+                                                    <strong>Status:</strong> {{ listing.active|yesno:"Active,Inactive" }}<br>
+                                                    <strong>Listed On:</strong> {{ listing.date_created }}<br>
+                                                    <strong>Listing ID:</strong> {{ listing.id }}<br>
+                                                </td>
+
+                                                <td class="align-items-center">
+                                                    <button class="btn btn-info btn-sm" data-bs-toggle="modal"
+                                                            data-bs-target="#listingModal{{ listing.id }}">View Details
+                                                    </button>
+                                                    <button class="btn btn-warning btn-sm">Help</button>
+                                                    <button class="btn btn-secondary btn-sm">Add Note</button>
+                                                </td>
+                                            </tr>
+
+                                            <!-- Listing Details Modal -->
+                                            <div class="modal fade" id="listingModal{{ listing.id }}" tabindex="-1"
+                                                 aria-labelledby="listingModalLabel{{ listing.id }}" aria-hidden="true">
+                                                <div class="modal-dialog modal-lg">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title"
+                                                                id="listingModalLabel{{ listing.id }}">
+                                                                {{ listing.title }} - Listing Details</h5>
+                                                            <button type="button" class="btn-close"
+                                                                    data-bs-dismiss="modal"
+                                                                    aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <!-- Listing Progress Bar -->
+                                                            <div class="progress mb-4">
+                                                                {% if listing.active %}
+                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                                                                         role="progressbar"
+                                                                         style="width: 100%;" aria-valuenow="100"
+                                                                         aria-valuemin="0"
+                                                                         aria-valuemax="100">
+                                                                        Active
+                                                                    </div>
+                                                                {% else %}
+                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-secondary"
+                                                                         role="progressbar"
+                                                                         style="width: 100%;" aria-valuenow="100"
+                                                                         aria-valuemin="0"
+                                                                         aria-valuemax="100">
+                                                                        Inactive
+                                                                    </div>
+                                                                {% endif %}
+                                                            </div>
+                                                            <!-- Listing Details Section -->
+                                                            <div class="card mb-3">
+                                                                <div class="card-header bg-light">
+                                                                    <h4 class="mb-0">Listing Details</h4>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <dl class="row">
+                                                                        <dt class="col-sm-4">Listing Number</dt>
+                                                                        <dd class="col-sm-8">{{ listing.id }}</dd>
+
+                                                                        <dt class="col-sm-4">Listed On</dt>
+                                                                        <dd class="col-sm-8">{{ listing.date_created }}</dd>
+                                                                    </dl>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Shipping Info Section -->
+                                                            <div class="card mb-3">
+                                                                <div class="card-header bg-light">
+                                                                    <h4 class="mb-0">Shipping Info</h4>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <dl class="row">
+                                                                        <dt class="col-sm-4">Shipping Address</dt>
+                                                                        <dd class="col-sm-8">
+                                                                            {{ listing.shipping_address.shipping_full_name }}<br>
+                                                                            {{ listing.shipping_address.shipping_street_address }}, {{ listing.shipping_address.shipping_apartment_suite|default:"" }}<br>
+                                                                            {{ listing.shipping_address.shipping_city }}, {{ listing.shipping_address.shipping_state }} {{ listing.shipping_address.shipping_zip_code }}<br>
+                                                                            {{ listing.shipping_address.shipping_country }}<br>
+                                                                            {{ listing.shipping_address.shipping_phone_number }}
+                                                                        </dd>
+
+                                                                        <dt class="col-sm-4">Shipping Method</dt>
+                                                                        <dd class="col-sm-8">{{ listing.shipping_method|capfirst }}</dd>
+                                                                    </dl>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Items Sold Section -->
+                                                            <div class="card mb-3">
+                                                                <div class="card-header bg-light">
+                                                                    <h4 class="mb-0">Items Sold</h4>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <div class="row font-weight-bold border-bottom">
+                                                                        <div class="col-md-2"></div>
+                                                                        <div class="col-md-6">Item</div>
+                                                                        <div class="col-md-2">Quantity</div>
+                                                                        <div class="col-md-2">Price</div>
+                                                                    </div>
+                                                                    {% for item in listing.items.all %}
+                                                                        <div class="row align-items-center border-bottom py-2">
+                                                                            <div class="col-md-2">
+                                                                                {% if item.auction.get_image %}
+                                                                                    <img src="{{ item.auction.get_image.image.url }}"
+                                                                                         alt="{{ item.auction.title }}"
+                                                                                         style="width: 80px; height: 80px; object-fit: cover;">
+                                                                                {% else %}
+                                                                                    <img src="{% static 'images/no_image.png' %}"
+                                                                                         alt="No Image"
+                                                                                         style="width: 80px; height: 80px; object-fit: cover;">
+                                                                                {% endif %}
+                                                                            </div>
+
+                                                                            <div class="col-md-6">
+                                                                                {{ item.auction.title }}
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                {{ item.quantity }}
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                ${{ item.price }}
+                                                                            </div>
+                                                                        </div>
+                                                                    {% endfor %}
+                                                                    <dl class="row mb-0">
+                                                                        <div class="col-md-2"></div>
+                                                                        <div class="col-md-6"></div>
+                                                                        <dt class="col-md-2">Total</dt>
+                                                                        <dd class="col-md-2 fw-bold">
+                                                                            ${{ listing.total_amount }}</dd>
+                                                                    </dl>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Delivery Info Section -->
+                                                            <div class="card">
+                                                                <div class="card-header bg-light">
+                                                                    <h4 class="mb-0">Delivery Info</h4>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    {% if listing.carriers %}
+                                                                        <dl class="row">
+                                                                            <dt class="col-sm-4">Carrier</dt>
+                                                                            <dd class="col-sm-8">
+                                                                                {% if listing.carriers.exists %}
+                                                                                    {{ listing.carriers.first.carrier }}
+                                                                                    -
+                                                                                    {{ listing.carriers.first.delivery_method }}
+                                                                                {% else %}
+                                                                                    No carrier assigned
+                                                                                {% endif %}
+                                                                            </dd>
+
+                                                                            <dt class="col-sm-4">Tracking Number(s)</dt>
+                                                                            <dd class="col-sm-8">
+                                                                                <div>
+                                                                                    {% for parcel in listing.parcels.all %}
+                                                                                        <div class="mb-2">
+                                                                                            Tracking
+                                                                                            Number: {{ parcel.tracking_number }}<br>
+                                                                                            Status: {{ parcel.delivery_status|capfirst }}<br>
+                                                                                            Dimensions: {{ parcel.length }}
+                                                                                            x {{ parcel.width }}
+                                                                                            x {{ parcel.height }}<br>
+                                                                                            Weight: {{ parcel.weight }}
+                                                                                            lbs
+                                                                                            <div class="progress mb-4">
+                                                                                                {% if parcel.delivery_status == 'pending' %}
+                                                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                                                                                         role="progressbar"
+                                                                                                         style="width: 25%;"
+                                                                                                         aria-valuenow="25"
+                                                                                                         aria-valuemin="0"
+                                                                                                         aria-valuemax="100">
+                                                                                                        Pending
+                                                                                                    </div>
+                                                                                                {% elif parcel.delivery_status == 'shipped' or parcel.delivery_status == 'in_transit' or parcel.delivery_status == 'out_for_delivery' %}
+                                                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning"
+                                                                                                         role="progressbar"
+                                                                                                         style="width: 50%;"
+                                                                                                         aria-valuenow="50"
+                                                                                                         aria-valuemin="0"
+                                                                                                         aria-valuemax="100">
+                                                                                                        Shipped
+                                                                                                    </div>
+                                                                                                {% elif parcel.delivery_status == 'delivered' %}
+                                                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                                                                                                         role="progressbar"
+                                                                                                         style="width: 100%;"
+                                                                                                         aria-valuenow="100"
+                                                                                                         aria-valuemin="0"
+                                                                                                         aria-valuemax="100">
+                                                                                                        Delivered
+                                                                                                    </div>
+                                                                                                {% elif parcel.delivery_status == 'delayed' or parcel.delivery_status == 'failed_attempt' or parcel.delivery_status == 'returned_to_sender' or parcel.delivery_status == 'held_at_location' or parcel.delivery_status == 'exception' or parcel.delivery_status == 'cancelled' %}
+                                                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger"
+                                                                                                         role="progressbar"
+                                                                                                         style="width: 75%;"
+                                                                                                         aria-valuenow="75"
+                                                                                                         aria-valuemin="0"
+                                                                                                         aria-valuemax="100">
+                                                                                                        Issues
+                                                                                                    </div>
+                                                                                                {% endif %}
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    {% endfor %}
+                                                                                </div>
+                                                                            </dd>
+                                                                        </dl>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+
+                                                        </div>
+                                                        <div class="modal-footer bg-light">
+                                                            <button type="button" class="btn btn-secondary"
+                                                                    data-bs-dismiss="modal">
+                                                                Close
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        {% empty %}
+                                            <tr>
+                                                <td colspan="3">No listings found.</td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+
+                                    {% if listings.has_other_pages %}
+                                        <div class='d-flex justify-content-center'>
+                                            <ul class='pagination'>
+                                                {% if listings.has_previous %}
+                                                    <li class='page-item'>
+                                                        <a class='page-link'
+                                                           href='?listings_page={{ listings.previous_page_number }}'>
+                                                            &laquo;
+                                                        </a>
+                                                    </li>
+                                                {% else %}
+                                                    <li class='page-item disabled'>
+                                                        <a class='page-link' href='#'>&laquo;</a>
+                                                    </li>
+                                                {% endif %}
+                                                {% for i in listings.paginator.page_range %}
+                                                    {% if listings.number == i %}
+                                                        <li class='page-item active'>
+                                                            <a class='page-link' href='#'>{{ i }}</a>
+                                                        </li>
+                                                    {% else %}
+                                                        <li class='page-item'>
+                                                            <a class='page-link'
+                                                               href='?listings_page={{ i }}'>{{ i }}</a>
+                                                        </li>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                {% if listings.has_next %}
+                                                    <li class='page-item'>
+                                                        <a class='page-link'
+                                                           href='?listings_page={{ listings.next_page_number }}'>&raquo;</a>
+                                                    </li>
+                                                {% else %}
+                                                    <li class='page-item disabled'>
+                                                        <a class='page-link' href='#'>&raquo;</a>
+                                                    </li>
+                                                {% endif %}
+                                            </ul>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- My Settings -->
+                        <div class="tab-pane fade {% if active_tab == 'settings' %}show active{% endif %}" id="settings"
+                             role="tabpanel" aria-labelledby="settings-tab">
+                            Test in it
+                        </div>
                     </div>
                 </div>
             </div>
+        <a href="{{ request.path }}" class="btn btn-secondary">Reset</a>
 
 
             {#            <div class="recent-activity">#}

@@ -123,6 +123,7 @@ def dashboard(request):
     """
     The default route which renders a Dashboard page
     """
+
     # Get all bids made by the user
     bids = Bid.objects.filter(user=request.user)
 
@@ -132,7 +133,7 @@ def dashboard(request):
     # Get watchlist items
     watchlist = request.user.watchlist.all() if request.user.is_authenticated else Auction.objects.none()
 
-    # Get the highest bid for each auction and annotate if the user is the highest bidder
+    # Ensure auctions_with_user_bids is a QuerySet
     auctions_with_user_bids = Auction.objects.filter(
         bid__user=request.user,
         active=True
@@ -152,26 +153,73 @@ def dashboard(request):
     # Filter orders by status and date
     orders = Order.objects.filter(user=request.user).order_by('-created_at')
     sales = Order.objects.filter(auction__creator=request.user).order_by('-created_at')
+    listings = Auction.objects.filter(creator=request.user).order_by('-date_created')
 
-    status_filter = request.GET.get('status')
-    date_filter = request.GET.get('date')
+    # Get filtering parameters for each tab
+    order_status_filter = request.GET.get('order_status')
+    order_date_filter = request.GET.get('order_date')
+    sales_status_filter = request.GET.get('sales_status')
+    sales_date_filter = request.GET.get('sales_date')
+    listing_status_filter = request.GET.get('listing_status')
+    listing_date_filter = request.GET.get('listing_date')
+    bid_status_filter = request.GET.get('bid_status')
 
-    if status_filter:
-        orders = orders.filter(status=status_filter)
-        sales = sales.filter(status=status_filter)
+    # Filter orders
+    if order_status_filter:
+        orders = orders.filter(status=order_status_filter)
+        order_status = order_status_filter
+    else:
+        order_status = 'All'
+    if order_date_filter:
+        orders = orders.filter(created_at__date=order_date_filter)
 
-    if date_filter:
-        orders = orders.filter(created_at__date=date_filter)
-        sales = sales.filter(created_at__date=date_filter)
+    # Filter sales
+    if sales_status_filter:
+        sales = sales.filter(status=sales_status_filter)
+        sales_status = sales_status_filter
+    else:
+        sales_status = 'All'
+    if sales_date_filter:
+        sales = sales.filter(created_at__date=sales_date_filter)
 
-    # Paginate the results
+    # Filter listings
+    if listing_status_filter:
+        if listing_status_filter == 'active':
+            listings = listings.filter(active=True)
+        else:
+            listings = listings.filter(active=False)
+
+        listing_status = listing_status_filter
+    else:
+        listing_status = 'All'
+    if listing_date_filter:
+        listings = listings.filter(date_created__date=listing_date_filter)
+
+    # Filter bids
+    if bid_status_filter:
+        bid_status = bid_status_filter
+        if bid_status_filter == 'highest':
+            auctions_with_user_bids = auctions_with_user_bids.filter(user_is_highest_bidder=True)
+
+        elif bid_status_filter == 'outbid':
+            auctions_with_user_bids = auctions_with_user_bids.filter(user_is_highest_bidder=False)
+    else:
+        bid_status = 'All'
+
+    # Count of all auctions the user has bid on
+    total_auctions_with_bids_count = auctions_with_user_bids.count()
+
+
+    # Paginate each result set individually
     auction_page = request.GET.get('auction_page', 1)
     orders_page = request.GET.get('order_page', 1)
     sales_page = request.GET.get('sales_page', 1)
+    listings_page = request.GET.get('listings_page', 1)
 
     auction_paginator = Paginator(auctions_with_user_bids, 5)
     orders_paginator = Paginator(orders, 5)
     sales_paginator = Paginator(sales, 5)
+    listings_paginator = Paginator(listings, 5)
 
     try:
         auctions_with_user_bids = auction_paginator.page(auction_page)
@@ -194,18 +242,36 @@ def dashboard(request):
     except EmptyPage:
         sales = sales_paginator.page(sales_paginator.num_pages)
 
+    try:
+        listings = listings_paginator.page(listings_page)
+    except PageNotAnInteger:
+        listings = listings_paginator.page(1)
+    except EmptyPage:
+        listings = listings_paginator.page(listings_paginator.num_pages)
+
+    # Determine the active tab
+    active_tab = request.GET.get('active_tab', 'orders')
+
     return render(request, 'dashboard.html', {
         'categories': Category.objects.all(),
+        'listings': listings,
+        'listings_count': listings_paginator.count,
+        'listing_status': listing_status,
         'auctions': auctions_with_user_bids,
-        'auction_count': auction_count,
+        'auction_count': total_auctions_with_bids_count,
         'watchlist_count': watchlist.count(),
         'bids_count': bids.count(),
+        'bid_status': bid_status,
         'orders': orders,
         'orders_count': orders_paginator.count,
+        'order_status': order_status,
         'sales': sales,
         'sales_count': sales_paginator.count,
+        'sales_status': sales_status,
+        'active_tab': active_tab,
         'title': 'Dashboard',
     })
+
 
 
 def register(request):
