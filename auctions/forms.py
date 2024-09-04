@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserChangeForm
 from django.forms import modelformset_factory
 
 from .models import Auction, Bid, Comment, Image, Category, CartItem, ProductDetail, Message, Order, ShippingAddress, \
-    BillingAddress, STATE_CHOICES, User
+    BillingAddress, STATE_CHOICES, User, Address
 
 
 class AuctionForm(forms.ModelForm):
@@ -166,6 +166,23 @@ class AddToCartForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(AddToCartForm, self).__init__(*args, **kwargs)
+
+
+class UserAddressForm(forms.ModelForm):
+    class Meta:
+        model = Address
+        fields = [
+            'street',
+            'suite',
+            'city',
+            'state',
+            'zip_code',
+            'country',
+        ]
+
+
+UserBillingAddressForm = UserAddressForm(prefix='billing')
+UserShippingAddressForm = UserAddressForm(prefix='shipping')
 
 
 class ShippingMethodForm(forms.ModelForm):

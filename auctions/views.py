@@ -6,8 +6,11 @@ from decimal import Decimal
 
 from django import forms
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.views import PasswordChangeView
+from django.contrib.messages.views import SuccessMessageMixin
 from django.core.files.storage import get_storage_class
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import IntegrityError
@@ -15,7 +18,7 @@ from django.db.models import Q, Case, When, BooleanField, DecimalField, Max, F
 from django.forms import model_to_dict
 from django.http import HttpResponseRedirect, JsonResponse, FileResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -23,7 +26,7 @@ from django.views.decorators.http import require_POST
 
 from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, ProductDetailFormSet, MessageForm, \
     ShippingMethodForm, ShippingAddressForm, BillingAddressForm, CreditCardForm, ACHForm, ZelleForm, VenmoForm, \
-    PayPalForm, CashAppForm, CustomUserChangeForm
+    PayPalForm, CashAppForm, CustomUserChangeForm, UserAddressForm
 from .models import Bid, Category, Image, User, Address, CartItem, Cart, ProductDetail, Message, Order, Payment, \
     OrderItem, Parcel
 from .utils.helpers import update_categories_from_fda
@@ -35,6 +38,15 @@ logger = logging.getLogger(__name__)
 
 from django.db.models import Count
 from .models import Auction, AuctionView
+
+
+class CustomPasswordChangeView(PasswordChangeView):
+    template_name = 'registration/password_change_form.html'
+    success_url = reverse_lazy('dashboard')
+
+    def get_success_url(self):
+        messages.success(self.request, 'Your password has been successfully changed.')
+        return f"{reverse_lazy('dashboard')}?active_tab=settings&sub_nav=password"
 
 
 def index(request):
@@ -251,18 +263,41 @@ def dashboard(request):
 
     # Determine the active tab
     active_tab = request.GET.get('active_tab', 'orders')
-    print(active_tab)
 
-    # Handle settings form
+    # Handle settings and associated forms saving
+    user = request.user
+
     if request.method == 'POST' and 'settings_form' in request.POST:
         settings_form = CustomUserChangeForm(request.POST, request.FILES, instance=request.user)
+        billing_form = UserAddressForm(request.POST, prefix='billing',
+                                       instance=user.addresses.filter(address_type='billing').first())
+        shipping_form = UserAddressForm(request.POST, prefix='shipping',
+                                        instance=user.addresses.filter(address_type='shipping').first())
+        password_form = PasswordChangeForm(user, request.POST)
+
+        if password_form.is_valid():
+            password_form.save()
+            update_session_auth_hash(request, password_form.user)  # Important!
+            messages.success(request, 'Your password has been successfully changed.')
+            return redirect('dashboard')
+        else:
+            active_tab = 'password'
+
         if settings_form.is_valid():
             settings_form.save()
+            billing_form.save()
+            shipping_form.save()
             messages.success(request, 'Your settings have been updated.')
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
+        billing_form = UserAddressForm(instance=user.addresses.filter(address_type='billing').first(),
+                                       prefix='billing')
+        shipping_form = UserAddressForm(instance=user.addresses.filter(address_type='shipping').first(),
+                                        prefix='shipping')
+
         settings_form = CustomUserChangeForm(instance=request.user)
+        password_form = PasswordChangeForm(user)
 
     return render(request, 'dashboard.html', {
         'categories': Category.objects.all(),
@@ -283,7 +318,12 @@ def dashboard(request):
         'active_tab': active_tab,
         'title': 'Dashboard',
         'settings_form': settings_form,
+        'billing_form': billing_form,
+        'shipping_form': shipping_form,
+        'password_form': password_form,
+        'sub_nav': 'user_details'
     })
+
 
 
 

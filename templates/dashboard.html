@@ -12,6 +12,14 @@
 
     <!-- Page Content -->
     <div class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
 
 
         <div class="container-content">
@@ -1305,138 +1313,381 @@
                             <div class="card-body">
                                 <form method="POST" enctype="multipart/form-data">
                                     {% csrf_token %}
-
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <!-- Username -->
-                                            <div class="mb-3">
-                                                <label for="{{ settings_form.username.id_for_label }}"
-                                                       class="form-label">Username</label>
-                                                <input type="text" name="{{ settings_form.username.name }}"
-                                                       id="{{ settings_form.username.id_for_label }}"
-                                                       value="{{ settings_form.username.value }}" class="form-control">
-                                                {% if settings_form.username.errors %}
-                                                    <div class="text-danger">
-                                                        {{ settings_form.username.errors }}
+                                    <!-- Tab Navigation -->
+                                    <ul class="nav nav-tabs mb-3" id="settingsTabs" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link sub-nav {% if sub_nav == 'user_details' %}active {% elif sub_nav == '' %}active{% endif %}"
+                                                    id="user-details-tab"
+                                                    data-bs-toggle="tab"
+                                                    data-bs-target="#user-details"
+                                                    type="button" role="tab" aria-controls="user-details"
+                                                    aria-selected="true">User Details
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link sub-nav {% if sub_nav == 'billing_address' %}active{% endif %}"
+                                                    id="billing-address-tab"
+                                                    data-bs-toggle="tab"
+                                                    data-bs-target="#billing-address"
+                                                    type="button" role="tab" aria-controls="billing-address"
+                                                    aria-selected="false">Billing Address
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link sub-nav {% if sub_nav == 'shipping_address' %}active{% endif %}"
+                                                    id="shipping-address-tab"
+                                                    data-bs-toggle="tab"
+                                                    data-bs-target="#shipping-address"
+                                                    type="button" role="tab" aria-controls="shipping-address"
+                                                    aria-selected="false">Shipping Address
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link sub-nav {% if sub_nav == 'password' %}active{% endif %}"
+                                                    id="password-tab"
+                                                    data-bs-toggle="tab" data-bs-target="#password" type="button"
+                                                    role="tab" aria-controls="password"
+                                                    aria-selected="false">Change Password
+                                            </button>
+                                        </li>
+                                    </ul>
+                                    <!-- Tab Content -->
+                                    <div class="tab-content" id="settingsTabContent">
+                                        <!-- User Details Tab -->
+                                        <div class="tab-pane fade show active" id="user-details" role="tabpanel"
+                                             aria-labelledby="user-details-tab">
+                                            <!-- User Info -->
+                                            <h5>User Information</h5>
+                                            <div class="card-body row">
+                                                <div class="col-md-6">
+                                                    <!-- Username -->
+                                                    <div class="mb-3">
+                                                        <label for="{{ settings_form.username.id_for_label }}"
+                                                               class="form-label">Username</label>
+                                                        <input type="text" name="{{ settings_form.username.name }}"
+                                                               id="{{ settings_form.username.id_for_label }}"
+                                                               value="{{ settings_form.username.value }}"
+                                                               class="form-control">
+                                                        {% if settings_form.username.errors %}
+                                                            <div class="text-danger">
+                                                                {{ settings_form.username.errors }}
+                                                            </div>
+                                                        {% endif %}
                                                     </div>
-                                                {% endif %}
-                                            </div>
 
-                                            <!-- Email -->
-                                            <div class="mb-3">
-                                                <label for="{{ settings_form.email.id_for_label }}"
-                                                       class="form-label">Email</label>
-                                                <input type="email" name="{{ settings_form.email.name }}"
-                                                       id="{{ settings_form.email.id_for_label }}"
-                                                       value="{{ settings_form.email.value }}" class="form-control">
-                                                {% if settings_form.email.errors %}
-                                                    <div class="text-danger">
-                                                        {{ settings_form.email.errors }}
+                                                    <!-- Email -->
+                                                    <div class="mb-3">
+                                                        <label for="{{ settings_form.email.id_for_label }}"
+                                                               class="form-label">Email</label>
+                                                        <input type="email" name="{{ settings_form.email.name }}"
+                                                               id="{{ settings_form.email.id_for_label }}"
+                                                               value="{{ settings_form.email.value }}"
+                                                               class="form-control">
+                                                        {% if settings_form.email.errors %}
+                                                            <div class="text-danger">
+                                                                {{ settings_form.email.errors }}
+                                                            </div>
+                                                        {% endif %}
                                                     </div>
-                                                {% endif %}
-                                            </div>
 
-                                            <!-- Company Name -->
-                                            <div class="mb-3">
-                                                <label for="{{ settings_form.company_name.id_for_label }}"
-                                                       class="form-label">Company
-                                                    Name</label>
-                                                <input type="text" name="{{ settings_form.company_name.name }}"
-                                                       id="{{ settings_form.company_name.id_for_label }}"
-                                                       value="{{ settings_form.company_name.value }}"
-                                                       class="form-control">
-                                                {% if settings_form.company_name.errors %}
-                                                    <div class="text-danger">
-                                                        {{ settings_form.company_name.errors }}
+                                                    <!-- Company Name -->
+                                                    <div class="mb-3">
+                                                        <label for="{{ settings_form.company_name.id_for_label }}"
+                                                               class="form-label">Company
+                                                            Name</label>
+                                                        <input type="text" name="{{ settings_form.company_name.name }}"
+                                                               id="{{ settings_form.company_name.id_for_label }}"
+                                                               value="{{ settings_form.company_name.value }}"
+                                                               class="form-control">
+                                                        {% if settings_form.company_name.errors %}
+                                                            <div class="text-danger">
+                                                                {{ settings_form.company_name.errors }}
+                                                            </div>
+                                                        {% endif %}
                                                     </div>
-                                                {% endif %}
-                                            </div>
 
-                                            <!-- Phone Number -->
-                                            <div class="mb-3">
-                                                <label for="{{ settings_form.phone_number.id_for_label }}"
-                                                       class="form-label">Phone
-                                                    Number</label>
-                                                <input type="text" name="{{ settings_form.phone_number.name }}"
-                                                       id="{{ settings_form.phone_number.id_for_label }}"
-                                                       value="{{ settings_form.phone_number.value }}"
-                                                       class="form-control">
-                                                {% if settings_form.phone_number.errors %}
-                                                    <div class="text-danger">
-                                                        {{ settings_form.phone_number.errors }}
+                                                    <!-- Phone Number -->
+                                                    <div class="mb-3">
+                                                        <label for="{{ settings_form.phone_number.id_for_label }}"
+                                                               class="form-label">Phone
+                                                            Number</label>
+                                                        <input type="text" name="{{ settings_form.phone_number.name }}"
+                                                               id="{{ settings_form.phone_number.id_for_label }}"
+                                                               value="{{ settings_form.phone_number.value }}"
+                                                               class="form-control">
+                                                        {% if settings_form.phone_number.errors %}
+                                                            <div class="text-danger">
+                                                                {{ settings_form.phone_number.errors }}
+                                                            </div>
+                                                        {% endif %}
                                                     </div>
-                                                {% endif %}
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <!-- Profile Image -->
+                                                    <div class="mb-3">
+                                                        <label for="{{ settings_form.profile_image.id_for_label }}"
+                                                               class="form-label">Profile
+                                                            Image</label>
+                                                        <input type="file" name="{{ settings_form.profile_image.name }}"
+                                                               id="{{ settings_form.profile_image.id_for_label }}"
+                                                               class="form-control">
+                                                        {% if settings_form.profile_image.errors %}
+                                                            <div class="text-danger">
+                                                                {{ settings_form.profile_image.errors }}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+
+                                                    <!-- Company Logo -->
+                                                    <div class="mb-3">
+                                                        <label for="{{ settings_form.company_logo.id_for_label }}"
+                                                               class="form-label">Company
+                                                            Logo</label>
+                                                        <input type="file" name="{{ settings_form.company_logo.name }}"
+                                                               id="{{ settings_form.company_logo.id_for_label }}"
+                                                               class="form-control">
+                                                        {% if settings_form.company_logo.errors %}
+                                                            <div class="text-danger">
+                                                                {{ settings_form.company_logo.errors }}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+
+                                                    <!-- Company W9 -->
+                                                    <div class="mb-3">
+                                                        <label for="{{ settings_form.company_w9.id_for_label }}"
+                                                               class="form-label">Company
+                                                            W9</label>
+                                                        <input type="file" name="{{ settings_form.company_w9.name }}"
+                                                               id="{{ settings_form.company_w9.id_for_label }}"
+                                                               class="form-control">
+                                                        {% if settings_form.company_w9.errors %}
+                                                            <div class="text-danger">
+                                                                {{ settings_form.company_w9.errors }}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+
+                                                    <!-- Reseller Certificate -->
+                                                    <div class="mb-3">
+                                                        <label for="{{ settings_form.reseller_cert.id_for_label }}"
+                                                               class="form-label">Reseller
+                                                            Certificate</label>
+                                                        <input type="file" name="{{ settings_form.reseller_cert.name }}"
+                                                               id="{{ settings_form.reseller_cert.id_for_label }}"
+                                                               class="form-control">
+                                                        {% if settings_form.reseller_cert.errors %}
+                                                            <div class="text-danger">
+                                                                {{ settings_form.reseller_cert.errors }}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
                                             </div>
+                                            <!-- Submit Button -->
+                                            <button type="submit" class="btn btn-primary">Save Settings</button>
                                         </div>
-                                        <div class="col-md-6">
-                                            <!-- Profile Image -->
-                                            <div class="mb-3">
-                                                <label for="{{ settings_form.profile_image.id_for_label }}"
-                                                       class="form-label">Profile
-                                                    Image</label>
-                                                <input type="file" name="{{ settings_form.profile_image.name }}"
-                                                       id="{{ settings_form.profile_image.id_for_label }}"
-                                                       class="form-control">
-                                                {% if settings_form.profile_image.errors %}
-                                                    <div class="text-danger">
-                                                        {{ settings_form.profile_image.errors }}
-                                                    </div>
-                                                {% endif %}
-                                            </div>
+                                        <!-- Billing Address Tab -->
+                                        <div class="tab-pane fade" id="billing-address" role="tabpanel"
+                                             aria-labelledby="billing-address-tab">
 
-                                            <!-- Company Logo -->
-                                            <div class="mb-3">
-                                                <label for="{{ settings_form.company_logo.id_for_label }}"
-                                                       class="form-label">Company
-                                                    Logo</label>
-                                                <input type="file" name="{{ settings_form.company_logo.name }}"
-                                                       id="{{ settings_form.company_logo.id_for_label }}"
-                                                       class="form-control">
-                                                {% if settings_form.company_logo.errors %}
-                                                    <div class="text-danger">
-                                                        {{ settings_form.company_logo.errors }}
-                                                    </div>
-                                                {% endif %}
-                                            </div>
+                                            <!-- Billing and Shipping Addresses -->
+                                            <h5>Billing Address</h5>
+                                            <div class="card-body row">
+                                                <!-- Billing Address -->
+                                                <div class="col-md-6">
 
-                                            <!-- Company W9 -->
-                                            <div class="mb-3">
-                                                <label for="{{ settings_form.company_w9.id_for_label }}"
-                                                       class="form-label">Company
-                                                    W9</label>
-                                                <input type="file" name="{{ settings_form.company_w9.name }}"
-                                                       id="{{ settings_form.company_w9.id_for_label }}"
-                                                       class="form-control">
-                                                {% if settings_form.company_w9.errors %}
-                                                    <div class="text-danger">
-                                                        {{ settings_form.company_w9.errors }}
+                                                    <!-- Street Address -->
+                                                    <div class="mb-3">
+                                                        <label for="{{ billing_form.street.id_for_label }}"
+                                                               class="form-label">Street
+                                                            Address</label>
+                                                        <input type="text" name="{{ billing_form.street.name }}"
+                                                               id="{{ billing_form.street.id_for_label }}"
+                                                               value="{{ billing_form.street.value }}"
+                                                               class="form-control">
+                                                        {% if billing_form.street.errors %}
+                                                            <div class="text-danger">{{ billing_form.street.errors }}</div>
+                                                        {% endif %}
                                                     </div>
-                                                {% endif %}
-                                            </div>
-
-                                            <!-- Reseller Certificate -->
-                                            <div class="mb-3">
-                                                <label for="{{ settings_form.reseller_cert.id_for_label }}"
-                                                       class="form-label">Reseller
-                                                    Certificate</label>
-                                                <input type="file" name="{{ settings_form.reseller_cert.name }}"
-                                                       id="{{ settings_form.reseller_cert.id_for_label }}"
-                                                       class="form-control">
-                                                {% if settings_form.reseller_cert.errors %}
-                                                    <div class="text-danger">
-                                                        {{ settings_form.reseller_cert.errors }}
+                                                    <!-- Street Address 2 -->
+                                                    <div class="mb-3">
+                                                        <label for="{{ billing_form.suite.id_for_label }}"
+                                                               class="form-label">Street
+                                                            Address 2</label>
+                                                        <input type="text" name="{{ billing_form.suite.name }}"
+                                                               id="{{ billing_form.suite.id_for_label }}"
+                                                               value="{{ billing_form.suite.value }}"
+                                                               class="form-control">
+                                                        {% if billing_form.suite.errors %}
+                                                            <div class="text-danger">{{ billing_form.suite.errors }}</div>
+                                                        {% endif %}
                                                     </div>
-                                                {% endif %}
+                                                    <!-- City, Stet Zip -->
+                                                    <div class="row">
+                                                        <!-- City -->
+                                                        <div class="col-md-6 mb-3">
+                                                            <label for="{{ billing_form.city.id_for_label }}"
+                                                                   class="form-label">City</label>
+                                                            <input type="text" name="{{ billing_form.city.name }}"
+                                                                   id="{{ billing_form.city.id_for_label }}"
+                                                                   value="{{ billing_form.city.value }}"
+                                                                   class="form-control">
+                                                            {% if billing_form.city.errors %}
+                                                                <div class="text-danger">{{ billing_form.city.errors }}</div>
+                                                            {% endif %}
+                                                        </div>
+                                                        <!-- State -->
+                                                        <div class="col-md-3 mb-3">
+                                                            <label for="{{ billing_form.state.id_for_label }}"
+                                                                   class="form-label">State</label>
+                                                            <input type="text" name="{{ billing_form.state.name }}"
+                                                                   id="{{ billing_form.state.id_for_label }}"
+                                                                   value="{{ billing_form.state.value }}"
+                                                                   class="form-control">
+                                                            {% if billing_form.state.errors %}
+                                                                <div class="text-danger">{{ billing_form.state.errors }}</div>
+                                                            {% endif %}
+                                                        </div>
+                                                        <!-- Zip Code -->
+                                                        <div class="col-md-3 mb-3">
+                                                            <label for="{{ billing_form.zip_code.id_for_label }}"
+                                                                   class="form-label">Zip Code</label>
+                                                            <input type="text" name="{{ billing_form.zip_code.name }}"
+                                                                   id="{{ billing_form.zip_code.id_for_label }}"
+                                                                   value="{{ billing_form.zip_code.value }}"
+                                                                   class="form-control">
+                                                            {% if billing_form.zip_code.errors %}
+                                                                <div class="text-danger">{{ billing_form.zip_code.errors }}</div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    <!-- Country -->
+                                                    <div class="mb-3">
+                                                        <label for="{{ billing_form.country.id_for_label }}"
+                                                               class="form-label">Country</label>
+                                                        <input type="text" name="{{ billing_form.country.name }}"
+                                                               id="{{ billing_form.country.id_for_label }}"
+                                                               value="{{ billing_form.country.value }}"
+                                                               class="form-control">
+                                                        {% if billing_form.country.errors %}
+                                                            <div class="text-danger">{{ billing_form.country.errors }}</div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
                                             </div>
+                                            <!-- Submit Button -->
+                                            <button type="submit" class="btn btn-primary">Save Settings</button>
                                         </div>
-                                    </div>
-                                    <!-- Password Reset -->
-                                    <a class="btn btn-secondary" href="{% url 'password_change' %}">Change Your
-                                        Password</a>
+                                        <!-- Shipping Address Tab -->
+                                        <div class="tab-pane fade" id="shipping-address" role="tabpanel"
+                                             aria-labelledby="shipping-address-tab">
+                                            <h5>Shipping Address</h5>
+                                            <div class="card-body row">
+                                                <!-- Shipping Address -->
+                                                <div class="col-md-6">
 
-                                    <!-- Submit Button -->
-                                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                                                    <!-- Street Address -->
+                                                    <div class="mb-3">
+                                                        <label for="{{ shipping_form.street.id_for_label }}"
+                                                               class="form-label">Street
+                                                            Address</label>
+                                                        <input type="text" name="{{ shipping_form.street.name }}"
+                                                               id="{{ shipping_form.street.id_for_label }}"
+                                                               value="{{ shipping_form.street.value }}"
+                                                               class="form-control">
+                                                        {% if shipping_form.street.errors %}
+                                                            <div class="text-danger">{{ shipping_form.street.errors }}</div>
+                                                        {% endif %}
+                                                    </div>
+                                                    <!-- Suite -->
+                                                    <div class="mb-3">
+                                                        <label for="{{ shipping_form.suite.id_for_label }}"
+                                                               class="form-label">Street Address 2</label>
+                                                        <input type="text" name="{{ shipping_form.suite.name }}"
+                                                               id="{{ shipping_form.suite.id_for_label }}"
+                                                               value="{{ shipping_form.suite.value }}"
+                                                               class="form-control">
+                                                        {% if shipping_form.suite.errors %}
+                                                            <div class="text-danger">{{ shipping_form.suite.errors }}</div>
+                                                        {% endif %}
+                                                    </div>
+                                                    <!-- City, State Zip -->
+                                                    <div class="row">
+
+                                                        <!-- City -->
+                                                        <div class="col-md-6 mb-3">
+                                                            <label for="{{ shipping_form.city.id_for_label }}"
+                                                                   class="form-label">City</label>
+                                                            <input type="text" name="{{ shipping_form.city.name }}"
+                                                                   id="{{ shipping_form.city.id_for_label }}"
+                                                                   value="{{ shipping_form.city.value }}"
+                                                                   class="form-control">
+                                                            {% if shipping_form.city.errors %}
+                                                                <div class="text-danger">{{ shipping_form.city.errors }}</div>
+                                                            {% endif %}
+                                                        </div>
+                                                        <!-- State -->
+                                                        <div class="col-md-3 mb-3">
+                                                            <label for="{{ shipping_form.state.id_for_label }}"
+                                                                   class="form-label">State</label>
+                                                            <input type="text" name="{{ shipping_form.state.name }}"
+                                                                   id="{{ shipping_form.state.id_for_label }}"
+                                                                   value="{{ shipping_form.state.value }}"
+                                                                   class="form-control">
+                                                            {% if shipping_form.state.errors %}
+                                                                <div class="text-danger">{{ shipping_form.state.errors }}</div>
+                                                            {% endif %}
+                                                        </div>
+                                                        <!-- Zip Code -->
+                                                        <div class="col-md-3 mb-3">
+                                                            <label for="{{ shipping_form.zip_code.id_for_label }}"
+                                                                   class="form-label">Zip Code</label>
+                                                            <input type="text" name="{{ shipping_form.zip_code.name }}"
+                                                                   id="{{ shipping_form.zip_code.id_for_label }}"
+                                                                   value="{{ shipping_form.zip_code.value }}"
+                                                                   class="form-control">
+                                                            {% if shipping_form.zip_code.errors %}
+                                                                <div class="text-danger">{{ shipping_form.zip_code.errors }}</div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    <!-- Country -->
+                                                    <div class="mb-3">
+                                                        <label for="{{ shipping_form.country.id_for_label }}"
+                                                               class="form-label">Country</label>
+                                                        <input type="text" name="{{ shipping_form.country.name }}"
+                                                               id="{{ shipping_form.country.id_for_label }}"
+                                                               value="{{ shipping_form.country.value }}"
+                                                               class="form-control">
+                                                        {% if shipping_form.country.errors %}
+                                                            <div class="text-danger">{{ shipping_form.country.errors }}</div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- Submit Button -->
+                                            <button type="submit" class="btn btn-primary">Save Settings</button>
+                                        </div>
+
                                 </form>
+
+                                <!-- Password Reset -->
+                                <div class="tab-pane fade {% if active_tab == 'password' %}show active{% endif %}"
+                                     id="password" role="tabpanel"
+                                     aria-labelledby="password-tab">
+                                    <div class="card-body">
+
+                                        <form method="post" action="{% url 'password_change' %}">
+                                            {% csrf_token %}
+                                            {{ password_form.as_p }}
+                                            <button type="submit" class="btn btn-primary">Change Password</button>
+                                        </form>
+                                    </div>
+
+                                </div>
+
+
                             </div>
                         </div>
                     </div>
