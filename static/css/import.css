@@ -1,0 +1,125 @@
+.import-container{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+.infographic {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    grid-row: span 2;
+}
+
+.infographic .step {
+    flex: 1;
+    padding: 30px;
+    height: 100%;
+}
+
+#step1{
+    background-color: #AEDFF7;
+}
+
+
+#step2{
+    background-color: #C2E3A2;
+}
+
+
+#step3{
+    background-color: #FFD7A3;
+}
+
+
+#step4{
+    background-color: #D7B3FF;
+}
+
+.infographic .step i {
+    font-size: 2em;
+    color: #00B2FF; /* Accent color from your brand */
+    margin-bottom: 10px;
+}
+
+.infographic .step h5 {
+    margin-top: 10px;
+    margin-bottom: 5px;
+    font-size: 1.2em;
+    color: #131C31; /* Primary color from your brand */
+}
+
+.infographic .step p {
+    font-size: 0.9em;
+    color: #131C31; /* Primary color from your brand */
+}
+
+.sample-file-container {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    /*box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);*/
+}
+
+.sample-file-container p {
+    font-size: 1em;
+    color: #131C31; /* Primary color from your brand */
+    margin-bottom: 15px;
+}
+
+.sample-file-container .btn {
+    /*background-color: #00B2FF; !* Accent color from your brand *!*/
+    color: white;
+    font-size: 1.1em;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+.sample-file-container .btn i {
+    margin-right: 8px;
+}
+
+.sample-file-container .btn:hover {
+    /*background-color: #008ecf; !* Slightly darker shade for hover effect *!*/
+}
+
+#import-mapping{
+    overflow-x: auto;
+}
+
+#imageUploadModal{
+    background-color: rgba(0, 0, 0, .3);
+}
+
+#image-modal-content{
+    width: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+
+/* Responsive design for small screens */
+@media (max-width: 768px) {
+    .infographic {
+        flex-direction: column;
+    }
+
+    .infographic .step {
+        padding: 15px 0;
+    }
+
+    .infographic .step i {
+        font-size: 1.8em;
+    }
+
+    .infographic .step h5 {
+        font-size: 1.1em;
+    }
+
+    .infographic .step p {
+        font-size: 0.85em;
+    }
+}

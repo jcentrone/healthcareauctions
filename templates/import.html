@@ -1,76 +1,143 @@
-{% extends 'base.html' %}
+{% extends 'new_base.html' %}
 {% load static %}
 {% block title %}Auctions | {{ title }} {% endblock %}
 
 {% block body %}
-<meta name="csrf-token" content="{{ csrf_token }}">
+    <meta name="csrf-token" content="{{ csrf_token }}">
 
-<div class="container">
-    <div class="sub-container">
-        <h2 id="import-header">Import From Excel</h2>
-        <div id="file-input">
-            <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="form-control" required>
-        </div>
+    <div class="container">
+        <div class="sub-container">
+            <h2 id="import-header">Import From Excel</h2>
 
-        <a id="sample-file" href="{% url 'download_excel' %}">Download Sample Excel File</a>
-
-        <form id="importForm">
-            <div id="import-mapping">
-                <div id="previewContainer" style="display:none;">
-                    <h3>Preview Data</h3>
-                    <div id="table-container">
-                        <table class="table mt-4" id="previewTable">
-                            <thead id="previewTableHead">
-                                <!-- Dynamic Headers -->
-                            </thead>
-                            <tbody id="previewTableBody">
-                                <!-- Dynamic Rows -->
-                            </tbody>
-                        </table>
+            <div class="import-container">
+                <div class="infographic card">
+                    <div class="step" id="step1">
+                        <i class="fa fa-file-excel" aria-hidden="true"></i>
+                        <h5>Step 1: Select Your File</h5>
+                        <p>Choose your Excel file with the auction data.</p>
                     </div>
-                    <div id="import-buttons">
-                        <button type="submit" class="btn btn-primary" id="import-button" style="display:none;">
-                            Import
-                        </button>
+                    <div class="step" id="step2">
+                        <i class="fa fa-arrows-alt" aria-hidden="true"></i>
+                        <h5>Step 2: Map Your Columns</h5>
+                        <p>Match your Excel columns to the auction fields.</p>
+                    </div>
+                    <div class="step" id="step3">
+                        <i class="fa fa-image" aria-hidden="true"></i>
+                        <h5>Step 3: Add Images</h5>
+                        <p>Upload images to showcase your listings.</p>
+                    </div>
+                    <div class="step" id="step4">
+                        <i class="fa fa-check" aria-hidden="true"></i>
+                        <h5>Step 4: Done!</h5>
+                        <p>Review and submit to get your auctions live!</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Step 1: Select Your File To Import</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="file-input">
+                            <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="sample-file-container text-center mt-4">
+                    <p>If you prefer to use our pre-formatted template for easier mapping, you can download it below.
+                        The
+                        template includes the correct headings for automatic column mapping.</p>
+                    <a id="sample-file" href="{% url 'download_excel' %}" class="btn btn-primary btn-lg">
+                        <i class="fa fa-download" aria-hidden="true"></i> Download Sample Excel File
+                    </a>
+                </div>
+            </div>
+            <!-- Trigger Button for Modal -->
+            <button type="button" class="btn btn-primary" id="openImportModal">
+                Import Excel File
+            </button>
+
+            <!-- Import Modal -->
+            <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog modal-xl ">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="importModalLabel">Import From Excel</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="importForm">
+
+                                <div id="mappingModal">
+                                    <div id="mappingContainer" style="display:none;">
+                                        <h3>Step 2: Map Your Data</h3>
+                                        <p>Almost there! Just match each of your spreadsheet's columns on the left with
+                                            the corresponding auction field on the right to ensure everything lands in
+                                            the right place. We'll add pictures next.</p>
+
+                                        <table class="table mt-4">
+                                            <thead>
+                                            <tr>
+                                                <th>File Header</th>
+                                                <th></th>
+                                                <th>Auction Field</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody id="mappingTable">
+                                            <!-- Dynamic Rows -->
+                                            </tbody>
+                                        </table>
+                                        <div id="closeMappingModal" class="btn btn-primary">Okay</div>
+                                    </div>
+                                </div>
+
+                                <div id="import-mapping">
+                                    <div id="previewContainer" style="display:none;">
+                                        <h3>Preview Data</h3>
+                                        <div id="table-container">
+                                            <table class="table mt-4" id="previewTable">
+                                                <thead id="previewTableHead">
+                                                <!-- Dynamic Headers -->
+                                                </thead>
+                                                <tbody id="previewTableBody">
+                                                <!-- Dynamic Rows -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                    </div>
+                                    <button type="submit" class="btn btn-primary" id="import-button">
+                                        Import
+                                    </button>
+                                </div>
+
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div id="mappingModal" class="modal">
-                <div class="modal-content">
-                    <div id="mappingContainer" style="display:none;">
-                        <h3>Column Mapping</h3>
-                        <p>Match the header on the left to the auction field on the right.</p>
-                        <table class="table mt-4">
-                            <thead>
-                                <tr>
-                                    <th>File Header</th>
-                                    <th></th>
-                                    <th>Auction Field</th>
-                                </tr>
-                            </thead>
-                            <tbody id="mappingTable">
-                                <!-- Dynamic Rows -->
-                            </tbody>
-                        </table>
-                        <div id="closeMappingModal" class="btn btn-primary">Okay</div>
-                    </div>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Modal for Image Uploads -->
-<div id="imageUploadModal" class="modal">
-    <div class="modal-content">
-        <span class="close" id="closeImageModal">&times;</span>
-        <div id="imageUploadContainer">
-            <!-- Dynamic Image Inputs -->
         </div>
     </div>
-</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
-<script src='{% static "js/import_excel.js" %}'></script>
+    <!-- Modal for Image Uploads -->
+    <div id="imageUploadModal" class="modal modal-md">
+        <div class="modal-content" id="image-modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="add-images-header">Add Images</h5>
+                <button type="button" id="closeImageModal" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+
+            </div>
+            <div class="p-5 pt-2">
+                <div id="imageUploadContainer">
+                    <!-- Dynamic Image Inputs -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+    <script src='{% static "js/import_excel.js" %}'></script>
+    <link href='{% static "css/import.css" %}' rel='stylesheet'>
 
 {% endblock %}

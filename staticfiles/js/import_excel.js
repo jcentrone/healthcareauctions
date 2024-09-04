@@ -11,9 +11,14 @@ function handleFileSelect(event) {
 
             generatePreviewTable(json);
             generateMappingTable(json);
-            document.getElementById('sample-file').style.display = 'none';
-            document.getElementById('file-input').style.display = 'none';
+                document.getElementById('import-mapping').style.display = 'none';
+
+            // document.getElementById('file-input').style.display = 'none';
             document.getElementById('import-button').style.display = 'block';
+
+            // Show the modal after processing the file
+            const importModal = new bootstrap.Modal(document.getElementById('importModal'));
+            importModal.show();
         };
         reader.readAsArrayBuffer(file);
     }
@@ -25,6 +30,7 @@ function generatePreviewTable(data) {
     previewTableHead.innerHTML = '';
     previewTableBody.innerHTML = '';
 
+    // Create table header
     const headerRow = document.createElement('tr');
     data[0].forEach(header => {
         const th = document.createElement('th');
@@ -36,17 +42,28 @@ function generatePreviewTable(data) {
     headerRow.appendChild(imageHeader);
     previewTableHead.appendChild(headerRow);
 
+    // Create table body
     data.slice(1, 6).forEach((row, rowIndex) => {
         const tr = document.createElement('tr');
-        row.forEach(cell => {
+
+        // Ensure each row has the same number of columns as the header
+        data[0].forEach((header, colIndex) => {
             const td = document.createElement('td');
-            td.innerText = typeof cell === 'number' && isExcelDate(cell) ? formatDate(cell) : cell;
+            const cellValue = row[colIndex];  // Use colIndex to access the correct value in the row
+
+            if (typeof cellValue === 'number' && isExcelDate(cellValue)) {
+                td.innerText = formatDate(cellValue);
+            } else {
+                td.innerText = cellValue !== undefined ? cellValue : '';  // Handle null or undefined values
+            }
+
             tr.appendChild(td);
         });
 
         // Add modal control for image upload fields
         const td = document.createElement('td');
         const button = document.createElement('button');
+        button.type = 'button'
         button.classList.add('btn', 'btn-secondary');
         button.innerText = 'Upload Images';
         button.setAttribute('data-row-index', rowIndex);
@@ -60,6 +77,7 @@ function generatePreviewTable(data) {
     document.getElementById('previewContainer').style.display = 'block';
 }
 
+
 function showImageUploadModal(rowIndex) {
     const imageUploadContainer = document.getElementById('imageUploadContainer');
     imageUploadContainer.innerHTML = '';
@@ -67,6 +85,7 @@ function showImageUploadModal(rowIndex) {
     for (let i = 1; i <= 5; i++) {
         const div = document.createElement('div');
         div.classList.add('form-group');
+        div.classList.add('mb-2');
 
         const label = document.createElement('label');
         label.innerText = `Image ${i}`;
@@ -101,20 +120,17 @@ window.addEventListener('click', function (event) {
 function generateMappingTable(data) {
     const headers = data[0];
     const formFields = [
-        {label: 'Product Name', value: 'title'},
-        {label: 'Description', value: 'description'},
-        {label: 'Category', value: 'category'},
-        {label: 'Starting Bid', value: 'starting_bid'},
-        {label: 'Reserve Bid', value: 'reserve_bid'},
-        {label: 'Auction Duration', value: 'auction_duration'},
-        {label: 'Manufacturer', value: 'manufacturer'},
+        {label: 'SKU', value: 'sku'},
         {label: 'Reference Number', value: 'reference_number'},
         {label: 'Lot Number', value: 'lot_number'},
+        {label: 'Production Date', value: 'production_date'},
         {label: 'Expiration Date', value: 'expiration_date'},
-        {label: 'Package Type', value: 'package_type'},
-        {label: 'Package Quantity', value: 'package_quantity'},
-        {label: 'Device Sterile', value: 'deviceSterile'},
-        {label: 'Full Package', value: 'fullPackage'}
+        {label: 'Quantity Available', value: 'quantity_available'},
+        {label: 'Auction Type', value: 'auction_type'},
+        {label: 'Starting Bid', value: 'starting_bid'},
+        {label: 'Reserve Bid', value: 'reserve_bid'},
+        {label: 'Sale Price', value: 'buyItNowPrice'},
+        {label: 'Auction Duration', value: 'auction_duration'}
     ];
 
     const mappingTable = document.getElementById('mappingTable');
@@ -168,6 +184,8 @@ document.getElementById('closeMappingModal').addEventListener('click', function 
     event.preventDefault();
     event.stopPropagation();
     document.getElementById('mappingModal').style.display = 'none';
+    document.getElementById('import-mapping').style.display = 'block';
+
 });
 
 document.getElementById('importForm').addEventListener('submit', function (event) {
@@ -176,11 +194,11 @@ document.getElementById('importForm').addEventListener('submit', function (event
     let formData = new FormData(this);
     let auction_data = [];
 
-    // Collect auction data
+    // Collect auction data from the preview table
     document.querySelectorAll('#previewTableBody tr').forEach((row, rowIndex) => {
         let rowData = {};
         row.querySelectorAll('td').forEach((cell, cellIndex) => {
-            if (cellIndex < row.children.length - 1) { // Ignore image modal control cell
+            if (cellIndex < row.children.length - 1) { // Ignore the image modal control cell
                 rowData[`column_${cellIndex}`] = cell.innerText;
             }
         });
@@ -202,10 +220,17 @@ document.getElementById('importForm').addEventListener('submit', function (event
     })
         .then(response => response.json())
         .then(data => {
-            console.log('Success:', data);
-            // Handle success such as redirecting to another page
+            if (data.status === 'success') {
+                console.log('Success:', data);
+                // Optionally redirect to another page or show a success message
+                alert('Import successful!');
+            } else {
+                console.error('Import failed:', data);
+                alert('Import failed. Please try again.');
+            }
         })
         .catch((error) => {
             console.error('Error:', error);
+            alert('An error occurred. Please try again.');
         });
 });
