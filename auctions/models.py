@@ -389,6 +389,7 @@ class Order(models.Model):
     shipping_method = models.CharField(max_length=50, null=True, blank=True)
     special_instructions = models.TextField(null=True, blank=True)
     tax_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0.00)
+    order_note = models.TextField(max_length=2000, null=False, default='')
 
     def __str__(self):
         return f'Order #{self.id} for {self.user.username}'

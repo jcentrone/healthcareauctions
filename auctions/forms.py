@@ -280,3 +280,24 @@ class CustomUserChangeForm(UserChangeForm):
             'reseller_cert',
             'tax_exempt',
         ]
+
+
+class OrderNoteForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = ['order_note']
+        widgets = {
+            'order_note': forms.Textarea(attrs={
+                'rows': 3,
+                'placeholder': 'Add your note here...',
+                'class': 'form-control'  # Bootstrap class
+            }),
+        }
+        labels = {
+            'order_note': 'Order Note',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(OrderNoteForm, self).__init__(*args, **kwargs)
+        # Adding Bootstrap class to labels if needed
+        self.fields['order_note'].label = f'<label class="form-label">{self.fields["order_note"].label}</label>'

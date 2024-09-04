@@ -10,7 +10,6 @@ from django.contrib.auth import authenticate, login, logout, update_session_auth
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.views import PasswordChangeView
-from django.contrib.messages.views import SuccessMessageMixin
 from django.core.files.storage import get_storage_class
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import IntegrityError
@@ -26,7 +25,7 @@ from django.views.decorators.http import require_POST
 
 from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, ProductDetailFormSet, MessageForm, \
     ShippingMethodForm, ShippingAddressForm, BillingAddressForm, CreditCardForm, ACHForm, ZelleForm, VenmoForm, \
-    PayPalForm, CashAppForm, CustomUserChangeForm, UserAddressForm
+    PayPalForm, CashAppForm, CustomUserChangeForm, UserAddressForm, OrderNoteForm
 from .models import Bid, Category, Image, User, Address, CartItem, Cart, ProductDetail, Message, Order, Payment, \
     OrderItem, Parcel
 from .utils.helpers import update_categories_from_fda
@@ -174,6 +173,7 @@ def dashboard(request):
     sales_status_filter = request.GET.get('sales_status')
     sales_date_filter = request.GET.get('sales_date')
     listing_status_filter = request.GET.get('listing_status')
+    listing_type_filter = request.GET.get('listing_type')
     listing_date_filter = request.GET.get('listing_date')
     bid_status_filter = request.GET.get('bid_status')
 
@@ -205,6 +205,13 @@ def dashboard(request):
         listing_status = listing_status_filter
     else:
         listing_status = 'All'
+
+    if listing_type_filter:
+        listings = listings.filter(auction_type=listing_type_filter)
+        listing_type = listing_type_filter
+    else:
+        listing_type = 'All'
+
     if listing_date_filter:
         listings = listings.filter(date_created__date=listing_date_filter)
 
@@ -266,6 +273,13 @@ def dashboard(request):
 
     # Handle settings and associated forms saving
     user = request.user
+    # Handle loading the existing order notes and form
+    note_forms = {}
+    message_forms = {}
+
+    for order in orders:
+        note_forms[order.id] = OrderNoteForm(initial={'order_note': order.order_note})
+        order.auction.message_form = MessageForm(initial={'subject': f'Question about {order.auction.title}'})
 
     if request.method == 'POST' and 'settings_form' in request.POST:
         settings_form = CustomUserChangeForm(request.POST, request.FILES, instance=request.user)
@@ -299,11 +313,15 @@ def dashboard(request):
         settings_form = CustomUserChangeForm(instance=request.user)
         password_form = PasswordChangeForm(user)
 
+    for field in password_form.fields.values():
+        field.widget.attrs.update({'class': 'form-control'})
+
     return render(request, 'dashboard.html', {
         'categories': Category.objects.all(),
         'listings': listings,
         'listings_count': listings_paginator.count,
         'listing_status': listing_status,
+        'listing_type': listing_type,
         'auctions': auctions_with_user_bids,
         'auction_count': total_auctions_with_bids_count,
         'watchlist_count': watchlist.count(),
@@ -321,10 +339,11 @@ def dashboard(request):
         'billing_form': billing_form,
         'shipping_form': shipping_form,
         'password_form': password_form,
+        'note_forms': note_forms,
+        # 'message_forms': message_forms,
         'sub_nav': 'user_details'
+
     })
-
-
 
 
 def register(request):
@@ -870,22 +889,75 @@ def auction_bid(request, auction_id):
 def auction_close(request, auction_id):
     """
     It allows the signed in user who created the listing
-    to “close” the auction, which makes the highest bidder
-    the winner of the auction and makes the listing no longer active
+    to “close” the auction, and makes the listing no longer active
     """
     auction = Auction.objects.get(id=auction_id)
 
     if request.user == auction.creator:
         auction.active = False
-        auction.buyer = Bid.objects.filter(auction=auction).last().user
         auction.save()
 
-        return HttpResponseRedirect(reverse('auction_details_view', args=[auction_id]))
-    else:
-        auction.watchers.add(request.user)
+        messages.success(request, 'Auction successfully closed. The highest bidder is now the winner.')
+        return HttpResponseRedirect(f"{reverse('dashboard')}?active_tab=listings")
 
-        return HttpResponseRedirect(reverse('watchlist_view'))
 
+def auction_relist(request, auction_id):
+    # Get the existing auction object
+    original_auction = get_object_or_404(Auction, id=auction_id)
+
+    # Ensure the user is the creator of the auction
+    if request.user != original_auction.creator:
+        messages.error(request, "You are not authorized to relist this auction.")
+        return redirect('dashboard')  # Redirect to dashboard or another appropriate view
+
+    # Duplicate the auction object
+    new_auction = Auction.objects.create(
+        title=original_auction.title,
+        description=original_auction.description,
+        creator=original_auction.creator,
+        category=original_auction.category,
+        quantity_available=original_auction.quantity_available,
+        starting_bid=original_auction.starting_bid,
+        reserve_bid=original_auction.reserve_bid,
+        buyItNowPrice=original_auction.buyItNowPrice,
+        product_name=original_auction.product_name,
+        package_quantity=original_auction.package_quantity,
+        partial_quantity=original_auction.partial_quantity,
+        manufacturer=original_auction.manufacturer,
+        auction_type=original_auction.auction_type,
+        gmdnPTDefinition=original_auction.gmdnPTDefinition,
+        implantable=original_auction.implantable,
+        deviceSterile=original_auction.deviceSterile,
+        sterilizationPriorToUse=original_auction.sterilizationPriorToUse,
+        package_type=original_auction.package_type,
+        sell_full_lot=original_auction.sell_full_lot,
+        auction_duration=original_auction.auction_duration,
+        fullPackage=original_auction.fullPackage,
+        active=True,  # Set the new auction as active
+    )
+
+    # Duplicate associated product details
+    for product_detail in original_auction.product_details.all():
+        ProductDetail.objects.create(
+            auction=new_auction,
+            sku=product_detail.sku,
+            reference_number=product_detail.reference_number,
+            lot_number=product_detail.lot_number,
+            production_date=product_detail.production_date,
+            expiration_date=product_detail.expiration_date,
+        )
+
+    # Duplicate associated images
+    for image in original_auction.get_images.all():
+        Image.objects.create(
+            auction=new_auction,
+            image=image.image,
+        )
+
+    messages.success(request, "Auction has been successfully relisted.")
+
+    # Redirect to the new auction's details page or another appropriate view
+    return redirect('dashboard')
 
 def auction_comment(request, auction_id):
     """
@@ -1278,6 +1350,7 @@ def validate_message(request, message):
         processed_message = parsed_content.get('message', '')
 
         contains_pii = "##" in processed_message in processed_message
+        print(processed_message)
 
         return JsonResponse({'validated_message': processed_message, 'contains_pii': contains_pii})
 
@@ -1288,7 +1361,7 @@ def validate_message(request, message):
 @login_required
 def send_customer_service_message(request):
     if request.method == 'POST':
-        message_body = request.POST.get('message')
+        message_body = request.POST.get('message') if request.POST.get('message') else request.POST.get('body')
         customer_service_user = User.objects.get(username='CustomerService')  # Replace with actual username or ID
 
         Message.objects.create(
@@ -1323,3 +1396,18 @@ def track_parcel_view(request, parcel_id):
             'status': 'error',
             'message': str(e),
         })
+
+
+@login_required
+def add_order_note(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    if request.method == 'POST':
+        form = OrderNoteForm(request.POST, instance=order)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your note has been added.')
+        else:
+            messages.error(request, 'There was an error adding your note.')
+
+    return redirect('dashboard')

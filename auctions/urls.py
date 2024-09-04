@@ -1,5 +1,5 @@
-from django.urls import path
 from django.contrib.auth import views as auth_views
+from django.urls import path
 
 from . import views
 from .views import CustomPasswordChangeView
@@ -22,6 +22,8 @@ urlpatterns = [
     path('auction/<str:auction_id>/bid', views.auction_bid, name='auction_bid'),
     path('auction/<str:auction_id>/close', views.auction_close, name='auction_close'),
     path('auction/<str:auction_id>/comment', views.auction_comment, name='auction_comment'),
+    path('auction/relist/<int:auction_id>/', views.auction_relist, name='auction_relist'),
+
     path('categories/<str:category_name>', views.category_details_view, name='category_details_view'),
     path('api/classify-device/', views.classify_device_view, name='classify_device'),
     path('barcode_scanner/', views.barcode_scanner, name='barcode_scanner'),
@@ -49,5 +51,6 @@ urlpatterns = [
     path('password-change/done/',
          auth_views.PasswordChangeDoneView.as_view(template_name='registration/password_change_done.html'),
          name='password_change_done'),
+    path('order/<int:order_id>/add-note/', views.add_order_note, name='add_order_note'),
 
 ]
