@@ -1,5 +1,19 @@
+.nav-link.active > .card.text-center > .card-header{
+    background-color: #31D2F2;
 
+}
 .dash-img{
     width: 150px;
     height: auto;
+}
+
+/* Basic hover effect for the button */
+.tab-nav {
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Hover state */
+.tab-nav:hover {
+    background-color: #f8f9fa; /* Light grey background */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
 }

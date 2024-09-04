@@ -1,8 +1,9 @@
 from django import forms
+from django.contrib.auth.forms import UserChangeForm
 from django.forms import modelformset_factory
 
 from .models import Auction, Bid, Comment, Image, Category, CartItem, ProductDetail, Message, Order, ShippingAddress, \
-    BillingAddress, STATE_CHOICES
+    BillingAddress, STATE_CHOICES, User
 
 
 class AuctionForm(forms.ModelForm):
@@ -246,3 +247,19 @@ class PayPalForm(forms.Form):
 class CashAppForm(forms.Form):
     cashapp_username = forms.CharField(
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'CashApp Username'}))
+
+
+class CustomUserChangeForm(UserChangeForm):
+    class Meta:
+        model = User
+        fields = [
+            'username',
+            'email',
+            'company_name',
+            'phone_number',
+            'profile_image',
+            'company_logo',
+            'company_w9',
+            'reseller_cert',
+            'tax_exempt',
+        ]

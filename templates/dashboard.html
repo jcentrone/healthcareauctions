@@ -19,14 +19,15 @@
 
             <!-- Tab Container -->
             <div class="card mb-4">
-                <div class="ps-3">
-                    <ul class="nav nav-tabs card-header-tabs mb-1 mt-2" id="dashboardTabs" role="tablist">
+                <div class="px-3">
+                    <ul class="nav nav-tabs card-header-tabs mb-1 mt-2 row-cols-5" id="dashboardTabs" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link {% if active_tab == 'orders' %}active{% endif %}" id="orders-tab"
+                            <button class="nav-link {% if active_tab == 'orders' %}active{% endif %} w-100"
+                                    id="orders-tab"
                                     data-bs-toggle="tab"
                                     data-bs-target="#orders" type="button" role="tab" aria-controls="orders"
                                     aria-selected="true">
-                                <div class="card text-center">
+                                <div class="card text-center tab-nav">
                                     <h5 class="card-header">{{ order_status|capfirst }} Orders</h5>
                                     <div class="card-body">
                                         <p class="card-text">{{ orders_count|default:"0" }}</p>
@@ -35,10 +36,11 @@
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link {% if active_tab == 'sales' %}active{% endif %}" id="sales-tab"
+                            <button class="nav-link {% if active_tab == 'sales' %}active{% endif %} w-100"
+                                    id="sales-tab"
                                     data-bs-toggle="tab" data-bs-target="#sales"
                                     type="button" role="tab" aria-controls="sales" aria-selected="false">
-                                <div class="card text-center">
+                                <div class="card text-center tab-nav">
                                     <h5 class="card-header">{{ sales_status|capfirst }} Sales</h5>
                                     <div class="card-body">
                                         <p class="card-text">{{ sales_count|default:"0" }}</p>
@@ -47,11 +49,11 @@
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link {% if active_tab == 'activeBids' %}active{% endif %}"
+                            <button class="nav-link {% if active_tab == 'activeBids' %}active{% endif %} w-100"
                                     id="my-bids-tab" data-bs-toggle="tab"
                                     data-bs-target="#myActiveBids"
                                     type="button" role="tab" aria-controls="myActiveBids" aria-selected="false">
-                                <div class="card text-center">
+                                <div class="card text-center tab-nav">
                                     <h5 class="card-header">{{ bid_status|capfirst }} Active Bids</h5>
                                     <div class="card-body">
                                         <p class="card-text">{{ auction_count|default:"0" }}</p>
@@ -60,11 +62,11 @@
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link {% if active_tab == 'listings' %}active{% endif %}"
+                            <button class="nav-link {% if active_tab == 'listings' %}active{% endif %} w-100"
                                     id="listings-tab" data-bs-toggle="tab"
                                     data-bs-target="#listings"
                                     type="button" role="tab" aria-controls="listings" aria-selected="false">
-                                <div class="card text-center">
+                                <div class="card text-center tab-nav">
                                     <h5 class="card-header">{{ listing_status|capfirst }} Listings</h5>
                                     <div class="card-body">
                                         <p class="card-text">{{ listings_count|default:"0" }}</p>
@@ -73,11 +75,11 @@
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link {% if active_tab == 'listings' %}active{% endif %}"
+                            <button class="nav-link {% if active_tab == 'settings' %}active{% endif %} w-100"
                                     id="settings-tab" data-bs-toggle="tab"
                                     data-bs-target="#settings"
                                     type="button" role="tab" aria-controls="settings" aria-selected="false">
-                                <div class="card text-center">
+                                <div class="card text-center tab-nav">
                                     <h5 class="card-header">Settings</h5>
                                     <div class="card-body">
                                         <i class="fa-solid fa-gears"></i>
@@ -127,6 +129,10 @@
                                             <input type="date" name="order_date" class="form-control me-2"
                                                    value="{{ request.GET.date }}">
                                             <button type="submit" class="btn btn-primary">Filter</button>
+                                            {% if order_status != 'All' %}
+                                                <a href="{% url 'dashboard' %}?active_tab=orders&order_status=&order_date="
+                                                   class="btn btn-secondary ms-2">Reset</a>
+                                            {% endif %}
                                         </form>
                                     </div>
                                 </div>
@@ -523,6 +529,10 @@
                                             <input type="date" name="sales_date" class="form-control me-2"
                                                    value="{{ request.GET.date }}">
                                             <button type="submit" class="btn btn-primary">Filter</button>
+                                            {% if sales_status != 'All' %}
+                                                <a href="{% url 'dashboard' %}?active_tab=sales&sales_status=&sales_date="
+                                                   class="btn btn-secondary ms-2">Reset</a>
+                                            {% endif %}
                                         </form>
                                     </div>
                                 </div>
@@ -867,6 +877,10 @@
                                             </select>
 
                                             <button type="submit" class="btn btn-primary">Filter</button>
+                                            {% if bid_status != 'All' %}
+                                                <a href="{% url 'dashboard' %}?active_tab=activeBids&bid_status="
+                                                   class="btn btn-secondary ms-2">Reset</a>
+                                            {% endif %}
                                         </form>
                                     </div>
                                 </div>
@@ -969,6 +983,11 @@
                                             <input type="date" name="listing_date" class="form-control me-2"
                                                    value="{{ request.GET.date }}">
                                             <button type="submit" class="btn btn-primary">Filter</button>
+                                            {% if listing_status != 'All' %}
+                                                <a href="{% url 'dashboard' %}?active_tab=listings&listing_status=&listing_date="
+                                                   class="btn btn-secondary ms-2">Reset</a>
+                                            {% endif %}
+
                                         </form>
                                     </div>
                                 </div>
@@ -1275,12 +1294,155 @@
                         <!-- My Settings -->
                         <div class="tab-pane fade {% if active_tab == 'settings' %}show active{% endif %}" id="settings"
                              role="tabpanel" aria-labelledby="settings-tab">
-                            Test in it
+                            <div class='my-2 border-top'>
+                                <div class='card-header d-flex justify-content-between align-items-center'>
+                                    <div class="py-2">
+                                        <i class="fa-solid fa-gears me-1"></i>
+                                        Settings
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <form method="POST" enctype="multipart/form-data">
+                                    {% csrf_token %}
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <!-- Username -->
+                                            <div class="mb-3">
+                                                <label for="{{ settings_form.username.id_for_label }}"
+                                                       class="form-label">Username</label>
+                                                <input type="text" name="{{ settings_form.username.name }}"
+                                                       id="{{ settings_form.username.id_for_label }}"
+                                                       value="{{ settings_form.username.value }}" class="form-control">
+                                                {% if settings_form.username.errors %}
+                                                    <div class="text-danger">
+                                                        {{ settings_form.username.errors }}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+
+                                            <!-- Email -->
+                                            <div class="mb-3">
+                                                <label for="{{ settings_form.email.id_for_label }}"
+                                                       class="form-label">Email</label>
+                                                <input type="email" name="{{ settings_form.email.name }}"
+                                                       id="{{ settings_form.email.id_for_label }}"
+                                                       value="{{ settings_form.email.value }}" class="form-control">
+                                                {% if settings_form.email.errors %}
+                                                    <div class="text-danger">
+                                                        {{ settings_form.email.errors }}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+
+                                            <!-- Company Name -->
+                                            <div class="mb-3">
+                                                <label for="{{ settings_form.company_name.id_for_label }}"
+                                                       class="form-label">Company
+                                                    Name</label>
+                                                <input type="text" name="{{ settings_form.company_name.name }}"
+                                                       id="{{ settings_form.company_name.id_for_label }}"
+                                                       value="{{ settings_form.company_name.value }}"
+                                                       class="form-control">
+                                                {% if settings_form.company_name.errors %}
+                                                    <div class="text-danger">
+                                                        {{ settings_form.company_name.errors }}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+
+                                            <!-- Phone Number -->
+                                            <div class="mb-3">
+                                                <label for="{{ settings_form.phone_number.id_for_label }}"
+                                                       class="form-label">Phone
+                                                    Number</label>
+                                                <input type="text" name="{{ settings_form.phone_number.name }}"
+                                                       id="{{ settings_form.phone_number.id_for_label }}"
+                                                       value="{{ settings_form.phone_number.value }}"
+                                                       class="form-control">
+                                                {% if settings_form.phone_number.errors %}
+                                                    <div class="text-danger">
+                                                        {{ settings_form.phone_number.errors }}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <!-- Profile Image -->
+                                            <div class="mb-3">
+                                                <label for="{{ settings_form.profile_image.id_for_label }}"
+                                                       class="form-label">Profile
+                                                    Image</label>
+                                                <input type="file" name="{{ settings_form.profile_image.name }}"
+                                                       id="{{ settings_form.profile_image.id_for_label }}"
+                                                       class="form-control">
+                                                {% if settings_form.profile_image.errors %}
+                                                    <div class="text-danger">
+                                                        {{ settings_form.profile_image.errors }}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+
+                                            <!-- Company Logo -->
+                                            <div class="mb-3">
+                                                <label for="{{ settings_form.company_logo.id_for_label }}"
+                                                       class="form-label">Company
+                                                    Logo</label>
+                                                <input type="file" name="{{ settings_form.company_logo.name }}"
+                                                       id="{{ settings_form.company_logo.id_for_label }}"
+                                                       class="form-control">
+                                                {% if settings_form.company_logo.errors %}
+                                                    <div class="text-danger">
+                                                        {{ settings_form.company_logo.errors }}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+
+                                            <!-- Company W9 -->
+                                            <div class="mb-3">
+                                                <label for="{{ settings_form.company_w9.id_for_label }}"
+                                                       class="form-label">Company
+                                                    W9</label>
+                                                <input type="file" name="{{ settings_form.company_w9.name }}"
+                                                       id="{{ settings_form.company_w9.id_for_label }}"
+                                                       class="form-control">
+                                                {% if settings_form.company_w9.errors %}
+                                                    <div class="text-danger">
+                                                        {{ settings_form.company_w9.errors }}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+
+                                            <!-- Reseller Certificate -->
+                                            <div class="mb-3">
+                                                <label for="{{ settings_form.reseller_cert.id_for_label }}"
+                                                       class="form-label">Reseller
+                                                    Certificate</label>
+                                                <input type="file" name="{{ settings_form.reseller_cert.name }}"
+                                                       id="{{ settings_form.reseller_cert.id_for_label }}"
+                                                       class="form-control">
+                                                {% if settings_form.reseller_cert.errors %}
+                                                    <div class="text-danger">
+                                                        {{ settings_form.reseller_cert.errors }}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Password Reset -->
+                                    <a class="btn btn-secondary" href="{% url 'password_change' %}">Change Your
+                                        Password</a>
+
+                                    <!-- Submit Button -->
+                                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                                </form>
+                            </div>
                         </div>
                     </div>
+
                 </div>
             </div>
-        <a href="{{ request.path }}" class="btn btn-secondary">Reset</a>
 
 
             {#            <div class="recent-activity">#}

@@ -1,4 +1,5 @@
 from django.urls import path
+from django.contrib.auth import views as auth_views
 
 from . import views
 
@@ -43,5 +44,11 @@ urlpatterns = [
     path('send-customer-service-message/', views.send_customer_service_message, name='send_customer_service_message'),
     path('messages/archive/<int:message_id>/', views.archive_message, name='archive_message'),
     path('track-parcel/<int:parcel_id>/', views.track_parcel_view, name='track_parcel'),
+    path('password-change/',
+         auth_views.PasswordChangeView.as_view(template_name='registration/password_change_form.html'),
+         name='password_change'),
+    path('password-change/done/',
+         auth_views.PasswordChangeDoneView.as_view(template_name='registration/password_change_done.html'),
+         name='password_change_done'),
 
 ]

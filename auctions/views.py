@@ -5,6 +5,7 @@ from datetime import timedelta
 from decimal import Decimal
 
 from django import forms
+from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import get_storage_class
@@ -22,7 +23,7 @@ from django.views.decorators.http import require_POST
 
 from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, ProductDetailFormSet, MessageForm, \
     ShippingMethodForm, ShippingAddressForm, BillingAddressForm, CreditCardForm, ACHForm, ZelleForm, VenmoForm, \
-    PayPalForm, CashAppForm
+    PayPalForm, CashAppForm, CustomUserChangeForm
 from .models import Bid, Category, Image, User, Address, CartItem, Cart, ProductDetail, Message, Order, Payment, \
     OrderItem, Parcel
 from .utils.helpers import update_categories_from_fda
@@ -209,7 +210,6 @@ def dashboard(request):
     # Count of all auctions the user has bid on
     total_auctions_with_bids_count = auctions_with_user_bids.count()
 
-
     # Paginate each result set individually
     auction_page = request.GET.get('auction_page', 1)
     orders_page = request.GET.get('order_page', 1)
@@ -251,6 +251,18 @@ def dashboard(request):
 
     # Determine the active tab
     active_tab = request.GET.get('active_tab', 'orders')
+    print(active_tab)
+
+    # Handle settings form
+    if request.method == 'POST' and 'settings_form' in request.POST:
+        settings_form = CustomUserChangeForm(request.POST, request.FILES, instance=request.user)
+        if settings_form.is_valid():
+            settings_form.save()
+            messages.success(request, 'Your settings have been updated.')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        settings_form = CustomUserChangeForm(instance=request.user)
 
     return render(request, 'dashboard.html', {
         'categories': Category.objects.all(),
@@ -270,6 +282,7 @@ def dashboard(request):
         'sales_status': sales_status,
         'active_tab': active_tab,
         'title': 'Dashboard',
+        'settings_form': settings_form,
     })
 
 
