@@ -11,18 +11,52 @@ function handleFileSelect(event) {
 
             generatePreviewTable(json);
             generateMappingTable(json);
-                document.getElementById('import-mapping').style.display = 'none';
-
-            // document.getElementById('file-input').style.display = 'none';
+            document.getElementById('import-mapping').style.display = 'none';
             document.getElementById('import-button').style.display = 'block';
 
-            // Show the modal after processing the file
-            const importModal = new bootstrap.Modal(document.getElementById('importModal'));
-            importModal.show();
+            document.getElementById('mapColumnsBtn').disabled = false;
+
+
         };
         reader.readAsArrayBuffer(file);
     }
 }
+
+document.getElementById('mapColumnsBtn').addEventListener('click', function (event) {
+    document.getElementById('mappingModal').style.display = 'block';
+    document.getElementById('import-mapping').style.display = 'none';
+    document.getElementById('importModalLabel').innerText = 'Step 2: Map Your Data';
+    const importModal = new bootstrap.Modal(document.getElementById('importModal'));
+    importModal.show();
+    document.getElementById('addImgBtn').disabled = false;
+})
+
+
+function closeImportModal() {
+    let importModal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
+    importModal.hide();
+
+}
+
+// Example usage: Close the modal when the "Okay" button is clicked.
+document.getElementById('closeMappingModal').addEventListener('click', closeImportModal);
+document.getElementById('closeAddImgBtn').addEventListener('click', closeImportModal);
+
+
+document.getElementById('addImgBtn').addEventListener('click', function (event) {
+    document.getElementById('import-mapping').style.display = 'block';
+    document.getElementById('mappingModal').style.display = 'none';
+    document.getElementById('import-button').disabled = false;
+    document.getElementById('importModalLabel').innerText = 'Step 3: Add Images';
+    let importModal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
+    importModal.show();
+
+})
+
+// IMport button
+document.getElementById('import-button').addEventListener('click', function() {
+    document.getElementById('importForm').submit();
+});
 
 function generatePreviewTable(data) {
     const previewTableHead = document.getElementById('previewTableHead');
@@ -180,13 +214,6 @@ function formatDate(excelDate) {
 }
 
 document.getElementById('fileInput').addEventListener('change', handleFileSelect);
-document.getElementById('closeMappingModal').addEventListener('click', function (event) {
-    event.preventDefault();
-    event.stopPropagation();
-    document.getElementById('mappingModal').style.display = 'none';
-    document.getElementById('import-mapping').style.display = 'block';
-
-});
 
 document.getElementById('importForm').addEventListener('submit', function (event) {
     event.preventDefault();
