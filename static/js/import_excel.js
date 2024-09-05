@@ -47,16 +47,45 @@ document.getElementById('mapColumnsBtn').addEventListener('click', function (eve
 })
 
 
-function closeImportModal() {
-    const allImagesValid = validateImages();
+function closeImportModal(validateImg = true) {
 
-    if (!allImagesValid) {
-        alert('Please ensure each row has at least one image selected.');
-        return; // Do not close the modal if validation fails
+    if (validateImg) {
+        const allImagesValid = validateImages();
+
+        if (!allImagesValid) {
+            alert('Please ensure each row has at least one image selected.');
+            return; // Do not close the modal if validation fails
+        }
+
+        const importModal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
+        importModal.hide();
+
+        const step3 = document.getElementById('step3');
+        const step3Icon = document.getElementById('step3-icon');
+        step3.style.backgroundColor = '#d4edda';
+
+        step3Icon.classList.remove('fa-image');
+        step3Icon.classList.add('fa-check-circle');
+
+        step3.querySelector('h5').innerText = 'Step 3: Images Added';
+        step3.querySelector('p').innerText = 'Each listings has at least 1 Image.';
+        step3.querySelector('button').innerText = 'Edit Images';
+    } else {
+        const importModal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
+        importModal.hide();
+
+        // Indicate that Step 2 is complete
+        const step2 = document.getElementById('step2');
+        const step2Icon = document.getElementById('step2-icon');
+
+        step2.style.backgroundColor = '#d4edda'; // Greenish background to indicate success
+        step2Icon.classList.remove('fa-arrows-alt');
+        step2Icon.classList.add('fa-check-circle');
+
+        step2.querySelector('h5').innerText = 'Step 2: Columns Mapped';
+        step2.querySelector('p').innerText = 'All columns auto-mapped, nothing to do here.';
+        step2.querySelector('button').innerText = 'Edit Mapping';
     }
-
-    const importModal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
-    importModal.hide();
 }
 
 function validateImages() {
@@ -87,9 +116,16 @@ function validateImages() {
 
 
 // Example usage: Close the modal when the "Okay" button is clicked.
-document.getElementById('closeMappingModal').addEventListener('click', closeImportModal);
-document.getElementById('closeAddImgBtn').addEventListener('click', closeImportModal);
+document.getElementById('closeMappingModal').addEventListener('click', function () {
+    let validateImg = false;
+    closeImportModal(validateImg);
 
+});
+document.getElementById('closeAddImgBtn').addEventListener('click', function () {
+    let validateImg = true;
+    closeImportModal(validateImg);
+
+});
 
 document.getElementById('addImgBtn').addEventListener('click', function (event) {
     document.getElementById('import-mapping').style.display = 'block';
@@ -100,11 +136,6 @@ document.getElementById('addImgBtn').addEventListener('click', function (event) 
     importModal.show();
 
 })
-
-// Import button
-document.getElementById('import-button').addEventListener('click', function () {
-    document.getElementById('importForm').submit();
-});
 
 function generatePreviewTable(data) {
     const previewTableHead = document.getElementById('previewTableHead');
@@ -344,20 +375,6 @@ function generatePreviewTable(data) {
 }
 
 
-function hideImageUploadModal() {
-    const modal = document.getElementById('imageUploadModal');
-    modal.style.display = 'none';
-}
-
-document.getElementById('closeImageModal').addEventListener('click', hideImageUploadModal);
-
-window.addEventListener('click', function (event) {
-    const modal = document.getElementById('imageUploadModal');
-    if (event.target == modal) {
-        hideImageUploadModal();
-    }
-});
-
 function generateMappingTable(data) {
     const headers = data[0];
     const formFields = [
@@ -372,7 +389,8 @@ function generateMappingTable(data) {
         {label: 'Reserve Bid', value: 'reserve_bid'},
         {label: 'Sale Price', value: 'buyItNowPrice'},
         {label: 'Auction Duration', value: 'auction_duration'},
-        {label: 'Not Applicable', value: 'na'}
+        {label: 'Not Mapped', value: 'nm'},
+        {label: 'Not Applicable', value: 'na'},
     ];
 
     const mappingTable = document.getElementById('mappingTable');
@@ -395,6 +413,11 @@ function generateMappingTable(data) {
         const select = document.createElement('select');
         select.classList.add('form-control');
 
+        select.addEventListener('change', function () {
+            select.setAttribute('data-mapped', select.value !== 'na' ? 'true' : 'false');
+            checkAllFieldsMapped();
+        });
+
         let isMapped = false;  // Flag for each header
 
         formFields.forEach(field => {
@@ -406,13 +429,15 @@ function generateMappingTable(data) {
             if (field.label.toLowerCase() === header.toLowerCase()) {
                 option.selected = true;
                 isMapped = true;
+                select.setAttribute('data-mapped', 'true');  // Mark as mapped
             }
 
             select.appendChild(option);
         });
 
         if (!isMapped) {
-            allFieldsMapped = false;  // Update flag if not all fields are mapped
+            select.value = 'nm';
+            select.setAttribute('data-mapped', 'false');  // Mark as not mapped
         }
 
         formFieldCell.appendChild(select);
@@ -435,10 +460,13 @@ function generateMappingTable(data) {
     function checkAllFieldsMapped() {
         allFieldsMapped = true;
 
-        // Iterate over all selects to verify that none are left unmapped
+        // Iterate over all selects to verify that each has been explicitly mapped
         mappingTable.querySelectorAll('select').forEach(select => {
-            if (select.value === 'na') {
+            if (select.value === 'nm' || select.getAttribute('data-mapped') === 'false') {
                 allFieldsMapped = false;
+                select.classList.add('is-invalid');  // Add Bootstrap error class
+            } else {
+                select.classList.remove('is-invalid');  // Remove the error class if mapped correctly
             }
         });
 
@@ -446,7 +474,6 @@ function generateMappingTable(data) {
         if (allFieldsMapped) {
             document.getElementById('addImgBtn').disabled = false; // Enable import button
             console.log('All fields are correctly mapped.');
-
 
             // Indicate that Step 2 is complete
             const step2 = document.getElementById('step2');
@@ -458,9 +485,7 @@ function generateMappingTable(data) {
 
             step2.querySelector('h5').innerText = 'Step 2: Columns Mapped';
             step2.querySelector('p').innerText = 'All columns auto-mapped, nothing to do here.';
-            document.getElementById('mapColumnsBtn').disabled = true; // Disable the button
-            // document.getElementById('mapColumnsBtn').style.display = 'none'; // Optionally hide the button
-
+            document.getElementById('mapColumnsBtn').disabled = false; // Disable the button
         } else {
             document.getElementById('addImgBtn').disabled = true; // Disable import button
             console.log('Please complete the mapping of all fields.');
@@ -471,12 +496,9 @@ function generateMappingTable(data) {
             step2.querySelector('h5').innerText = 'Step 2: Map Your Columns';
             step2.querySelector('p').innerText = 'Match your Excel columns to the auction fields.';
             document.getElementById('mapColumnsBtn').disabled = false; // Enable the button
-            // document.getElementById('mapColumnsBtn').style.display = 'inline-block'; // Ensure the button is visible
         }
-
     }
 }
-
 
 function isExcelDate(value) {
     return value > 25569;
@@ -487,58 +509,111 @@ function formatDate(excelDate) {
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
-    return `${month}/${day}/${year}`;
+    return `${year}-${month}-${day}`;
 }
 
 // Listen for file selection
 document.getElementById('fileInput').addEventListener('change', handleFileSelect);
 
 // Submit The Form
-document.getElementById('importForm').addEventListener('submit', function (event) {
-    event.preventDefault();
 
-    let formData = new FormData(this);
+// Import button
+document.getElementById('import-button').addEventListener('click', function (event) {
+    event.preventDefault(); // Prevent the default form submission
+
+    // Get the form element
+    const form = document.getElementById('importForm');
+    let formData = new FormData(form); // Pass the form element to FormData
     let auction_data = [];
+
+    // Function to convert empty strings to null
+    function toNullIfEmpty(value) {
+        return value === "" ? null : value;
+    }
+
+    // Function to convert "Yes"/"No" to true/false
+    function toBoolean(value) {
+        if (value.toLowerCase() === "yes") return true;
+        if (value.toLowerCase() === "no") return false;
+        return null; // Handle cases where the value is neither "Yes" nor "No"
+    }
 
     // Collect auction data from the preview table
     document.querySelectorAll('#previewTableBody tr').forEach((row, rowIndex) => {
-        let rowData = {};
-        row.querySelectorAll('td').forEach((cell, cellIndex) => {
-            if (cellIndex < row.children.length - 1) { // Ignore the image modal control cell
-                rowData[`column_${cellIndex}`] = cell.innerText;
-            }
-        });
+        let rowData = {
+            title: row.querySelector('td:nth-child(1)').innerText.trim(),                // Auction Title
+            description: row.querySelector('td:nth-child(2)').innerText.trim(),          // Description
+            category_id: row.querySelector('td:nth-child(4)').innerText.trim(),          // Category ID
+            manufacturer: row.querySelector('td:nth-child(5)').innerText.trim(),         // Manufacturer
+            package_type: row.querySelector('td:nth-child(6)').innerText.trim(),         // Package Type
+            deviceSterile: toBoolean(row.querySelector('td:nth-child(7)').innerText.trim()),        // Sterile
+            implantable: toBoolean(row.querySelector('td:nth-child(8)').innerText.trim()),          // Implantable
+            sku: row.querySelector('td:nth-child(9)').innerText.trim(),                  // SKU
+            reference_number: row.querySelector('td:nth-child(10)').innerText.trim(),    // Reference Number
+            lot_number: row.querySelector('td:nth-child(11)').innerText.trim(),          // Lot Number
+            production_date: row.querySelector('td:nth-child(12)').innerText.trim(),     // Production Date
+            expiration_date: row.querySelector('td:nth-child(13)').innerText.trim(),     // Expiration Date
+            quantity_available: toNullIfEmpty(row.querySelector('td:nth-child(14)').innerText.trim()),  // Quantity Available
+            auction_type: row.querySelector('td:nth-child(15)').innerText.trim(),        // Auction Type
+            starting_bid: toNullIfEmpty(row.querySelector('td:nth-child(16)').innerText.trim()),        // Starting Bid
+            reserve_bid: toNullIfEmpty(row.querySelector('td:nth-child(17)').innerText.trim()),         // Reserve Bid
+            buyItNowPrice: toNullIfEmpty(row.querySelector('td:nth-child(18)').innerText.trim()),       // Sale Price (Buy It Now)
+            auction_duration: row.querySelector('td:nth-child(19)').innerText.trim(),    // Auction Duration
+        };
+
+        // Log each row's data for debugging
+        console.log('Row Data:', rowData);
         auction_data.push(rowData);
     });
 
     formData.append('auction_data', JSON.stringify(auction_data));
 
-    // Append image files from each row
     document.querySelectorAll('.image-input').forEach(input => {
         if (input.files[0]) {
             formData.append(input.name, input.files[0]);
         }
     });
 
+    // Update the UI to indicate processing
+    const step4Icon = document.getElementById('step4-icon');
+    const step4Title = document.getElementById('step4-title');
+    const step4Description = document.getElementById('step4-description');
+
+    step4Icon.classList.remove('fa-check');
+    step4Icon.classList.add('fa-spinner', 'fa-spin');
+    step4Title.innerText = 'Step 4: Working!';
+    step4Description.innerText = 'Your auctions are being imported...';
+
+    // Send the form data via fetch
     fetch('/import_excel/', {
         method: 'POST',
         body: formData,
     })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                console.log('Success:', data);
-                // Optionally redirect to another page or show a success message
-                alert('Import successful!');
-            } else {
-                console.error('Import failed:', data);
-                alert('Import failed. Please try again.');
-            }
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-            alert('An error occurred. Please try again.');
-        });
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            step4Icon.classList.remove('fa-spinner', 'fa-spin');
+            step4Icon.classList.add('fa-check');
+            step4Title.innerText = 'Step 4: Success!';
+            step4Description.innerText = 'Your auctions have been imported!';
+            document.getElementById('step4').style.backgroundColor = '#d4edda'; // Change background color to greenish
+            this.style.display = 'none';
+            document.getElementById('dashboard-btn').style.display = '';
+        } else {
+            step4Icon.classList.remove('fa-spinner', 'fa-spin');
+            step4Icon.classList.add('fa-exclamation-triangle');
+            step4Title.innerText = 'Step 4: Error';
+            step4Description.innerText = `An error occurred: ${data.message}`;
+            document.getElementById('step4').style.backgroundColor = '#f8d7da'; // Change background color to reddish
+        }
+    })
+    .catch((error) => {
+        step4Icon.classList.remove('fa-spinner', 'fa-spin');
+        step4Icon.classList.add('fa-exclamation-triangle');
+        step4Title.innerText = 'Step 4: Error';
+        step4Description.innerText = `An error occurred: ${error.message}`;
+        document.getElementById('step4').style.backgroundColor = '#f8d7da'; // Change background color to reddish
+    });
 });
 
 
@@ -607,3 +682,4 @@ function fetchClassificationData(code) {
             return null;
         });
 }
+

@@ -22,7 +22,9 @@
 
 
             <p>If you prefer to use our pre-formatted template to get started, you can download it below. The
-                template includes the correct headings for automatic column mapping.</p>
+                template includes the correct headings for automatic column mapping. <a id="sample-file" href="{% url 'download_excel' %}" class="text-dark">
+                    <i class="fa fa-download mx-2" aria-hidden="true"></i> Download Sample Excel File
+                </a></p>
 
             <p>Once you've completed the import, your listings will be added to your dashboard. From there, you can
                 review each listing to ensure all details are correct, make any necessary revisions, and post them live.
@@ -52,22 +54,15 @@
                         <button type="button" class="btn btn-primary" id="addImgBtn" disabled>Add Images</button>
                     </div>
                     <div class="step" id="step4">
-                        <i class="fa fa-check" aria-hidden="true"></i>
-                        <h5>Step 4: Done!</h5>
-                        <p>Review and submit to get your auctions live!</p>
+                        <i id="step4-icon" class="fa fa-check" aria-hidden="true"></i>
+                        <h5 id="step4-title">Step 4: Import!</h5>
+                        <p id="step4-description">Review and submit to get your auctions live!</p>
                         <button type="submit" class="btn btn-primary mx-auto" id="import-button" disabled>Import
                         </button>
+                        <a id="dashboard-btn" class="btn btn-primary" style="display: none" href="{% url 'dashboard' %}">Review and Post</a>
                     </div>
                 </div>
             </div>
-
-
-            <div class="mb-5 d-flex align-items-center justify-content-center">
-                <a id="sample-file" href="{% url 'download_excel' %}" class="btn btn-secondary btn-lg">
-                    <i class="fa fa-download" aria-hidden="true"></i> Download Sample Excel File
-                </a>
-            </div>
-
 
             <!-- Import Modal -->
             <div class="modal modal-xl fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel"
@@ -79,7 +74,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <form id="importForm">
+                            <form id="importForm" method="post" enctype="multipart/form-data">
 
                                 <div id="mappingModal">
                                     <div id="mappingContainer" style="display:none;">

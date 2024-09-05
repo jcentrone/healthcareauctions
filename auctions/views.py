@@ -578,33 +578,60 @@ def auction_create(request):
 @login_required
 @csrf_exempt
 def import_excel(request):
-    ImageFormSet = forms.modelformset_factory(Image, form=ImageForm, extra=5)
-
     if request.method == 'POST':
-        auction_data = json.loads(request.POST['auction_data'])
-        images_data = request.FILES
+        try:
+            auction_data_raw = request.POST.get('auction_data', '[]')
+            auction_data = json.loads(auction_data_raw)
+            print(auction_data)
 
-        for row_index, row in enumerate(auction_data):
-            auction_form = AuctionForm(row)
-            if auction_form.is_valid():
-                new_auction = auction_form.save(commit=False)
-                new_auction.creator = request.user
-                new_auction.active = True
-                new_auction.save()
+            for auction_info in auction_data:
+                # Make sure you're accessing the correct keys
+                category = Category.objects.get(id=auction_info['category_id'])
+                auction = Auction.objects.create(
+                    title=auction_info['title'],
+                    description=auction_info['description'],
+                    creator=request.user,
+                    category=category,
+                    quantity_available=auction_info.get('quantity_available', 1),
+                    starting_bid=auction_info.get('starting_bid'),
+                    reserve_bid=auction_info.get('reserve_bid'),
+                    buyItNowPrice=auction_info.get('buyItNowPrice'),
+                    manufacturer=auction_info['manufacturer'],
+                    auction_type=auction_info['auction_type'],
+                    implantable=auction_info['implantable'],
+                    deviceSterile=auction_info['deviceSterile'],
+                    package_type=auction_info['package_type'],
+                    auction_duration=auction_info['auction_duration'],
+                    hold_for_import=True,  # Mark as held for import
+                    active=False,
+                )
 
-                # Save images
-                for i in range(1, 6):  # Assuming up to 5 images per auction item
-                    image_key = f'images_{row_index}_{i}'
-                    if image_key in images_data:
-                        new_image = Image(auction=new_auction, image=images_data[image_key])
-                        new_image.save()
+                # Create product details
+                ProductDetail.objects.create(
+                    auction=auction,
+                    sku=auction_info.get('sku'),
+                    reference_number=auction_info.get('reference_number'),
+                    lot_number=auction_info.get('lot_number'),
+                    production_date=auction_info.get('production_date'),
+                    expiration_date=auction_info.get('expiration_date')
+                )
 
-        return JsonResponse({'status': 'success'})
+                # Handle the uploaded images
+                for key in request.FILES:
+                    if key.startswith(f'images_{auction.id}_'):
+                        auction_image = Image(auction=auction, image=request.FILES[key])
+                        auction_image.save()
+
+            return JsonResponse({'status': 'success'})
+
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
 
     return render(request, 'import.html', {
         'categories': Category.objects.all(),
         'title': 'Create Auction',
     })
+
 
 
 def active_auctions_view(request, auction_id=None):

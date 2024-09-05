@@ -198,6 +198,9 @@ class Auction(models.Model):
     sell_full_lot = models.BooleanField('Sell as Full Lot', default=True)
     auction_duration = models.IntegerField('Listing Duration', choices=DURATION_CHOICES, default=7)
     fullPackage = models.BooleanField('Package(s) Full', default=False)
+    hold_for_import = models.BooleanField('', default=False)
+
+
 
     def __str__(self):
         return f'Auction #{self.id}: {self.title} ({self.creator})'
