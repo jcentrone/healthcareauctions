@@ -53,8 +53,8 @@ document.getElementById('addImgBtn').addEventListener('click', function (event) 
 
 })
 
-// IMport button
-document.getElementById('import-button').addEventListener('click', function() {
+// Import button
+document.getElementById('import-button').addEventListener('click', function () {
     document.getElementById('importForm').submit();
 });
 
@@ -66,51 +66,224 @@ function generatePreviewTable(data) {
 
     // Create table header
     const headerRow = document.createElement('tr');
+
+    // Add headers for the fetched fields first
+    const fetchedDataHeaders = ['Auction Title', 'Description', 'Category', 'Category ID', 'Manufacturer', 'Package Type', 'Sterile', 'Implantable'];
+    fetchedDataHeaders.forEach(header => {
+        const th = document.createElement('th');
+        th.innerText = header;
+        headerRow.appendChild(th);
+    });
+
+    // Add headers from the user's file
     data[0].forEach(header => {
         const th = document.createElement('th');
         th.innerText = header;
         headerRow.appendChild(th);
     });
+
+    // Add header for Images upload
     const imageHeader = document.createElement('th');
     imageHeader.innerText = 'Images';
     headerRow.appendChild(imageHeader);
+
     previewTableHead.appendChild(headerRow);
 
     // Create table body
     data.slice(1, 6).forEach((row, rowIndex) => {
         const tr = document.createElement('tr');
 
-        // Ensure each row has the same number of columns as the header
-        data[0].forEach((header, colIndex) => {
-            const td = document.createElement('td');
-            const cellValue = row[colIndex];  // Use colIndex to access the correct value in the row
+        // Initialize a variable to keep track of the first td
+        let firstTd = null;
 
-            if (typeof cellValue === 'number' && isExcelDate(cellValue)) {
-                td.innerText = formatDate(cellValue);
-            } else {
-                td.innerText = cellValue !== undefined ? cellValue : '';  // Handle null or undefined values
-            }
+        // Fetch data for the given SKU (assumed to be in the first column)
+        const sku = row[0];
+        fetchDeviceData(sku)
+            .then(deviceData => {
+                if (deviceData) {
+                    const auctionTitle = deviceData.gudid.device.deviceDescription || 'No title available';
+                    const manufacturer = deviceData.gudid.device.companyName || 'Unknown';
+                    const packageType = deviceData.gudid.device.identifiers.identifier[0].pkgType || 'Unknown';
+                    const deviceSterile = deviceData.gudid.device.sterilization.deviceSterile ? 'Yes' : 'No';
+                    const implantable = deviceData.gudid.device.gmdnTerms.gmdn[0].implantable ? 'Yes' : 'No';
 
-            tr.appendChild(td);
-        });
+                    function createModalEL(key, value) {
+                        let rowEL = document.createElement('div');
+                        rowEL.classList.add('row')
 
-        // Add modal control for image upload fields
-        const td = document.createElement('td');
-        const button = document.createElement('button');
-        button.type = 'button'
-        button.classList.add('btn', 'btn-secondary');
-        button.innerText = 'Upload Images';
-        button.setAttribute('data-row-index', rowIndex);
-        button.addEventListener('click', () => showImageUploadModal(rowIndex));
-        td.appendChild(button);
-        tr.appendChild(td);
+                        let labelEL = document.createElement('div');
+                        labelEL.classList.add('col-md-4');
+                        labelEL.classList.add('fw-bold');
+                        labelEL.innerText = key;
+                        rowEL.appendChild(labelEL);
 
-        previewTableBody.appendChild(tr);
+                        let valueEL = document.createElement('div');
+                        valueEL.innerText = value;
+                        valueEL.classList.add('col-md-8');
+                        rowEL.appendChild(valueEL);
+
+                        return rowEL;
+                    }
+
+                    fetchClassificationData(deviceData.gudid.device.productCodes.fdaProductCode[0].productCode)
+                        .then(classificationData => {
+                            if (classificationData) {
+                                const description = classificationData.description || 'No description available';
+                                const category = classificationData.category || 'No category';
+                                const categoryId = classificationData.category_id || 'N/A';
+                                const fetchedDataValues = [auctionTitle, description, category, categoryId, manufacturer, packageType, deviceSterile, implantable];
+
+                                // Create the hidden div with the full data for the modal
+                                const modalContentDiv = document.createElement('div');
+                                modalContentDiv.classList.add('hover-modal-content');
+                                modalContentDiv.appendChild(createModalEL('Auction Title', auctionTitle));
+                                modalContentDiv.appendChild(createModalEL('Description', description));
+                                modalContentDiv.appendChild(createModalEL('Category', category));
+                                modalContentDiv.appendChild(createModalEL('Manufacturer', manufacturer));
+                                modalContentDiv.appendChild(createModalEL('Package Type:', packageType));
+                                modalContentDiv.appendChild(createModalEL('Sterile', deviceSterile));
+                                modalContentDiv.appendChild(createModalEL('Implantable', implantable));
+
+                                // Add cells for the fetched data first
+                                fetchedDataValues.forEach((value, index) => {
+                                    const td = document.createElement('td');
+                                    td.innerText = value;
+                                    tr.appendChild(td);
+
+                                    if (index === 0) {
+                                        // This is the first td, so store a reference to it
+                                        firstTd = td;
+                                    }
+
+
+                                });
+
+                                // Add cells for the user's file data
+                                data[0].forEach((header, colIndex) => {
+                                    const td = document.createElement('td');
+                                    let cellValue = row[colIndex];
+
+                                    // Check if the cell value is a date and format it if necessary
+                                    if (typeof cellValue === 'number' && isExcelDate(cellValue)) {
+                                        cellValue = formatDate(cellValue);
+                                    }
+
+                                    td.innerText = cellValue !== undefined ? cellValue : '';  // Handle null or undefined values
+                                    tr.appendChild(td);
+                                    modalContentDiv.appendChild(createModalEL(header, cellValue));
+                                });
+
+                                // Add modal control for image upload fields
+                                const td = document.createElement('td');
+                                const button = document.createElement('button');
+                                button.type = 'button';
+                                button.classList.add('btn', 'btn-info');
+                                button.innerText = 'Add';
+                                button.setAttribute('data-row-index', rowIndex);
+                                button.addEventListener('click', () => showImageUploadModal(rowIndex));
+                                td.appendChild(button);
+                                tr.appendChild(td);
+                                tr.appendChild(modalContentDiv);
+
+                                // Add event listeners to show/hide the modal on hover
+                                firstTd.addEventListener('mouseenter', function (e) {
+                                    modalContentDiv.style.display = 'block';
+                                    modalContentDiv.style.top = `${e.clientY + 20}px`; // Adjust vertical offset if necessary
+                                    modalContentDiv.style.left = `${e.clientX + 20}px`; // Adjust horizontal offset if necessary
+                                });
+
+                                firstTd.addEventListener('mousemove', function (e) {
+                                    modalContentDiv.style.top = `${e.clientY + 20}px`;
+                                    modalContentDiv.style.left = `${e.clientX + 20}px`;
+                                });
+
+                                firstTd.addEventListener('mouseleave', function () {
+                                    modalContentDiv.style.display = 'none';
+                                });
+
+
+                                previewTableBody.appendChild(tr);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching classification data:', error);
+                            // Handle the error and show something in the row
+                            const errorValues = ['Error', 'Error', 'Error', 'Error', 'Error', 'Error', 'Error', 'Error'];
+                            errorValues.forEach(value => {
+                                const td = document.createElement('td');
+                                td.innerText = value;
+                                tr.appendChild(td);
+                            });
+
+                            // Add cells for the user's file data
+                            data[0].forEach((header, colIndex) => {
+                                const td = document.createElement('td');
+                                let cellValue = row[colIndex];
+
+                                // Check if the cell value is a date and format it if necessary
+                                if (typeof cellValue === 'number' && isExcelDate(cellValue)) {
+                                    cellValue = formatDate(cellValue);
+                                }
+
+                                td.innerText = cellValue !== undefined ? cellValue : '';  // Handle null or undefined values
+                                tr.appendChild(td);
+                            });
+
+                            // Add modal control for image upload fields
+                            const td = document.createElement('td');
+                            const button = document.createElement('button');
+                            button.type = 'button';
+                            button.classList.add('btn', 'btn-secondary');
+                            button.innerText = 'Upload Images';
+                            button.setAttribute('data-row-index', rowIndex);
+                            button.addEventListener('click', () => showImageUploadModal(rowIndex));
+                            td.appendChild(button);
+                            tr.appendChild(td);
+
+                            previewTableBody.appendChild(tr);
+                        });
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching device data:', error);
+                // Handle the error and show something in the row
+                const errorValues = ['Error', 'Error', 'Error', 'Error', 'Error', 'Error', 'Error', 'Error'];
+                errorValues.forEach(value => {
+                    const td = document.createElement('td');
+                    td.innerText = value;
+                    tr.appendChild(td);
+                });
+
+                // Add cells for the user's file data
+                data[0].forEach((header, colIndex) => {
+                    const td = document.createElement('td');
+                    let cellValue = row[colIndex];
+
+                    // Check if the cell value is a date and format it if necessary
+                    if (typeof cellValue === 'number' && isExcelDate(cellValue)) {
+                        cellValue = formatDate(cellValue);
+                    }
+
+                    td.innerText = cellValue !== undefined ? cellValue : '';  // Handle null or undefined values
+                    tr.appendChild(td);
+                });
+
+                // Add modal control for image upload fields
+                const td = document.createElement('td');
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.classList.add('btn', 'btn-secondary');
+                button.innerText = 'Upload Images';
+                button.setAttribute('data-row-index', rowIndex);
+                button.addEventListener('click', () => showImageUploadModal(rowIndex));
+                td.appendChild(button);
+                tr.appendChild(td);
+
+                previewTableBody.appendChild(tr);
+            });
     });
-
     document.getElementById('previewContainer').style.display = 'block';
 }
-
 
 function showImageUploadModal(rowIndex) {
     const imageUploadContainer = document.getElementById('imageUploadContainer');
@@ -144,6 +317,7 @@ function hideImageUploadModal() {
 }
 
 document.getElementById('closeImageModal').addEventListener('click', hideImageUploadModal);
+
 window.addEventListener('click', function (event) {
     const modal = document.getElementById('imageUploadModal');
     if (event.target == modal) {
@@ -164,7 +338,8 @@ function generateMappingTable(data) {
         {label: 'Starting Bid', value: 'starting_bid'},
         {label: 'Reserve Bid', value: 'reserve_bid'},
         {label: 'Sale Price', value: 'buyItNowPrice'},
-        {label: 'Auction Duration', value: 'auction_duration'}
+        {label: 'Auction Duration', value: 'auction_duration'},
+        {label: 'Not Applicable', value: 'na'}
     ];
 
     const mappingTable = document.getElementById('mappingTable');
@@ -213,8 +388,10 @@ function formatDate(excelDate) {
     return `${month}/${day}/${year}`;
 }
 
+// Listen for file selection
 document.getElementById('fileInput').addEventListener('change', handleFileSelect);
 
+// Submit The Form
 document.getElementById('importForm').addEventListener('submit', function (event) {
     event.preventDefault();
 
@@ -261,3 +438,70 @@ document.getElementById('importForm').addEventListener('submit', function (event
             alert('An error occurred. Please try again.');
         });
 });
+
+
+function fetchDeviceData(code) {
+    return fetch(`https://accessgudid.nlm.nih.gov/api/v3/devices/lookup.json?udi=${code}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("Device data from AccessGUDID:", data);
+            return data;
+        })
+        .catch(error => {
+            console.error('Error fetching device data:', error);
+            return null; // Handle error by returning null or a default object
+        });
+}
+
+function getCsrfToken() {
+    return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+}
+
+function fetchClassificationData(code) {
+    return fetch(`https://api.fda.gov/device/classification.json?search=product_code:${code}&limit=5`)
+        .then(response => response.json())
+        .then(data => {
+            console.log("Device data from AccessGUDID Classification:", data);
+
+            if (data.results && data.results.length > 0) {
+                let classificationData = {
+                    medical_specialty_description: data.results[0].medical_specialty_description,
+                    device_class: data.results[0].device_class,
+                    device_name: data.results[0].device_name,
+                    definition: data.results[0].definition
+                };
+
+                // Combine title and definition for the description
+                let description = `${classificationData.device_name}: ${classificationData.definition}`;
+
+                // Fetch the category based on classification data
+                return fetch('/api/classify-device/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken()  // Function to get CSRF token
+                    },
+                    body: JSON.stringify(classificationData)
+                })
+                    .then(response => response.json())
+                    .then(result => {
+                        // console.log(result);
+                        classificationData.category = result.category.category_name;
+                        classificationData.category_id = result.category.value;
+                        classificationData.description = description;
+                        return classificationData;
+                    });
+            } else {
+                throw new Error('No classification data found');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching classification data:', error);
+            return null;
+        });
+}

@@ -1014,7 +1014,7 @@ def classify_device_view(request):
     if request.method == 'POST':
         try:
             device_data = json.loads(request.body)  # Parse the JSON body
-            print(device_data)
+            # print(device_data)
             category = update_categories_from_fda(device_data)
             return JsonResponse({'category': category}, status=201)
         except json.JSONDecodeError:

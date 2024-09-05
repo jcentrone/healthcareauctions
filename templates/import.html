@@ -8,7 +8,7 @@
     <div class="container">
         <div class="sub-container">
             <h2 id="import-header">Effortless Bulk Listings, Simplified for You</h2>
-            <p>
+            <p class="mt-5">
 
                 Creating multiple auction listings has never been easier! With our streamlined import tool, you can
                 upload
@@ -23,7 +23,7 @@
 
             <p>If you prefer to use our pre-formatted template to get started, you can download it below. The
                 template includes the correct headings for automatic column mapping.</p>
-            
+
             <p>Once you've completed the import, your listings will be added to your dashboard. From there, you can
                 review each listing to ensure all details are correct, make any necessary revisions, and post them live.
                 This process gives you full control over your listings before they go public, ensuring everything is
@@ -61,8 +61,7 @@
                 </div>
             </div>
 
-            
-            
+
             <div class="mb-5 d-flex align-items-center justify-content-center">
                 <a id="sample-file" href="{% url 'download_excel' %}" class="btn btn-secondary btn-lg">
                     <i class="fa fa-download" aria-hidden="true"></i> Download Sample Excel File
@@ -107,7 +106,13 @@
 
                                 <div id="import-mapping">
                                     <div id="previewContainer" style="display:none;">
-                                        <h3>Preview & Add Images</h3>
+                                        <p>Adding images to your listings is an essential step to attract potential
+                                            buyers. High-quality images give your auction items the visibility they
+                                            deserve. You can upload up to 5 images per listing, showcasing different
+                                            angles or features of your product. Simply click 'Upload Images' for each
+                                            listing, select your files, and you're good to go. Remember, clear and
+                                            detailed images can significantly increase buyer interest and confidence in
+                                            your items.</p>
                                         <div id="table-container">
                                             <table class="table mt-4" id="previewTable">
                                                 <thead id="previewTableHead">
