@@ -140,6 +140,52 @@
     text-align: center;
 }
 
+#table-container{
+    max-height: 550px;
+    overflow-y: auto;
+    /*padding-right: 20px;*/
+}
+
+/* Customize scrollbar for WebKit browsers (Chrome, Safari) */
+#table-container::-webkit-scrollbar {
+    height: 12px; /* Height for horizontal scrollbar */
+
+}
+
+#table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px; /* Ensure the track is rounded */
+}
+
+#table-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px; /* Ensure the thumb is rounded */
+}
+
+#table-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+    border-radius: 10px;
+}
+
+/* Customize scrollbar for Firefox */
+#table-container {
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f1f1f1;
+    border-radius: 10px;
+}
+
+/* Customize scrollbar for IE and Edge */
+#table-container {
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+}
+
+
+.input-group-append.ml-2 {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
 .hover-modal-content {
     display: none;
     position: absolute;

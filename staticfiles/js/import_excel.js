@@ -11,10 +11,22 @@ function handleFileSelect(event) {
 
             generatePreviewTable(json);
             generateMappingTable(json);
+
+            const step1 = document.getElementById('step1');
+            const step1Icon = document.getElementById('step1-icon');
+            step1.style.backgroundColor = '#d4edda';
+
+            step1Icon.classList.remove('fa-file-excel');
+            step1Icon.classList.add('fa-check-circle');
+
+            step1.querySelector('h5').innerText = 'Step 1: Excel File Added';
+            step1.querySelector('p').innerText = 'File added. Select another to start over.';
+
+
             document.getElementById('import-mapping').style.display = 'none';
             document.getElementById('import-button').style.display = 'block';
 
-            document.getElementById('mapColumnsBtn').disabled = false;
+            // document.getElementById('mapColumnsBtn').disabled = false;
 
 
         };
@@ -22,21 +34,57 @@ function handleFileSelect(event) {
     }
 }
 
+const importModal = new bootstrap.Modal(document.getElementById('importModal'));
+
+
 document.getElementById('mapColumnsBtn').addEventListener('click', function (event) {
     document.getElementById('mappingModal').style.display = 'block';
     document.getElementById('import-mapping').style.display = 'none';
     document.getElementById('importModalLabel').innerText = 'Step 2: Map Your Data';
-    const importModal = new bootstrap.Modal(document.getElementById('importModal'));
+    // importModal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
     importModal.show();
     document.getElementById('addImgBtn').disabled = false;
 })
 
 
 function closeImportModal() {
-    let importModal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
-    importModal.hide();
+    const allImagesValid = validateImages();
 
+    if (!allImagesValid) {
+        alert('Please ensure each row has at least one image selected.');
+        return; // Do not close the modal if validation fails
+    }
+
+    const importModal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
+    importModal.hide();
 }
+
+function validateImages() {
+    const previewTableBody = document.getElementById('previewTableBody');
+    const rows = previewTableBody.querySelectorAll('tr');
+    let allRowsValid = true;
+
+    rows.forEach(row => {
+        const imageInputs = row.querySelectorAll('input[type="file"]');
+        let hasImage = false;
+
+        imageInputs.forEach(input => {
+            if (input.files.length > 0) {
+                hasImage = true;
+            }
+        });
+
+        if (!hasImage) {
+            allRowsValid = false;
+            row.classList.add('table-danger'); // Highlight the row if no images are selected
+        } else {
+            row.classList.remove('table-danger'); // Remove highlight if images are selected
+        }
+    });
+
+    return allRowsValid;
+}
+
 
 // Example usage: Close the modal when the "Okay" button is clicked.
 document.getElementById('closeMappingModal').addEventListener('click', closeImportModal);
@@ -172,18 +220,20 @@ function generatePreviewTable(data) {
                                     tr.appendChild(td);
                                     modalContentDiv.appendChild(createModalEL(header, cellValue));
                                 });
-
                                 // Add modal control for image upload fields
                                 const td = document.createElement('td');
-                                const button = document.createElement('button');
-                                button.type = 'button';
-                                button.classList.add('btn', 'btn-info');
-                                button.innerText = 'Add';
-                                button.setAttribute('data-row-index', rowIndex);
-                                button.addEventListener('click', () => showImageUploadModal(rowIndex));
-                                td.appendChild(button);
-                                tr.appendChild(td);
-                                tr.appendChild(modalContentDiv);
+
+                                for (let i = 1; i <= 5; i++) {
+                                    const input = document.createElement('input');
+                                    input.type = 'file';
+                                    input.classList.add('form-control');
+                                    input.classList.add('mb-1');
+                                    input.name = `images_${rowIndex}_${i}`;
+
+                                    // Optionally, add the input element to a parent container
+                                    td.appendChild(input);
+                                    tr.appendChild(td);
+                                }
 
                                 // Add event listeners to show/hide the modal on hover
                                 firstTd.addEventListener('mouseenter', function (e) {
@@ -231,17 +281,21 @@ function generatePreviewTable(data) {
 
                             // Add modal control for image upload fields
                             const td = document.createElement('td');
-                            const button = document.createElement('button');
-                            button.type = 'button';
-                            button.classList.add('btn', 'btn-secondary');
-                            button.innerText = 'Upload Images';
-                            button.setAttribute('data-row-index', rowIndex);
-                            button.addEventListener('click', () => showImageUploadModal(rowIndex));
-                            td.appendChild(button);
-                            tr.appendChild(td);
 
-                            previewTableBody.appendChild(tr);
+                            for (let i = 1; i <= 5; i++) {
+                                const input = document.createElement('input');
+                                input.type = 'file';
+                                input.classList.add('form-control');
+                                input.classList.add('mb-1');
+                                input.name = `images_${rowIndex}_${i}`;
+
+                                // Optionally, add the input element to a parent container
+                                td.appendChild(input);
+                                tr.appendChild(td);
+                            }
                         });
+
+
                 }
             })
             .catch(error => {
@@ -268,16 +322,20 @@ function generatePreviewTable(data) {
                     tr.appendChild(td);
                 });
 
-                // Add modal control for image upload fields
+                /// Add modal control for image upload fields
                 const td = document.createElement('td');
-                const button = document.createElement('button');
-                button.type = 'button';
-                button.classList.add('btn', 'btn-secondary');
-                button.innerText = 'Upload Images';
-                button.setAttribute('data-row-index', rowIndex);
-                button.addEventListener('click', () => showImageUploadModal(rowIndex));
-                td.appendChild(button);
-                tr.appendChild(td);
+
+                for (let i = 1; i <= 5; i++) {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.classList.add('form-control');
+                    input.classList.add('mb-1');
+                    input.name = `images_${rowIndex}_${i}`;
+
+                    // Optionally, add the input element to a parent container
+                    td.appendChild(input);
+                    tr.appendChild(td);
+                }
 
                 previewTableBody.appendChild(tr);
             });
@@ -285,31 +343,6 @@ function generatePreviewTable(data) {
     document.getElementById('previewContainer').style.display = 'block';
 }
 
-function showImageUploadModal(rowIndex) {
-    const imageUploadContainer = document.getElementById('imageUploadContainer');
-    imageUploadContainer.innerHTML = '';
-
-    for (let i = 1; i <= 5; i++) {
-        const div = document.createElement('div');
-        div.classList.add('form-group');
-        div.classList.add('mb-2');
-
-        const label = document.createElement('label');
-        label.innerText = `Image ${i}`;
-        div.appendChild(label);
-
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.classList.add('form-control');
-        input.name = `images_${rowIndex}_${i}`;
-        div.appendChild(input);
-
-        imageUploadContainer.appendChild(div);
-    }
-
-    const modal = document.getElementById('imageUploadModal');
-    modal.style.display = 'block';
-}
 
 function hideImageUploadModal() {
     const modal = document.getElementById('imageUploadModal');
@@ -345,6 +378,8 @@ function generateMappingTable(data) {
     const mappingTable = document.getElementById('mappingTable');
     mappingTable.innerHTML = '';
 
+    let allFieldsMapped = true;  // Initialize flag
+
     headers.forEach(header => {
         const row = document.createElement('tr');
 
@@ -359,22 +394,89 @@ function generateMappingTable(data) {
         const formFieldCell = document.createElement('td');
         const select = document.createElement('select');
         select.classList.add('form-control');
+
+        let isMapped = false;  // Flag for each header
+
         formFields.forEach(field => {
             const option = document.createElement('option');
             option.value = field.value;
             option.innerText = field.label;
-            if (field.label.toLowerCase() === header.toLowerCase()) option.selected = true;
+
+            // Automatically map if the header matches a form field
+            if (field.label.toLowerCase() === header.toLowerCase()) {
+                option.selected = true;
+                isMapped = true;
+            }
+
             select.appendChild(option);
         });
+
+        if (!isMapped) {
+            allFieldsMapped = false;  // Update flag if not all fields are mapped
+        }
+
         formFieldCell.appendChild(select);
         row.appendChild(formFieldCell);
+
+        // Add event listener to track changes
+        select.addEventListener('change', () => {
+            checkAllFieldsMapped();
+        });
 
         mappingTable.appendChild(row);
     });
 
     document.getElementById('mappingContainer').style.display = 'block';
     document.getElementById('mappingModal').style.display = 'block';
+
+    // Initial check on page load
+    checkAllFieldsMapped();
+
+    function checkAllFieldsMapped() {
+        allFieldsMapped = true;
+
+        // Iterate over all selects to verify that none are left unmapped
+        mappingTable.querySelectorAll('select').forEach(select => {
+            if (select.value === 'na') {
+                allFieldsMapped = false;
+            }
+        });
+
+        // React based on the allFieldsMapped flag
+        if (allFieldsMapped) {
+            document.getElementById('addImgBtn').disabled = false; // Enable import button
+            console.log('All fields are correctly mapped.');
+
+
+            // Indicate that Step 2 is complete
+            const step2 = document.getElementById('step2');
+            const step2Icon = document.getElementById('step2-icon');
+
+            step2.style.backgroundColor = '#d4edda'; // Greenish background to indicate success
+            step2Icon.classList.remove('fa-arrows-alt');
+            step2Icon.classList.add('fa-check-circle');
+
+            step2.querySelector('h5').innerText = 'Step 2: Columns Mapped';
+            step2.querySelector('p').innerText = 'All columns auto-mapped, nothing to do here.';
+            document.getElementById('mapColumnsBtn').disabled = true; // Disable the button
+            // document.getElementById('mapColumnsBtn').style.display = 'none'; // Optionally hide the button
+
+        } else {
+            document.getElementById('addImgBtn').disabled = true; // Disable import button
+            console.log('Please complete the mapping of all fields.');
+
+            // Reset Step 2 to its default state
+            const step2 = document.getElementById('step2');
+            step2.style.backgroundColor = ''; // Reset background color
+            step2.querySelector('h5').innerText = 'Step 2: Map Your Columns';
+            step2.querySelector('p').innerText = 'Match your Excel columns to the auction fields.';
+            document.getElementById('mapColumnsBtn').disabled = false; // Enable the button
+            // document.getElementById('mapColumnsBtn').style.display = 'inline-block'; // Ensure the button is visible
+        }
+
+    }
 }
+
 
 function isExcelDate(value) {
     return value > 25569;

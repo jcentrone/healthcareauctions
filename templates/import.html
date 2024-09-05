@@ -31,22 +31,22 @@
 
             <div class="import-container my-5">
                 <div class="infographic card">
-                    <div class="step" id="step1">
-                        <i class="fa fa-file-excel" aria-hidden="true"></i>
+                    <div class="step border-bottom border-end border-white" id="step1">
+                        <i id="step1-icon" class="fa fa-file-excel" aria-hidden="true"></i>
                         <h5>Step 1: Select Your File</h5>
                         <p>Choose your Excel file with the auction data.</p>
                         <div id="file-input">
                             <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="form-control" required>
                         </div>
                     </div>
-                    <div class="step" id="step2">
-                        <i class="fa fa-arrows-alt" aria-hidden="true"></i>
+                    <div class="step border-bottom border-white" id="step2">
+                        <i id="step2-icon" class="fa fa-arrows-alt" aria-hidden="true"></i>
                         <h5>Step 2: Map Your Columns</h5>
                         <p>Match your Excel columns to the auction fields.</p>
                         <button type="button" class="btn btn-primary" id="mapColumnsBtn" disabled>Map Columns</button>
                     </div>
-                    <div class="step" id="step3">
-                        <i class="fa fa-image" aria-hidden="true"></i>
+                    <div class="step border-end border-white" id="step3">
+                        <i id="step3-icon" class="fa fa-image" aria-hidden="true"></i>
                         <h5>Step 3: Add Images</h5>
                         <p>Upload images to showcase your listings.</p>
                         <button type="button" class="btn btn-primary" id="addImgBtn" disabled>Add Images</button>
@@ -70,9 +70,9 @@
 
 
             <!-- Import Modal -->
-            <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel"
+            <div class="modal modal-xl fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel"
                  aria-hidden="true">
-                <div class="modal-dialog modal-xl ">
+                <div class="modal-dialog  w-75 ">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h3 class="modal-title" id="importModalLabel"></h3>
@@ -156,6 +156,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
     <script src='{% static "js/import_excel.js" %}'></script>
+{#    <script src='{% static "js/import_excel1.js" %}'></script>#}
     <link href='{% static "css/import.css" %}' rel='stylesheet'>
 
 {% endblock %}
