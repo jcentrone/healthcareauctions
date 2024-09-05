@@ -1183,7 +1183,9 @@
                                                         </a>
                                                     {% else %}
                                                         <a href="{% url 'auction_relist' listing.id %}"
-                                                           class="btn btn-primary btn-sm w-100">Relist {% if listing.auction_type == 'Auction' %}For Auction{% else %}For Sale{% endif %} </a>
+                                                           class="btn btn-primary btn-sm w-100">Relist
+                                                            {% if listing.auction_type == 'Auction' %}For
+                                                                Auction{% else %}For Sale{% endif %} </a>
 
                                                     {% endif %}
                                                 </div>
@@ -1314,52 +1316,41 @@
 
                                     {% if listings.has_other_pages %}
                                         <div class='d-flex justify-content-center'>
-                                            <ul class="pagination">
+                                            <ul class='pagination'>
                                                 {% if listings.has_previous %}
-                                                    <li class="page-item">
-                                                        <a class="page-link"
-                                                           href="?active_tab={{ active_tab }}&listing_page=
-                                                                   {{ listings.previous_page_number }}{% if request.GET.listing_status %}&listing_status={{ request.GET.listing_status|urlencode }}{% endif %}{% if request.GET.listing_type %}&listing_type={{ request.GET.listing_type|urlencode }}{% endif %}{% if request.GET.listing_date %}&listing_date={{ request.GET.listing_date|urlencode }}{% endif %}"
-                                                           aria-label="Previous">
-                                                            <span aria-hidden="true">&laquo;</span>
+                                                    <li class='page-item'>
+                                                        <a class='page-link'
+                                                           href='?sale_page={{ listings.previous_page_number }}'>
+                                                            &laquo;
                                                         </a>
                                                     </li>
                                                 {% else %}
-                                                    <li class="page-item disabled">
-                                                        <span class="page-link" aria-hidden="true">&laquo;</span>
+                                                    <li class='page-item disabled'>
+                                                        <a class='page-link' href='#'>&laquo;</a>
                                                     </li>
                                                 {% endif %}
-
-                                                {% for num in listings.paginator.page_range %}
-                                                    {% if listings.number == num %}
-                                                        <li class="page-item active">
-                                                            <span class="page-link">{{ num }}</span>
+                                                {% for i in listings.paginator.page_range %}
+                                                    {% if listings.number == i %}
+                                                        <li class='page-item active'>
+                                                            <a class='page-link' href='#'>{{ i }}</a>
                                                         </li>
                                                     {% else %}
-                                                        <li class="page-item">
-                                                            <a class="page-link"
-                                                               href="?active_tab={{ active_tab }}&listing_page=
-                                                                       {{ num }}{% if request.GET.listing_status %}&listing_status={{ request.GET.listing_status|urlencode }}{% endif %}{% if request.GET.listing_type %}&listing_type={{ request.GET.listing_type|urlencode }}{% endif %}{% if request.GET.listing_date %}&listing_date={{ request.GET.listing_date|urlencode }}{% endif %}">{{ num }}</a>
+                                                        <li class='page-item'>
+                                                            <a class='page-link' href='?sale_page={{ i }}'>{{ i }}</a>
                                                         </li>
                                                     {% endif %}
                                                 {% endfor %}
-
                                                 {% if listings.has_next %}
-                                                    <li class="page-item">
-                                                        <a class="page-link"
-                                                           href="?active_tab={{ active_tab }}&listing_page=
-                                                                   {{ listings.next_page_number }}{% if request.GET.listing_status %}&listing_status={{ request.GET.listing_status|urlencode }}{% endif %}{% if request.GET.listing_type %}&listing_type={{ request.GET.listing_type|urlencode }}{% endif %}{% if request.GET.listing_date %}&listing_date={{ request.GET.listing_date|urlencode }}{% endif %}"
-                                                           aria-label="Next">
-                                                            <span aria-hidden="true">&raquo;</span>
-                                                        </a>
+                                                    <li class='page-item'>
+                                                        <a class='page-link'
+                                                           href='?sale_page={{ listings.next_page_number }}'>&raquo;</a>
                                                     </li>
                                                 {% else %}
-                                                    <li class="page-item disabled">
-                                                        <span class="page-link" aria-hidden="true">&raquo;</span>
+                                                    <li class='page-item disabled'>
+                                                        <a class='page-link' href='#'>&raquo;</a>
                                                     </li>
                                                 {% endif %}
                                             </ul>
-
                                         </div>
                                     {% endif %}
                                 </div>

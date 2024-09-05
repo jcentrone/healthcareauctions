@@ -177,8 +177,7 @@ def dashboard(request):
     listing_type_filter = request.GET.get('listing_type')
     listing_date_filter = request.GET.get('listing_date')
     bid_status_filter = request.GET.get('bid_status')
-    hold_for_import = request.GET.get('hold_for_import')
-
+    hold_for_import = request.GET.get('hold_for_import', 'False').lower() == 'true'
     # Filter orders
     if order_status_filter:
         orders = orders.filter(status=order_status_filter)
@@ -198,6 +197,9 @@ def dashboard(request):
         sales = sales.filter(created_at__date=sales_date_filter)
 
     # Filter listings
+    if hold_for_import:
+        listings = listings.filter(hold_for_import=True)
+
     if listing_status_filter:
         if listing_status_filter == 'active':
             listings = listings.filter(active=True)
@@ -217,8 +219,8 @@ def dashboard(request):
     if listing_date_filter:
         listings = listings.filter(date_created__date=listing_date_filter)
 
-    if hold_for_import:
-        listings = listings.filter(hold_for_import=True)
+    listing_count = listings.count()
+
 
     # Filter bids
     if bid_status_filter:
@@ -324,9 +326,10 @@ def dashboard(request):
     return render(request, 'dashboard.html', {
         'categories': Category.objects.all(),
         'listings': listings,
-        'listings_count': listings_paginator.count,
+        'listings_count': listing_count,
         'listing_status': listing_status,
         'listing_type': listing_type,
+        'listing_date_filter': listing_date_filter,
         'auctions': auctions_with_user_bids,
         'auction_count': total_auctions_with_bids_count,
         'watchlist_count': watchlist.count(),
@@ -346,7 +349,8 @@ def dashboard(request):
         'password_form': password_form,
         'note_forms': note_forms,
         # 'message_forms': message_forms,
-        'sub_nav': 'user_details'
+        'sub_nav': 'user_details',
+        'hold_for_import': hold_for_import,
 
     })
 
