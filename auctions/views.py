@@ -1,6 +1,7 @@
 import json
 import logging
 import random
+import re
 from datetime import timedelta
 from decimal import Decimal
 
@@ -176,6 +177,7 @@ def dashboard(request):
     listing_type_filter = request.GET.get('listing_type')
     listing_date_filter = request.GET.get('listing_date')
     bid_status_filter = request.GET.get('bid_status')
+    hold_for_import = request.GET.get('hold_for_import')
 
     # Filter orders
     if order_status_filter:
@@ -214,6 +216,9 @@ def dashboard(request):
 
     if listing_date_filter:
         listings = listings.filter(date_created__date=listing_date_filter)
+
+    if hold_for_import:
+        listings = listings.filter(hold_for_import=True)
 
     # Filter bids
     if bid_status_filter:
@@ -604,7 +609,10 @@ def import_excel(request):
                     auction_duration=auction_info['auction_duration'],
                     hold_for_import=True,  # Mark as held for import
                     active=False,
+
                 )
+                # Save the auction first to ensure it has an ID
+                auction.save()
 
                 # Create product details
                 ProductDetail.objects.create(
@@ -616,11 +624,29 @@ def import_excel(request):
                     expiration_date=auction_info.get('expiration_date')
                 )
 
-                # Handle the uploaded images
+                # Handle the uploaded images using the same approach as in manual creation
+                image_keys = [key for key in request.FILES if key.startswith(f'images_{auction.id}_')]
+
+                # Handle the uploaded images using the same approach as in manual creation
                 for key in request.FILES:
-                    if key.startswith(f'images_{auction.id}_'):
+                    print(f"Processing file key: {key}")  # Debugging: Print each file key
+                    # Extract the auction index from the key (assuming key format: images_<row_index>_<image_index>)
+                    match = re.match(r'images_(\d+)_\d+', key)
+                    if match:
+                        row_index = int(match.group(1))  # Get the row index from the key
+                        print(f"Found row index {row_index} for auction")  # Debugging: Log the row index
+
+                        # Find the corresponding auction_info by index
+                        auction_info = auction_data[row_index]
+                        print(f"Corresponding auction info: {auction_info}")  # Debugging: Log the auction info
+
+                        # Save the image
                         auction_image = Image(auction=auction, image=request.FILES[key])
                         auction_image.save()
+                        print(
+                            f"Image saved for auction {auction.id}: {auction_image.image}")  # Debugging: Confirm image save
+                    else:
+                        print(f"No match found for key: {key}")  # Debugging: If no match is found, log this
 
             return JsonResponse({'status': 'success'})
 
@@ -912,7 +938,7 @@ def auction_bid(request, auction_id):
             'title': 'Auction'
         })
 
-
+@login_required
 def auction_close(request, auction_id):
     """
     It allows the signed in user who created the listing
@@ -927,7 +953,7 @@ def auction_close(request, auction_id):
         messages.success(request, 'Auction successfully closed. The highest bidder is now the winner.')
         return HttpResponseRedirect(f"{reverse('dashboard')}?active_tab=listings")
 
-
+@login_required
 def auction_relist(request, auction_id):
     # Get the existing auction object
     original_auction = get_object_or_404(Auction, id=auction_id)
@@ -986,6 +1012,7 @@ def auction_relist(request, auction_id):
     # Redirect to the new auction's details page or another appropriate view
     return redirect('dashboard')
 
+@login_required
 def auction_comment(request, auction_id):
     """
     It allows the signed in users to add comments to the listing page

@@ -22,7 +22,9 @@
 
 
             <p>If you prefer to use our pre-formatted template to get started, you can download it below. The
-                template includes the correct headings for automatic column mapping. <a id="sample-file" href="{% url 'download_excel' %}" class="text-dark">
+                template includes the correct headings for automatic column mapping. <a id="sample-file"
+                                                                                        href="{% url 'download_excel' %}"
+                                                                                        class="text-dark">
                     <i class="fa fa-download mx-2" aria-hidden="true"></i> Download Sample Excel File
                 </a></p>
 
@@ -59,7 +61,8 @@
                         <p id="step4-description">Review and submit to get your auctions live!</p>
                         <button type="submit" class="btn btn-primary mx-auto" id="import-button" disabled>Import
                         </button>
-                        <a id="dashboard-btn" class="btn btn-primary" style="display: none" href="{% url 'dashboard' %}">Review and Post</a>
+                        <a id="dashboard-btn" class="btn btn-primary" style="display: none"
+                           href="{% url 'dashboard' %}?active_tab=listings&hold_for_import=true">Review and Post</a>
                     </div>
                 </div>
             </div>
@@ -74,6 +77,14 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
+                            <div id="modalMessages" class="alert alert-dismissible fade" role="alert"
+                                 style="display: none;">
+                                <div id="modalMessage"></div>
+{#                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">#}
+{#                                    <span aria-hidden="true">&times;</span>#}
+{#                                    &times;#}
+{#                                </button>#}
+                            </div>
                             <form id="importForm" method="post" enctype="multipart/form-data">
 
                                 <div id="mappingModal">
@@ -151,7 +162,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
     <script src='{% static "js/import_excel.js" %}'></script>
-{#    <script src='{% static "js/import_excel1.js" %}'></script>#}
+    {#    <script src='{% static "js/import_excel1.js" %}'></script>#}
     <link href='{% static "css/import.css" %}' rel='stylesheet'>
 
 {% endblock %}
