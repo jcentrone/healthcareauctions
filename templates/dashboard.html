@@ -1123,6 +1123,18 @@
                                                 </option>
 
                                             </select>
+                                            <select name="hold_for_import" class="form-select me-2">
+                                                <option value="False"
+                                                        {% if hold_for_import == False or hold_for_import == '' %}
+                                                        selected{% endif %}>
+                                                    Not On Hold
+                                                </option>
+
+                                                <option value="True"
+                                                        {% if hold_for_import %}selected{% endif %}>
+                                                    On Hold
+                                                </option>
+                                            </select>
                                             <select name="listing_type" class="form-select me-2">
                                                 <option value="">Listings Type</option>
                                                 <option value="Auction"
@@ -1137,18 +1149,7 @@
                                             <input type="date" name="listing_date" class="form-control me-2"
                                                    value="{{ request.GET.date }}">
 
-                                            <select name="hold_for_import" class="form-select me-2">
-                                                <option value="False"
-                                                        {% if hold_for_import == False or hold_for_import == '' %}
-                                                        selected{% endif %}>
-                                                    Not On Hold
-                                                </option>
 
-                                                <option value="True"
-                                                        {% if hold_for_import %}selected{% endif %}>
-                                                    On Hold
-                                                </option>
-                                            </select>
                                             <button type="submit" class="btn btn-primary">Filter</button>
                                             {% if listing_status != 'All' %}
                                                 <a href="{% url 'dashboard' %}?active_tab=listings&listing_status=&listing_date="
