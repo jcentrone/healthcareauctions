@@ -26,7 +26,8 @@ from django.views.decorators.http import require_POST
 
 from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, ProductDetailFormSet, MessageForm, \
     ShippingMethodForm, ShippingAddressForm, BillingAddressForm, CreditCardForm, ACHForm, ZelleForm, VenmoForm, \
-    PayPalForm, CashAppForm, CustomUserChangeForm, UserAddressForm, OrderNoteForm, EditAuctionForm
+    PayPalForm, CashAppForm, CustomUserChangeForm, UserAddressForm, OrderNoteForm, EditAuctionForm, \
+    EditProductDetailFormSet
 from .models import Bid, Category, Image, User, Address, CartItem, Cart, ProductDetail, Message, Order, Payment, \
     OrderItem, Parcel
 from .utils.helpers import update_categories_from_fda
@@ -180,6 +181,7 @@ def dashboard(request):
     # Add  edit forms to the listings
     for listing in listings:
         listing.edit_form = EditAuctionForm(instance=listing)
+        listing.edit_form.product_detail = EditProductDetailFormSet(instance=listing)
 
     # Listing Count
     listing_count = listings.count()
@@ -363,15 +365,27 @@ def dashboard(request):
 @login_required
 def edit_auction(request, auction_id):
     auction = get_object_or_404(Auction, id=auction_id)
+
     if request.method == 'POST':
         form = EditAuctionForm(request.POST, instance=auction)
-        if form.is_valid():
+        product_detail_formset = EditProductDetailFormSet(request.POST or None, instance=auction)
+
+        if form.is_valid() and product_detail_formset.is_valid():
             form.save()
-            messages.success(request, 'Auction updated successfully.')
+            product_detail_formset.save()  # Save the product detail formset
+            return JsonResponse({'success': True, 'message': 'Auction and product details updated successfully.'})
         else:
-            print(form.errors)
-            messages.error(request, 'Please correct the errors below.')
-    return redirect('dashboard')
+            errors = form.errors.as_json()  # Convert form errors to JSON
+            formset_errors = product_detail_formset.errors  # Get formset errors
+
+            return JsonResponse({
+                'success': False,
+                'form_errors': errors,
+                'formset_errors': formset_errors,
+                'message': 'Please correct the errors below.'
+            })
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method.'})
 
 
 @login_required

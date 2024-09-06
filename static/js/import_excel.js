@@ -204,6 +204,7 @@ function generatePreviewTable(data) {
                     const packageType = deviceData.gudid.device.identifiers.identifier[0].pkgType || 'Unknown';
                     const deviceSterile = deviceData.gudid.device.sterilization.deviceSterile ? 'Yes' : 'No';
                     const implantable = deviceData.gudid.device.gmdnTerms.gmdn[0].implantable ? 'Yes' : 'No';
+                    const gmdnTerms = deviceData.gudid.device.gmdnTerms.gmdn[0].gmdnPTDefinition || '';
 
                     function createModalEL(key, value) {
                         let rowEL = document.createElement('div');
@@ -226,7 +227,7 @@ function generatePreviewTable(data) {
                     fetchClassificationData(deviceData.gudid.device.productCodes.fdaProductCode[0].productCode)
                         .then(classificationData => {
                             if (classificationData) {
-                                const description = classificationData.description || 'No description available';
+                                const description = classificationData.description +  '\n\n' + gmdnTerms || 'No description available';
                                 const category = classificationData.category || 'No category';
                                 const categoryId = classificationData.category_id || 'N/A';
                                 const fetchedDataValues = [auctionTitle, description, category, categoryId, manufacturer, packageType, deviceSterile, implantable];

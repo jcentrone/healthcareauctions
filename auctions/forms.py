@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserChangeForm
-from django.forms import modelformset_factory
+from django.forms import modelformset_factory, inlineformset_factory
 
 from .models import Auction, Bid, Comment, Image, Category, CartItem, ProductDetail, Message, Order, ShippingAddress, \
     BillingAddress, STATE_CHOICES, User, Address
@@ -63,7 +63,7 @@ class ProductDetailForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(ProductDetailForm, self).__init__(*args, **kwargs)
+        super(EditProductDetailForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
@@ -201,7 +201,8 @@ class ShippingMethodForm(forms.ModelForm):
 class ShippingAddressForm(forms.ModelForm):
     class Meta:
         model = ShippingAddress
-        fields = ['shipping_full_name', 'shipping_street_address', 'shipping_apartment_suite', 'shipping_city', 'shipping_state', 'shipping_zip_code', 'shipping_country',
+        fields = ['shipping_full_name', 'shipping_street_address', 'shipping_apartment_suite', 'shipping_city',
+                  'shipping_state', 'shipping_zip_code', 'shipping_country',
                   'shipping_phone_number', 'shipping_email']
         widgets = {
             'shipping_full_name': forms.TextInput(attrs={'class': 'form-control required'}),
@@ -211,15 +212,18 @@ class ShippingAddressForm(forms.ModelForm):
             'shipping_state': forms.Select(choices=STATE_CHOICES, attrs={'class': 'form-control required'}),
             'shipping_zip_code': forms.TextInput(attrs={'class': 'form-control required'}),
             'shipping_country': forms.TextInput(attrs={'class': 'form-control'}),
-            'shipping_phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'If different than above'}),
-            'shipping_email': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'If different than above'}),
+            'shipping_phone_number': forms.TextInput(
+                attrs={'class': 'form-control', 'placeholder': 'If different than above'}),
+            'shipping_email': forms.TextInput(
+                attrs={'class': 'form-control', 'placeholder': 'If different than above'}),
         }
 
 
 class BillingAddressForm(forms.ModelForm):
     class Meta:
         model = BillingAddress
-        fields = ['billing_full_name', 'billing_street_address', 'billing_apartment_suite', 'billing_city', 'billing_state', 'billing_zip_code', 'billing_country',
+        fields = ['billing_full_name', 'billing_street_address', 'billing_apartment_suite', 'billing_city',
+                  'billing_state', 'billing_zip_code', 'billing_country',
                   'billing_phone_number', 'billing_email']
         widgets = {
             'billing_full_name': forms.TextInput(attrs={'class': 'form-control required'}),
@@ -229,14 +233,16 @@ class BillingAddressForm(forms.ModelForm):
             'billing_state': forms.Select(choices=STATE_CHOICES, attrs={'class': 'form-control required'}),
             'billing_zip_code': forms.TextInput(attrs={'class': 'form-control required'}),
             'billing_country': forms.TextInput(attrs={'class': 'form-control'}),
-            'billing_phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'If different than above'}),
+            'billing_phone_number': forms.TextInput(
+                attrs={'class': 'form-control', 'placeholder': 'If different than above'}),
             'billing_email': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'If different than above'}),
         }
 
 
 class CreditCardForm(forms.Form):
     card_number = forms.CharField(
-        widget=forms.TextInput(attrs={'class': 'form-control mb-2 text-capitalize', 'placeholder': 'Credit Card Number'}))
+        widget=forms.TextInput(
+            attrs={'class': 'form-control mb-2 text-capitalize', 'placeholder': 'Credit Card Number'}))
     expiration_date = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'MM/YY'}))
     cvv = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'CVV'}))
 
@@ -301,6 +307,22 @@ class OrderNoteForm(forms.ModelForm):
         super(OrderNoteForm, self).__init__(*args, **kwargs)
         # Adding Bootstrap class to labels if needed
         self.fields['order_note'].label = f'<label class="form-label">{self.fields["order_note"].label}</label>'
+
+
+class EditProductDetailForm(forms.ModelForm):
+    class Meta:
+        model = ProductDetail
+        fields = ['sku', 'reference_number', 'lot_number', 'production_date', 'expiration_date']
+        widgets = {
+            'sku': forms.TextInput(attrs={'class': 'form-control'}),
+            'reference_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'lot_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'production_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'expiration_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+        }
+
+
+EditProductDetailFormSet = inlineformset_factory(Auction, ProductDetail, form=EditProductDetailForm, extra=0, can_delete=True)
 
 
 class EditAuctionForm(forms.ModelForm):

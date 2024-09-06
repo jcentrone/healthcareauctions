@@ -57,17 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const currentLength = textarea.value.length;
         charCount.textContent = `${currentLength}/1000 characters used`;
     }
-
-    document.querySelectorAll('textarea.form-control').forEach(function (textarea) {
-        const charCount = textarea.closest('form').querySelector('.form-text');
-
-        textarea.addEventListener('input', function () {
-            updateCharCount(textarea, charCount);
-        });
-
-        // updateCharCount(textarea, charCount);
-    });
-
+    // Function to get additional images
     function getAdditionalImages(auctionId) {
         // Fetch additional images for the modal if needed
         fetch('/api/get-auction-images/' + auctionId + '/')
@@ -101,76 +91,15 @@ document.addEventListener('DOMContentLoaded', function () {
             .catch(error => console.error('Error fetching images:', error));
     }
 
-    function getAdditionalDetails(auctionId) {
-        // Fetch additional product details
-        fetch(`/auction/${auctionId}/product-details/`)
-            .then(response => response.json())
-            .then(data => {
-                let detailsContainer = document.getElementById(`additional-details-${auctionId}`);
-                detailsContainer.innerHTML = ''; // Clear any existing details
+    document.querySelectorAll('textarea.form-control').forEach(function (textarea) {
+        const charCount = textarea.closest('form').querySelector('.form-text');
 
-                if (data.product_details.length > 0) {
-                    console.log('Product Details', data.product_details);
+        textarea.addEventListener('input', function () {
+            updateCharCount(textarea, charCount);
+        });
 
-                    // Check if any item is expired
-                    let containsExpiredItems = false;
-
-                    data.product_details.forEach(function (detail, index) {
-                        // Check if the item is expired
-                        let expirationDate = new Date(detail.expiration_date);
-                        let today = new Date();
-                        if (expirationDate < today) {
-                            containsExpiredItems = true;
-                        }
-
-                        // Create table if it doesn't exist yet
-                        let table = detailsContainer.querySelector('table');
-                        if (!table) {
-                            table = document.createElement('table');
-                            table.classList.add('table', 'table-striped', 'table-bordered');
-                            detailsContainer.appendChild(table);
-
-                            // Create the table header
-                            let thead = document.createElement('thead');
-                            let headerRow = document.createElement('tr');
-                            ['SKU', 'Reference Number', 'Lot Number', 'Expiration Date'].forEach(function (headerText) {
-                                let th = document.createElement('th');
-                                th.scope = "col";
-                                th.textContent = headerText;
-                                headerRow.appendChild(th);
-                            });
-                            thead.appendChild(headerRow);
-                            table.appendChild(thead);
-
-                            // Create the table body
-                            let tbody = document.createElement('tbody');
-                            table.appendChild(tbody);
-                        }
-
-                        // Add a new row to the table for each product detail
-                        let row = document.createElement('tr');
-                        ['sku', 'reference_number', 'lot_number', 'expiration_date'].forEach(function (field) {
-                            let td = document.createElement('td');
-                            td.textContent = detail[field] || 'N/A';  // Show 'N/A' if the field is empty
-                            row.appendChild(td);
-                        });
-
-                        table.querySelector('tbody').appendChild(row);
-                    });
-
-                    // If any item is expired, show the warning message
-                    if (containsExpiredItems) {
-                        let warningMessage = document.createElement('div');
-                        warningMessage.className = 'alert alert-warning';
-                        warningMessage.textContent = 'This listing contains an expired item(s).';
-                        detailsContainer.append(warningMessage);
-                    }
-
-                } else {
-                    detailsContainer.innerHTML = '<p>No additional product details available.</p>';
-                }
-            });
-    }
+        // updateCharCount(textarea, charCount);
+    });
 
     // Modal event listener
     document.querySelectorAll('.listingModal').forEach(function (modal) {
@@ -179,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log(button);
             let auctionId = button.getAttribute('data-auction-id'); // Extract info from data-* attributes
 
-            getAdditionalDetails(auctionId);
+            // getAdditionalDetails(auctionId);
             getAdditionalImages(auctionId);
         });
     });
@@ -198,10 +127,49 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('editAuctionForm{{ listing.id }}');
+
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();  // Prevent the default form submission
+
+        const formData = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',  // This indicates it's an AJAX request
+            },
+        })
+        .then(response => response.json())  // Parse the JSON from the response
+        .then(data => {
+            if (data.success) {
+                // Display a success message
+                alert(data.message);
+                // Refresh the page
+                location.reload();
+            } else {
+                // Display the error messages
+                alert(data.message);
+                console.log('Form Errors:', data.form_errors);
+                console.log('Formset Errors:', data.formset_errors);
+            }
+        })
+        .catch(error => {
+            // Handle errors here
+            alert('An error occurred. Please try again.');
+            console.error('Error:', error);
+        });
+    });
+});
+
+
 function enableEditing(listingId) {
     const form = document.getElementById(`editAuctionForm${listingId}`);
     const inputs = form.querySelectorAll('input[type="text"], input[type="number"], textarea, select');
     const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+    const dates = form.querySelectorAll('input[type="date"]');
 
     // Make text inputs and textareas editable
     inputs.forEach(input => {
@@ -213,6 +181,16 @@ function enableEditing(listingId) {
     // Make checkboxes editable
     checkboxes.forEach(checkbox => {
         checkbox.removeAttribute('disabled');
+    });
+
+    // Make dates editable
+    dates.forEach(date => {
+        date.removeAttribute('readonly');
+        date.classList.add('bg-white');
+        date.style.padding = '.375rem .75rem';
+        date.style.border = '1px solid #dee2e6';
+
+
     });
 
     // Hide the edit button and show the save button
@@ -233,6 +211,7 @@ function disableEditing(listingId) {
     const form = document.getElementById(`editAuctionForm${listingId}`);
     const inputs = form.querySelectorAll('input[type="text"], input[type="number"], textarea, select');
     const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+    const dates = form.querySelectorAll('input[type="date"]');
 
     // Make text inputs and textareas un-editable
     inputs.forEach(input => {
@@ -244,6 +223,14 @@ function disableEditing(listingId) {
     // Make checkboxes un-editable
     checkboxes.forEach(checkbox => {
         checkbox.setAttribute('disabled', 'disabled');
+    });
+
+    // Make dates un-editable
+    dates.forEach(date => {
+        date.setAttribute('readonly', 'readonly');
+        date.classList.remove('bg-white');
+        date.style.padding = '.375rem .75rem';
+        date.style.border = 'none';
     });
 
     // Show the edit button and show the save button
