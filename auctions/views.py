@@ -26,7 +26,7 @@ from django.views.decorators.http import require_POST
 
 from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, ProductDetailFormSet, MessageForm, \
     ShippingMethodForm, ShippingAddressForm, BillingAddressForm, CreditCardForm, ACHForm, ZelleForm, VenmoForm, \
-    PayPalForm, CashAppForm, CustomUserChangeForm, UserAddressForm, OrderNoteForm
+    PayPalForm, CashAppForm, CustomUserChangeForm, UserAddressForm, OrderNoteForm, EditAuctionForm
 from .models import Bid, Category, Image, User, Address, CartItem, Cart, ProductDetail, Message, Order, Payment, \
     OrderItem, Parcel
 from .utils.helpers import update_categories_from_fda
@@ -137,6 +137,9 @@ def dashboard(request):
     The default route which renders a Dashboard page
     """
 
+    # Variables
+    auction_durations = [1, 3, 5, 7, 10]
+
     user = request.user
     # Initialize the filters dictionary
     listing_filters = Q(creator=user)
@@ -174,6 +177,11 @@ def dashboard(request):
     # Apply the filters in one query
     listings = Auction.objects.filter(listing_filters).order_by('-date_created')
 
+    # Add  edit forms to the listings
+    for listing in listings:
+        listing.edit_form = EditAuctionForm(instance=listing)
+
+    # Listing Count
     listing_count = listings.count()
 
     # Orders Filter, add filters to the dictionary based on the parameters
@@ -347,8 +355,42 @@ def dashboard(request):
         'note_forms': note_forms,
         'sub_nav': 'user_details',
         'hold_for_import': hold_for_import,
+        'auction_durations': auction_durations,
 
     })
+
+
+@login_required
+def edit_auction(request, auction_id):
+    auction = get_object_or_404(Auction, id=auction_id)
+    if request.method == 'POST':
+        form = EditAuctionForm(request.POST, instance=auction)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Auction updated successfully.')
+        else:
+            print(form.errors)
+            messages.error(request, 'Please correct the errors below.')
+    return redirect('dashboard')
+
+
+@login_required
+def post_listing(request, auction_id):
+    auction = get_object_or_404(Auction, id=auction_id)
+
+    if request.method == 'POST':
+        form = EditAuctionForm(request.POST, instance=auction)
+        if form.is_valid():
+            form.save()
+            auction.hold_for_import = False
+            auction.active = True
+            auction.save()
+            return JsonResponse({'success': True, 'message': 'Auction updated successfully.'})
+        else:
+            print(form.errors)
+            return JsonResponse({'success': False, 'message': 'Please correct the errors below.'})
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method.'})
 
 
 def register(request):
@@ -579,7 +621,6 @@ def auction_create(request):
         'title': 'Create Listing',
     })
 
-
 @login_required
 @csrf_exempt
 def import_excel(request):
@@ -657,7 +698,6 @@ def import_excel(request):
         'categories': Category.objects.all(),
         'title': 'Create Auction',
     })
-
 
 def active_auctions_view(request, auction_id=None):
     """
@@ -790,13 +830,11 @@ def active_auctions_view(request, auction_id=None):
         'has_active_auctions': Auction.objects.filter(creator=request.user, active=True).exists(),
     })
 
-
 def get_auction_images(request, auction_id):
     auction = get_object_or_404(Auction, id=auction_id)
     images = auction.get_images.all()
     image_urls = [image.image.url for image in images]
     return (JsonResponse({'image_urls': image_urls}))
-
 
 def get_auction_product_details(request, auction_id):
     auction = get_object_or_404(Auction, id=auction_id)
@@ -809,7 +847,6 @@ def get_auction_product_details(request, auction_id):
         'product_details': product_details_list,
         'contains_expired_items': auction.contains_expired_items(),
     })
-
 
 @login_required
 def watchlist_view(request):
@@ -846,7 +883,6 @@ def watchlist_view(request):
         'title': 'Watchlist'
     })
 
-
 # Should be able to remove
 @login_required
 def watchlist_edit(request, auction_id, reverse_method):
@@ -865,7 +901,6 @@ def watchlist_edit(request, auction_id, reverse_method):
         return HttpResponseRedirect(reverse('active_auctions_with_id', kwargs={'auction_id': auction_id}))
     else:
         return HttpResponseRedirect(reverse(reverse_method))
-
 
 # Should be able to remove
 def auction_details_view(request, auction_id):
@@ -893,20 +928,17 @@ def auction_details_view(request, auction_id):
         'title': 'Auction'
     })
 
-
 def privacy_policy(request):
     return render(request, 'privacy_policy.html', {
         'categories': Category.objects.all(),
         'title': 'Privacy Policy'
     })
 
-
 def terms_and_conditions(request):
     return render(request, 'terms_and_conditions.html', {
         'categories': Category.objects.all(),
         'title': 'Terms and Conditions'
     })
-
 
 @login_required
 def auction_bid(request, auction_id):
@@ -937,7 +969,6 @@ def auction_bid(request, auction_id):
             'title': 'Auction'
         })
 
-
 @login_required
 def auction_close(request, auction_id):
     """
@@ -952,7 +983,6 @@ def auction_close(request, auction_id):
 
         messages.success(request, 'Auction successfully closed. The highest bidder is now the winner.')
         return HttpResponseRedirect(f"{reverse('dashboard')}?active_tab=listings")
-
 
 @login_required
 def auction_relist(request, auction_id):
@@ -1013,7 +1043,6 @@ def auction_relist(request, auction_id):
     # Redirect to the new auction's details page or another appropriate view
     return redirect('dashboard')
 
-
 @login_required
 def auction_comment(request, auction_id):
     """
@@ -1026,7 +1055,6 @@ def auction_comment(request, auction_id):
     new_comment.auction = auction
     new_comment.save()
     return HttpResponseRedirect(reverse('auction_details_view', args=[auction_id]))
-
 
 def category_details_view(request, category_name):
     """
@@ -1058,10 +1086,8 @@ def category_details_view(request, category_name):
         'title': category.category_name
     })
 
-
 def barcode_scanner(request):
     return render(request, 'barcode_scanner.html')
-
 
 @csrf_exempt
 def classify_device_view(request):
@@ -1079,13 +1105,11 @@ def classify_device_view(request):
             return JsonResponse({'error': str(e)}, status=500)
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
-
 @login_required
 def download_excel(request):
     filepath = 'static/downloads/sample.xlsx'
     response = FileResponse(open(filepath, 'rb'), as_attachment=True, filename='sample.xlsx')
     return response
-
 
 # ORDER MANAGEMENT
 @login_required
@@ -1246,12 +1270,10 @@ def checkout(request):
         'cart': cart,
     })
 
-
 @login_required
 def order_confirmation(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
     return render(request, 'order_confirmation.html', {'order': order})
-
 
 @login_required
 def add_to_cart(request, auction_id):
@@ -1263,7 +1285,6 @@ def add_to_cart(request, auction_id):
         return redirect('view_cart')
 
     return render(request, 'add_to_cart.html', {'auction': auction})
-
 
 @login_required
 def view_cart(request):
@@ -1281,13 +1302,11 @@ def view_cart(request):
         'watchlist': watchlist,
     })
 
-
 @login_required
 def remove_from_cart(request, item_id):
     cart_item = get_object_or_404(CartItem, id=item_id)
     cart_item.delete()
     return redirect('view_cart')
-
 
 @method_decorator(csrf_exempt, name='dispatch')
 def track_auction_view(request):
@@ -1298,7 +1317,6 @@ def track_auction_view(request):
         AuctionView.objects.create(user=request.user, auction=auction)
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'fail'}, status=400)
-
 
 # MESSAGING
 
@@ -1328,14 +1346,12 @@ def inbox(request):
         'watchlist': watchlist,
     })
 
-
 @login_required
 def message_detail(request, message_id):
     message = get_object_or_404(Message, id=message_id, recipient=request.user)
     message.read = True
     message.save()
     return render(request, 'message_detail.html', {'message': message})
-
 
 @login_required
 def send_message(request, auction_id):
@@ -1355,7 +1371,6 @@ def send_message(request, auction_id):
         form = MessageForm()
     return render(request, 'send_message.html', {'form': form})
 
-
 @login_required
 @require_POST
 def mark_messages_as_read(request, thread_id):
@@ -1364,7 +1379,6 @@ def mark_messages_as_read(request, thread_id):
     if thread:
         thread.get_thread().update(read=True, date_read=timezone.now())
     return JsonResponse({'status': 'success'})
-
 
 @login_required
 def send_reply(request, message_id):
@@ -1381,7 +1395,6 @@ def send_reply(request, message_id):
                 message_type='reply'
             )
     return redirect('inbox')
-
 
 @login_required
 def validate_message(request, message):
@@ -1413,7 +1426,6 @@ def validate_message(request, message):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-
 @login_required
 def send_customer_service_message(request):
     if request.method == 'POST':
@@ -1429,14 +1441,12 @@ def send_customer_service_message(request):
         )
         return redirect('inbox')
 
-
 @login_required
 def archive_message(request, message_id):
     message = Message.objects.get(id=message_id)
     message.archived = True
     message.save()
     return JsonResponse({'status': 'success'})
-
 
 def track_parcel_view(request, parcel_id):
     parcel = get_object_or_404(Parcel, id=parcel_id)
@@ -1452,7 +1462,6 @@ def track_parcel_view(request, parcel_id):
             'status': 'error',
             'message': str(e),
         })
-
 
 @login_required
 def add_order_note(request, order_id):

@@ -76,7 +76,7 @@
                                     data-bs-target="#listings"
                                     type="button" role="tab" aria-controls="listings" aria-selected="false">
                                 <div class="card text-center tab-nav">
-                                    <h5 class="card-header">{{ listing_status|capfirst }} Listings</h5>
+                                    <h5 class="card-header">Listings</h5>
                                     <div class="card-body">
                                         <p class="card-text">{{ listings_count|default:"0" }}</p>
                                     </div>
@@ -599,7 +599,7 @@
                                                 {% if orders.has_previous %}
                                                     <li class='page-item'>
                                                         <a class='page-link'
-                                                           href='?order_page={{ orders.previous_page_number }}'>
+                                                           href='?order_page={{ orders.previous_page_number }}&active_tab=orders&order_status={{ order_status }}&order_date={{ order_date }}'>
                                                             &laquo;
                                                         </a>
                                                     </li>
@@ -616,14 +616,14 @@
                                                     {% else %}
                                                         <li class='page-item'>
                                                             <a class='page-link'
-                                                               href='?order_page={{ i }}'>{{ i }}</a>
+                                                               href='?order_page={{ i }}&active_tab=orders&order_status={{ order_status }}&order_date={{ order_date }}'>{{ i }}</a>
                                                         </li>
                                                     {% endif %}
                                                 {% endfor %}
                                                 {% if orders.has_next %}
                                                     <li class='page-item'>
                                                         <a class='page-link'
-                                                           href='?order_page={{ orders.next_page_number }}'>&raquo;</a>
+                                                           href='?order_page={{ orders.next_page_number }}&active_tab=orders&order_status={{ order_status }}&order_date={{ order_date }}'>&raquo;</a>
                                                     </li>
                                                 {% else %}
                                                     <li class='page-item disabled'>
@@ -953,7 +953,7 @@
                                                 {% if sales.has_previous %}
                                                     <li class='page-item'>
                                                         <a class='page-link'
-                                                           href='?sale_page={{ sales.previous_page_number }}'>
+                                                           href='?sale_page={{ sales.previous_page_number }}&active_tab=sales&sales_status={{ sales_status }}&sales_date={{ sales_date }}'>
                                                             &laquo;
                                                         </a>
                                                     </li>
@@ -969,14 +969,15 @@
                                                         </li>
                                                     {% else %}
                                                         <li class='page-item'>
-                                                            <a class='page-link' href='?sale_page={{ i }}'>{{ i }}</a>
+                                                            <a class='page-link'
+                                                               href='?sale_page={{ i }}&active_tab=sales&sales_status={{ sales_status }}&sales_date={{ sales_date }}'>{{ i }}</a>
                                                         </li>
                                                     {% endif %}
                                                 {% endfor %}
                                                 {% if sales.has_next %}
                                                     <li class='page-item'>
                                                         <a class='page-link'
-                                                           href='?sale_page={{ sales.next_page_number }}'>&raquo;</a>
+                                                           href='?sale_page={{ sales.next_page_number }}&active_tab=sales&sales_status={{ sales_status }}&sales_date={{ sales_date }}'>&raquo;</a>
                                                     </li>
                                                 {% else %}
                                                     <li class='page-item disabled'>
@@ -1120,6 +1121,7 @@
                                                         {% if listing_status == 'inactive' %}selected{% endif %}>
                                                     Inactive
                                                 </option>
+
                                             </select>
                                             <select name="listing_type" class="form-select me-2">
                                                 <option value="">Listings Type</option>
@@ -1134,6 +1136,19 @@
                                             </select>
                                             <input type="date" name="listing_date" class="form-control me-2"
                                                    value="{{ request.GET.date }}">
+
+                                            <select name="hold_for_import" class="form-select me-2">
+                                                <option value="False"
+                                                        {% if hold_for_import == False or hold_for_import == '' %}
+                                                        selected{% endif %}>
+                                                    Not On Hold
+                                                </option>
+
+                                                <option value="True"
+                                                        {% if hold_for_import %}selected{% endif %}>
+                                                    On Hold
+                                                </option>
+                                            </select>
                                             <button type="submit" class="btn btn-primary">Filter</button>
                                             {% if listing_status != 'All' %}
                                                 <a href="{% url 'dashboard' %}?active_tab=listings&listing_status=&listing_date="
@@ -1188,13 +1203,14 @@
                                                             {% if listing.auction_type == 'Auction' %}For
                                                                 Auction{% else %}For Sale{% endif %} </a>
                                                     {% endif %}
-                                                
-                                                    {% if hold_for_import %}
-                                                        <a href="{% url 'auction_relist' listing.id %}"
-                                                           class="btn btn-warning btn-sm w-100">List
-                                                            {% if listing.auction_type == 'Auction' %}For
-                                                                Auction{% else %}For Sale{% endif %} </a>
 
+                                                    {% if hold_for_import %}
+
+                                                        <button type="button" class="btn btn-warning btn-sm w-100"
+                                                                onclick="confirmListing({{ listing.id }}, '{{ listing.auction_type }}, {{ active_tab }}, {{ listing_status }}, {{ listing_type }}, {{ listing_date }}, {{ hold_for_import }}')">
+                                                            List {% if listing.auction_type == 'Auction' %}For
+                                                            Auction{% else %}For Sale{% endif %}
+                                                        </button>
                                                     {% endif %}
                                                 </div>
                                             </div>
@@ -1203,116 +1219,320 @@
                                             <div class="modal fade listingModal" id="listingModal{{ listing.id }}"
                                                  tabindex="-1"
                                                  aria-labelledby="listingModalLabel{{ listing.id }}" aria-hidden="true">
-                                                <div class="modal-dialog modal-lg">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="listingModalLabel{{ listing.id }}">
-                                                                {{ listing.title }} - Listing Details</h5>
-                                                            <button type="button" class="btn-close"
-                                                                    data-bs-dismiss="modal"
-                                                                    aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <!-- Listing Progress Bar -->
-                                                            <div class="progress mb-4">
-                                                                {% if listing.active %}
-                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
-                                                                         role="progressbar"
-                                                                         style="width: 100%;" aria-valuenow="100"
-                                                                         aria-valuemin="0"
-                                                                         aria-valuemax="100">
-                                                                        Active
-                                                                    </div>
-                                                                {% else %}
-                                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-secondary"
-                                                                         role="progressbar"
-                                                                         style="width: 100%;" aria-valuenow="100"
-                                                                         aria-valuemin="0"
-                                                                         aria-valuemax="100">
-                                                                        Inactive
-                                                                    </div>
-                                                                {% endif %}
-                                                            </div>
-                                                            <div class="card-body">
-                                                                <!-- Full auction details go here -->
-                                                                <div class="row">
-                                                                    <h3>Auction Details</h3>
-                                                                    <div class="">
-                                                                        <div class='auction-details'>
+                                                <form id="editAuctionForm{{ listing.id }}" method="post"
+                                                      action="{% url 'edit_auction' listing.id %}">
+                                                    {% csrf_token %}
+                                                    <!-- Hidden Inputs -->
+                                                    <input class="form-control readonly-input"
+                                                           type="text"
+                                                           name="{{ listing.edit_form.auction_type.html_name }}"
+                                                           id="{{ listing.edit_form.auction_type.id_for_label }}"
+                                                           value="{{ listing.edit_form.auction_type.value }}"
+                                                           readonly hidden>
 
-                                                                            <p>{{ listing.description }}</p>
+                                                    <div class="modal-dialog modal-lg">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                {#                                                                <h5 class="modal-title"#}
+                                                                {#                                                                    id="listingModalLabel{{ listing.id }}">#}
+                                                                {#                                                                    {{ listing.title }} - Listing Details#}
+                                                                {#                                                                </h5>#}
+                                                                <h5 class="modal-title w-100"
+                                                                    id="listingModalLabel{{ listing.id }}">
+                                                                    <input class="form-control readonly-input fs-5 w-100"
+                                                                           type="text"
+                                                                           name="{{ listing.edit_form.title.html_name }}"
+                                                                           id="{{ listing.edit_form.title.id_for_label }}"
+                                                                           value="{{ listing.edit_form.title.value }}"
+                                                                           readonly>
+                                                                </h5>
+                                                                <button type="button" class="btn-close"
+                                                                        data-bs-dismiss="modal"
+                                                                        aria-label="Close"></button>
+                                                            </div>
+
+                                                            <div class="modal-body p-0">
+                                                                <!-- Listing Progress Bar -->
+                                                                <div class="d-flex gap-2 align-items-center border-bottom p-3">
+                                                                    <strong>Progress:</strong>
+                                                                    <div class="progress w-100">
+                                                                        {% if listing.active %}
+                                                                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                                                                                 role="progressbar"
+                                                                                 style="width: 100%;"
+                                                                                 aria-valuenow="100"
+                                                                                 aria-valuemin="0"
+                                                                                 aria-valuemax="100">
+                                                                                Active
+                                                                            </div>
+                                                                        {% elif listing.hold_for_import %}
+                                                                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning"
+                                                                                 role="progressbar"
+                                                                                 style="width: 100%;"
+                                                                                 aria-valuenow="100"
+                                                                                 aria-valuemin="0"
+                                                                                 aria-valuemax="100">
+                                                                                On Hold
+                                                                            </div>
+                                                                        {% else %}
+                                                                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-secondary"
+                                                                                 role="progressbar"
+                                                                                 style="width: 100%;"
+                                                                                 aria-valuenow="100"
+                                                                                 aria-valuemin="0"
+                                                                                 aria-valuemax="100">
+                                                                                Inactive
+                                                                            </div>
+                                                                        {% endif %}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <!-- Full auction details go here -->
+
+                                                                    <div class="row">
+                                                                        <div class="col">
+                                                                            <h3 class="border-bottom pb-2 mb-2">
+                                                                                {% if listing.auction_type == 'Auction' %}
+                                                                                    Auction{% else %}Sale{% endif %}
+                                                                                Details</h3>
+                                                                            {% if listing.auction_type == 'Auction' %}
+                                                                                <div class="d-flex align-items-center gap-2 mt-2">
+                                                                                    <strong>Auction Duration:</strong>
+                                                                                    <select class="form-control readonly-input"
+                                                                                            name="{{ listing.edit_form.auction_duration.html_name }}"
+                                                                                            id="{{ listing.edit_form.auction_duration.id_for_label }}"
+                                                                                            readonly>
+                                                                                        {% for day in auction_durations %}
+                                                                                            <option value="{{ day }}"
+                                                                                                    {% if listing.edit_form.auction_duration.value == day|stringformat:"d" %}selected{% endif %}>
+                                                                                                {{ day }} Days
+                                                                                            </option>
+                                                                                        {% endfor %}
+                                                                                    </select>
+                                                                                    <div class="text-muted">{{ listing.formatted_time_remaining }}
+                                                                                        Remaining
+                                                                                    </div>
+                                                                                </div>
+                                                                            {% else %}
+                                                                                <!-- Hidden Inputs -->
+                                                                                <input class="form-control readonly-input"
+                                                                                       type="text"
+                                                                                       name="{{ listing.edit_form.auction_duration.html_name }}"
+                                                                                       id="{{ listing.edit_form.auction_duration.id_for_label }}"
+                                                                                       value="{{ listing.edit_form.auction_duration.value }}"
+                                                                                       readonly hidden>
+
+                                                                            {% endif %}
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="row">
+
+                                                                        <div class="col">
+
+
+                                                                            <!-- Description -->
+                                                                            <div class="d-flex flex-column align-items-start gap-2 mt-2">
+                                                                                <strong>Description:</strong>
+                                                                                <textarea
+                                                                                        class="form-control readonly-input"
+                                                                                        type="text"
+                                                                                        name="{{ listing.edit_form.description.html_name }}"
+                                                                                        id="{{ listing.edit_form.description.id_for_label }}"
+
+                                                                                        readonly>{{ listing.edit_form.description.value }}</textarea>
+                                                                            </div>
                                                                             <div class="row">
                                                                                 <div class="col">
-                                                                                    <p>
-                                                                                        <strong>Manufacturer:</strong> {{ listing.manufacturer }}
-                                                                                    </p>
-                                                                                    <p>
-                                                                                        <strong>Category:</strong> {{ listing.category }}
-                                                                                    </p>
-                                                                                    <p>
-                                                                                        <strong>Quantity:</strong> {{ listing.quantity_available }}
-                                                                                    </p>
+                                                                                    <div class="listing-grid">
+                                                                                        <strong>Manufacturer:</strong>
+                                                                                        <input class="form-control readonly-input"
+                                                                                               type="text"
+                                                                                               name="{{ listing.edit_form.manufacturer.html_name }}"
+                                                                                               id="{{ listing.edit_form.manufacturer.id_for_label }}"
+                                                                                               value="{{ listing.edit_form.manufacturer.value }}"
+                                                                                               readonly>
+                                                                                    </div>
+                                                                                    <div class="listing-grid">
+                                                                                        <strong>Category:</strong>
+                                                                                        <select class="form-control readonly-input"
+                                                                                                name="{{ listing.edit_form.category.name }}"
+                                                                                                id="{{ listing.edit_form.category.id_for_label }}">
+                                                                                            {% for category in listing.edit_form.category.field.queryset %}
+                                                                                                <option value="{{ category.id }}"
+                                                                                                        {% if listing.edit_form.category.value == category.id %}selected{% endif %}>
+                                                                                                    {{ category.category_name }}
+                                                                                                </option>
+                                                                                            {% endfor %}
+                                                                                        </select>
+                                                                                    </div>
+                                                                                    <div class="listing-grid">
+                                                                                        <strong>Quantity:</strong>
+                                                                                        <input class="form-control readonly-input"
+                                                                                               type="number"
+                                                                                               name="{{ listing.edit_form.quantity_available.html_name }}"
+                                                                                               id="{{ listing.edit_form.quantity_available.id_for_label }}"
+                                                                                               value="{{ listing.edit_form.quantity_available.value }}"
+                                                                                               readonly>
+                                                                                    </div>
                                                                                 </div>
                                                                                 <div class="col">
                                                                                     {% if listing.auction_type == 'Auction' %}
-                                                                                        <p>
+                                                                                        <div class="listing-grid text-nowrap">
                                                                                             {% if listing.current_bid %}
                                                                                                 <strong>Current
                                                                                                     Bid:</strong>
                                                                                                 $
-                                                                                                {{ listing.current_bid }}
+                                                                                                <input class="form-control readonly-input"
+                                                                                                       type="text"
+                                                                                                       name="{{ listing.edit_form.current_bid.html_name }}"
+                                                                                                       id="{{ listing.edit_form.current_bid.id_for_label }}"
+                                                                                                       value="{{ listing.edit_form.current_bid.value }}"
+                                                                                                       readonly>
                                                                                             {% else %}
                                                                                                 <strong>Starting
                                                                                                     Bid:</strong>
                                                                                                 $
-                                                                                                {{ listing.starting_bid }}
+                                                                                                <input class="form-control readonly-input"
+                                                                                                       type="text"
+                                                                                                       name="{{ listing.edit_form.starting_bid.html_name }}"
+                                                                                                       id="{{ listing.edit_form.starting_bid.id_for_label }}"
+                                                                                                       value="{{ listing.edit_form.starting_bid.value }}"
+                                                                                                       readonly>
                                                                                             {% endif %}
-                                                                                        </p>
-                                                                                        <p><strong>Reserve
-                                                                                            Bid:</strong>
+                                                                                        </div>
+                                                                                        <div class="listing-grid text-nowrap">
+                                                                                            <strong>Reserve
+                                                                                                Bid:</strong>
+                                                                                            $
+                                                                                            <input class="form-control readonly-input"
+                                                                                                   type="text"
+                                                                                                   name="{{ listing.edit_form.reserve_bid.html_name }}"
+                                                                                                   id="{{ listing.edit_form.reserve_bid.id_for_label }}"
+                                                                                                   value="{{ listing.edit_form.reserve_bid.value }}"
+                                                                                                   aria-label=""
+                                                                                                   readonly>
+
                                                                                             {% if listing.current_bid >= listing.reserve_bid %}
-                                                                                                Met
+                                                                                                <div>Met</div>
                                                                                             {% else %}
-                                                                                                Not Met
+                                                                                                <div>Not Met</div>
                                                                                             {% endif %}
-                                                                                        </p>
+
+                                                                                        </div>
+
                                                                                     {% else %}
-                                                                                        <p><strong>Get it
-                                                                                            Now:</strong>
-                                                                                            ${{ listing.buyItNowPrice }}
-                                                                                        </p>
+                                                                                        <div class="listing-grid text-nowrap">
+                                                                                            <strong>Get it
+                                                                                                Now:</strong>
+                                                                                            <input class="form-control readonly-input"
+                                                                                                   type="text"
+                                                                                                   name="{{ listing.edit_form.buyItNowPrice.html_name }}"
+                                                                                                   id="{{ listing.edit_form.buyItNowPrice.id_for_label }}"
+                                                                                                   value="{{ listing.edit_form.buyItNowPrice.value }}"
+                                                                                                   readonly>
+                                                                                        </div>
                                                                                     {% endif %}
                                                                                 </div>
                                                                             </div>
                                                                         </div>
                                                                     </div>
 
-                                                                </div>
-                                                                <h3 class="mt-3">Additional Details</h3>
-                                                                <div class="additional-details"
-                                                                     id="additional-details-{{ listing.id }}">
+
+                                                                    <div class="row">
+                                                                        <h3 class="mt-3">Additional Details</h3>
+                                                                        <div class="additional-details"
+                                                                             id="additional-details-{{ listing.id }}">
+                                                                            <!-- Additional details fields can be added here if needed -->
+                                                                        </div>
+                                                                    </div>
+                                                                    <!-- Additional Details added by FDA -->
+                                                                    <div class="row additional-listing-meta"
+                                                                         id="additional-listing-meta-{{ listing.id }}">
+                                                                        <div class="col-md-4 mb-3">
+                                                                            <label for="{{ listing.edit_form.package_type.id_for_label }}"
+                                                                                   class="form-label"><strong>Package
+                                                                                Type:</strong></label>
+                                                                            <input class="form-control readonly-input"
+                                                                                   type="text"
+                                                                                   name="{{ listing.edit_form.package_type.html_name }}"
+                                                                                   id="{{ listing.edit_form.package_type.id_for_label }}"
+                                                                                   value="{{ listing.edit_form.package_type.value }}"
+                                                                                   readonly>
+                                                                        </div>
+                                                                        <div class="col-md-4 mb-3">
+                                                                            <label for="{{ listing.edit_form.implantable.id_for_label }}"
+                                                                                   class="form-label">
+                                                                                <strong>Implantable:</strong>
+                                                                            </label>
+                                                                            <div class="form-check d-flex align-items-center gap-2">
+                                                                                <input class="form-check-input readonly-input"
+                                                                                       type="checkbox"
+                                                                                       name="{{ listing.edit_form.implantable.html_name }}"
+                                                                                       id="{{ listing.edit_form.implantable.id_for_label }}"
+                                                                                       {% if listing.edit_form.implantable.value %}checked{% endif %}
+                                                                                       disabled>
+                                                                                <label class=""
+                                                                                       for="{{ listing.edit_form.implantable.id_for_label }}">
+                                                                                    Implantable
+                                                                                </label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col-md-4 mb-3">
+                                                                            <label for="{{ listing.edit_form.deviceSterile.id_for_label }}"
+                                                                                   class="form-label">
+                                                                                <strong>Sterile:</strong>
+                                                                            </label>
+                                                                            <div class="form-check d-flex align-items-center gap-2">
+                                                                                <input class="form-check-input readonly-input"
+                                                                                       type="checkbox"
+                                                                                       name="{{ listing.edit_form.deviceSterile.html_name }}"
+                                                                                       id="{{ listing.edit_form.deviceSterile.id_for_label }}"
+                                                                                       {% if listing.edit_form.deviceSterile.value %}checked{% endif %}
+                                                                                       disabled>
+                                                                                <label class=""
+                                                                                       for="{{ listing.edit_form.deviceSterile.id_for_label }}">
+                                                                                    Sterile
+                                                                                </label>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <h3 class="mt-3">Images</h3>
+                                                                    <div class="additional-images"
+                                                                         id="additional-images-{{ listing.id }}">
+                                                                        <!-- Images will be loaded here via AJAX -->
+                                                                    </div>
 
                                                                 </div>
-
-
-                                                                <h3 class="mt-3">Images</h3>
-                                                                <div class="additional-images"
-                                                                     id="additional-images-{{ listing.id }}">
-                                                                    <!-- Images will be loaded here via AJAX -->
-                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer bg-light">
+                                                                <button type="button" class="btn btn-secondary"
+                                                                        data-bs-dismiss="modal"
+                                                                        onclick="disableEditing({{ listing.id }})">
+                                                                    Close
+                                                                </button>
+                                                                {% if listing.hold_for_import %}
+                                                                    <button type="button" class="btn btn-primary"
+                                                                            id="editButton{{ listing.id }}"
+                                                                            onclick="enableEditing({{ listing.id }})">
+                                                                        Edit
+                                                                    </button>
+                                                                {% endif %}
+                                                                <button type="submit"
+                                                                        form="editAuctionForm{{ listing.id }}"
+                                                                        class="btn btn-success"
+                                                                        id="saveButton{{ listing.id }}"
+                                                                        style="display: none;">Save
+                                                                </button>
                                                             </div>
 
                                                         </div>
-                                                        <div class="modal-footer bg-light">
-                                                            <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">
-                                                                Close
-                                                            </button>
-                                                        </div>
                                                     </div>
-                                                </div>
+                                                </form>
                                             </div>
+
+
 
                                         {% empty %}
                                             <tr>
@@ -1328,7 +1548,7 @@
                                                 {% if listings.has_previous %}
                                                     <li class='page-item'>
                                                         <a class='page-link'
-                                                           href='?sale_page={{ listings.previous_page_number }}'>
+                                                           href='?listings_page={{ listings.previous_page_number }}&active_tab=listings&listing_status={{ listing_status }}&listing_type={{ listing_type }}&listing_date={{ listing_date }}&hold_for_import{{ hold_for_import }}'>
                                                             &laquo;
                                                         </a>
                                                     </li>
@@ -1344,14 +1564,15 @@
                                                         </li>
                                                     {% else %}
                                                         <li class='page-item'>
-                                                            <a class='page-link' href='?sale_page={{ i }}'>{{ i }}</a>
+                                                            <a class='page-link'
+                                                               href='?listings_page={{ i }}&active_tab=listings&listing_status={{ listing_status }}&listing_type={{ listing_type }}&listing_date={{ listing_date }}&hold_for_import{{ hold_for_import }}'>{{ i }}</a>
                                                         </li>
                                                     {% endif %}
                                                 {% endfor %}
                                                 {% if listings.has_next %}
                                                     <li class='page-item'>
                                                         <a class='page-link'
-                                                           href='?sale_page={{ listings.next_page_number }}'>&raquo;</a>
+                                                           href='?listings_page={{ listings.next_page_number }}&active_tab=listings&listing_status={{ listing_status }}&listing_type={{ listing_type }}&listing_date={{ listing_date }}&hold_for_import={{ hold_for_import }}'>&raquo;</a>
                                                     </li>
                                                 {% else %}
                                                     <li class='page-item disabled'>
@@ -1778,6 +1999,7 @@
     </div>
 
     <link href='{% static "css/dashboard.css" %}' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{% static 'js/dashboard.js' %}"></script>
 

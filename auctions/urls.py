@@ -52,5 +52,7 @@ urlpatterns = [
          auth_views.PasswordChangeDoneView.as_view(template_name='registration/password_change_done.html'),
          name='password_change_done'),
     path('order/<int:order_id>/add-note/', views.add_order_note, name='add_order_note'),
+    path('edit-auction/<int:auction_id>/', views.edit_auction, name='edit_auction'),
+    path('post_listing/<int:auction_id>/', views.post_listing, name='post_listing'),
 
 ]

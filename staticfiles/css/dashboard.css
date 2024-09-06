@@ -76,3 +76,31 @@
 select{
     width: fit-content !important;
 }
+
+/* Default read-only styling */
+.readonly-input {
+    border: none;
+    background-color: transparent;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+    cursor: default;
+}
+
+/* Add hover effect to show users that the field can be edited */
+.editable-input:hover {
+    border: 1px solid #ced4da;
+    background-color: #fff;
+}
+
+.additional-listing-meta{
+    display: none;
+}
+.listing-grid{
+    display: grid;
+    grid-template-columns: 125px 1fr;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+}

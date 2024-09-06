@@ -301,3 +301,21 @@ class OrderNoteForm(forms.ModelForm):
         super(OrderNoteForm, self).__init__(*args, **kwargs)
         # Adding Bootstrap class to labels if needed
         self.fields['order_note'].label = f'<label class="form-label">{self.fields["order_note"].label}</label>'
+
+
+class EditAuctionForm(forms.ModelForm):
+    class Meta:
+        model = Auction
+        fields = [
+            'title', 'description', 'category', 'quantity_available',
+            'starting_bid', 'reserve_bid', 'buyItNowPrice', 'manufacturer',
+            'auction_type', 'implantable', 'deviceSterile', 'package_type',
+            'auction_duration'
+        ]
+
+        widgets = {
+            'category': forms.Select(attrs={'class': 'form-control'}),
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control'}),
+            # Add other fields with their respective widgets
+        }

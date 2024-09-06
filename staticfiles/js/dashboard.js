@@ -195,4 +195,135 @@ document.addEventListener('DOMContentLoaded', function () {
             history.replaceState(null, '', url); // Update the URL without reloading the page
         });
     });
+
 });
+
+function enableEditing(listingId) {
+    const form = document.getElementById(`editAuctionForm${listingId}`);
+    const inputs = form.querySelectorAll('input[type="text"], input[type="number"], textarea, select');
+    const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+
+    // Make text inputs and textareas editable
+    inputs.forEach(input => {
+        input.removeAttribute('readonly');
+        input.classList.remove('readonly-input');
+        input.classList.add('editable-input');
+    });
+
+    // Make checkboxes editable
+    checkboxes.forEach(checkbox => {
+        checkbox.removeAttribute('disabled');
+    });
+
+    // Hide the edit button and show the save button
+    document.getElementById(`editButton${listingId}`).style.display = 'none';
+    document.getElementById(`saveButton${listingId}`).style.display = 'block';
+
+    // Show the additional listing meta row
+    const additionalMetaRow = document.getElementById(`additional-listing-meta-${listingId}`);
+    if (additionalMetaRow) {
+        console.log(`Showing additional meta for listing ${listingId}`);
+        additionalMetaRow.style.display = 'flex';
+    } else {
+        console.log(`Could not find additional meta for listing ${listingId}`);
+    }
+}
+
+function disableEditing(listingId) {
+    const form = document.getElementById(`editAuctionForm${listingId}`);
+    const inputs = form.querySelectorAll('input[type="text"], input[type="number"], textarea, select');
+    const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+
+    // Make text inputs and textareas un-editable
+    inputs.forEach(input => {
+        input.setAttribute('readonly', 'readonly');
+        input.classList.add('readonly-input');
+        input.classList.remove('editable-input');
+    });
+
+    // Make checkboxes un-editable
+    checkboxes.forEach(checkbox => {
+        checkbox.setAttribute('disabled', 'disabled');
+    });
+
+    // Show the edit button and show the save button
+    document.getElementById(`editButton${listingId}`).style.display = 'block';
+    document.getElementById(`saveButton${listingId}`).style.display = 'none';
+
+    // Hide the additional listing meta row
+    const additionalMetaRow = document.getElementById(`additional-listing-meta-${listingId}`);
+    if (additionalMetaRow) {
+        console.log(`Showing additional meta for listing ${listingId}`);
+        additionalMetaRow.style.display = 'none';
+    } else {
+        console.log(`Could not find additional meta for listing ${listingId}`);
+    }
+}
+
+function confirmListing(listingId) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'Do you want to list this item?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, list it!',
+        cancelButtonText: 'No, cancel!',
+        customClass: {
+            confirmButton: 'btn btn-success me-1',
+            cancelButton: 'btn btn-danger ms-1'
+        },
+        buttonsStyling: false
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Serialize the form data
+            let formData = new FormData(document.querySelector(`#editAuctionForm${listingId}`));
+
+            // Make an AJAX request to the server
+            $.ajax({
+                url: `/post_listing/${listingId}/`,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    if (response.success) {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: response.message,
+                            icon: 'success',
+                            customClass: {
+                                confirmButton: 'btn btn-success'
+                            },
+                            buttonsStyling: false
+                        }).then(() => {
+                            // Optionally, reload the page or update the UI
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: response.message,
+                            icon: 'error',
+                            customClass: {
+                                confirmButton: 'btn btn-danger'
+                            },
+                            buttonsStyling: false
+                        });
+                    }
+                },
+                error: function () {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Something went wrong. Please try again.',
+                        icon: 'error',
+                        customClass: {
+                            confirmButton: 'btn btn-danger'
+                        },
+                        buttonsStyling: false
+                    });
+                }
+            });
+        }
+    });
+}
+
