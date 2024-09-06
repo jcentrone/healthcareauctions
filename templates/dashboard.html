@@ -1181,9 +1181,17 @@
                                                         <a href="{% url 'auction_close' listing.id %}"
                                                            class="btn btn-danger btn-sm w-100 mb-2">Close Listing
                                                         </a>
-                                                    {% else %}
+                                                    {% endif %}
+                                                    {% if listing_status == 'active' and hold_for_import == 'False' %}
                                                         <a href="{% url 'auction_relist' listing.id %}"
                                                            class="btn btn-primary btn-sm w-100">Relist
+                                                            {% if listing.auction_type == 'Auction' %}For
+                                                                Auction{% else %}For Sale{% endif %} </a>
+                                                    {% endif %}
+                                                
+                                                    {% if hold_for_import %}
+                                                        <a href="{% url 'auction_relist' listing.id %}"
+                                                           class="btn btn-warning btn-sm w-100">List
                                                             {% if listing.auction_type == 'Auction' %}For
                                                                 Auction{% else %}For Sale{% endif %} </a>
 

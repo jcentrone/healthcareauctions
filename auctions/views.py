@@ -137,16 +137,73 @@ def dashboard(request):
     The default route which renders a Dashboard page
     """
 
-    # Get all bids made by the user
-    bids = Bid.objects.filter(user=request.user)
+    user = request.user
+    # Initialize the filters dictionary
+    listing_filters = Q(creator=user)
+    order_filters = Q(user=user)
+    sales_filters = Q(user=user)
+    bid_filters = Q(creator=user)
 
-    # Get auction count where the user is the creator
-    auction_count = Auction.objects.filter(creator=request.user, active=True).count()
+    # Get filtering parameters for each tab
+    order_status_filter = request.GET.get('order_status')
+    order_date_filter = request.GET.get('order_date')
+    sales_status_filter = request.GET.get('sales_status')
+    sales_date_filter = request.GET.get('sales_date')
+    listing_status_filter = request.GET.get('listing_status')
+    listing_type_filter = request.GET.get('listing_type')
+    listing_date_filter = request.GET.get('listing_date')
+    bid_status_filter = request.GET.get('bid_status')
+    hold_for_import = request.GET.get('hold_for_import', 'False').lower() == 'true'
+    active_tab = request.GET.get('active_tab', 'orders')
 
-    # Get watchlist items
-    watchlist = request.user.watchlist.all() if request.user.is_authenticated else Auction.objects.none()
+    # Filters
 
-    # Ensure auctions_with_user_bids is a QuerySet
+    # Listings Filter, add filters to the dictionary based on the parameters
+    if listing_status_filter:
+        listing_filters &= Q(active=(listing_status_filter == 'active'))
+
+    if listing_type_filter:
+        listing_filters &= Q(auction_type=listing_type_filter)
+
+    if listing_date_filter:
+        listing_filters &= Q(date_created__date=listing_date_filter)
+
+    if hold_for_import:
+        listing_filters &= Q(hold_for_import=True)
+
+    # Apply the filters in one query
+    listings = Auction.objects.filter(listing_filters).order_by('-date_created')
+
+    listing_count = listings.count()
+
+    # Orders Filter, add filters to the dictionary based on the parameters
+    if order_status_filter:
+        order_filters &= Q(status=order_status_filter)
+        order_status = order_status_filter
+    else:
+        order_status = 'All'
+
+    if order_date_filter:
+        order_filters &= Q(created_at__date=order_date_filter)
+
+    # Apply the filters in one query
+    orders = Order.objects.filter(order_filters).order_by('-created_at')
+
+    # Sales Filter, add filters to the dictionary based on the parameters
+    if sales_status_filter:
+        sales_filters &= Q(status=sales_status_filter)
+        sales_status = sales_status_filter
+    else:
+        sales_status = 'All'
+    if sales_date_filter:
+        sales_filters = Q(created_at__date=sales_date_filter)
+
+    # Apply the filters in one query
+    sales = Order.objects.filter(sales_filters).order_by('-created_at')
+
+    # Bids Filter, add filters to the dictionary based on the parameters
+    # Get the auctions with user bids
+    bids = Bid.objects.filter(user=user)
     auctions_with_user_bids = Auction.objects.filter(
         bid__user=request.user,
         active=True
@@ -163,66 +220,6 @@ def dashboard(request):
         )
     ).distinct()
 
-    # Filter orders by status and date
-    orders = Order.objects.filter(user=request.user).order_by('-created_at')
-    sales = Order.objects.filter(auction__creator=request.user).order_by('-created_at')
-    listings = Auction.objects.filter(creator=request.user).order_by('-date_created')
-
-    # Get filtering parameters for each tab
-    order_status_filter = request.GET.get('order_status')
-    order_date_filter = request.GET.get('order_date')
-    sales_status_filter = request.GET.get('sales_status')
-    sales_date_filter = request.GET.get('sales_date')
-    listing_status_filter = request.GET.get('listing_status')
-    listing_type_filter = request.GET.get('listing_type')
-    listing_date_filter = request.GET.get('listing_date')
-    bid_status_filter = request.GET.get('bid_status')
-    hold_for_import = request.GET.get('hold_for_import', 'False').lower() == 'true'
-    # Filter orders
-    if order_status_filter:
-        orders = orders.filter(status=order_status_filter)
-        order_status = order_status_filter
-    else:
-        order_status = 'All'
-    if order_date_filter:
-        orders = orders.filter(created_at__date=order_date_filter)
-
-    # Filter sales
-    if sales_status_filter:
-        sales = sales.filter(status=sales_status_filter)
-        sales_status = sales_status_filter
-    else:
-        sales_status = 'All'
-    if sales_date_filter:
-        sales = sales.filter(created_at__date=sales_date_filter)
-
-    # Filter listings
-    if hold_for_import:
-        listings = listings.filter(hold_for_import=True)
-
-    if listing_status_filter:
-        if listing_status_filter == 'active':
-            listings = listings.filter(active=True)
-        else:
-            listings = listings.filter(active=False)
-
-        listing_status = listing_status_filter
-    else:
-        listing_status = 'All'
-
-    if listing_type_filter:
-        listings = listings.filter(auction_type=listing_type_filter)
-        listing_type = listing_type_filter
-    else:
-        listing_type = 'All'
-
-    if listing_date_filter:
-        listings = listings.filter(date_created__date=listing_date_filter)
-
-    listing_count = listings.count()
-
-
-    # Filter bids
     if bid_status_filter:
         bid_status = bid_status_filter
         if bid_status_filter == 'highest':
@@ -234,7 +231,13 @@ def dashboard(request):
         bid_status = 'All'
 
     # Count of all auctions the user has bid on
-    total_auctions_with_bids_count = auctions_with_user_bids.count()
+    total_auctions_with_user_bids_count = auctions_with_user_bids.count()
+
+    # Get auction count where the user is the creator
+    auction_count = Auction.objects.filter(creator=request.user, active=True).count()
+
+    # Get watchlist items
+    watchlist = request.user.watchlist.all() if request.user.is_authenticated else Auction.objects.none()
 
     # Paginate each result set individually
     auction_page = request.GET.get('auction_page', 1)
@@ -275,14 +278,8 @@ def dashboard(request):
     except EmptyPage:
         listings = listings_paginator.page(listings_paginator.num_pages)
 
-    # Determine the active tab
-    active_tab = request.GET.get('active_tab', 'orders')
-
-    # Handle settings and associated forms saving
-    user = request.user
     # Handle loading the existing order notes and form
     note_forms = {}
-    message_forms = {}
 
     for order in orders:
         note_forms[order.id] = OrderNoteForm(initial={'order_note': order.order_note})
@@ -327,11 +324,11 @@ def dashboard(request):
         'categories': Category.objects.all(),
         'listings': listings,
         'listings_count': listing_count,
-        'listing_status': listing_status,
-        'listing_type': listing_type,
+        'listing_status': listing_type_filter,
+        'listing_type': listing_type_filter,
         'listing_date_filter': listing_date_filter,
         'auctions': auctions_with_user_bids,
-        'auction_count': total_auctions_with_bids_count,
+        'auction_count': total_auctions_with_user_bids_count,
         'watchlist_count': watchlist.count(),
         'bids_count': bids.count(),
         'bid_status': bid_status,
@@ -348,7 +345,6 @@ def dashboard(request):
         'shipping_form': shipping_form,
         'password_form': password_form,
         'note_forms': note_forms,
-        # 'message_forms': message_forms,
         'sub_nav': 'user_details',
         'hold_for_import': hold_for_import,
 
@@ -663,7 +659,6 @@ def import_excel(request):
     })
 
 
-
 def active_auctions_view(request, auction_id=None):
     """
     Renders a page that displays all of the currently active auction listings.
@@ -942,6 +937,7 @@ def auction_bid(request, auction_id):
             'title': 'Auction'
         })
 
+
 @login_required
 def auction_close(request, auction_id):
     """
@@ -956,6 +952,7 @@ def auction_close(request, auction_id):
 
         messages.success(request, 'Auction successfully closed. The highest bidder is now the winner.')
         return HttpResponseRedirect(f"{reverse('dashboard')}?active_tab=listings")
+
 
 @login_required
 def auction_relist(request, auction_id):
@@ -1015,6 +1012,7 @@ def auction_relist(request, auction_id):
 
     # Redirect to the new auction's details page or another appropriate view
     return redirect('dashboard')
+
 
 @login_required
 def auction_comment(request, auction_id):
