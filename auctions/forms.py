@@ -217,7 +217,7 @@ class ShippingAccountsForm(forms.ModelForm):
         fields = ['carrier_name', 'carrier_account_number']
         widgets = {
             'carrier_name': forms.Select(attrs={'class': 'form-control required'}),
-            'carrier_account_number': forms.TextInput(attrs={'class': 'form-control required', 'placeholder': 'Enter your account number'}),
+            'carrier_account_number': forms.TextInput(attrs={'class': 'form-control required text-uppercase', 'placeholder': 'Enter your account number'}),
         }
         labels = {
             'carrier_name': 'Carrier Name',

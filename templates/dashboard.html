@@ -2103,7 +2103,7 @@
                                                    name="{{ shipping_account_form.carrier_account_number.name }}"
                                                    id="{{ shipping_account_form.carrier_account_number.id_for_label }}"
                                                    value="{{ shipping_account_form.carrier_account_number.value|default_if_none:'' }}"
-                                                   class="form-control">
+                                                   class="form-control text-uppercase">
                                             {% if shipping_account_form.carrier_account_number.errors %}
                                                 <div class="text-danger">{{ shipping_account_form.carrier_account_number.errors }}</div>
                                             {% endif %}
