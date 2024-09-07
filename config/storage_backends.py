@@ -22,12 +22,20 @@ class CompanyLogoStorage(GoogleCloudStorage):
     bucket_name = 'healthcare_auctions_auction_images'
     credentials = credentials
 
+
 class W9Storage(GoogleCloudStorage):
     location = 'w9_storage'
     bucket_name = 'healthcare_auctions_w9_storage'
     credentials = credentials
 
+
 class ResellerCertificateStorage(GoogleCloudStorage):
     location = 'reseller_certificate_storage'
     bucket_name = 'healthcare_auctions_w9_storage'
+    credentials = credentials
+
+
+class GenericImageStorage(GoogleCloudStorage):
+    location = 'generic_image_storage'
+    bucket_name = 'healthcare_auctions_generic_image_storage'
     credentials = credentials

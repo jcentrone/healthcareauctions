@@ -30,9 +30,10 @@ from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, 
     PayPalForm, CashAppForm, CustomUserChangeForm, UserAddressForm, OrderNoteForm, EditAuctionForm, \
     EditProductDetailFormSet
 from .models import Bid, Category, Image, User, Address, CartItem, Cart, ProductDetail, Message, Order, Payment, \
-    OrderItem, Parcel
+    OrderItem, Parcel, ProductImage
 from .utils.helpers import update_categories_from_fda
 from .utils.openai import get_chat_completion_request
+from .utils.scrape import scrape_images
 from .utils.ups import track_parcel
 
 # Set up logging
@@ -654,15 +655,15 @@ def auction_create(request):
 
 @login_required
 @csrf_exempt
+@login_required
+@csrf_exempt
 def import_excel(request):
     if request.method == 'POST':
         try:
             auction_data_raw = request.POST.get('auction_data', '[]')
             auction_data = json.loads(auction_data_raw)
-            print(auction_data)
 
             for auction_info in auction_data:
-                # Make sure you're accessing the correct keys
                 category = Category.objects.get(id=auction_info['category_id'])
                 auction = Auction.objects.create(
                     title=auction_info['title'],
@@ -681,44 +682,46 @@ def import_excel(request):
                     auction_duration=auction_info['auction_duration'],
                     hold_for_import=True,  # Mark as held for import
                     active=False,
-
                 )
+
                 # Save the auction first to ensure it has an ID
                 auction.save()
+
+                # Clean the reference number by removing leading zeros
+                auction_reference_number = auction_info.get('reference_number', '')
 
                 # Create product details
                 ProductDetail.objects.create(
                     auction=auction,
                     sku=auction_info.get('sku'),
-                    reference_number=auction_info.get('reference_number'),
+                    reference_number=auction_reference_number,
                     lot_number=auction_info.get('lot_number'),
                     production_date=auction_info.get('production_date'),
                     expiration_date=auction_info.get('expiration_date')
                 )
 
-                # Handle the uploaded images using the same approach as in manual creation
-                image_keys = [key for key in request.FILES if key.startswith(f'images_{auction.id}_')]
+                # Check if there is an image with the matching reference number
+                if auction_reference_number:
+                    try:
+                        # Look for a product image with the matching reference number
+                        product_image = ProductImage.objects.get(reference_number=auction_reference_number)
+                        # Create an image associated with the auction
+                        Image.objects.create(auction=auction, image=product_image.image)
+                    except ProductImage.DoesNotExist:
+                        # No matching product image found, do nothing
+                        pass
 
-                # Handle the uploaded images using the same approach as in manual creation
+                # Handle the uploaded images
                 for key in request.FILES:
-                    print(f"Processing file key: {key}")  # Debugging: Print each file key
-                    # Extract the auction index from the key (assuming key format: images_<row_index>_<image_index>)
+                    print(key)
                     match = re.match(r'images_(\d+)_\d+', key)
                     if match:
-                        row_index = int(match.group(1))  # Get the row index from the key
-                        print(f"Found row index {row_index} for auction")  # Debugging: Log the row index
-
-                        # Find the corresponding auction_info by index
+                        row_index = int(match.group(1))
                         auction_info = auction_data[row_index]
-                        print(f"Corresponding auction info: {auction_info}")  # Debugging: Log the auction info
 
                         # Save the image
                         auction_image = Image(auction=auction, image=request.FILES[key])
                         auction_image.save()
-                        print(
-                            f"Image saved for auction {auction.id}: {auction_image.image}")  # Debugging: Confirm image save
-                    else:
-                        print(f"No match found for key: {key}")  # Debugging: If no match is found, log this
 
             return JsonResponse({'status': 'success'})
 
@@ -729,6 +732,8 @@ def import_excel(request):
         'categories': Category.objects.all(),
         'title': 'Create Auction',
     })
+
+
 
 
 def active_auctions_view(request, auction_id=None):
@@ -1157,6 +1162,24 @@ def download_excel(request):
     filepath = 'static/downloads/sample.xlsx'
     response = FileResponse(open(filepath, 'rb'), as_attachment=True, filename='sample.xlsx')
     return response
+
+@login_required
+def scrape(request):
+    scrape_images('https://xs-supply.com/collections/all-surgical-products?view=boost-pfs-original')
+    scrape_images('https://xs-supply.com/collections/all-surgical-products?page=2&view=boost-pfs-original')
+    scrape_images('https://xs-supply.com/collections/all-surgical-products?page=3&view=boost-pfs-original')
+    scrape_images('https://xs-supply.com/collections/all-surgical-products?page=4&view=boost-pfs-original')
+    scrape_images('https://xs-supply.com/collections/all-surgical-products?page=5&view=boost-pfs-original')
+    scrape_images('https://xs-supply.com/collections/all-surgical-products?page=6&view=boost-pfs-original')
+    scrape_images('https://xs-supply.com/collections/all-surgical-products?page=7&view=boost-pfs-original')
+    scrape_images('https://xs-supply.com/collections/all-surgical-products?page=8&view=boost-pfs-original')
+    scrape_images('https://xs-supply.com/collections/all-surgical-products?page=9&view=boost-pfs-original')
+    scrape_images('https://xs-supply.com/collections/all-surgical-products?page=10&view=boost-pfs-original')
+    scrape_images('https://xs-supply.com/collections/all-surgical-products?page=11&view=boost-pfs-original')
+
+    messages.success(request, 'Scraping process completed successfully!')
+    return redirect('index')
+
 
 @login_required
 def export_listings_to_excel(request):

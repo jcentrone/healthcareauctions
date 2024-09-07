@@ -255,7 +255,7 @@ h2 a {
     height: 130px;
     border-radius: var(--border-radius);
     margin-bottom: 10px;
-    object-fit: cover;
+    object-fit: contain;
 }
 
 .auction-item h3 {

@@ -53,11 +53,12 @@ function closeImportModal(validateImg = true) {
     const message = document.getElementById('modalMessage');
 
     if (validateImg) {
-        const allImagesValid = validateImages();
-
-        if (!allImagesValid) {
-            return; // Do not close the modal if validation fails
-        }
+        // Uncomment to validate that there are images added to the listing
+        // const allImagesValid = validateImages();
+        //
+        // if (!allImagesValid) {
+        //     return; // Do not close the modal if validation fails
+        // }
 
         const importModal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
         importModal.hide();

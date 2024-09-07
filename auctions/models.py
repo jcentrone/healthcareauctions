@@ -9,7 +9,8 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
-from config.storage_backends import ProfileImageStorage, CompanyLogoStorage, W9Storage, ResellerCertificateStorage
+from config.storage_backends import ProfileImageStorage, CompanyLogoStorage, W9Storage, ResellerCertificateStorage, \
+    GenericImageStorage
 
 STATE_CHOICES = (
     ('AL', 'AL'),
@@ -275,6 +276,20 @@ class Image(models.Model):
 
     def __str__(self):
         return f'{self.image}'
+
+
+class ProductImage(models.Model):
+    reference_number = models.CharField(max_length=100, unique=True)
+    image = models.ImageField(storage=GenericImageStorage(), null=True)  # Store the image file
+
+    def __str__(self):
+        return self.image
+
+    @property
+    def image_url(self):
+        if self.image:
+            return self.image.url
+        return None
 
 
 class Bid(models.Model):

@@ -55,5 +55,6 @@ urlpatterns = [
     path('edit-auction/<int:auction_id>/', views.edit_auction, name='edit_auction'),
     path('post_listing/<int:auction_id>/', views.post_listing, name='post_listing'),
     path('export_listings/', views.export_listings_to_excel, name='export_listings'),
+    path('scrape/', views.scrape, name='scrape'),
 
 ]
