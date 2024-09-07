@@ -12,7 +12,7 @@
 
 
     <!-- Page Content -->
-    <div class="container">
+    <div class="container" id="main-content">
         {% if messages %}
             {% for message in messages %}
                 <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
@@ -1103,9 +1103,12 @@
 
                             <div class='my-2 border-top'>
                                 <div class='card-header d-flex justify-content-between align-items-center'>
-                                    <div>
+                                    <div class="d-flex align-items-center">
                                         <i class='fas fa-table me-1'></i>
                                         {{ listing_status|capfirst }} Listings
+                                        <button type="button" id="post-selected-listings" class="btn btn-warning ms-3"
+                                                style="display: none;">Post All Listings
+                                        </button>
                                     </div>
                                     <div>
                                         <form method="GET" class="d-flex">
@@ -1159,13 +1162,36 @@
                                 <div class='card-body'>
                                     <div class="table-like" id="table-like">
                                         <div class="row header table-like-row">
-                                            <div class="cell col-md-2"></div>
-                                            <div class="cell col-md-7">Listing Details</div>
+                                            {% if hold_for_import %}
+                                            <div class="cell col-auto d-flex d-inline-flex align-items-center">
+                                                <div style=" display: flex; align-items: center; justify-content: center;">
+                                                    <input class="form-check-input m-0" type="checkbox"
+                                                           id="select-all-listings">
+                                                    <label for="select-all-listings" class="text-nowrap ms-2 mb-0">Select
+                                                        All</label>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                            <div class="cell col-md-2">
+                                                <div style=" display: flex; align-items: center; justify-content: center;">
+                                                    Image
+                                                </div>
+                                            </div>
+                                            <div class="cell col-md-6">Listing Details</div>
                                             <div class="cell col-md-3 align-items-center">Actions</div>
+                                        </div>
+                                        <div class="row">
+
                                         </div>
 
                                         {% for listing in listings %}
                                             <div class="row table-like-row">
+                                            {% if hold_for_import %}
+                                                <div class="cell d-flex col-auto align-items-center border-bottom text-center">
+                                                    <input class="form-check-input listing-checkbox" type="checkbox"
+                                                           data-listing-id="{{ listing.id }}">
+                                                </div>
+                                            {% endif %}
                                                 <div class="cell col-md-2 align-items-center border-bottom text-center">
                                                     {% if listing.get_image %}
                                                         <img src="{{ listing.get_image.image.url }}"
@@ -1176,7 +1202,7 @@
                                                              class="img-fluid">
                                                     {% endif %}
                                                 </div>
-                                                <div class="cell col-md-7 align-items-center border-bottom">
+                                                <div class="cell col-md-6 align-items-center border-bottom">
                                                     <strong>Product:</strong> {{ listing.title }}<br>
                                                     <strong>Status:</strong> {{ listing.active|yesno:"Active,Inactive" }}<br>
                                                     <strong>Listed On:</strong> {{ listing.date_created }}<br>
@@ -1349,7 +1375,7 @@
                                                                                     </div>
                                                                                     <div class="listing-grid">
                                                                                         <strong>Category:</strong>
-                                                                                        <select class="form-control readonly-input"
+                                                                                        <select class="form-control w-100 readonly-input"
                                                                                                 name="{{ listing.edit_form.category.name }}"
                                                                                                 id="{{ listing.edit_form.category.id_for_label }}">
                                                                                             {% for category in listing.edit_form.category.field.queryset %}
@@ -1431,7 +1457,7 @@
                                                                             </div>
                                                                         </div>
                                                                     </div>
-
+                                                                    <!-- Additional details fields can be added here if needed -->
                                                                     <div class="row">
                                                                         <h3 class="mt-3">Additional Details</h3>
                                                                         <div class="additional-details"
@@ -1499,11 +1525,10 @@
                                                                                 {% endfor %}
                                                                                 </tbody>
                                                                             </table>
-                                                                            <!-- Additional details fields can be added here if needed -->
                                                                         </div>
                                                                     </div>
 
-{#                                                                    
+
                                                                     <!-- Additional Details added by FDA -->
                                                                     <div class="row additional-listing-meta"
                                                                          id="additional-listing-meta-{{ listing.id }}">
@@ -1511,12 +1536,23 @@
                                                                             <label for="{{ listing.edit_form.package_type.id_for_label }}"
                                                                                    class="form-label"><strong>Package
                                                                                 Type:</strong></label>
-                                                                            <input class="form-control readonly-input"
-                                                                                   type="text"
-                                                                                   name="{{ listing.edit_form.package_type.html_name }}"
-                                                                                   id="{{ listing.edit_form.package_type.id_for_label }}"
-                                                                                   value="{{ listing.edit_form.package_type.value }}"
-                                                                                   readonly>
+                                                                            <select class="form-control w-100"
+                                                                                    name="{{ listing.edit_form.package_type.html_name }}"
+                                                                                    id="{{ listing.edit_form.package_type.id_for_label }}"
+                                                                                    {% if listing.edit_form.package_type.attrs.readonly %}disabled{% endif %}>
+                                                                                {% for choice_value, choice_label in listing.edit_form.package_type.field.choices %}
+                                                                                    <option value="{{ choice_value }}"
+                                                                                            {% if listing.edit_form.package_type.value == choice_value %}selected{% endif %}>
+                                                                                        {{ choice_label }}
+                                                                                    </option>
+                                                                                {% endfor %}
+                                                                            </select>
+                                                                            {#                                                                            <input class="form-control readonly-input"#}
+                                                                            {#                                                                                   type="text"#}
+                                                                            {#                                                                                   name="{{ listing.edit_form.package_type.html_name }}"#}
+                                                                            {#                                                                                   id="{{ listing.edit_form.package_type.id_for_label }}"#}
+                                                                            {#                                                                                   value="{{ listing.edit_form.package_type.value }}"#}
+                                                                            {#                                                                                   readonly>#}
                                                                         </div>
                                                                         <div class="col-md-4 mb-3">
                                                                             <label for="{{ listing.edit_form.implantable.id_for_label }}"
@@ -1581,7 +1617,9 @@
                                                                         form="editAuctionForm{{ listing.id }}"
                                                                         class="btn btn-success"
                                                                         id="saveButton{{ listing.id }}"
-                                                                        style="display: none;">Save
+                                                                        style="display: none;"
+                                                                        onclick="submitForm(event, {{ listing.id }})">
+                                                                    Save
                                                                 </button>
                                                             </div>
 

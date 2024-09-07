@@ -11,6 +11,7 @@ from django.contrib.auth import authenticate, login, logout, update_session_auth
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.views import PasswordChangeView
+from django.contrib.messages import get_messages
 from django.core.files.storage import get_storage_class
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import IntegrityError
@@ -372,20 +373,36 @@ def edit_auction(request, auction_id):
 
         if form.is_valid() and product_detail_formset.is_valid():
             form.save()
-            product_detail_formset.save()  # Save the product detail formset
-            return JsonResponse({'success': True, 'message': 'Auction and product details updated successfully.'})
+            product_detail_formset.save()
+            messages.success(request, 'Auction and product details updated successfully.')
+            success = True
         else:
             errors = form.errors.as_json()  # Convert form errors to JSON
             formset_errors = product_detail_formset.errors  # Get formset errors
+            messages.error(request, 'Please correct the errors below.')
+            messages.error(request, errors)
+            messages.error(request, formset_errors)
+            success = False
 
-            return JsonResponse({
-                'success': False,
-                'form_errors': errors,
-                'formset_errors': formset_errors,
-                'message': 'Please correct the errors below.'
+        # Collect Django messages to include in the JSON response
+        storage = get_messages(request)
+        response_messages = []
+        for message in storage:
+            response_messages.append({
+                'message': message.message,
+                'level': message.level,
+                'tags': message.tags,
             })
 
+        return JsonResponse({
+            'success': success,
+            'messages': response_messages,
+            'form_errors': errors if not success else None,
+            'formset_errors': formset_errors if not success else None,
+        })
+
     return JsonResponse({'success': False, 'message': 'Invalid request method.'})
+
 
 
 @login_required
