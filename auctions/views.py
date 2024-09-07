@@ -2,9 +2,10 @@ import json
 import logging
 import random
 import re
-import openpyxl
 from datetime import timedelta
 from decimal import Decimal
+
+import openpyxl
 from django import forms
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
@@ -28,9 +29,9 @@ from django.views.decorators.http import require_POST
 from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, ProductDetailFormSet, MessageForm, \
     ShippingMethodForm, ShippingAddressForm, BillingAddressForm, CreditCardForm, ACHForm, ZelleForm, VenmoForm, \
     PayPalForm, CashAppForm, CustomUserChangeForm, UserAddressForm, OrderNoteForm, EditAuctionForm, \
-    EditProductDetailFormSet
+    EditProductDetailFormSet, ShippingAccountsForm
 from .models import Bid, Category, Image, User, Address, CartItem, Cart, ProductDetail, Message, Order, Payment, \
-    OrderItem, Parcel, ProductImage
+    OrderItem, Parcel, ProductImage, ShippingAccounts
 from .utils.helpers import update_categories_from_fda
 from .utils.openai import get_chat_completion_request
 from .utils.scrape import scrape_images
@@ -297,7 +298,12 @@ def dashboard(request):
         note_forms[order.id] = OrderNoteForm(initial={'order_note': order.order_note})
         order.auction.message_form = MessageForm(initial={'subject': f'Question about {order.auction.title}'})
 
-    if request.method == 'POST' and 'settings_form' in request.POST:
+    shipping_account_instance = ShippingAccounts.objects.filter(user=user).first()
+    shipping_account_form = ShippingAccountsForm(request.POST or None, instance=shipping_account_instance)
+
+    if request.method == 'POST':
+        print("Received POST data:", request.POST)
+
         settings_form = CustomUserChangeForm(request.POST, request.FILES, instance=request.user)
         billing_form = UserAddressForm(request.POST, prefix='billing',
                                        instance=user.addresses.filter(address_type='billing').first())
@@ -313,10 +319,28 @@ def dashboard(request):
         else:
             active_tab = 'password'
 
+        # Settings Form
         if settings_form.is_valid():
             settings_form.save()
+        else:
+            messages.error(request, settings_form.errors)
+
+        # Billing Form
+        if billing_form.is_valid():
             billing_form.save()
+        else:
+            messages.error(request, billing_form.errors)
+
+        # Shipping Form
+        if shipping_form.is_valid():
             shipping_form.save()
+        else:
+            messages.error(request, shipping_form.errors)
+
+        if shipping_account_form.is_valid():
+            shipping_account = shipping_account_form.save(commit=False)
+            shipping_account.user = user
+            shipping_account.save()
             messages.success(request, 'Your settings have been updated.')
         else:
             messages.error(request, 'Please correct the errors below.')
@@ -328,6 +352,7 @@ def dashboard(request):
 
         settings_form = CustomUserChangeForm(instance=request.user)
         password_form = PasswordChangeForm(user)
+        shipping_account_form = ShippingAccountsForm(instance=shipping_account_instance)
 
     for field in password_form.fields.values():
         field.widget.attrs.update({'class': 'form-control'})
@@ -355,6 +380,7 @@ def dashboard(request):
         'settings_form': settings_form,
         'billing_form': billing_form,
         'shipping_form': shipping_form,
+        'shipping_account_form': shipping_account_form,
         'password_form': password_form,
         'note_forms': note_forms,
         'sub_nav': 'user_details',
@@ -732,8 +758,6 @@ def import_excel(request):
         'categories': Category.objects.all(),
         'title': 'Create Auction',
     })
-
-
 
 
 def active_auctions_view(request, auction_id=None):
@@ -1163,6 +1187,7 @@ def download_excel(request):
     response = FileResponse(open(filepath, 'rb'), as_attachment=True, filename='sample.xlsx')
     return response
 
+
 @login_required
 def scrape(request):
     scrape_images('https://xs-supply.com/collections/all-surgical-products?view=boost-pfs-original')
@@ -1238,6 +1263,7 @@ def export_listings_to_excel(request):
     wb.save(response)
     return response
 
+
 # ORDER MANAGEMENT
 @login_required
 def checkout(request):
@@ -1282,14 +1308,14 @@ def checkout(request):
     venmo_form = VenmoForm(request.POST or None)
     paypal_form = PayPalForm(request.POST or None)
     cashapp_form = CashAppForm(request.POST or None)
-
+    shipping_accounts_form = ShippingAccountsForm(request.POST or None)
     shipping_method_form = ShippingMethodForm(request.POST or None, initial=initial_data)
 
     if request.method == 'POST':
         shipping_form = ShippingAddressForm(request.POST)
         billing_form = BillingAddressForm(request.POST)
 
-        if shipping_method_form.is_valid() and shipping_form.is_valid() and billing_form.is_valid():
+        if shipping_method_form.is_valid() and shipping_form.is_valid() and billing_form.is_valid() and shipping_accounts_form.is_valid():
             shipping_method = shipping_method_form.cleaned_data.get('shipping_method')
             special_instructions = shipping_method_form.cleaned_data.get('special_instructions')
 
@@ -1319,14 +1345,21 @@ def checkout(request):
                     quantity=item.quantity(),
                     price=item.total_price()
                 )
-
+            # Handle shipping address form
             shipping_address = shipping_form.save(commit=False)
             shipping_address.order = order
             shipping_address.save()
 
+            # Handle billing address form
             billing_address = billing_form.save(commit=False)
             billing_address.order = order
             billing_address.save()
+
+            # Handle shipping account form
+            shipping_account = shipping_accounts_form.save(commit=False)
+            shipping_account.user = request.user
+            shipping_account.order = order
+            shipping_account.save()
 
             payment_method = request.POST.get('payment_method')
 
@@ -1377,6 +1410,8 @@ def checkout(request):
                 'shipping_method_form': shipping_method_form.errors,
                 'shipping_form': shipping_form.errors,
                 'billing_form': billing_form.errors,
+                'shipping_accounts_form': shipping_accounts_form.errors,
+
             }
             return JsonResponse({'status': 'error', 'message': 'Form validation failed.', 'errors': errors})
 
@@ -1385,6 +1420,7 @@ def checkout(request):
         billing_form = BillingAddressForm(initial=initial_data)
 
     return render(request, 'checkout.html', {
+        'shipping_accounts_form': shipping_accounts_form,
         'shipping_method_form': shipping_method_form,
         'shipping_form': shipping_form,
         'billing_form': billing_form,
@@ -1397,10 +1433,12 @@ def checkout(request):
         'cart': cart,
     })
 
+
 @login_required
 def order_confirmation(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
     return render(request, 'order_confirmation.html', {'order': order})
+
 
 @login_required
 def add_to_cart(request, auction_id):
@@ -1412,6 +1450,7 @@ def add_to_cart(request, auction_id):
         return redirect('view_cart')
 
     return render(request, 'add_to_cart.html', {'auction': auction})
+
 
 @login_required
 def view_cart(request):
@@ -1429,11 +1468,13 @@ def view_cart(request):
         'watchlist': watchlist,
     })
 
+
 @login_required
 def remove_from_cart(request, item_id):
     cart_item = get_object_or_404(CartItem, id=item_id)
     cart_item.delete()
     return redirect('view_cart')
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 def track_auction_view(request):
@@ -1444,6 +1485,7 @@ def track_auction_view(request):
         AuctionView.objects.create(user=request.user, auction=auction)
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'fail'}, status=400)
+
 
 # MESSAGING
 
@@ -1473,12 +1515,14 @@ def inbox(request):
         'watchlist': watchlist,
     })
 
+
 @login_required
 def message_detail(request, message_id):
     message = get_object_or_404(Message, id=message_id, recipient=request.user)
     message.read = True
     message.save()
     return render(request, 'message_detail.html', {'message': message})
+
 
 @login_required
 def send_message(request, auction_id):
@@ -1498,6 +1542,7 @@ def send_message(request, auction_id):
         form = MessageForm()
     return render(request, 'send_message.html', {'form': form})
 
+
 @login_required
 @require_POST
 def mark_messages_as_read(request, thread_id):
@@ -1506,6 +1551,7 @@ def mark_messages_as_read(request, thread_id):
     if thread:
         thread.get_thread().update(read=True, date_read=timezone.now())
     return JsonResponse({'status': 'success'})
+
 
 @login_required
 def send_reply(request, message_id):
@@ -1522,6 +1568,7 @@ def send_reply(request, message_id):
                 message_type='reply'
             )
     return redirect('inbox')
+
 
 @login_required
 def validate_message(request, message):
@@ -1553,6 +1600,7 @@ def validate_message(request, message):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+
 @login_required
 def send_customer_service_message(request):
     if request.method == 'POST':
@@ -1568,12 +1616,14 @@ def send_customer_service_message(request):
         )
         return redirect('inbox')
 
+
 @login_required
 def archive_message(request, message_id):
     message = Message.objects.get(id=message_id)
     message.archived = True
     message.save()
     return JsonResponse({'status': 'success'})
+
 
 def track_parcel_view(request, parcel_id):
     parcel = get_object_or_404(Parcel, id=parcel_id)
@@ -1589,6 +1639,7 @@ def track_parcel_view(request, parcel_id):
             'status': 'error',
             'message': str(e),
         })
+
 
 @login_required
 def add_order_note(request, order_id):

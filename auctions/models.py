@@ -64,7 +64,11 @@ STATE_CHOICES = (
     ('WI', 'WI'),
     ('WY', 'WY'),
 )
-
+CARRIER_CHOICES = (
+    ('ups', 'UPS'),
+    ('fedex', 'FedEx'),
+    ('dhl', 'DHL'),
+)
 
 class User(AbstractUser):
     company_name = models.CharField(max_length=255, blank=True)
@@ -79,6 +83,13 @@ class User(AbstractUser):
         return self.username
 
 
+class ShippingAccounts(models.Model):
+    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='shipping_accounts')
+    order = models.ForeignKey('Order', on_delete=models.CASCADE, related_name='shipping_accounts', null=True, blank=True)
+    carrier_name = models.CharField(max_length=10, choices=CARRIER_CHOICES)
+    carrier_account_number = models.CharField(max_length=15, blank=True)
+
+
 class Address(models.Model):
     ADDRESS_TYPE_CHOICES = [
         ('billing', 'Billing'),
@@ -89,7 +100,8 @@ class Address(models.Model):
     street = models.CharField(max_length=255)
     suite = models.CharField(null=True, blank=True, max_length=255)
     city = models.CharField(max_length=255)
-    state = models.CharField(max_length=255)
+    state = models.CharField(max_length=50, choices=STATE_CHOICES)
+    # state = models.CharField(max_length=255)
     zip_code = models.CharField(max_length=10)
     country = models.CharField(max_length=255)
 

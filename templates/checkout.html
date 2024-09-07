@@ -322,7 +322,24 @@
                         <h3 class="m-0">Shipping Method</h3>
                     </div>
                     <div class="card-body p-3">
-                        {{ shipping_method_form.as_p }}
+                        <!-- Button Group for Shipping Method Selection -->
+                        <div class="btn-group mb-3" role="group" aria-label="Shipping Method Selection">
+                            <input type="radio" class="btn-check" name="shipping_option" id="our_shipping" autocomplete="off" checked>
+                            <label class="btn btn-outline-secondary" for="our_shipping">Our Shipping</label>
+                    
+                            <input type="radio" class="btn-check" name="shipping_option" id="customer_shipping" autocomplete="off">
+                            <label class="btn btn-outline-secondary" for="customer_shipping">Use My Account</label>
+                        </div>
+                    
+                        <!-- Shipping Method Form (Our Shipping) -->
+                        <div id="our_shipping_form">
+                            {{ shipping_method_form.as_p }}
+                        </div>
+                    
+                        <!-- Shipping Accounts Form (Customer Shipping) -->
+                        <div id="customer_shipping_form" style="display: none;">
+                            {{ shipping_accounts_form.as_p }}
+                        </div>
                     </div>
                     <div class="card-footer">
                         <button type="button" class="btn btn-primary" id="next-btn-1" data-bs-toggle="tab">Next
@@ -476,9 +493,40 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> 
         </form>
     </div>
+    
+<!-- Checkout Instructions Modal -->
+<div class="modal fade" id="checkoutInstructionsModal" tabindex="-1" aria-labelledby="checkoutInstructionsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="checkoutInstructionsModalLabel">Checkout</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="d-flex justify-content-center"><strong>Ready to wrap things up? Let's get your order rolling!</strong></p>
+                <ol>
+                    <li class="mb-2"><strong>Contact & Shipping:</strong> Kick things off by filling in your contact details, where and how you want your order to arrive.</li>
+                    <li class="mb-2"><strong>Order Confirmation:</strong> Double-check everything’s in place and looking good before you hit the go button.</li>
+                    <li class="mb-2"><strong>Payment & Submit:</strong> Choose your preferred way to pay, and seal the deal.</li>
+                </ol>
+                <p>Once your order is placed, our team will personally reach out to finalize the details. Unlike fully automated sites, we work closely with both buyers and sellers to ensure a smooth transaction and keep the process as seamless as possible for you.</p>
+                <p>Regardless of this is your first order or number one thousand, thank you for your business!!</p> 
+
+                <div class="form-check mt-3 ms-4">
+                    <input type="checkbox" class="form-check-input" id="hideInstructionsForever">
+                    <label class="form-check-label" for="hideInstructionsForever">Don't show this again</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it!</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
     
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>

@@ -97,3 +97,60 @@ function disableEnableSubmit() {
         }
     });
 }
+
+// Modal functions and operations:
+$(document).ready(function () {
+    // Check if the user has previously opted to hide the instructions
+    const hideInstructions = localStorage.getItem('hideInstructionsForever');
+
+    // If not, show the modal on page load
+    if (!hideInstructions) {
+        $('#checkoutInstructionsModal').modal('show');
+    }
+
+    // When the modal is closed, check if the user wants to hide it in the future
+    $('#checkoutInstructionsModal').on('hidden.bs.modal', function () {
+        if ($('#hideInstructionsForever').is(':checked')) {
+            localStorage.setItem('hideInstructionsForever', 'true');
+        }
+    });
+
+    // Initially set the required fields for the default selected option
+    setRequiredFields();
+
+    // Listen to changes in the shipping option buttons
+    $('input[name="shipping_option"]').on('change', function() {
+        if ($(this).attr('id') === 'our_shipping') {
+            // Show our shipping form, hide customer shipping form
+            $('#our_shipping_form').show();
+            $('#customer_shipping_form').hide();
+        } else {
+            // Show customer shipping form, hide our shipping form
+            $('#our_shipping_form').hide();
+            $('#customer_shipping_form').show();
+        }
+        // Set required fields based on the selected option
+        setRequiredFields();
+    });
+
+    function setRequiredFields() {
+        // Clear all required attributes first
+        $('#shipping_method_form input').removeAttr('required');
+        $('#shipping_accounts_form input').removeAttr('required');
+
+        // Determine which option is selected
+        if ($('#our_shipping').is(':checked')) {
+            // Our Shipping is selected, make relevant fields required
+            $('#shipping_method_form input[name="shipping_method"]').attr('required', 'required');
+        } else {
+            // Customer Shipping is selected, make relevant fields required
+            $('#shipping_accounts_form input[name="carrier_name"]').attr('required', 'required');
+            $('#shipping_accounts_form input[name="carrier_account_number"]').attr('required', 'required');
+        }
+    }
+
+
+
+
+});
+

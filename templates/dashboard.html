@@ -1163,14 +1163,14 @@
                                     <div class="table-like" id="table-like">
                                         <div class="row header table-like-row">
                                             {% if hold_for_import %}
-                                            <div class="cell col-auto d-flex d-inline-flex align-items-center">
-                                                <div style=" display: flex; align-items: center; justify-content: center;">
-                                                    <input class="form-check-input m-0" type="checkbox"
-                                                           id="select-all-listings">
-                                                    <label for="select-all-listings" class="text-nowrap ms-2 mb-0">Select
-                                                        All</label>
+                                                <div class="cell col-auto d-flex d-inline-flex align-items-center">
+                                                    <div style=" display: flex; align-items: center; justify-content: center;">
+                                                        <input class="form-check-input m-0" type="checkbox"
+                                                               id="select-all-listings">
+                                                        <label for="select-all-listings" class="text-nowrap ms-2 mb-0">Select
+                                                            All</label>
+                                                    </div>
                                                 </div>
-                                            </div>
                                             {% endif %}
                                             <div class="cell col-md-2">
                                                 <div style=" display: flex; align-items: center; justify-content: center;">
@@ -1185,13 +1185,14 @@
                                         </div>
 
                                         {% for listing in listings %}
+                                            <!-- Listing Row -->
                                             <div class="row table-like-row">
-                                            {% if hold_for_import %}
-                                                <div class="cell d-flex col-auto align-items-center border-bottom text-center">
-                                                    <input class="form-check-input listing-checkbox" type="checkbox"
-                                                           data-listing-id="{{ listing.id }}">
-                                                </div>
-                                            {% endif %}
+                                                {% if hold_for_import %}
+                                                    <div class="cell d-flex col-auto align-items-center border-bottom text-center">
+                                                        <input class="form-check-input listing-checkbox" type="checkbox"
+                                                               data-listing-id="{{ listing.id }}">
+                                                    </div>
+                                                {% endif %}
                                                 <div class="cell col-md-2 align-items-center border-bottom text-center">
                                                     {% if listing.get_image %}
                                                         <img src="{{ listing.get_image.image.url }}"
@@ -1308,7 +1309,6 @@
                                                                 </div>
                                                                 <div class="card-body">
                                                                     <!-- Full auction details go here -->
-
                                                                     <div class="row">
                                                                         <div class="col">
                                                                             <h3 class="border-bottom pb-2 mb-2">
@@ -1547,12 +1547,6 @@
                                                                                     </option>
                                                                                 {% endfor %}
                                                                             </select>
-                                                                            {#                                                                            <input class="form-control readonly-input"#}
-                                                                            {#                                                                                   type="text"#}
-                                                                            {#                                                                                   name="{{ listing.edit_form.package_type.html_name }}"#}
-                                                                            {#                                                                                   id="{{ listing.edit_form.package_type.id_for_label }}"#}
-                                                                            {#                                                                                   value="{{ listing.edit_form.package_type.value }}"#}
-                                                                            {#                                                                                   readonly>#}
                                                                         </div>
                                                                         <div class="col-md-4 mb-3">
                                                                             <label for="{{ listing.edit_form.implantable.id_for_label }}"
@@ -1726,6 +1720,15 @@
                                             </button>
                                         </li>
                                         <li class="nav-item" role="presentation">
+                                            <button class="nav-link sub-nav {% if sub_nav == 'shipping_account' %}active{% endif %}"
+                                                    id="shipping-account-tab"
+                                                    data-bs-toggle="tab"
+                                                    data-bs-target="#shipping-account"
+                                                    type="button" role="tab" aria-controls="shipping-account"
+                                                    aria-selected="false">Shipping Account
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
                                             <button class="nav-link sub-nav {% if sub_nav == 'password' %}active{% endif %}"
                                                     id="password-tab"
                                                     data-bs-toggle="tab" data-bs-target="#password" type="button"
@@ -1873,13 +1876,13 @@
                                         <!-- Billing Address Tab -->
                                         <div class="tab-pane fade" id="billing-address" role="tabpanel"
                                              aria-labelledby="billing-address-tab">
-
                                             <!-- Billing and Shipping Addresses -->
                                             <h5>Billing Address</h5>
                                             <div class="card-body row">
                                                 <!-- Billing Address -->
                                                 <div class="col-md-6">
-
+{#                                                    <input type="hidden" name="{{ billing_form.address_type.name }}"#}
+{#                                                           value="billing">#}
                                                     <!-- Street Address -->
                                                     <div class="mb-3">
                                                         <label for="{{ billing_form.street.id_for_label }}"
@@ -1906,7 +1909,7 @@
                                                             <div class="text-danger">{{ billing_form.suite.errors }}</div>
                                                         {% endif %}
                                                     </div>
-                                                    <!-- City, Stet Zip -->
+                                                    <!-- City, State Zip -->
                                                     <div class="row">
                                                         <!-- City -->
                                                         <div class="col-md-6 mb-3">
@@ -1924,10 +1927,17 @@
                                                         <div class="col-md-3 mb-3">
                                                             <label for="{{ billing_form.state.id_for_label }}"
                                                                    class="form-label">State</label>
-                                                            <input type="text" name="{{ billing_form.state.name }}"
-                                                                   id="{{ billing_form.state.id_for_label }}"
-                                                                   value="{{ billing_form.state.value }}"
-                                                                   class="form-control">
+                                                            <select name="{{ billing_form.state.name }}"
+                                                                    id="{{ billing_form.state.id_for_label }}"
+                                                                    class="form-control w-100">
+
+                                                                {% for state in billing_form.state.field.choices %}
+                                                                    <option value="{{ state.0 }}"
+                                                                            {% if state.0 == billing_form.state.value %}selected{% endif %}>
+                                                                        {{ state.1 }}
+                                                                    </option>
+                                                                {% endfor %}
+                                                            </select>
                                                             {% if billing_form.state.errors %}
                                                                 <div class="text-danger">{{ billing_form.state.errors }}</div>
                                                             {% endif %}
@@ -1969,7 +1979,8 @@
                                             <div class="card-body row">
                                                 <!-- Shipping Address -->
                                                 <div class="col-md-6">
-
+{#                                                    <input type="hidden" name="{{ shipping_form.address_type.name }}"#}
+{#                                                           value="shipping">#}
                                                     <!-- Street Address -->
                                                     <div class="mb-3">
                                                         <label for="{{ shipping_form.street.id_for_label }}"
@@ -2014,10 +2025,17 @@
                                                         <div class="col-md-3 mb-3">
                                                             <label for="{{ shipping_form.state.id_for_label }}"
                                                                    class="form-label">State</label>
-                                                            <input type="text" name="{{ shipping_form.state.name }}"
-                                                                   id="{{ shipping_form.state.id_for_label }}"
-                                                                   value="{{ shipping_form.state.value }}"
-                                                                   class="form-control">
+                                                            <select name="{{ shipping_form.state.name }}"
+                                                                    id="{{ shipping_form.state.id_for_label }}"
+                                                                    class="form-control w-100">
+
+                                                                {% for state in shipping_form.state.field.choices %}
+                                                                    <option value="{{ state.0 }}"
+                                                                            {% if state.0 == shipping_form.state.value %}selected{% endif %}>
+                                                                        {{ state.1 }}
+                                                                    </option>
+                                                                {% endfor %}
+                                                            </select>
                                                             {% if shipping_form.state.errors %}
                                                                 <div class="text-danger">{{ shipping_form.state.errors }}</div>
                                                             {% endif %}
@@ -2051,6 +2069,46 @@
                                             </div>
                                             <!-- Submit Button -->
                                             <button type="submit" class="btn btn-primary">Save Settings</button>
+                                        </div>
+
+                                        <!-- Shipping Accounts Tab -->
+                                        <div class="tab-pane fade" id="shipping-account" role="tabpanel"
+                                             aria-labelledby="shipping-account-tab">
+
+                                            <!-- Account Number -->
+                                            <div class="col-md-6 mb-3">
+                                                <label for="{{ shipping_account_form.carrier_account_number.id_for_label }}"
+                                                       class="form-label">Carrier Account Number</label>
+                                                <input type="text"
+                                                       name="{{ shipping_account_form.carrier_account_number.name }}"
+                                                       id="{{ shipping_account_form.carrier_account_number.id_for_label }}"
+                                                       value="{{ shipping_account_form.carrier_account_number.value|default_if_none:''|titlecase }}"
+                                                       class="form-control">
+                                                {% if shipping_account_form.carrier_account_number.errors %}
+                                                    <div class="text-danger">{{ shipping_account_form.carrier_account_number.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <!-- Carrier Name -->
+                                            <div class="col-md-6 mb-3">
+                                                <label for="{{ shipping_account_form.carrier_name.id_for_label }}"
+                                                       class="form-label">Carrier Name</label>
+                                                <select name="{{ shipping_account_form.carrier_name.name }}"
+                                                        id="{{ shipping_account_form.carrier_name.id_for_label }}"
+                                                        class="form-control w-100">
+                                                    {% for choice in shipping_account_form.carrier_name.field.choices %}
+                                                        <option value="{{ choice.0 }}"
+                                                                {% if choice.0 == shipping_account_form.carrier_name.value %}selected{% endif %}>
+                                                            {{ choice.1 }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                                {% if shipping_account_form.carrier_name.errors %}
+                                                    <div class="text-danger">{{ shipping_account_form.carrier_name.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <!-- Submit Button -->
+                                            <button type="submit" class="btn btn-primary">Save Settings</button>
+
                                         </div>
 
                                 </form>
@@ -2096,6 +2154,9 @@
 
     <link href='{% static "css/dashboard.css" %}' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{% static 'js/dashboard.js' %}"></script>
 

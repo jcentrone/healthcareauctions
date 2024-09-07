@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserChangeForm
 from django.forms import modelformset_factory, inlineformset_factory
 
 from .models import Auction, Bid, Comment, Image, Category, CartItem, ProductDetail, Message, Order, ShippingAddress, \
-    BillingAddress, STATE_CHOICES, User, Address
+    BillingAddress, STATE_CHOICES, User, Address, ShippingAccounts
 
 
 class AuctionForm(forms.ModelForm):
@@ -191,11 +191,37 @@ class ShippingMethodForm(forms.ModelForm):
         fields = ['shipping_method', 'special_instructions']
         widgets = {
             'shipping_method': forms.Select(
-                choices=[('standard', 'Standard Shipping'), ('expedited', 'Expedited Shipping')],
+                choices=[('standard', 'Standard Shipping: 7 - 10 Days'), ('expedited', 'Expedited Shipping: 5 - 7 Days')],
                 attrs={'class': 'form-control required'}),
             'special_instructions': forms.Textarea(
                 attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Any special instructions...'}),
         }
+
+
+class ShippingAccountsForm(forms.ModelForm):
+    class Meta:
+        model = ShippingAccounts
+        fields = ['carrier_name', 'carrier_account_number']
+        widgets = {
+            'carrier_name': forms.Select(attrs={'class': 'form-control required'}),
+            'carrier_account_number': forms.TextInput(attrs={'class': 'form-control required', 'placeholder': 'Enter your account number'}),
+        }
+        labels = {
+            'carrier_name': 'Carrier Name',
+            'carrier_account_number': 'Account Number',
+        }
+        help_texts = {
+            # 'carrier_account_number': 'Optional: Enter your carrier account number if you prefer to ship using your account.',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(ShippingAccountsForm, self).__init__(*args, **kwargs)
+        self.fields['carrier_name'].empty_label = 'Select Carrier'
+
+    def clean_carrier_account_number(self):
+        data = self.cleaned_data.get('carrier_account_number')
+        # Additional validation if needed
+        return data
 
 
 class ShippingAddressForm(forms.ModelForm):
