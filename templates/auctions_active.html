@@ -21,7 +21,12 @@
             </ol>
         </nav>
         <!-- Page Heading -->
-        <h1 class='h3 mb-4 text-gray-800'>{{ title|titlecase }} - {{ auctions_count }} Results</h1>
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <h1 class='h3 m-0 text-gray-800'>{{ title|titlecase }} - {{ auctions_count }} Results</h1>
+            {% if request.user.is_authenticated %}
+                <a href="{% url 'export_listings' %}" class="btn btn-outline-primary ">Download as Excel</a>
+            {% endif %}
+        </div>
 
         <div class="active-auctions-container">
             <div class="auctions-header-container">
@@ -148,109 +153,6 @@
                     </div>
                 </div>
             </div>
-            {#            <div class="auctions-header-container">#}
-            {#                <!-- Filters and Sorting -->#}
-            {#                <div class="container mt-4">#}
-            {#                    <!-- Filter Button for Small Screens -->#}
-            {#                    <button class="btn btn-outline-primary d-md-none mb-3" type="button" data-bs-toggle="collapse"#}
-            {#                            data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">#}
-            {#                        <i class="fas fa-filter"></i> Filter#}
-            {#                    </button>#}
-            {#                    <!-- Filter Section -->#}
-            {#                    <div class="collapse d-md-block filters" id="filterCollapse">#}
-            {#                        <form id="auction-filter-form" method="get" class="form-inline">#}
-            {#                            <!-- Filter By Time -->#}
-            {#                            <div class="form-group mb-2 w-100">#}
-            {#                                <div class="filter-group">#}
-            {#                                    <h5 class="">Filter By:</h5>#}
-            {#                                    <ul id="time-filter" class="filter-list">#}
-            {#                                        <li><a href="#" data-value="">All Times</a></li>#}
-            {#                                        <li><a href="#" data-value="today">Today</a></li>#}
-            {#                                        <li><a href="#" data-value="tomorrow">Tomorrow</a></li>#}
-            {#                                        <li><a href="#" data-value="next_3_days">Next 3 Days</a></li>#}
-            {#                                        <li><a href="#" data-value="">Reset</a></li>#}
-            {#                                    </ul>#}
-            {#                                </div>#}
-            {#                                <input type="hidden" name="time_filter" id="time-filter-value">#}
-            {#                            </div>#}
-            {##}
-            {#                            <!-- Sort By -->#}
-            {#                            <div class="form-group mb-2 w-100">#}
-            {#                                <div class="filter-group">#}
-            {#                                    <h5 class="border-bottom pb-1">Sort By:</h5>#}
-            {#                                    <ul id="sort-by" class="filter-list">#}
-            {#                                        <li><a href="#" data-value="">Best Match</a></li>#}
-            {#                                        <li><a href="#" data-value="ending_soonest">Ending Soonest</a></li>#}
-            {#                                        <li><a href="#" data-value="newly_listed">Newly Listed</a></li>#}
-            {#                                        <li><a href="#" data-value="price_highest">Price Highest</a></li>#}
-            {#                                        <li><a href="#" data-value="price_lowest">Price Lowest</a></li>#}
-            {#                                        <li><a href="#" data-value="fewest_bids">Fewest Bids</a></li>#}
-            {#                                        <li><a href="#" data-value="most_bids">Most Bids</a></li>#}
-            {#                                        <li><a href="#" data-value="">Reset</a></li>#}
-            {#                                    </ul>#}
-            {#                                </div>#}
-            {#                                <input type="hidden" name="sort_by" id="sort-by-value">#}
-            {#                            </div>#}
-            {##}
-            {#                            <!-- Manufacturer Filter -->#}
-            {#                            <div class="form-group mb-2 w-100">#}
-            {#                                <div class="filter-group">#}
-            {#                                    <h5 class="border-bottom pb-1">Select Manufacturer:</h5>#}
-            {#                                    <ul id="mfg-filter" class="filter-list">#}
-            {#                                        <li><a href="#" data-value="">Select Manufacturer</a></li>#}
-            {#                                        {% for manufacturer in unique_manufacturers %}#}
-            {#                                            <li><a href="#" data-value="{{ manufacturer }}">{{ manufacturer }}</a></li>#}
-            {#                                        {% endfor %}#}
-            {#                                        <li><a href="#" data-value="">Reset</a></li>#}
-            {#                                    </ul>#}
-            {#                                </div>#}
-            {#                                <input type="hidden" name="mfg_filter" id="mfg-filter-value">#}
-            {#                            </div>#}
-            {##}
-            {#                            <!-- Auction Type Filter -->#}
-            {#                            <div class="form-group mb-2 w-100">#}
-            {#                                <div class="filter-group">#}
-            {#                                    <h5 class="border-bottom pb-1">Auction Type:</h5>#}
-            {#                                    <ul id="auction-type" class="filter-list">#}
-            {#                                        <li><a href="#" data-value="">All</a></li>#}
-            {#                                        <li><a href="#" data-value="Auction">Auction</a></li>#}
-            {#                                        <li><a href="#" data-value="Sale">Sale</a></li>#}
-            {#                                    </ul>#}
-            {#                                </div>#}
-            {#                                <input type="hidden" name="auction_type" id="auction-type-value">#}
-            {#                            </div>#}
-            {##}
-            {#                            <!-- Filter By Expired Items -->#}
-            {#                            <div class="form-group mb-2 w-100">#}
-            {#                                <div class="filter-group">#}
-            {#                                    <h5 class="border-bottom pb-1">Filter By:</h5>#}
-            {#                                    <ul id="expired-filter" class="filter-list">#}
-            {#                                        <li><a href="#" data-value="">All Items</a></li>#}
-            {#                                        <li><a href="#" data-value="expired">Expired Items</a></li>#}
-            {#                                        <li><a href="#" data-value="not_expired">In Date Items</a></li>#}
-            {#                                    </ul>#}
-            {#                                </div>#}
-            {#                                <input type="hidden" name="expired_filter" id="expired-filter-value">#}
-            {#                            </div>#}
-            {##}
-            {#                            <!-- My Listings Checkbox -->#}
-            {#                            {% if user.is_authenticated and has_active_auctions %}#}
-            {#                                <div class="form-group mb-2 w-100">#}
-            {#                                    <div class="form-check">#}
-            {#                                        <input class="form-check-input" type="checkbox" id="my-auctions-checkbox"#}
-            {#                                               name="my_auctions" value="1"#}
-            {#                                                {% if my_auctions %} checked {% endif %}>#}
-            {#                                        <label class="form-check-label" for="my-auctions-checkbox">#}
-            {#                                            My Listings#}
-            {#                                        </label>#}
-            {#                                    </div>#}
-            {#                                </div>#}
-            {#                            {% endif %}#}
-            {#                        </form>#}
-            {##}
-            {#                    </div>#}
-            {#                </div>#}
-            {#            </div>#}
             <div class='auctions-container mb-4'>
                 <div class='card-body'>
                     <div class='col align-items-center'>
