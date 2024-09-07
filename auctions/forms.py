@@ -178,7 +178,20 @@ class UserAddressForm(forms.ModelForm):
             'state',
             'zip_code',
             'country',
+            'address_type'
         ]
+
+        widgets = {
+            'shipping_full_name': forms.TextInput(attrs={'class': 'form-control required'}),
+            'street': forms.TextInput(attrs={'class': 'form-control required'}),
+            'suite': forms.TextInput(attrs={'class': 'form-control'}),
+            'city': forms.TextInput(attrs={'class': 'form-control required'}),
+            'state': forms.Select(choices=STATE_CHOICES, attrs={'class': 'form-control required'}),
+            'zip_code': forms.TextInput(attrs={'class': 'form-control required'}),
+            'country': forms.TextInput(attrs={'class': 'form-control'}),
+            'address_type': forms.HiddenInput(),
+
+        }
 
 
 UserBillingAddressForm = UserAddressForm(prefix='billing')

@@ -128,6 +128,10 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 
+
+
+
+
 });
 
 // document.addEventListener('DOMContentLoaded', function () {
@@ -325,7 +329,6 @@ function confirmListing(listingId) {
     });
 }
 
-
 function postListing(listingIds) {
     // Ensure listingIds is always an array
     if (!Array.isArray(listingIds)) {
@@ -402,17 +405,63 @@ function postListing(listingIds) {
     submitNextListing();
 }
 
+function submitAllForms(url) {
+    let formData = $('#settings-form, #billing-form, #shipping-form, #shipping-account-form').serialize();
+
+    $.ajax({
+        type: 'POST',
+        url: url,
+        data: formData,
+        success: function (response) {
+            if (response.status === 'success') {
+                // Display a Bootstrap success alert
+                $('#main-content').prepend(`
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        ${response.message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `);
+            } else {
+                // Display errors using Bootstrap alerts
+                let errors = response.errors;
+                for (let formName in errors) {
+                    if (errors.hasOwnProperty(formName)) {
+                        $('#main-content').prepend(`
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <strong>Errors in ${formName}:</strong> ${JSON.stringify(errors[formName])}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        `);
+                    }
+                }
+            }
+        },
+        error: function (response) {
+            // Display a generic Bootstrap error alert
+            $('#alert-container').html(`
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    An error occurred while processing your request.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `);
+        }
+    });
+}
+
+
 document.addEventListener('DOMContentLoaded', function () {
     const selectAllCheckbox = document.getElementById('select-all-listings');
     const listingCheckboxes = document.querySelectorAll('.listing-checkbox');
 
-    // Handle "Select All" functionality
-    selectAllCheckbox.addEventListener('change', function () {
-        listingCheckboxes.forEach(function (checkbox) {
-            checkbox.checked = selectAllCheckbox.checked;
+    if (selectAllCheckbox) {
+        // Handle "Select All" functionality
+        selectAllCheckbox.addEventListener('change', function () {
+            listingCheckboxes.forEach(function (checkbox) {
+                checkbox.checked = selectAllCheckbox.checked;
+            });
+            document.getElementById('post-selected-listings').style.display = 'flex';
         });
-        document.getElementById('post-selected-listings').style.display = 'flex';
-    });
+    }
 
     // Listener to post multiple listings
     document.getElementById('post-selected-listings').addEventListener('click', function (event) {

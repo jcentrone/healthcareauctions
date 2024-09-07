@@ -135,6 +135,67 @@ def index(request):
     })
 
 
+@require_POST
+@login_required
+def save_all_forms(request):
+    user = request.user
+
+    # Initialize all forms
+    settings_form = CustomUserChangeForm(request.POST, request.FILES, instance=user)
+    billing_data = {
+        'billing-street': request.POST.getlist('street')[0],
+        'billing-suite': request.POST.getlist('suite')[0],
+        'billing-city': request.POST.getlist('city')[0],
+        'billing-state': request.POST.getlist('state')[0],
+        'billing-zip_code': request.POST.getlist('zip_code')[0],
+        'billing-country': request.POST.getlist('country')[0],
+        'billing-address_type': 'billing',
+    }
+    billing_form = UserAddressForm(billing_data, prefix='billing',
+                                   instance=user.addresses.filter(address_type='billing').first())
+
+    shipping_data = {
+        'shipping-street': request.POST.getlist('street')[1],
+        'shipping-suite': request.POST.getlist('suite')[1],
+        'shipping-city': request.POST.getlist('city')[1],
+        'shipping-state': request.POST.getlist('state')[1],
+        'shipping-zip_code': request.POST.getlist('zip_code')[1],
+        'shipping-country': request.POST.getlist('country')[1],
+        'shipping-address_type': 'shipping',
+    }
+    shipping_form = UserAddressForm(shipping_data, prefix='shipping',
+                                    instance=user.addresses.filter(address_type='shipping').first())
+
+    shipping_account_instance = ShippingAccounts.objects.filter(user=user).first()
+    shipping_account_form = ShippingAccountsForm(request.POST, instance=shipping_account_instance)
+
+    # Validate all forms
+    forms = {
+        'settings_form': settings_form,
+        'billing_form': billing_form,
+        'shipping_form': shipping_form,
+        'shipping_account_form': shipping_account_form,
+    }
+    errors = {}
+
+    for form_name, form in forms.items():
+        if not form.is_valid():
+            errors[form_name] = form.errors
+
+    if errors:
+        return JsonResponse({'status': 'error', 'errors': errors})
+
+    # Save all forms if they are valid
+    settings_form.save()
+    billing_form.save()
+    shipping_form.save()
+    shipping_account = shipping_account_form.save(commit=False)
+    shipping_account.user = user
+    shipping_account.save()
+
+    return JsonResponse({'status': 'success', 'message': 'Your preferences have been updated.'})
+
+
 @login_required
 def dashboard(request):
     """
@@ -162,6 +223,7 @@ def dashboard(request):
     bid_status_filter = request.GET.get('bid_status')
     hold_for_import = request.GET.get('hold_for_import', 'False').lower() == 'true'
     active_tab = request.GET.get('active_tab', 'orders')
+    print(active_tab)
 
     # Filters
 
@@ -301,58 +363,14 @@ def dashboard(request):
     shipping_account_instance = ShippingAccounts.objects.filter(user=user).first()
     shipping_account_form = ShippingAccountsForm(request.POST or None, instance=shipping_account_instance)
 
-    if request.method == 'POST':
-        print("Received POST data:", request.POST)
+    billing_form = UserAddressForm(instance=user.addresses.filter(address_type='billing').first(),
+                                   prefix='billing')
+    shipping_form = UserAddressForm(instance=user.addresses.filter(address_type='shipping').first(),
+                                    prefix='shipping')
 
-        settings_form = CustomUserChangeForm(request.POST, request.FILES, instance=request.user)
-        billing_form = UserAddressForm(request.POST, prefix='billing',
-                                       instance=user.addresses.filter(address_type='billing').first())
-        shipping_form = UserAddressForm(request.POST, prefix='shipping',
-                                        instance=user.addresses.filter(address_type='shipping').first())
-        password_form = PasswordChangeForm(user, request.POST)
-
-        if password_form.is_valid():
-            password_form.save()
-            update_session_auth_hash(request, password_form.user)  # Important!
-            messages.success(request, 'Your password has been successfully changed.')
-            return redirect('dashboard')
-        else:
-            active_tab = 'password'
-
-        # Settings Form
-        if settings_form.is_valid():
-            settings_form.save()
-        else:
-            messages.error(request, settings_form.errors)
-
-        # Billing Form
-        if billing_form.is_valid():
-            billing_form.save()
-        else:
-            messages.error(request, billing_form.errors)
-
-        # Shipping Form
-        if shipping_form.is_valid():
-            shipping_form.save()
-        else:
-            messages.error(request, shipping_form.errors)
-
-        if shipping_account_form.is_valid():
-            shipping_account = shipping_account_form.save(commit=False)
-            shipping_account.user = user
-            shipping_account.save()
-            messages.success(request, 'Your settings have been updated.')
-        else:
-            messages.error(request, 'Please correct the errors below.')
-    else:
-        billing_form = UserAddressForm(instance=user.addresses.filter(address_type='billing').first(),
-                                       prefix='billing')
-        shipping_form = UserAddressForm(instance=user.addresses.filter(address_type='shipping').first(),
-                                        prefix='shipping')
-
-        settings_form = CustomUserChangeForm(instance=request.user)
-        password_form = PasswordChangeForm(user)
-        shipping_account_form = ShippingAccountsForm(instance=shipping_account_instance)
+    settings_form = CustomUserChangeForm(instance=request.user)
+    password_form = PasswordChangeForm(user)
+    shipping_account_form = ShippingAccountsForm(instance=shipping_account_instance)
 
     for field in password_form.fields.values():
         field.widget.attrs.update({'class': 'form-control'})
@@ -679,8 +697,6 @@ def auction_create(request):
     })
 
 
-@login_required
-@csrf_exempt
 @login_required
 @csrf_exempt
 def import_excel(request):
@@ -1308,7 +1324,8 @@ def checkout(request):
     venmo_form = VenmoForm(request.POST or None)
     paypal_form = PayPalForm(request.POST or None)
     cashapp_form = CashAppForm(request.POST or None)
-    shipping_accounts_form = ShippingAccountsForm(request.POST or None)
+    shipping_account_instance = request.user.shipping_accounts.first()  # or .last(), depending on your needs
+    shipping_accounts_form = ShippingAccountsForm(request.POST or None, instance=shipping_account_instance)
     shipping_method_form = ShippingMethodForm(request.POST or None, initial=initial_data)
 
     if request.method == 'POST':

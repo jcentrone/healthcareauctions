@@ -56,5 +56,6 @@ urlpatterns = [
     path('post_listing/<int:auction_id>/', views.post_listing, name='post_listing'),
     path('export_listings/', views.export_listings_to_excel, name='export_listings'),
     path('scrape/', views.scrape, name='scrape'),
+    path('save-all-forms/', views.save_all_forms, name='save_all_forms'),
 
 ]
