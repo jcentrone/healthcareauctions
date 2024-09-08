@@ -917,7 +917,7 @@ def get_auction_images(request, auction_id):
     image_urls = [image.image.url for image in images]
     return (JsonResponse({'image_urls': image_urls}))
 
-
+@login_required
 def get_default_image(request):
     reference_number = request.GET.get('reference_number')
 
@@ -931,6 +931,27 @@ def get_default_image(request):
             # No matching product image found
             return JsonResponse({'image_url': None})
     return JsonResponse({'image_url': None})
+
+@login_required
+def get_default_image_blob(request):
+    reference_number = request.GET.get('reference_number')
+
+    if reference_number:
+        try:
+            # Retrieve the product image with case-insensitive matching
+            product_image = get_object_or_404(ProductImage, reference_number__iexact=reference_number)
+
+            # Open the image file
+            with product_image.image.open('rb') as img_file:
+                # Return the image as a binary blob
+                return HttpResponse(img_file.read(), content_type="image/jpeg")
+
+        except ProductImage.DoesNotExist:
+            # No matching product image found
+            return HttpResponse(status=404)
+
+    # If reference_number is not provided or image not found
+    return HttpResponse(status=400)
 
 
 def get_auction_product_details(request, auction_id):

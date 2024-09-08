@@ -112,6 +112,8 @@ document.addEventListener('DOMContentLoaded', function () {
             parseBarcode(skuInput.value);
         }
     });
+
+    document.getElementById('sku-intro').removeAttribute('hidden');
 });
 
 
@@ -158,7 +160,7 @@ function fetchDeviceData(code) {
             return response.json();
         })
         .then(data => {
-            console.log("Device data from AccessGUDID:", data);
+            console.log("2) Device data from AccessGUDID:", data);
             document.getElementById('lookup-errors').innerText = '';
             populateForm(data);
             fetchClassificationData(data.gudid.device.productCodes.fdaProductCode[0].productCode);
@@ -239,8 +241,14 @@ function getCsrfToken() {
 function populateForm(data) {
     if (data && data.gudid && data.gudid.device) {
         const device = data.gudid.device;
+        const udi = data.udi;
         document.getElementById('id_product_name').value = device.brandName || '';
         document.getElementById('id_manufacturer').value = toProperCase(device.companyName) || '';
+        if (udi) {
+            document.getElementById('id_form-0-lot_number').value = capitalizeAll(udi.lotNumber) || '';
+            document.getElementById('id_form-0-expiration_date').value = udi.expirationDate || '';
+            document.getElementById('id_form-0-production_date').value = udi.manufacturingDate || '';
+        }
 
         let description = device.deviceDescription || '';
         let gmdnTerms = device.gmdnTerms.gmdn[0].gmdnPTDefinition || '';
@@ -281,17 +289,17 @@ function populateForm(data) {
 
 
         // If device has manufacturing date requirement make required
-        if (device.manufacturingDate) {
-            document.getElementById('id_form-0-production_date').required = true;
-        }
-        // If device has expiration date requirement make required
-        if (device.expirationDate) {
-            document.getElementById('id_form-0-expiration_date').required = true;
-        }
-        // If device has expiration date requirement make required
-        if (device.lotBatch) {
-            document.getElementById('id_form-0-lot_number').required = true;
-        }
+        // if (device.manufacturingDate) {
+        //     document.getElementById('id_form-0-production_date').required = true;
+        // }
+        // // If device has expiration date requirement make required
+        // if (device.expirationDate) {
+        //     document.getElementById('id_form-0-expiration_date').required = true;
+        // }
+        // // If device has expiration date requirement make required
+        // if (device.lotBatch) {
+        //     document.getElementById('id_form-0-lot_number').required = true;
+        // }
 
 
         let modal = document.getElementById('modal-bg');
@@ -304,6 +312,17 @@ function populateForm(data) {
 }
 
 // Modal Actions - Workflow
+function closeModal() {
+    document.getElementById('modal-bg').classList.add('hidden-field');
+    // Move placeholder back to modal content and move listing type container
+    moveElement('placeholderEL', 'modal-content', true);
+    moveElement('sku-field0', 'product-detail-container0', true);
+    moveElement('description-name-container', 'auction-summary-container', true);
+    moveElement('listingTypeContainer', 'sku-container');
+    document.getElementById('sku-intro').setAttribute('hidden', 'hidden');
+    // document.getElementById('sku-intro').style.display = 'none';
+}
+
 // Function to handle actions within the modal
 function modalActions() {
     let placeholderEL = document.getElementById('placeholderEL');
@@ -311,6 +330,7 @@ function modalActions() {
 
     // Move UDI/SKU back to its original position
     moveElement('sku-field0', 'product-detail-container0', true);
+    document.getElementById('sku-intro').removeAttribute('hidden');
 
     // Append placeholder to modal content
     document.getElementById('modal-content').appendChild(placeholderEL);
@@ -388,6 +408,14 @@ document.getElementById('close-modal-btn').addEventListener('click', function ()
 
 function toProperCase(str) {
     return str.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
+}
+
+function capitalizeAll(str) {
+    if (str) {
+        return str.replace(/\b\w/g, function (char) {
+            return char.toUpperCase();
+        });
+    }
 }
 
 function convertDate(dateString) {
@@ -943,18 +971,43 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-// document.addEventListener('DOMContentLoaded', function() {
-//     const skuInputs = document.querySelectorAll('.sku-input');
-//
-//     skuInputs.forEach(input => {
-//         Inputmask({
-//             mask: "(01)9999999999999", // Define the mask with 13 numeric characters after the (01)
-//             placeholder: " ", // Placeholder for the remaining numeric characters
-//             showMaskOnHover: true, // Optional: Hide the mask when not focused
-//             showMaskOnFocus: true // Optional: Show the mask when focused
-//         }).mask(input);
-//     });
-// });
+document.getElementById('id_form-0-reference_number').addEventListener('input', function () {
+    const referenceNumber = this.value;
+
+    if (referenceNumber.length > 0) {
+        fetch(`/get_default_image_blob/?reference_number=${referenceNumber}`)
+            .then(response => {
+                if (response.ok) {
+                    return response.blob(); // Get the image as a blob
+                } else {
+                    throw new Error('Image not found');
+                }
+            })
+            .then(blob => {
+                const imgURL = URL.createObjectURL(blob);
+                document.getElementById('thumbnail-preview-0').src = imgURL;
+                document.getElementById('thumbnail-preview-0').style.display = 'block';
+                document.getElementById('upload-icon-0').style.display = 'none';
+
+                // Set the blob to the file input
+                const fileInput = document.getElementById('id_form-0-image');
+                const file = new File([blob], 'default_image.jpg', { type: blob.type });
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                fileInput.files = dataTransfer.files;
+            })
+            .catch(error => {
+                console.error('Error fetching the image as blob:', error);
+                document.getElementById('thumbnail-preview-0').style.display = 'none';
+                document.getElementById('upload-icon-0').style.display = 'block';
+            });
+    } else {
+        document.getElementById('thumbnail-preview-0').style.display = 'none';
+        document.getElementById('upload-icon-0').style.display = 'block';
+    }
+});
+
+
 
 
 

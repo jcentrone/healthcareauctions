@@ -58,5 +58,6 @@ urlpatterns = [
     path('scrape/', views.scrape, name='scrape'),
     path('save-all-forms/', views.save_all_forms, name='save_all_forms'),
     path('get_default_image/', views.get_default_image, name='get_default_image'),
+    path('get_default_image_blob/', views.get_default_image_blob, name='get_default_image_blob'),
 
 ]
