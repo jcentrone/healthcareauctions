@@ -746,7 +746,7 @@ def import_excel(request):
                 if auction_reference_number:
                     try:
                         # Look for a product image with the matching reference number
-                        product_image = ProductImage.objects.get(reference_number=auction_reference_number)
+                        product_image = ProductImage.objects.get(reference_number__iexact=auction_reference_number)
                         # Create an image associated with the auction
                         Image.objects.create(auction=auction, image=product_image.image)
                     except ProductImage.DoesNotExist:
@@ -916,6 +916,21 @@ def get_auction_images(request, auction_id):
     images = auction.get_images.all()
     image_urls = [image.image.url for image in images]
     return (JsonResponse({'image_urls': image_urls}))
+
+
+def get_default_image(request):
+    reference_number = request.GET.get('reference_number')
+
+    if reference_number:
+        try:
+            # Look for a product image with the matching reference number
+            product_image = ProductImage.objects.get(reference_number__iexact=reference_number)
+            image_url = product_image.image.url  # Get the URL of the image
+            return JsonResponse({'image_url': image_url})
+        except ProductImage.DoesNotExist:
+            # No matching product image found
+            return JsonResponse({'image_url': None})
+    return JsonResponse({'image_url': None})
 
 
 def get_auction_product_details(request, auction_id):
@@ -1439,8 +1454,6 @@ def checkout(request):
     })
 
 
-
-
 @login_required
 def order_confirmation(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
@@ -1495,7 +1508,6 @@ def track_auction_view(request):
 
 
 # MESSAGING
-
 @login_required
 def inbox(request):
     threads = Message.objects.filter(

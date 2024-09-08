@@ -160,7 +160,7 @@ function fetchDeviceData(code) {
             return response.json();
         })
         .then(data => {
-            console.log("Device data from AccessGUDID:", data);
+            console.log("2) Device data from AccessGUDID:", data);
             document.getElementById('lookup-errors').innerText = '';
             populateForm(data);
             fetchClassificationData(data.gudid.device.productCodes.fdaProductCode[0].productCode);
@@ -241,8 +241,12 @@ function getCsrfToken() {
 function populateForm(data) {
     if (data && data.gudid && data.gudid.device) {
         const device = data.gudid.device;
+        const udi = data.udi;
         document.getElementById('id_product_name').value = device.brandName || '';
         document.getElementById('id_manufacturer').value = toProperCase(device.companyName) || '';
+        console.log('Lot#', udi.lotNumber);
+        document.getElementById('id_form-0-lot_number').value = capitalizeAll(udi.lotNumber) || '';
+
 
         let description = device.deviceDescription || '';
         let gmdnTerms = device.gmdnTerms.gmdn[0].gmdnPTDefinition || '';
@@ -283,17 +287,17 @@ function populateForm(data) {
 
 
         // If device has manufacturing date requirement make required
-        if (device.manufacturingDate) {
-            document.getElementById('id_form-0-production_date').required = true;
-        }
-        // If device has expiration date requirement make required
-        if (device.expirationDate) {
-            document.getElementById('id_form-0-expiration_date').required = true;
-        }
-        // If device has expiration date requirement make required
-        if (device.lotBatch) {
-            document.getElementById('id_form-0-lot_number').required = true;
-        }
+        // if (device.manufacturingDate) {
+        //     document.getElementById('id_form-0-production_date').required = true;
+        // }
+        // // If device has expiration date requirement make required
+        // if (device.expirationDate) {
+        //     document.getElementById('id_form-0-expiration_date').required = true;
+        // }
+        // // If device has expiration date requirement make required
+        // if (device.lotBatch) {
+        //     document.getElementById('id_form-0-lot_number').required = true;
+        // }
 
 
         let modal = document.getElementById('modal-bg');
@@ -402,6 +406,14 @@ document.getElementById('close-modal-btn').addEventListener('click', function ()
 
 function toProperCase(str) {
     return str.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
+}
+
+function capitalizeAll(str) {
+    if (str) {
+        return str.replace(/\b\w/g, function (char) {
+            return char.toUpperCase();
+        });
+    }
 }
 
 function convertDate(dateString) {
@@ -957,18 +969,28 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-// document.addEventListener('DOMContentLoaded', function() {
-//     const skuInputs = document.querySelectorAll('.sku-input');
-//
-//     skuInputs.forEach(input => {
-//         Inputmask({
-//             mask: "(01)9999999999999", // Define the mask with 13 numeric characters after the (01)
-//             placeholder: " ", // Placeholder for the remaining numeric characters
-//             showMaskOnHover: true, // Optional: Hide the mask when not focused
-//             showMaskOnFocus: true // Optional: Show the mask when focused
-//         }).mask(input);
-//     });
-// });
+document.getElementById('id_form-0-reference_number').addEventListener('input', function () {
+    const referenceNumber = this.value;
+
+    if (referenceNumber.length > 0) {
+        fetch(`/get_default_image/?reference_number=${referenceNumber}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.image_url) {
+                    document.getElementById('thumbnail-preview-0').src = data.image_url;
+                    document.getElementById('thumbnail-preview-0').style.display = 'block';
+                    document.getElementById('upload-icon-0').style.display = 'none';
+                } else {
+                    document.getElementById('thumbnail-preview-0').style.display = 'none';
+                    document.getElementById('upload-icon-0').style.display = 'block';
+                }
+            })
+            .catch(error => console.error('Error fetching the default image:', error));
+    } else {
+        document.getElementById('thumbnail-preview-0').style.display = 'none';
+        document.getElementById('upload-icon-0').style.display = 'block';
+    }
+});
 
 
 

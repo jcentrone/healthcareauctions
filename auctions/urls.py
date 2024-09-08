@@ -57,5 +57,6 @@ urlpatterns = [
     path('export_listings/', views.export_listings_to_excel, name='export_listings'),
     path('scrape/', views.scrape, name='scrape'),
     path('save-all-forms/', views.save_all_forms, name='save_all_forms'),
+    path('get_default_image/', views.get_default_image, name='get_default_image'),
 
 ]
