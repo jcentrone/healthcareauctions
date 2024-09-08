@@ -155,9 +155,14 @@ h2 a {
 
 .hero p {
     position: relative;
-    font-size: 24px;
-    margin-bottom: 40px;
+    font-size: 1.25em;
+    /*margin-bottom: 40px;*/
     text-align: left;
+}
+
+a.btn.btn-light.btn-lg.mt-3,
+a.btn.btn-outline-light.btn-lg.mt-3 {
+    min-width: 125px;
 }
 
 .hero .button {
