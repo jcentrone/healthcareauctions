@@ -271,8 +271,9 @@ function populateForm(data) {
                 }
             }
         }
+        let catalogNumber = device.catalogNumber;
 
-        document.getElementById('id_title').value = device.brandName + " - " + device.deviceDescription;
+        document.getElementById('id_title').value = catalogNumber;
         document.getElementById('id_package_quantity').value = packageQuantity;
 
         // Map package type to the dropdown
@@ -286,20 +287,6 @@ function populateForm(data) {
         document.getElementById('id_deviceSterile').checked = device.sterilization.deviceSterile || false;
         document.getElementById('id_fullPackage').checked = true;
         document.getElementById('partial-qty').classList.add('hidden-field');
-
-
-        // If device has manufacturing date requirement make required
-        // if (device.manufacturingDate) {
-        //     document.getElementById('id_form-0-production_date').required = true;
-        // }
-        // // If device has expiration date requirement make required
-        // if (device.expirationDate) {
-        //     document.getElementById('id_form-0-expiration_date').required = true;
-        // }
-        // // If device has expiration date requirement make required
-        // if (device.lotBatch) {
-        //     document.getElementById('id_form-0-lot_number').required = true;
-        // }
 
 
         let modal = document.getElementById('modal-bg');
@@ -973,6 +960,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
 document.getElementById('id_form-0-reference_number').addEventListener('input', function () {
     const referenceNumber = this.value;
+    let titleInput = document.getElementById('id_title'); // Get the input field
+    titleInput.value += referenceNumber;
+
 
     if (referenceNumber.length > 0) {
         fetch(`/get_default_image_blob/?reference_number=${referenceNumber}`)
@@ -991,7 +981,7 @@ document.getElementById('id_form-0-reference_number').addEventListener('input', 
 
                 // Set the blob to the file input
                 const fileInput = document.getElementById('id_form-0-image');
-                const file = new File([blob], 'default_image.jpg', { type: blob.type });
+                const file = new File([blob], 'default_image.jpg', {type: blob.type});
                 const dataTransfer = new DataTransfer();
                 dataTransfer.items.add(file);
                 fileInput.files = dataTransfer.files;
