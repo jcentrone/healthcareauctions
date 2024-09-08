@@ -8,7 +8,7 @@ from decimal import Decimal
 import openpyxl
 from django import forms
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.views import PasswordChangeView
@@ -869,8 +869,13 @@ def active_auctions_view(request, auction_id=None):
             Q(title__icontains=search_query) |
             Q(description__icontains=search_query) |
             Q(product_name__icontains=search_query) |
-            Q(reference_number__icontains=search_query) |
-            Q(lot_number__icontains=search_query)
+            Q(gmdnPTDefinition__icontains=search_query) |
+            Q(manufacturer__icontains=search_query) |
+            Q(product_details__reference_number__icontains=search_query) |  # Correct usage
+            Q(product_details__sku__icontains=search_query) |  # Correct usage
+            Q(product_details__lot_number__icontains=search_query)  # Correct usage
+            # Q(category_name__icontains=search_query) |
+
         )
 
     # Add additional fields to auctions
@@ -896,9 +901,11 @@ def active_auctions_view(request, auction_id=None):
     return render(request, 'auctions_active.html', {
         # 'categories': Category.objects.all(),
         'auctions': pages,
+        'search_query': search_query,
         'bid_form': BidForm(),
         'add_to_cart_form': AddToCartForm(),
         'auctions_count': auctions.count(),
+        'category_name': category_name,
         'pages': pages,
         'title': 'Active Auctions',
         'unique_manufacturers': sorted(set(auctions.values_list('manufacturer', flat=True))),
@@ -917,6 +924,7 @@ def get_auction_images(request, auction_id):
     image_urls = [image.image.url for image in images]
     return (JsonResponse({'image_urls': image_urls}))
 
+
 @login_required
 def get_default_image(request):
     reference_number = request.GET.get('reference_number')
@@ -931,6 +939,7 @@ def get_default_image(request):
             # No matching product image found
             return JsonResponse({'image_url': None})
     return JsonResponse({'image_url': None})
+
 
 @login_required
 def get_default_image_blob(request):

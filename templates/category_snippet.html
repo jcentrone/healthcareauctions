@@ -1,11 +1,9 @@
 <!-- category_snippet.html -->
 {#{% if category.count_active_auctions %}#}
     <li>
-        <a class='nav-link categories' href="{% url 'active_auctions_view'%}?category_name={{ category.category_name }}">
-                                       
-{#            <i class='fas fa-fw fa-folder-open'></i>#}
-            <span class='text-capitalize'>{{ category }}</span>
-            <span class="badge">{{ category.count_active_auctions }}</span>
+        <a class='nav-link categories d-flex align-items-center' href="{% url 'active_auctions_view'%}?category_name={{ category.category_name }}">
+            <div class='text-capitalize'>{{ category }} - <span class="badge text-dark">{{ category.count_active_auctions }}</span></div>
+            
         </a>
         {% if category.subcategories.all %}
             <ul>

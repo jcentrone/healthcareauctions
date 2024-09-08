@@ -187,6 +187,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+
     // Bid submission handling
     document.querySelectorAll('.bid-form form').forEach(function (form) {
         form.addEventListener('submit', function (event) {
@@ -304,6 +305,19 @@ document.querySelectorAll('.message-form').forEach(function (form) {
             .catch(error => {
                 console.error('Error:', error);
             });
+    });
+});
+
+// Add to cart button in listing
+document.addEventListener('DOMContentLoaded', function () {
+    // Select all Add to Cart buttons
+    const addToCartButtons = document.querySelectorAll('form button[type="submit"]');
+
+    // Add click event listener to each button
+    addToCartButtons.forEach(button => {
+        button.addEventListener('click', function (event) {
+            event.stopPropagation(); // Stop the event from propagating to the parent elements
+        });
     });
 });
 

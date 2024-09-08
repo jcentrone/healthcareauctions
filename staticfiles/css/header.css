@@ -84,6 +84,11 @@ header .logo {
     padding: 0 10px;
     border: var(--bs-border-width) solid var(--bs-border-color);
     width: auto;
+    outline: none;
+}
+
+.custom-select option{
+    outline: none;
 }
 
 .watch-button {
@@ -177,7 +182,7 @@ span.badge {
 }
 
 #category-dropdown-content {
-    min-width: 250px;
+    min-width: 300px;
     width: fit-content;
     max-height: 500px;
     overflow: auto;

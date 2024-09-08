@@ -121,6 +121,14 @@ label {
     font-weight: bold;
 }
 
+.no-margin-bottom {
+    margin-bottom: 0 !important;
+}
+
+.city-state-zip-container{
+    align-items: center;
+}
+
 .read-only-label {
     margin-bottom: 0;
 }

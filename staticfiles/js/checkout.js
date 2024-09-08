@@ -1,9 +1,8 @@
 document.addEventListener('DOMContentLoaded', function () {
     validateCreditCardForm();
     disableEnableSubmit();
-    toggleEdit('order-contact');
-    // toggleEdit('order-shipping-billing');
-    // toggleEdit('order-shipping-method');
+    toggleEdit();
+
     toggleShippingForms();
 
 });
@@ -123,7 +122,8 @@ function toggleShippingForms() {
 }
 
 function toggleEdit(section) {
-    let sectionFields = document.querySelectorAll(`#${section} .form-control`);
+    let sectionFields = document.querySelectorAll('.form-control');
+    let formGroups = document.querySelectorAll('.form-group');
     sectionFields.forEach(function (field) {
         if (field.readOnly) {
             field.readOnly = false;
@@ -134,15 +134,27 @@ function toggleEdit(section) {
         }
     });
 
-    // Optionally, you can toggle the text of the edit button
-    let editButton = document.querySelector(`#${section}-edit-button`);
-    if (editButton.innerText === "Edit") {
-        editButton.innerText = "Save";
-    } else {
-        editButton.innerText = "Edit";
-    }
-}
+    formGroups.forEach(function (field) {
+        if (field.classList.contains('no-margin-bottom')) {
+            field.classList.remove('no-margin-bottom');
+        } else {
 
+            field.classList.add('no-margin-bottom');
+        }
+    });
+
+    // Optionally, you can toggle the text of the edit button
+    let editButtons = document.querySelectorAll('.edit-button');
+    editButtons.forEach(function (editButton) {
+        if (editButton.innerText === "Save") {
+            editButton.innerText = "Edit";
+        } else {
+            editButton.innerText = "Save";
+        }
+
+    });
+
+}
 
 
 // Modal functions and operations:
