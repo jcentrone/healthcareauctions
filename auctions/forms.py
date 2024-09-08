@@ -63,18 +63,21 @@ class ProductDetailForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(EditProductDetailForm, self).__init__(*args, **kwargs)
-        for visible in self.visible_fields():
-            visible.field.widget.attrs['class'] = 'form-control'
+        super().__init__(*args, **kwargs)
 
-        if 'sku' in self.fields:
-            # self.fields['sku'].required = True
-            self.fields['sku'].widget.attrs['class'] = 'form-control sku-input'
-
-        if 'production_date' in self.fields:
-            self.fields['production_date'].widget.attrs['class'] += ' datepicker'
-        if 'expiration_date' in self.fields:
-            self.fields['expiration_date'].widget.attrs['class'] += ' datepicker'
+    # def __init__(self, *args, **kwargs):
+    #     super(EditProductDetailForm, self).__init__(*args, **kwargs)
+    #     for visible in self.visible_fields():
+    #         visible.field.widget.attrs['class'] = 'form-control'
+    #
+    #     if 'sku' in self.fields:
+    #         # self.fields['sku'].required = True
+    #         self.fields['sku'].widget.attrs['class'] = 'form-control sku-input'
+    #
+    #     if 'production_date' in self.fields:
+    #         self.fields['production_date'].widget.attrs['class'] += ' datepicker'
+    #     if 'expiration_date' in self.fields:
+    #         self.fields['expiration_date'].widget.attrs['class'] += ' datepicker'
 
 
 # Define the formset for ProductDetail

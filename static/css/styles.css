@@ -1295,7 +1295,7 @@ input:required, select:required, textarea:required {
 
 .product-detail-form {
     display: grid;
-    grid-template-columns: auto auto auto auto auto auto;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
     align-items: flex-end;
     justify-content: flex-end;
     gap: 20px;

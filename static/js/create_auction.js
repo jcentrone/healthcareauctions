@@ -112,6 +112,8 @@ document.addEventListener('DOMContentLoaded', function () {
             parseBarcode(skuInput.value);
         }
     });
+
+    document.getElementById('sku-intro').removeAttribute('hidden');
 });
 
 
@@ -304,6 +306,17 @@ function populateForm(data) {
 }
 
 // Modal Actions - Workflow
+function closeModal() {
+    document.getElementById('modal-bg').classList.add('hidden-field');
+    // Move placeholder back to modal content and move listing type container
+    moveElement('placeholderEL', 'modal-content', true);
+    moveElement('sku-field0', 'product-detail-container0', true);
+    moveElement('description-name-container', 'auction-summary-container', true);
+    moveElement('listingTypeContainer', 'sku-container');
+    document.getElementById('sku-intro').setAttribute('hidden', 'hidden');
+    // document.getElementById('sku-intro').style.display = 'none';
+}
+
 // Function to handle actions within the modal
 function modalActions() {
     let placeholderEL = document.getElementById('placeholderEL');
@@ -311,6 +324,7 @@ function modalActions() {
 
     // Move UDI/SKU back to its original position
     moveElement('sku-field0', 'product-detail-container0', true);
+    document.getElementById('sku-intro').removeAttribute('hidden');
 
     // Append placeholder to modal content
     document.getElementById('modal-content').appendChild(placeholderEL);

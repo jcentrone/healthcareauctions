@@ -188,7 +188,8 @@
                                                             <div class="tab-pane border-0 fade show active" id="auction"
                                                                  role="tabpanel" aria-labelledby="auction-tab">
                                                                 <div class="">
-                                                                    <div class="mb-2 fw-light fst-italic">The Listing Type
+                                                                    <div class="mb-2 fw-light fst-italic">The Listing
+                                                                        Type
                                                                         Will Be Auction
                                                                     </div>
                                                                     <div class="bid-row">
@@ -216,7 +217,8 @@
                                                                  role="tabpanel"
                                                                  aria-labelledby="buyItNow-tab">
                                                                 <div class="">
-                                                                    <div class="mb-2 fw-light fst-italic">The Listing Type
+                                                                    <div class="mb-2 fw-light fst-italic">The Listing
+                                                                        Type
                                                                         Will Be Sale
                                                                     </div>
 
@@ -249,20 +251,7 @@
                                                                     </i>
                                                                     {{ auction_form.auction_duration }}
                                                                 </div>
-
                                                             </div>
-
-
-                                                            {#                                                            <div class="form-group p-3" id="full-lot">#}
-                                                            {#                                                                {{ auction_form.sell_full_lot.label_tag }}#}
-                                                            {#                                                                <i class="fa fa-info-circle" aria-hidden="true"#}
-                                                            {#                                                                   id="infoIcon">#}
-                                                            {#                                                                    <span class="tooltip"#}
-                                                            {#                                                                          style="visibility: hidden; opacity: 0;">Leave unchecked to sell each item individually.  Check to sell all items together as a lot. </span>#}
-                                                            {#                                                                </i>#}
-                                                            {#                                                                {{ auction_form.sell_full_lot }}#}
-                                                            {#                                                            </div>#}
-
                                                         </div>
                                                     </div>
                                                 </div>
@@ -320,57 +309,98 @@
                                                     <div class="product-detail-form my-3"
                                                          id="product-detail-container{{ forloop.counter0 }}"
                                                          data-form-index="{{ forloop.counter0 }}">
-
+                                                        <!-- Column 1 -->
                                                         <div id="sku-field{{ forloop.counter0 }}"
                                                              class="form-group bid-scan-item">
-                                                            {{ form.sku.label_tag }}
-                                                            {{ form.sku }}
+                                                            <p id="sku-intro" hidden>When you create an auction and
+                                                                enter a barcode, our
+                                                                system automatically looks up detailed product
+                                                                information for you. This helps ensure your listings are
+                                                                accurate and saves you time by pre-filling key details.
+                                                                You can review and edit the information as needed before
+                                                                finalizing your auction. </p>
+                                                            <label for="{{ form.sku.id_for_label }}"
+                                                                   class="form-label">GTIN/SKU</label>
+                                                            <input type="text"
+                                                                   name="{{ form.sku.name }}"
+                                                                   id="{{ form.sku.id_for_label }}"
+                                                                   value="{{ form.sku.value|default_if_none:'' }}"
+                                                                   class="form-control sku-input"
+                                                                   required>
                                                             <div class="scan-control mobile-only">
                                                                 <i class="fa-solid fa-qrcode"></i>
                                                                 <i class="fa-solid fa-barcode"></i>
+                                                                {#
                                                             </div>
                                                         </div>
+                                                        <!-- Column 2 -->
                                                         <div class="form-group bid-scan-item">
-                                                            {{ form.reference_number.label_tag }}
-                                                            {{ form.reference_number }}
+                                                            <label for="{{ form.reference_number.id_for_label }}"
+                                                                   class="form-label">Reference Number</label>
+                                                            <input type="text"
+                                                                   name="{{ form.reference_number.name }}"
+                                                                   id="{{ form.reference_number.id_for_label }}"
+                                                                   value="{{ form.reference_number.value|default_if_none:'' }}"
+                                                                   class="form-control"
+                                                                   required>
                                                             <div class="scan-control mobile-only">
                                                                 <i class="fa-solid fa-qrcode"></i>
                                                                 <i class="fa-solid fa-barcode"></i>
                                                             </div>
                                                         </div>
+                                                        <!-- Column 3 -->
                                                         <div class="form-group bid-scan-item">
-                                                            {{ form.lot_number.label_tag }}
-                                                            {{ form.lot_number }}
+                                                            <label for="{{ form.lot_number.id_for_label }}"
+                                                                   class="form-label">Lot Number</label>
+                                                            <input type="text"
+                                                                   name="{{ form.lot_number.name }}"
+                                                                   id="{{ form.lot_number.id_for_label }}"
+                                                                   value="{{ form.lot_number.value|default_if_none:'' }}"
+                                                                   class="form-control">
                                                             <div class="scan-control mobile-only">
                                                                 <i class="fa-solid fa-qrcode"></i>
                                                                 <i class="fa-solid fa-barcode"></i>
                                                             </div>
                                                         </div>
+                                                        <!-- Column 4 -->
                                                         <div class="form-group bid-scan-item">
-                                                            {{ form.production_date.label_tag }}
-                                                            {{ form.production_date }}
+                                                            <label for="{{ form.production_date.id_for_label }}"
+                                                                   class="form-label">Production Date</label>
+                                                            <input type="date"
+                                                                   name="{{ form.production_date.name }}"
+                                                                   id="{{ form.production_date.id_for_label }}"
+                                                                   value="{{ form.production_date.value|default_if_none:'' }}"
+                                                                   class="form-control">
                                                             <div class="scan-control mobile-only">
                                                                 <i class="fa-solid fa-qrcode"></i>
                                                                 <i class="fa-solid fa-barcode"></i>
                                                             </div>
                                                         </div>
+                                                        <!-- Column 5 -->
                                                         <div class="form-group bid-scan-item">
-                                                            {{ form.expiration_date.label_tag }}
-                                                            {{ form.expiration_date }}
+                                                             <label for="{{ form.expiration_date.id_for_label }}"
+                                                                   class="form-label">Expiration Date</label>
+                                                            <input type="date"
+                                                                   name="{{ form.expiration_date.name }}"
+                                                                   id="{{ form.expiration_date.id_for_label }}"
+                                                                   value="{{ form.expiration_date.value|default_if_none:'' }}"
+                                                                   class="form-control">
+                                                            
+                                                            
                                                             <div class="scan-control mobile-only">
                                                                 <i class="fa-solid fa-qrcode"></i>
                                                                 <i class="fa-solid fa-barcode"></i>
                                                             </div>
                                                         </div>
-                                                        <button type="button" class="btn btn-danger remove-form-row ">
-                                                            Remove
-                                                        </button>
+                                                        {#                                                        <button type="button" class="btn btn-danger remove-form-row ">#}
+                                                        {#                                                            Remove#}
+                                                        {#                                                        </button>#}
                                                     </div>
                                                 {% endfor %}
                                             </div>
-                                            <button type="button" id="add-product-detail" class="btn btn-info my-3 ">
-                                                Add Product Detail
-                                            </button>
+                                            {#                                            <button type="button" id="add-product-detail" class="btn btn-info my-3 ">#}
+                                            {#                                                Add Product Detail#}
+                                            {#                                            </button>#}
 
 
                                         </div>
@@ -436,8 +466,8 @@
                             <div id="modal-bg" class="centered-modal-bg hidden-field">
                                 <div class="centered-modal-content" id="centered-modal-content">
                                     <div class="modal-header border-bottom mb-3 pb-2">
-                                        <h5 class="hidden-field modal-title" id="sku-info">Please enter a SKU/UDI to
-                                            get started</h5>
+                                        <h5 class="hidden-field modal-title" id="sku-info">Please enter a SKU/UDI to get
+                                            started</h5>
 
                                         <div class="hidden-field modal-title" id="description-information">
                                             <h5 class="modal-title">Here's what we discovered</h5>
@@ -449,7 +479,9 @@
                                                 between a traditional auction or an add to cart option.</p>
                                         </div>
 
-
+                                        <!-- Close button -->
+                                        <button type="button" class="btn-close" aria-label="Close"
+                                                onclick="closeModal()"></button>
                                     </div>
                                     <div id="modal-content">
                                         <div id="placeholderEL"></div>
@@ -460,11 +492,16 @@
                                                 class="btn btn-primary hidden-field">Next
                                         </button>
                                         <button id="close-modal-btn"
-                                                class="btn btn-secondary hidden-field">Close
+                                                class="btn btn-secondary hidden-field" onclick="closeModal()">Close
                                         </button>
                                     </div>
                                 </div>
                             </div>
+
+                            <script>
+
+                            </script>
+
 
                         </div>
                     </div>
