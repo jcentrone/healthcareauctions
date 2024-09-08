@@ -1,6 +1,11 @@
 document.addEventListener('DOMContentLoaded', function () {
     validateCreditCardForm();
     disableEnableSubmit();
+    toggleEdit('order-contact');
+    // toggleEdit('order-shipping-billing');
+    // toggleEdit('order-shipping-method');
+    toggleShippingForms();
+
 });
 
 function validateCreditCardForm() {
@@ -98,6 +103,48 @@ function disableEnableSubmit() {
     });
 }
 
+// JavaScript to handle form display logic based on the selected shipping option
+function toggleShippingForms() {
+    const ourShippingRadio = document.getElementById('our_shipping');
+    const customerShippingRadio = document.getElementById('customer_shipping');
+    const ourShippingForm = document.getElementById('our_shipping_form');
+    const customerShippingForm = document.getElementById('customer_shipping_form');
+    if (customerShippingRadio.checked) {
+        ourShippingForm.style.display = 'none';
+        customerShippingForm.style.display = 'block';
+    } else {
+        ourShippingForm.style.display = 'block';
+        customerShippingForm.style.display = 'none';
+    }
+
+    // Attach event listeners to radio buttons
+    ourShippingRadio.addEventListener('change', toggleShippingForms);
+    customerShippingRadio.addEventListener('change', toggleShippingForms);
+}
+
+function toggleEdit(section) {
+    let sectionFields = document.querySelectorAll(`#${section} .form-control`);
+    sectionFields.forEach(function (field) {
+        if (field.readOnly) {
+            field.readOnly = false;
+            field.classList.remove('read-only');
+        } else {
+            field.readOnly = true;
+            field.classList.add('read-only');
+        }
+    });
+
+    // Optionally, you can toggle the text of the edit button
+    let editButton = document.querySelector(`#${section}-edit-button`);
+    if (editButton.innerText === "Edit") {
+        editButton.innerText = "Save";
+    } else {
+        editButton.innerText = "Edit";
+    }
+}
+
+
+
 // Modal functions and operations:
 $(document).ready(function () {
     // Check if the user has previously opted to hide the instructions
@@ -119,7 +166,7 @@ $(document).ready(function () {
     setRequiredFields();
 
     // Listen to changes in the shipping option buttons
-    $('input[name="shipping_option"]').on('change', function() {
+    $('input[name="shipping_option"]').on('change', function () {
         if ($(this).attr('id') === 'our_shipping') {
             // Show our shipping form, hide customer shipping form
             $('#our_shipping_form').show();
@@ -148,8 +195,6 @@ $(document).ready(function () {
             $('#shipping_accounts_form input[name="carrier_account_number"]').attr('required', 'required');
         }
     }
-
-
 
 
 });

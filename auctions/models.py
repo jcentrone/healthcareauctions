@@ -87,6 +87,7 @@ class ShippingAccounts(models.Model):
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='shipping_accounts')
     order = models.ForeignKey('Order', on_delete=models.CASCADE, related_name='shipping_accounts', null=True, blank=True)
     carrier_name = models.CharField(max_length=10, choices=CARRIER_CHOICES)
+    use_as_default_shipping_method = models.BooleanField(default=True, null=True, blank=True)
     carrier_account_number = models.CharField(max_length=15, blank=True)
 
 
@@ -104,6 +105,8 @@ class Address(models.Model):
     # state = models.CharField(max_length=255)
     zip_code = models.CharField(max_length=10)
     country = models.CharField(max_length=255)
+    use_as_default_shipping_method_address = models.BooleanField(default=True, null=True, blank=True)
+
 
     def __str__(self):
         return f'{self.address_type} address for {self.user.username}'
@@ -402,7 +405,7 @@ class CartItem(models.Model):
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     auction = models.ForeignKey(Auction, on_delete=models.CASCADE)
-    cart = models.OneToOneField(Cart, on_delete=models.CASCADE)
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='orders')  # Changed to ForeignKey
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(

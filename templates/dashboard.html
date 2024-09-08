@@ -1688,8 +1688,6 @@
                             </div>
                         </div>
                         <div class="card-body">
-                            {#                                <form method="POST" enctype="multipart/form-data">#}
-                            {#                                    {% csrf_token %}#}
                             <!-- Tab Navigation -->
                             <ul class="nav nav-tabs mb-3" id="settingsTabs" role="tablist">
                                 <li class="nav-item" role="presentation">
@@ -2126,6 +2124,17 @@
                                                 <div class="text-danger">{{ shipping_account_form.carrier_name.errors }}</div>
                                             {% endif %}
                                         </div>
+                                        <!-- Shipping Account -->
+                                        <div class="col-md-6 mb-3 d-flex gap-2 align-items-center">
+                                            <input class="form-check-input m-0" type="checkbox"
+                                                   id="{{ shipping_account_form.use_as_default_shipping_method.id_for_label }}"
+                                                    {% if shipping_account_form.use_as_default_shipping_method.value %}
+                                                   checked {% endif %}>
+
+                                            <label for="{{ shipping_account_form.use_as_default_shipping_method.id_for_label }}"
+                                                   class="form-label m-0">Default for all orders</label>
+                                        </div>
+
                                         <!-- Submit Button -->
                                         <button class="save-all-forms-btn btn btn-primary" type="button"
                                                 class="btn btn-primary">Save

@@ -42,18 +42,21 @@
                         <form id="auction-filter-form" method="get" class="form-inline">
                             <!-- Filter By Time -->
                             <div class="form-group mb-2">
-                                <h5>Filter By</h5>
+                                <h6>Filter By: Ending Days</h6>
                                 <div class="dropdown">
                                     <button class="btn border dropdown-toggle d-flex align-items-center justify-content-between"
                                             type="button" id="time-filter"
                                             data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        All Times
+                                        Ending All Days
                                     </button>
                                     <div class="dropdown-menu" aria-labelledby="time-filter">
                                         <a class="dropdown-item" href="#" data-value="">All Times</a>
                                         <a class="dropdown-item" href="#" data-value="today">Today</a>
                                         <a class="dropdown-item" href="#" data-value="tomorrow">Tomorrow</a>
                                         <a class="dropdown-item" href="#" data-value="next_3_days">Next 3 Days</a>
+                                        <a class="dropdown-item" href="#" data-value="next_5_days">Next 5 Days</a>
+                                        <a class="dropdown-item" href="#" data-value="next_7_days">Next 7 Days</a>
+                                        <a class="dropdown-item" href="#" data-value="next_10_days">Next 10 Days</a>
                                         <a class="dropdown-item" href="#" data-value="">Reset</a>
                                     </div>
                                 </div>
@@ -61,7 +64,7 @@
                             </div>
                             <!-- Sort By -->
                             <div class="form-group mb-2">
-                                <h5>Sort By</h5>
+                                <h6>Sort By</h6>
                                 <div class="dropdown">
                                     <button class="btn border dropdown-toggle d-flex align-items-center justify-content-between"
                                             type="button" id="sort-by"
@@ -83,7 +86,7 @@
                             </div>
                             <!-- Manufacturer Filter -->
                             <div class="form-group mb-2">
-                                <h5>Manufacturer</h5>
+                                <h6>Select Manufacturer</h6>
                                 <div class="dropdown">
                                     <button class="btn border dropdown-toggle d-flex align-items-center justify-content-between"
                                             type="button" id="mfg-filter"
@@ -103,7 +106,7 @@
                             </div>
                             <!-- Auction Type Filter -->
                             <div class="form-group mb-2">
-                                <h5>Listing Type</h5>
+                                <h6>Listing Type</h6>
                                 <div class="dropdown">
                                     <button class="btn border dropdown-toggle d-flex align-items-center justify-content-between"
                                             type="button" id="auction-type"
@@ -120,7 +123,7 @@
                             </div>
                             <!-- Filter By Expired Items -->
                             <div class="form-group mb-2">
-                                <h5>Item Type</h5>
+                                <h6>Filter By: Expiration</h6>
                                 <div class="dropdown">
                                     <button class="btn border dropdown-toggle d-flex align-items-center justify-content-between"
                                             type="button" id="expired-filter"
@@ -138,7 +141,7 @@
                             <!-- My Listings Checkbox -->
                             {% if user.is_authenticated and has_active_auctions %}
                                 <div class="form-group mb-2">
-                                    <h5>My Listings</h5>
+                                    <h6>View My Listings</h6>
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" id="my-auctions-checkbox"
                                                name="my_auctions" value="1"

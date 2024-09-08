@@ -36,11 +36,15 @@
                 </div>
             {% endfor %}
         </div>
-        <div class="mt-4 d-flex justify-content-end">
+        <div class="mt-4 d-flex justify-content-between">
+            <div class="d-flex gap-3">
+                <a href="{% url 'checkout' %}" class="btn btn-primary">Proceed to Checkout</a>
+                <a href="{% url 'active_auctions_view' %}" class="btn btn-outline-secondary">Back to Shopping</a>
+            </div>
             <h4>Total: ${{ cart.total_cost }}</h4>
 
         </div>
-        <a href="{% url 'checkout' %}" class="btn btn-primary">Proceed to Checkout</a>
+
     </div>
     <link href='{% static "css/cart.css" %}' rel='stylesheet'>
 {% endblock %}

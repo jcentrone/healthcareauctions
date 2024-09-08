@@ -214,9 +214,10 @@ class ShippingMethodForm(forms.ModelForm):
 class ShippingAccountsForm(forms.ModelForm):
     class Meta:
         model = ShippingAccounts
-        fields = ['carrier_name', 'carrier_account_number']
+        fields = ['carrier_name', 'carrier_account_number', 'use_as_default_shipping_method']
         widgets = {
             'carrier_name': forms.Select(attrs={'class': 'form-control required'}),
+            'use_as_default_shipping_method': forms.Select(attrs={'class': 'form-check-input required'}),
             'carrier_account_number': forms.TextInput(attrs={'class': 'form-control required text-uppercase', 'placeholder': 'Enter your account number'}),
         }
         labels = {
@@ -244,7 +245,7 @@ class ShippingAddressForm(forms.ModelForm):
                   'shipping_state', 'shipping_zip_code', 'shipping_country',
                   'shipping_phone_number', 'shipping_email']
         widgets = {
-            'shipping_full_name': forms.TextInput(attrs={'class': 'form-control required'}),
+            'shipping_full_name': forms.TextInput(attrs={'class': 'form-control required read only'}),
             'shipping_street_address': forms.TextInput(attrs={'class': 'form-control required'}),
             'shipping_apartment_suite': forms.TextInput(attrs={'class': 'form-control'}),
             'shipping_city': forms.TextInput(attrs={'class': 'form-control required'}),

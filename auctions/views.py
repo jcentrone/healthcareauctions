@@ -838,6 +838,9 @@ def active_auctions_view(request, auction_id=None):
         'today': timedelta(days=1),
         'tomorrow': timedelta(days=2),
         'next_3_days': timedelta(days=3),
+        'next_5_days': timedelta(days=5),
+        'next_7_days': timedelta(days=7),
+        'next_10_days': timedelta(days=10),
     }
     if time_filter in time_deltas:
         end_date = timezone.now() + time_deltas[time_filter]
@@ -1291,7 +1294,6 @@ def checkout(request):
         'phone_number': request.user.phone_number,
     }
 
-    # Assuming you have a default address saved in the User profile
     default_shipping_address = request.user.addresses.filter(address_type='shipping').first()
     default_billing_address = request.user.addresses.filter(address_type='billing').first()
 
@@ -1317,14 +1319,14 @@ def checkout(request):
             'billing_country': "USA",
         })
 
-    # Define forms for each payment type
     credit_card_form = CreditCardForm(request.POST or None)
     ach_form = ACHForm(request.POST or None)
     zelle_form = ZelleForm(request.POST or None)
     venmo_form = VenmoForm(request.POST or None)
     paypal_form = PayPalForm(request.POST or None)
     cashapp_form = CashAppForm(request.POST or None)
-    shipping_account_instance = request.user.shipping_accounts.first()  # or .last(), depending on your needs
+    shipping_account_instance = request.user.shipping_accounts.first()
+    print(shipping_account_instance)
     shipping_accounts_form = ShippingAccountsForm(request.POST or None, instance=shipping_account_instance)
     shipping_method_form = ShippingMethodForm(request.POST or None, initial=initial_data)
 
@@ -1336,24 +1338,16 @@ def checkout(request):
             shipping_method = shipping_method_form.cleaned_data.get('shipping_method')
             special_instructions = shipping_method_form.cleaned_data.get('special_instructions')
 
-            # Assuming the cart contains items from the same auction (you might need to enforce this rule elsewhere)
             auction = cart.items.first().auction
 
-            order, created = Order.objects.get_or_create(
+            order = Order.objects.create(
+                user=request.user,
                 cart=cart,
-                defaults={
-                    'user': request.user,
-                    'auction': auction,  # Set the auction field
-                    'total_amount': cart.total_cost(),
-                    'shipping_method': shipping_method,
-                    'special_instructions': special_instructions,
-                }
+                auction=auction,
+                total_amount=cart.total_cost(),
+                shipping_method=shipping_method,
+                special_instructions=special_instructions,
             )
-
-            if not created:
-                order.shipping_method = shipping_method
-                order.special_instructions = special_instructions
-                order.save()
 
             for item in cart.items.all():
                 OrderItem.objects.create(
@@ -1362,17 +1356,15 @@ def checkout(request):
                     quantity=item.quantity(),
                     price=item.total_price()
                 )
-            # Handle shipping address form
+
             shipping_address = shipping_form.save(commit=False)
             shipping_address.order = order
             shipping_address.save()
 
-            # Handle billing address form
             billing_address = billing_form.save(commit=False)
             billing_address.order = order
             billing_address.save()
 
-            # Handle shipping account form
             shipping_account = shipping_accounts_form.save(commit=False)
             shipping_account.user = request.user
             shipping_account.order = order
@@ -1403,13 +1395,10 @@ def checkout(request):
 
             payment.save()
 
-            # Clear the user's cart after the order is successfully placed
             cart.items.all().delete()
-            # Mark the auction as inactive
             order.auction.active = False
             order.auction.save()
 
-            # Serialize the order
             order_data = model_to_dict(order)
             order_data['items'] = []
             for item in order.items.all():
@@ -1428,7 +1417,6 @@ def checkout(request):
                 'shipping_form': shipping_form.errors,
                 'billing_form': billing_form.errors,
                 'shipping_accounts_form': shipping_accounts_form.errors,
-
             }
             return JsonResponse({'status': 'error', 'message': 'Form validation failed.', 'errors': errors})
 
@@ -1449,6 +1437,8 @@ def checkout(request):
         'cashapp_form': cashapp_form,
         'cart': cart,
     })
+
+
 
 
 @login_required
