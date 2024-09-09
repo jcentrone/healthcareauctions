@@ -387,15 +387,14 @@ class Cart(models.Model):
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
     auction = models.ForeignKey(Auction, on_delete=models.CASCADE)
+    quantity = models.IntegerField(null=True, blank=True)
+
 
     def __str__(self):
         return f'{self.auction.title}'
 
     def total_price(self):
         return self.auction.buyItNowPrice if self.auction.buyItNowPrice else 0
-
-    def quantity(self):
-        return self.auction.quantity_available if self.auction.quantity_available else 0
 
     def get_image(self):
         # Returns the first image associated with the auction
@@ -458,6 +457,7 @@ class OrderItem(models.Model):
 class ShippingAddress(models.Model):
     order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='shipping_address')
     shipping_full_name = models.CharField(max_length=255)
+    shipping_company_name = models.CharField(max_length=255, blank=True, null=True)
     shipping_email = models.CharField(max_length=255, blank=True)
     shipping_street_address = models.CharField(max_length=255)
     shipping_apartment_suite = models.CharField('Suite', max_length=255, null=True, blank=True)
@@ -474,6 +474,7 @@ class ShippingAddress(models.Model):
 class BillingAddress(models.Model):
     order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='billing_address')
     billing_full_name = models.CharField(max_length=255)
+    billing_company_name = models.CharField(max_length=255, blank=True, null=True)
     billing_email = models.CharField(max_length=255, blank=True)
     billing_street_address = models.CharField(max_length=255)
     billing_apartment_suite = models.CharField('Suite', max_length=255, null=True, blank=True)

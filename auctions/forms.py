@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserChangeForm
+from django.core.exceptions import ValidationError
 from django.forms import modelformset_factory, inlineformset_factory
 
 from .models import Auction, Bid, Comment, Image, Category, CartItem, ProductDetail, Message, Order, ShippingAddress, \
@@ -64,20 +65,6 @@ class ProductDetailForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-    # def __init__(self, *args, **kwargs):
-    #     super(EditProductDetailForm, self).__init__(*args, **kwargs)
-    #     for visible in self.visible_fields():
-    #         visible.field.widget.attrs['class'] = 'form-control'
-    #
-    #     if 'sku' in self.fields:
-    #         # self.fields['sku'].required = True
-    #         self.fields['sku'].widget.attrs['class'] = 'form-control sku-input'
-    #
-    #     if 'production_date' in self.fields:
-    #         self.fields['production_date'].widget.attrs['class'] += ' datepicker'
-    #     if 'expiration_date' in self.fields:
-    #         self.fields['expiration_date'].widget.attrs['class'] += ' datepicker'
 
 
 # Define the formset for ProductDetail
@@ -163,12 +150,32 @@ class MessageForm(forms.ModelForm):
 
 
 class AddToCartForm(forms.ModelForm):
+    quantity = forms.IntegerField(
+        min_value=1,  # Minimum quantity allowed
+        label="Quantity",
+        widget=forms.NumberInput(attrs={'class': 'form-control mt-2 mb-3'}),
+    )
+
     class Meta:
         model = CartItem
-        fields = []  # No fields required
+        fields = ['quantity']
 
     def __init__(self, *args, **kwargs):
+        self.auction = kwargs.pop('auction', None)
         super(AddToCartForm, self).__init__(*args, **kwargs)
+        if self.auction:
+            self.fields['quantity'].validators.append(self.max_quantity_validator)
+
+    def max_quantity_validator(self, value):
+        if self.auction and value > self.auction.quantity_available:
+            raise ValidationError(f"Cannot add more than {self.auction.quantity_available} items.")
+
+    def save(self, commit=True):
+        instance = super(AddToCartForm, self).save(commit=False)
+        instance.auction = self.auction
+        if commit:
+            instance.save()
+        return instance
 
 
 class UserAddressForm(forms.ModelForm):
@@ -245,20 +252,17 @@ class ShippingAddressForm(forms.ModelForm):
     class Meta:
         model = ShippingAddress
         fields = ['shipping_full_name', 'shipping_street_address', 'shipping_apartment_suite', 'shipping_city',
-                  'shipping_state', 'shipping_zip_code', 'shipping_country',
-                  'shipping_phone_number', 'shipping_email']
+                  'shipping_state', 'shipping_zip_code', 'shipping_country', 'shipping_company_name']
         widgets = {
             'shipping_full_name': forms.TextInput(attrs={'class': 'form-control required read only'}),
             'shipping_street_address': forms.TextInput(attrs={'class': 'form-control required'}),
+            'shipping_company_name': forms.TextInput(attrs={'class': 'form-control'}),
             'shipping_apartment_suite': forms.TextInput(attrs={'class': 'form-control'}),
             'shipping_city': forms.TextInput(attrs={'class': 'form-control required'}),
             'shipping_state': forms.Select(choices=STATE_CHOICES, attrs={'class': 'form-control required'}),
             'shipping_zip_code': forms.TextInput(attrs={'class': 'form-control required'}),
             'shipping_country': forms.TextInput(attrs={'class': 'form-control'}),
-            'shipping_phone_number': forms.TextInput(
-                attrs={'class': 'form-control', 'placeholder': 'If different than above'}),
-            'shipping_email': forms.TextInput(
-                attrs={'class': 'form-control', 'placeholder': 'If different than above'}),
+
         }
 
 
@@ -266,19 +270,16 @@ class BillingAddressForm(forms.ModelForm):
     class Meta:
         model = BillingAddress
         fields = ['billing_full_name', 'billing_street_address', 'billing_apartment_suite', 'billing_city',
-                  'billing_state', 'billing_zip_code', 'billing_country',
-                  'billing_phone_number', 'billing_email']
+                  'billing_state', 'billing_zip_code', 'billing_country', 'billing_company_name']
         widgets = {
             'billing_full_name': forms.TextInput(attrs={'class': 'form-control required'}),
+            'billing_company_name': forms.TextInput(attrs={'class': 'form-control'}),
             'billing_street_address': forms.TextInput(attrs={'class': 'form-control required'}),
             'billing_apartment_suite': forms.TextInput(attrs={'class': 'form-control'}),
             'billing_city': forms.TextInput(attrs={'class': 'form-control required'}),
             'billing_state': forms.Select(choices=STATE_CHOICES, attrs={'class': 'form-control required'}),
             'billing_zip_code': forms.TextInput(attrs={'class': 'form-control required'}),
             'billing_country': forms.TextInput(attrs={'class': 'form-control'}),
-            'billing_phone_number': forms.TextInput(
-                attrs={'class': 'form-control', 'placeholder': 'If different than above'}),
-            'billing_email': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'If different than above'}),
         }
 
 

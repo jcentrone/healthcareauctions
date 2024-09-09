@@ -238,7 +238,7 @@
                 </ul>
             </div>
             {#            <form class="navbar-search w-100">#}
-            <form id="filter-form" method="get" class="navbar-search w-100">
+            <form id="filter-form" method="get" class="navbar-search w-100" action="{% url 'active_auctions_view' %}">
                 <div class="input-group" style="position: relative;">
                     <i class="fas fa-search"></i>
                     <input type="text" class="form-control" id="auction-search" name="search_query"

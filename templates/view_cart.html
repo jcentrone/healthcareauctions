@@ -23,7 +23,7 @@
                         {% endwith %}
                     </div>
                     <div class="div-table-col">{{ item.auction.title }}</div>
-                    <div class="div-table-col">{{ item.auction.quantity_available }}</div>
+                    <div class="div-table-col">{{ item.quantity }}</div>
                     <div class="div-table-col">${{ item.total_price }}</div>
                     <div class="div-table-col">
                         <form method="post" action="{% url 'remove_from_cart' item.id %}">

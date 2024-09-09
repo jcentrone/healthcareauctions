@@ -2,36 +2,16 @@
 {% load static %}
 {% block title %}Checkout{% endblock %}
 {% block body %}
-    <div class="container">
-        <form method="post">
-            {% csrf_token %}
-
-            <!-- Tabs Navigation -->
-            <ul class="nav nav-tabs border-0" id="checkoutTabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact"
-                            type="button" role="tab" aria-controls="contact" aria-selected="true">Contact & Shipping
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="confirmation-tab" data-bs-toggle="tab" data-bs-target="#confirmation"
-                            type="button" role="tab" aria-controls="confirmation" aria-selected="false">Order
-                        Confirmation
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="payment-tab" data-bs-toggle="tab" data-bs-target="#payment"
-                            type="button" role="tab" aria-controls="payment" aria-selected="false">Payment & Submit
-                    </button>
-                </li>
-            </ul>
-            <!-- Tabs Content -->
-            <div class="tab-content card " id="checkoutTabContent">
-                <!-- Contact & Shipping -->
-                <div class="tab-pane fade show active" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+<div class="container">
+    <form method="post">
+        {% csrf_token %}
+        <div class="tab-content" id="checkoutTabContent">
+            <!-- Contact & Shipping Addresses -->
+            <div class="tab-pane fade show active" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+                <div class="card">
                     <div class="card-header d-flex align-items-center justify-content-between">
                         <h3 class="m-0">Order Contact Information</h3>
-                        <span class="edit-button" onclick="toggleEdit('order-contact')">Save</span>
+                        <span class="edit-button" onclick="toggleEdit('order-contact')">Edit</span>
                     </div>
                     <div class="card-body" id="order-contact">
                         <div class="form-group mb-3 row align-items-center order-contact-info">
@@ -55,332 +35,234 @@
                             </div>
                         </div>
                         <div class="form-group  mb-3 row align-items-center order-contact-info">
-                            <div class="col-2">
-                                <label for="id_phone_number">Phone Number</label>
-                            </div>
-                            <div class="col-4">
-                                <input type="text" class="form-control required" id="id_phone_number"
-                                       name="phone_number"
-                                       placeholder="Enter phone number" value="{{ request.user.phone_number }}">
-                            </div>
+                        <div class="col-2">
+                            <label for="id_phone_number">Phone Number</label>
+                        </div>
+                        <div class="col-4">
+                            <input type="text" class="form-control required" id="id_phone_number"
+                                   name="phone_number"
+                                   placeholder="Enter phone number" value="{{ request.user.phone_number }}">
                         </div>
                     </div>
-                    <div class="card-header border-top d-flex align-items-center justify-content-between">
-                        <h3 class="m-0">Shipping & Billing Information</h3>
-                        <span class="edit-button" onclick="toggleEdit('order-shipping-billing')">Save</span>
                     </div>
                     <div class="card-body" id="order-shipping-billing">
-                        <div class="shipping-billing-container">
-                            <div class="col pe-5 bs-contact-container">
-                                <h4 class="text-muted mt-3">Ship To Contact</h4>
-                                <div class="ps-3 bs-contact-container">
-                                    <div class="form-group mb-3 row align-items-center order-contact-info">
+                            <div class="shipping-billing-container">
+                                <div class="col pe-5 bs-contact-container">
+                                    <h4 class="text-muted">Shipping To</h4>
+                                    <div class="ps-3 bs-contact-container">
+                                        <div class="form-group mb-3 row align-items-center order-contact-info">
                                         <div class="col-4">
-                                            <label for="{{ shipping_form.shipping_full_name.id_for_label }}">Attention</label>
+                                            <label for="{{ shipping_form.shipping_company_name.id_for_label }}">Company Name</label>
                                         </div>
                                         <div class="col-8">
-                                            {{ shipping_form.shipping_full_name }}
-                                            {% if shipping_form.shipping_full_name.errors %}
-                                                <div class="text-danger">{{ shipping_form.shipping_full_name.errors }}</div>
-                                            {% endif %}
-
-                                        </div>
-                                    </div>
-                                    <div class="form-group mb-3 row align-items-center order-contact-info">
-                                        <div class="col-4">
-                                            <label for="{{ shipping_form.shipping_phone_number.id_for_label }}">Shipping
-                                                Phone</label>
-                                        </div>
-                                        <div class="col-8">
-                                            {{ shipping_form.shipping_phone_number }}
-                                            {% if shipping_form.shipping_phone_number.errors %}
-                                                <div class="text-danger">{{ shipping_form.shipping_phone_number.errors }}</div>
+                                            {{ shipping_form.shipping_company_name }}
+                                            {% if shipping_form.shipping_company_name.errors %}
+                                                <div class="text-danger">{{ shipping_form.shipping_company_name.errors }}</div>
                                             {% endif %}
                                         </div>
                                     </div>
-                                    <div class="form-group mb-3 row align-items-center order-contact-info">
-                                        <div class="col-4">
-                                            <label for="{{ shipping_form.shipping_email.id_for_label }}">Shipping
-                                                Email</label>
-                                        </div>
-                                        <div class="col-8 d-flex align-items-center">
-                                            {{ shipping_form.shipping_email }}
-                                            {% if shipping_form.shipping_email.errors %}
-                                                <div class="text-danger">{{ shipping_form.shipping_email.errors }}</div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div>
-                                <h4 class="text-muted">Ship To Address</h4>
-                                <div class="ps-3 bs-contact-container">
-                                    <div class="form-group mb-3 row align-items-center order-contact-info">
-                                        <div class="col-4">
-                                            <label for="{{ shipping_form.shipping_street_address.id_for_label }}">Street
-                                                Address
-                                                1</label>
-                                        </div>
-                                        <div class="col-8">
-                                            {{ shipping_form.shipping_street_address }}
-                                            {% if shipping_form.shipping_street_address.errors %}
-                                                <div class="text-danger">{{ shipping_form.shipping_street_address.errors }}</div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                    <div class="form-group mb-3 row align-items-center order-contact-info">
-                                        <div class="col-4">
-                                            <label for="{{ shipping_form.shipping_apartment_suite.id_for_label }}">Street
-                                                Address 2</label>
-                                        </div>
-                                        <div class="col-8">
-                                            {{ shipping_form.shipping_apartment_suite }}
-                                            {% if shipping_form.shipping_apartment_suite.errors %}
-                                                <div class="text-danger">{{ shipping_form.shipping_apartment_suite.errors }}</div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                    <div class="form-group mb-3 row align-items-center order-contact-info">
-                                        <div class="row p-0 ms-0 city-state-zip-container">
-                                            <div class="col-4 filler-column">City, State Zip Code</div>
-                                            <div class="col-8" id="address-container">
-                                                <div class="row">
-                                                    <div class="col-6 city-col" id="city-col">
-                                                        <div class="form-group align-items-center">
-                                                            {{ shipping_form.shipping_city }}
-                                                            {% if shipping_form.shipping_city.errors %}
-                                                                <div class="text-danger">{{ shipping_form.shipping_city.errors }}</div>
-                                                            {% endif %}
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-3 state-col" id="state-col">
-                                                        <div class="form-group align-items-center">
-                                                            {{ shipping_form.shipping_state }}
-                                                            {% if shipping_form.shipping_state.errors %}
-                                                                <div class="text-danger">{{ shipping_form.shipping_state.errors }}</div>
-                                                            {% endif %}
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-3 zip-col" id="zip-col">
-                                                        <div class="form-group align-items-center">
-                                                            {{ shipping_form.shipping_zip_code }}
-                                                            {% if shipping_form.shipping_zip_code.errors %}
-                                                                <div class="text-danger">{{ shipping_form.shipping_zip_code.errors }}</div>
-                                                            {% endif %}
-
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                        <div class="form-group mb-3 row align-items-center order-contact-info">
+                                            <div class="col-4">
+                                                <label for="{{ shipping_form.shipping_full_name.id_for_label }}">Attention</label>
                                             </div>
-                                        </div>
-                                    </div>
-                                    <div class="form-group mb-3 row align-items-center order-contact-info">
-                                        <div class="col-4">
-                                            <label for="{{ shipping_form.shipping_country.id_for_label }}">Shipping
-                                                Country</label>
-                                        </div>
-                                        <div class="col-8">
-                                            {{ shipping_form.shipping_country }}
-                                            {% if shipping_form.shipping_country.errors %}
-                                                <div class="text-danger">{{ shipping_form.shipping_country.errors }}</div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col ps-5 bs-contact-container">
-                                <h4 class="text-muted mt-3">Bill To Contact</h4>
-                                <div class="ps-3 bs-contact-container">
-                                    <div class="form-group mb-3 row align-items-center order-contact-info">
-                                        <div class="col-4">
-                                            <label for="{{ billing_form.billing_full_name.id_for_label }}">Attention</label>
-                                        </div>
-                                        <div class="col-8">
-                                            {{ billing_form.billing_full_name }}
-                                            {% if billing_form.billing_full_name.errors %}
-                                                <div class="text-danger">{{ billing_form.billing_full_name.errors }}</div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                    <div class="form-group mb-3 row align-items-center order-contact-info">
-                                        <div class="col-4">
-                                            <label for="{{ billing_form.billing_phone_number.id_for_label }}">Billing
-                                                Phone</label>
-                                        </div>
-                                        <div class="col-8">
-                                            {{ billing_form.billing_phone_number }}
-                                            {% if billing_form.billing_phone_number.errors %}
-                                                <div class="text-danger">{{ billing_form.billing_phone_number.errors }}</div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                    <div class="form-group mb-3 row align-items-center order-contact-info">
-                                        <div class="col-4">
-                                            <label for="{{ billing_form.billing_email.id_for_label }}">Billing
-                                                Email</label>
-                                        </div>
-                                        <div class="col-8">
-                                            {{ billing_form.billing_email }}
-                                            {% if billing_form.billing_email.errors %}
-                                                <div class="text-danger">{{ billing_form.billing_email.errors }}</div>
-                                            {% endif %}
-
-                                        </div>
-                                    </div>
-                                </div>
-                                <h4 class="text-muted">Bill To Address</h4>
-                                <div class="ps-3 bs-contact-container">
-                                    <div class="form-group mb-3 row align-items-center order-contact-info">
-                                        <div class="col-4">
-                                            <label for="{{ billing_form.billing_street_address.id_for_label }}">Street
-                                                Address
-                                                1</label>
-                                        </div>
-                                        <div class="col-8">
-                                            {{ billing_form.billing_street_address }}
-                                            {% if billing_form.billing_street_address.errors %}
-                                                <div class="text-danger">{{ billing_form.billing_street_address.errors }}</div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                    <div class="form-group mb-3 row align-items-center order-contact-info">
-                                        <div class="col-4">
-                                            <label for="{{ billing_form.billing_apartment_suite.id_for_label }}">Street
-                                                Address 2</label>
-                                        </div>
-                                        <div class="col-8">
-                                            {{ billing_form.billing_apartment_suite }}
-                                            {% if billing_form.billing_apartment_suite.errors %}
-                                                <div class="text-danger">{{ billing_form.billing_apartment_suite.errors }}</div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                    <div class="form-group mb-3 row align-items-center order-contact-info">
-                                        <div class="row p-0 ms-0 city-state-zip-container">
-                                            <div class="col-4 filler-column">City, State Zip Code</div>
                                             <div class="col-8">
-                                                <div class="row">
-                                                    <div class="col-6 city-col">
-                                                        <div class="form-group align-items-center">
-                                                            {{ billing_form.billing_city }}
-                                                            {% if billing_form.billing_city.errors %}
-                                                                <div class="text-danger">{{ billing_form.billing_city.errors }}</div>
-                                                            {% endif %}
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-3 state-col">
-                                                        <div class="form-group align-items-center">
-                                                            {{ billing_form.billing_state }}
-                                                            {% if billing_form.billing_state.errors %}
-                                                                <div class="text-danger">{{ billing_form.billing_state.errors }}</div>
-                                                            {% endif %}
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-3 zip-col">
-                                                        <div class="form-group align-items-center">
-                                                            {{ billing_form.billing_zip_code }}
-                                                            {% if billing_form.billing_zip_code.errors %}
-                                                                <div class="text-danger">{{ billing_form.billing_zip_code.errors }}</div>
-                                                            {% endif %}
+                                                {{ shipping_form.shipping_full_name }}
+                                                {% if shipping_form.shipping_full_name.errors %}
+                                                    <div class="text-danger">{{ shipping_form.shipping_full_name.errors }}</div>
+                                                {% endif %}
 
+                                            </div>
+                                        </div>
+                                        <div class="form-group mb-3 row align-items-center order-contact-info">
+                                            <div class="col-4">
+                                                <label for="{{ shipping_form.shipping_street_address.id_for_label }}">Street
+                                                    Address
+                                                    1</label>
+                                            </div>
+                                            <div class="col-8">
+                                                {{ shipping_form.shipping_street_address }}
+                                                {% if shipping_form.shipping_street_address.errors %}
+                                                    <div class="text-danger">{{ shipping_form.shipping_street_address.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="form-group mb-3 row align-items-center order-contact-info">
+                                            <div class="col-4">
+                                                <label for="{{ shipping_form.shipping_apartment_suite.id_for_label }}">Street
+                                                    Address 2</label>
+                                            </div>
+                                            <div class="col-8">
+                                                {{ shipping_form.shipping_apartment_suite }}
+                                                {% if shipping_form.shipping_apartment_suite.errors %}
+                                                    <div class="text-danger">{{ shipping_form.shipping_apartment_suite.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="form-group mb-3 row align-items-center order-contact-info">
+                                            <div class="row p-0 ms-0 city-state-zip-container">
+
+
+                                                <div class="col-4 filler-column">City, State Zip Code</div>
+                                                <div class="col-8" id="address-container">
+                                                    <div class="col-6 read-only cszReadOnly" id="cszReadOnly_shipping"  style="display: none">
+                                                                {{ shipping_form.shipping_city.value }}, {{ shipping_form.shipping_state.value }} {{ shipping_form.shipping_zip_code.value }}
+                                                    </div>
+                                                    <div id="cszEdit_shipping" class="cszEdit">
+                                                        <div class="row">
+                                                            <div class="col-6 city-col" id="city-col">
+                                                                <div class="form-group align-items-center">
+                                                                    {{ shipping_form.shipping_city }}
+                                                                    {% if shipping_form.shipping_city.errors %}
+                                                                        <div class="text-danger">{{ shipping_form.shipping_city.errors }}</div>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-3 state-col" id="state-col">
+                                                                <div class="form-group align-items-center">
+                                                                    {{ shipping_form.shipping_state }}
+                                                                    {% if shipping_form.shipping_state.errors %}
+                                                                        <div class="text-danger">{{ shipping_form.shipping_state.errors }}</div>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-3 zip-col" id="zip-col">
+                                                                <div class="form-group align-items-center">
+                                                                    {{ shipping_form.shipping_zip_code }}
+                                                                    {% if shipping_form.shipping_zip_code.errors %}
+                                                                        <div class="text-danger">{{ shipping_form.shipping_zip_code.errors }}</div>
+                                                                    {% endif %}
+
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
+                                        <div class="form-group mb-3 row align-items-center order-contact-info">
+                                            <div class="col-4">
+                                                <label for="{{ shipping_form.shipping_country.id_for_label }}">Shipping
+                                                    Country</label>
+                                            </div>
+                                            <div class="col-8">
+                                                {{ shipping_form.shipping_country }}
+                                                {% if shipping_form.shipping_country.errors %}
+                                                    <div class="text-danger">{{ shipping_form.shipping_country.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="form-group mb-3 row align-items-center order-contact-info">
+                                </div>
+                                <div class="col ps-5 bs-contact-container">
+
+                                    <h4 class="text-muted">Billing Address</h4>
+                                    <div class="ps-3 bs-contact-container">
+                                        <div class="form-group mb-3 row align-items-center order-contact-info">
                                         <div class="col-4">
-                                            <label for="{{ billing_form.billing_country.id_for_label }}">Shipping
-                                                Country</label>
+                                            <label for="{{ billing_form.billing_company_name.id_for_label }}">Company Name</label>
                                         </div>
                                         <div class="col-8">
-                                            {{ billing_form.billing_country }}
-                                            {% if billing_form.billing_country.errors %}
-                                                <div class="text-danger">{{ billing_form.billing_country.errors }}</div>
+                                            {{ billing_form.billing_company_name }}
+                                            {% if billing_form.billing_company_name.errors %}
+                                                <div class="text-danger">{{ billing_form.billing_company_name.errors }}</div>
                                             {% endif %}
+                                        </div>
+                                    </div>
+                                        <div class="form-group mb-3 row align-items-center order-contact-info">
+                                            <div class="col-4">
+                                                <label for="{{ billing_form.billing_full_name.id_for_label }}">Attention</label>
+                                            </div>
+                                            <div class="col-8">
+                                                {{ billing_form.billing_full_name }}
+                                                {% if billing_form.billing_full_name.errors %}
+                                                    <div class="text-danger">{{ billing_form.billing_full_name.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="form-group mb-3 row align-items-center order-contact-info">
+                                            <div class="col-4">
+                                                <label for="{{ billing_form.billing_street_address.id_for_label }}">Street
+                                                    Address
+                                                    1</label>
+                                            </div>
+                                            <div class="col-8">
+                                                {{ billing_form.billing_street_address }}
+                                                {% if billing_form.billing_street_address.errors %}
+                                                    <div class="text-danger">{{ billing_form.billing_street_address.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="form-group mb-3 row align-items-center order-contact-info">
+                                            <div class="col-4">
+                                                <label for="{{ billing_form.billing_apartment_suite.id_for_label }}">Street
+                                                    Address 2</label>
+                                            </div>
+                                            <div class="col-8">
+                                                {{ billing_form.billing_apartment_suite }}
+                                                {% if billing_form.billing_apartment_suite.errors %}
+                                                    <div class="text-danger">{{ billing_form.billing_apartment_suite.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="form-group mb-3 row align-items-center order-contact-info">
+                                            <div class="row p-0 ms-0 city-state-zip-container">
+                                                <div class="col-4 filler-column">City, State Zip Code</div>
+                                                <div class="col-8">
+
+                                                    <div class="col-6 read-only cszReadOnly" id="cszReadOnly_billing"  style="display: none">
+                                                        {{ billing_form.billing_city.value }}, {{ billing_form.billing_state.value }} {{ billing_form.billing_zip_code.value }}
+                                                    </div>
+                                                    <div id="cszEdit" class="cszEdit_billing">
+                                                        <div class="row">
+                                                            <div class="col-6 city-col">
+                                                                <div class="form-group align-items-center">
+                                                                    {{ billing_form.billing_city }}
+                                                                    {% if billing_form.billing_city.errors %}
+                                                                        <div class="text-danger">{{ billing_form.billing_city.errors }}</div>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-3 state-col">
+                                                                <div class="form-group align-items-center">
+                                                                    {{ billing_form.billing_state }}
+                                                                    {% if billing_form.billing_state.errors %}
+                                                                        <div class="text-danger">{{ billing_form.billing_state.errors }}</div>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-3 zip-col">
+                                                            <div class="form-group align-items-center">
+                                                                {{ billing_form.billing_zip_code }}
+                                                                {% if billing_form.billing_zip_code.errors %}
+                                                                    <div class="text-danger">{{ billing_form.billing_zip_code.errors }}</div>
+                                                                {% endif %}
+
+                                                            </div>
+                                                        </div>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group mb-3 row align-items-center order-contact-info">
+                                            <div class="col-4">
+                                                <label for="{{ billing_form.billing_country.id_for_label }}">Shipping
+                                                    Country</label>
+                                            </div>
+                                            <div class="col-8">
+                                                {{ billing_form.billing_country }}
+                                                {% if billing_form.billing_country.errors %}
+                                                    <div class="text-danger">{{ billing_form.billing_country.errors }}</div>
+                                                {% endif %}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <!-- Shipping Method and Account -->
-                    <div class="card-header border-top d-flex align-items-center justify-content-between">
-                        <h3 class="m-0">Shipping Method</h3>
-                        <span class="edit-button" onclick="toggleEdit('order-shipping-method')">Save</span>
-                    </div>
-                    <div class="card-body p-3" id="order-shipping-method">
-                        <!-- Button Group for Shipping Method Selection -->
-                        <div class="btn-group mb-3" role="group" aria-label="Shipping Method Selection">
-                            <input type="radio" class="btn-check" name="shipping_option" id="our_shipping" autocomplete="off"
-                                   {% if not shipping_account_form.use_as_default_shipping_method.value %} checked {% endif %}>
-                            <label class="btn btn-outline-secondary" for="our_shipping">Our Shipping</label>
-
-                            <input type="radio" class="btn-check" name="shipping_option" id="customer_shipping" autocomplete="off"
-                                   {% if shipping_account_form.use_as_default_shipping_method.value %} checked {% endif %}>
-                            <label class="btn btn-outline-secondary" for="customer_shipping">Use My Account</label>
-                        </div>
-
-                        <!-- Shipping Method Form (Our Shipping) -->
-                        <div id="our_shipping_form" {% if shipping_account_form.use_as_default_shipping_method.value %} style="display: none;" {% endif %}>
-                            {{ shipping_method_form.as_p }}
-                        </div>
-
-                        <!-- Shipping Accounts Form (Customer Shipping) -->
-                        <div id="customer_shipping_form">
-{#                         {% if not shipping_account_form.use_as_default_shipping_method.value %} style="display: none;" {% endif %}>#}
-{#                            {{ shipping_accounts_form.as_p }}#}
-                            <!-- Account Number -->
-                                        <div class="col-md-6 mb-3">
-                                            <label for="{{ shipping_accounts_form.carrier_account_number.id_for_label }}"
-                                                   class="form-label">Carrier Account Number</label>
-                                            <input type="text"
-                                                   name="{{ shipping_accounts_form.carrier_account_number.name }}"
-                                                   id="{{ shipping_accounts_form.carrier_account_number.id_for_label }}"
-                                                   value="{{ shipping_accounts_form.carrier_account_number.value|default_if_none:'' }}"
-                                                   class="form-control text-uppercase">
-                                            {% if shipping_accounts_form.carrier_account_number.errors %}
-                                                <div class="text-danger">{{ shipping_accounts_form.carrier_account_number.errors }}</div>
-                                            {% endif %}
-                                        </div>
-                                        <!-- Carrier Name -->
-                                        <div class="col-md-6 mb-3">
-                                            <label for="{{ shipping_accounts_form.carrier_name.id_for_label }}"
-                                                   class="form-label">Carrier Name</label>
-                                            <select name="{{ shipping_accounts_form.carrier_name.name }}"
-                                                    id="{{ shipping_accounts_form.carrier_name.id_for_label }}"
-                                                    class="form-control w-100">
-                                                {% for choice in shipping_accounts_form.carrier_name.field.choices %}
-                                                    <option value="{{ choice.0 }}"
-                                                            {% if choice.0 == shipping_accounts_form.carrier_name.value %}selected{% endif %}>
-                                                        {{ choice.1 }}
-                                                    </option>
-                                                {% endfor %}
-                                            </select>
-                                            {% if shipping_accounts_form.carrier_name.errors %}
-                                                <div class="text-danger">{{ shipping_accounts_form.carrier_name.errors }}</div>
-                                            {% endif %}
-                                        </div>
-                                        <!-- Shiping Account-->
-                                        <div class="col-md-6 mb-3 d-flex gap-2 align-items-center">
-                            <input class="form-check-input m-0" type="checkbox"
-                                   id="{{ shipping_accounts_form.use_as_default_shipping_method.id_for_label }}"
-                                    {% if shipping_accounts_form.use_as_default_shipping_method.value %}
-                                   checked {% endif %}>
-
-                            <label for="{{ shipping_accounts_form.use_as_default_shipping_method.id_for_label }}"
-                                   class="form-label m-0">Default for all orders</label>
-                                   </div>
-                                   
-                        </div>
-                    </div>
-                    <div class="card-footer">
-                        <button type="button" class="btn btn-primary" id="next-btn-1" data-bs-toggle="tab">Next
-                        </button>
-                    </div>
                 </div>
-                <!-- Order Confirmation -->
-                <div class="tab-pane fade" id="confirmation" role="tabpanel" aria-labelledby="confirmation-tab">
+                <div class="card mt-3">
                     <div class="card-header">
                         <h3 class="m-0">Order Summary</h3>
                     </div>
@@ -402,7 +284,7 @@
                                     <div class="col-2 text-end">${{ item.total_price }}</div>
                                 </div>
                             {% endfor %}
-
+    
                             <div class="row fw-bold border-top pt-3">
                                 <div class="col text-end">Subtotal:</div>
                                 <div class="col-1 text-end total-column">${{ cart.total_cost }}</div>
@@ -421,114 +303,331 @@
                                 <div class="col-1 border-top text-end total-column">TBD</div>
                             </div>
                         </div>
-                        <p class="position-absolute bottom-0 end-0 me-3">Please note: The final total will be provided
-                            at the time of order confirmation once shipping
-                            has been calculated.</p>
-                    </div>
+                    <p class="position-absolute bottom-0 ms-3 mt-5">Please note: The final total will be provided
+                        at the time of order confirmation once shipping
+                        has been calculated.</p>
+                </div>
+                </div>
 
-                    <div class="card-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-toggle="tab" data-bs-target="#contact">
-                            Back
-                        </button>
-                        <button type="button" class="btn btn-primary" data-bs-toggle="tab" data-bs-target="#payment">
-                            Next
-                        </button>
+                <!-- Shipping Method and Payment -->
+                <div class="d-flex gap-3">
+                    <div class="card mt-3 col-md-6">
+                        <!-- Shipping Method and Account -->
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                            <h3 class="m-0">Shipping Method</h3>
+                       </div>
+                        <div class="card-body p-3" id="order-shipping-method">
+                        <!-- Button Group for Shipping Method Selection -->
+                        <div class="btn-group mb-3" role="group" aria-label="Shipping Method Selection">
+                            <input type="radio" class="btn-check" name="shipping_option" id="our_shipping" autocomplete="off"
+                                   {% if not shipping_account_form.use_as_default_shipping_method.value %} checked {% endif %}>
+                            <label class="btn btn-outline-secondary" for="our_shipping">Our Shipping</label>
+
+                            <input type="radio" class="btn-check" name="shipping_option" id="customer_shipping" autocomplete="off"
+                                   {% if shipping_account_form.use_as_default_shipping_method.value %} checked {% endif %}>
+                            <label class="btn btn-outline-secondary" for="customer_shipping">Use My Account</label>
+                        </div>
+
+                        <!-- Shipping Method Form (Our Shipping) -->
+                        <div id="our_shipping_form" {% if shipping_account_form.use_as_default_shipping_method.value %} style="display: none;" {% endif %}>
+                            {{ shipping_method_form.as_p }}
+                        </div>
+
+                        <!-- Shipping Accounts Form (Customer Shipping) -->
+                        <div id="customer_shipping_form">
+                         <!-- Account Number -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ shipping_accounts_form.carrier_account_number.id_for_label }}"
+                                       class="form-label">Carrier Account Number</label>
+                                <input type="text"
+                                       name="{{ shipping_accounts_form.carrier_account_number.name }}"
+                                       id="{{ shipping_accounts_form.carrier_account_number.id_for_label }}"
+                                       value="{{ shipping_accounts_form.carrier_account_number.value|default_if_none:'' }}"
+                                       class="form-control text-uppercase">
+                                {% if shipping_accounts_form.carrier_account_number.errors %}
+                                    <div class="text-danger">{{ shipping_accounts_form.carrier_account_number.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <!-- Carrier Name -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ shipping_accounts_form.carrier_name.id_for_label }}"
+                                       class="form-label">Carrier Name</label>
+                                <select name="{{ shipping_accounts_form.carrier_name.name }}"
+                                        id="{{ shipping_accounts_form.carrier_name.id_for_label }}"
+                                        class="form-control w-100">
+                                    {% for choice in shipping_accounts_form.carrier_name.field.choices %}
+                                        <option value="{{ choice.0 }}"
+                                                {% if choice.0 == shipping_accounts_form.carrier_name.value %}selected{% endif %}>
+                                            {{ choice.1 }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                {% if shipping_accounts_form.carrier_name.errors %}
+                                    <div class="text-danger">{{ shipping_accounts_form.carrier_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <!-- Shipping Account-->
+                            <div class="col-md-6 mb-3 d-flex gap-2 align-items-center">
+                                <input class="form-check-input m-0" type="checkbox"
+                                       id="{{ shipping_accounts_form.use_as_default_shipping_method.id_for_label }}"
+                                        {% if shipping_accounts_form.use_as_default_shipping_method.value %}
+                                       checked {% endif %}>
+
+                                <label for="{{ shipping_accounts_form.use_as_default_shipping_method.id_for_label }}"
+                                       class="form-label m-0">Default for all orders</label>
+                            </div>
+
+                        </div>
+                        </div>
+                    </div>
+                    <div class="card mt-3 col">
+                        <div class="card-header">
+                            <h3 class="m-0">Payment Method</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="w-100">
+                                <!-- Payment Method -->
+                                <div class="form-group mb-3">
+                                    <label for="payment_method">Choose Payment Method</label>
+                                    <select id="payment_method" name="payment_method" class="form-control">
+                                        <option value="credit-card">Credit Card</option>
+                                        <option value="ach">ACH</option>
+                                        <option value="zelle">Zelle</option>
+                                        <option value="venmo">Venmo</option>
+                                        <option value="paypal">PayPal</option>
+                                        <option value="cashapp">CashApp</option>
+                                    </select>
+                                    <div id="cc-logo-container">
+                                        <img class="payment-logo" src="{% static "images/credit-card-logos.png" %}">
+                                    </div>
+                                    <div id="zelle-logo-container">
+                                        <img class="payment-logo" src="{% static "images/zelle-logo.png" %}">
+                                    </div>
+                                    <div id="venmo-logo-container">
+                                        <img class="payment-logo" src="{% static "images/venmo-logo.png" %}">
+                                    </div>
+                                    <div id="paypal-logo-container">
+                                        <img class="payment-logo" src="{% static "images/paypal-logo.png" %}">
+                                    </div>
+                                    <div id="cashapp-logo-container">
+                                        <img class="payment-logo" src="{% static "images/cashapp-logo.png" %}">
+                                    </div>
+                                </div>
+                                <!-- Credit Card Form -->
+                                <div id="credit-card-form" class="payment-form">
+                                    <div class="form-group" id="card-number-field">
+                                        <label for="{{ credit_card_form.card_number.id_for_label }}">{{ credit_card_form.card_number.label }}</label>
+                                        {{ credit_card_form.card_number }}
+                                    </div>
+                                    <div class="form-group" id="expiration-date">
+                                        <label for="{{ credit_card_form.expiration_date.id_for_label }}">{{ credit_card_form.expiration_date.label }}</label>
+                                        {{ credit_card_form.expiration_date }}
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="{{ credit_card_form.cvv.id_for_label }}">{{ credit_card_form.cvv.label }}</label>
+                                        {{ credit_card_form.cvv }}
+                                    </div>
+                                </div>
+                                <!-- ACH Form -->
+                                <div id="ach-form" class="payment-form" style="display: none;">
+                                    <p class="ms-3">ACH instructions will be sent to your email address along with the order
+                                        confirmation.
+                                        Please check your inbox for further details on how to complete your payment.</p>
+
+                                </div>
+                                <!-- Zelle Form -->
+                                <div id="zelle-form" class="payment-form" style="display: none;">
+                                    {{ zelle_form.as_p }}
+                                </div>
+                                <!-- Venmo Form -->
+                                <div id="venmo-form" class="payment-form" style="display: none;">
+                                    {{ venmo_form.as_p }}
+                                </div>
+                                <!-- Paypal Form -->
+                                <div id="paypal-form" class="payment-form" style="display: none;">
+                                    {{ paypal_form.as_p }}
+                                </div>
+                                <!-- Cashapp Form -->
+                                <div id="cashapp-form" class="payment-form" style="display: none;">
+                                    {{ cashapp_form.as_p }}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <!-- Payment & Submit -->
-                <div class="tab-pane fade" id="payment" role="tabpanel" aria-labelledby="payment-tab">
-                    <div class="card-header">
-                        <h3 class="m-0">Payment Method</h3>
-                    </div>
-                    <div class="card-body">
-                        <!-- Payment Method -->
-                        <div class="form-group mb-3">
-                            <label for="payment_method">Choose Payment Method</label>
-                            <select id="payment_method" name="payment_method" class="form-control">
-                                <option value="credit-card">Credit Card</option>
-                                <option value="ach">ACH</option>
-                                <option value="zelle">Zelle</option>
-                                <option value="venmo">Venmo</option>
-                                <option value="paypal">PayPal</option>
-                                <option value="cashapp">CashApp</option>
-                            </select>
-                            <div id="cc-logo-container">
-                                <img class="payment-logo" src="{% static "images/credit-card-logos.png" %}">
-                            </div>
-                            <div id="zelle-logo-container">
-                                <img class="payment-logo" src="{% static "images/zelle-logo.png" %}">
-                            </div>
-                            <div id="venmo-logo-container">
-                                <img class="payment-logo" src="{% static "images/venmo-logo.png" %}">
-                            </div>
-                            <div id="paypal-logo-container">
-                                <img class="payment-logo" src="{% static "images/paypal-logo.png" %}">
-                            </div>
-                            <div id="cashapp-logo-container">
-                                <img class="payment-logo" src="{% static "images/cashapp-logo.png" %}">
-                            </div>
-                        </div>
-                        <!-- Credit Card Form -->
-                        <div id="credit-card-form" class="payment-form">
-                            <div class="form-group" id="card-number-field">
-                                <label for="{{ credit_card_form.card_number.id_for_label }}">{{ credit_card_form.card_number.label }}</label>
-                                {{ credit_card_form.card_number }}
-                            </div>
-                            <div class="form-group" id="expiration-date">
-                                <label for="{{ credit_card_form.expiration_date.id_for_label }}">{{ credit_card_form.expiration_date.label }}</label>
-                                {{ credit_card_form.expiration_date }}
-                            </div>
-                            <div class="form-group">
-                                <label for="{{ credit_card_form.cvv.id_for_label }}">{{ credit_card_form.cvv.label }}</label>
-                                {{ credit_card_form.cvv }}
-                            </div>
-                        </div>
-                        <!-- ACH Form -->
-                        <div id="ach-form" class="payment-form" style="display: none;">
-                            <p class="ms-3">ACH instructions will be sent to your email address along with the order
-                                confirmation.
-                                Please check your inbox for further details on how to complete your payment.</p>
+            </div>
 
-                        </div>
-                        <!-- Zelle Form -->
-                        <div id="zelle-form" class="payment-form" style="display: none;">
-                            {{ zelle_form.as_p }}
-                        </div>
-                        <!-- Venmo Form -->
-                        <div id="venmo-form" class="payment-form" style="display: none;">
-                            {{ venmo_form.as_p }}
-                        </div>
-                        <!-- Paypal Form -->
-                        <div id="paypal-form" class="payment-form" style="display: none;">
-                            {{ paypal_form.as_p }}
-                        </div>
-                        <!-- Cashapp Form -->
-                        <div id="cashapp-form" class="payment-form" style="display: none;">
-                            {{ cashapp_form.as_p }}
-                        </div>
 
-                        <div class="form-group form-check mt-3 ms-3">
-                            <input type="checkbox" class="form-check-input" id="id_agree_terms" required>
-                            <label class="form-check-label" for="id_agree_terms">
-                                I agree to the
-                                <a href="{% url 'terms_and_conditions' %}" target="_blank">Terms and Conditions</a>
-                                and
-                                <a href="{% url 'privacy_policy' %}" target="_blank">Privacy Policy</a>.
-                            </label>
+
+            <!-- Order Confirmation -->
+            <div class="tab-pane fade" id="confirmation" role="tabpanel" aria-labelledby="confirmation-tab">
+                <div class="card-header">
+                    <h3 class="m-0">Order Summary</h3>
+                </div>
+                <div class="card-body position-relative">
+                    <div class="table p-3">
+                        <div class="row fw-bold">
+                            <div class="col-6">Item</div>
+                            <div class="col-2 text-center">Quantity</div>
+                            <div class="col-2 text-start">Price</div>
+                            <div class="col-2 text-end">Total</div>
+                        </div>
+                        {% for item in cart.items.all %}
+                            <div class="row">
+                                <div class="col-6">{{ item.auction.title }}</div>
+                                <div class="col-2 text-center">{{ item.quantity }}</div>
+                                <!-- Assuming 'quantity' is a field in CartItem model -->
+                                <div class="col-2 text-start">${{ item.auction.buyItNowPrice }}</div>
+                                <!-- Adjust field name as needed -->
+                                <div class="col-2 text-end">${{ item.total_price }}</div>
+                            </div>
+                        {% endfor %}
+
+                        <div class="row fw-bold border-top pt-3">
+                            <div class="col text-end">Subtotal:</div>
+                            <div class="col-1 text-end total-column">${{ cart.total_cost }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col text-end">Shipping:</div>
+                            <div class="col-1 text-end total-column">TBD</div>
+                        </div>
+                        <div class="row">
+                            <div class="col text-end">Taxes:</div>
+                            <div class="col-1 text-end total-column">TBD</div>
+                        </div>
+                        <div class="row fw-bold pt-2">
+                            <div class="col"></div>
+                            <div class="col-1 border-top text-end total-column">Total:</div>
+                            <div class="col-1 border-top text-end total-column">TBD</div>
                         </div>
                     </div>
-                    <div class="card-footer d-flex gap-2">
-                        <button type="button" class="btn btn-secondary" data-bs-toggle="tab"
-                                data-bs-target="#confirmation">Back
-                        </button>
-                        <div id="submitContainer">
-                            <button type="submit" class="btn btn-primary" id="orderButton">Place Order</button>
+                    <p class="position-absolute bottom-0 end-0 me-3">Please note: The final total will be provided
+                        at the time of order confirmation once shipping
+                        has been calculated.</p>
+                </div>
+
+                <div class="card-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-toggle="tab" data-bs-target="#contact">
+                        Back
+                    </button>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="tab" data-bs-target="#payment">
+                        Next
+                    </button>
+                </div>
+            </div>
+            <!-- Payment & Submit -->
+            <div class="tab-pane fade" id="payment" role="tabpanel" aria-labelledby="payment-tab">
+                <div class="card-header">
+                    <h3 class="m-0">Payment Method</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Payment Method -->
+                    <div class="form-group mb-3">
+                        <label for="payment_method">Choose Payment Method</label>
+                        <select id="payment_method" name="payment_method" class="form-control">
+                            <option value="credit-card">Credit Card</option>
+                            <option value="ach">ACH</option>
+                            <option value="zelle">Zelle</option>
+                            <option value="venmo">Venmo</option>
+                            <option value="paypal">PayPal</option>
+                            <option value="cashapp">CashApp</option>
+                        </select>
+                        <div id="cc-logo-container">
+                            <img class="payment-logo" src="{% static "images/credit-card-logos.png" %}">
                         </div>
+                        <div id="zelle-logo-container">
+                            <img class="payment-logo" src="{% static "images/zelle-logo.png" %}">
+                        </div>
+                        <div id="venmo-logo-container">
+                            <img class="payment-logo" src="{% static "images/venmo-logo.png" %}">
+                        </div>
+                        <div id="paypal-logo-container">
+                            <img class="payment-logo" src="{% static "images/paypal-logo.png" %}">
+                        </div>
+                        <div id="cashapp-logo-container">
+                            <img class="payment-logo" src="{% static "images/cashapp-logo.png" %}">
+                        </div>
+                    </div>
+                    <!-- Credit Card Form -->
+                    <div id="credit-card-form" class="payment-form">
+                        <div class="form-group" id="card-number-field">
+                            <label for="{{ credit_card_form.card_number.id_for_label }}">{{ credit_card_form.card_number.label }}</label>
+                            {{ credit_card_form.card_number }}
+                        </div>
+                        <div class="form-group" id="expiration-date">
+                            <label for="{{ credit_card_form.expiration_date.id_for_label }}">{{ credit_card_form.expiration_date.label }}</label>
+                            {{ credit_card_form.expiration_date }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ credit_card_form.cvv.id_for_label }}">{{ credit_card_form.cvv.label }}</label>
+                            {{ credit_card_form.cvv }}
+                        </div>
+                    </div>
+                    <!-- ACH Form -->
+                    <div id="ach-form" class="payment-form" style="display: none;">
+                        <p class="ms-3">ACH instructions will be sent to your email address along with the order
+                            confirmation.
+                            Please check your inbox for further details on how to complete your payment.</p>
+
+                    </div>
+                    <!-- Zelle Form -->
+                    <div id="zelle-form" class="payment-form" style="display: none;">
+                        {{ zelle_form.as_p }}
+                    </div>
+                    <!-- Venmo Form -->
+                    <div id="venmo-form" class="payment-form" style="display: none;">
+                        {{ venmo_form.as_p }}
+                    </div>
+                    <!-- Paypal Form -->
+                    <div id="paypal-form" class="payment-form" style="display: none;">
+                        {{ paypal_form.as_p }}
+                    </div>
+                    <!-- Cashapp Form -->
+                    <div id="cashapp-form" class="payment-form" style="display: none;">
+                        {{ cashapp_form.as_p }}
+                    </div>
+
+                    <div class="form-group form-check mt-3 ms-3">
+                        <input type="checkbox" class="form-check-input" id="id_agree_terms" required>
+                        <label class="form-check-label" for="id_agree_terms">
+                            I agree to the
+                            <a href="{% url 'terms_and_conditions' %}" target="_blank">Terms and Conditions</a>
+                            and
+                            <a href="{% url 'privacy_policy' %}" target="_blank">Privacy Policy</a>.
+                        </label>
                     </div>
                 </div>
-            </div> 
-        </form>
-    </div>
+                <div class="card-footer d-flex gap-2">
+                    <button type="button" class="btn btn-secondary" data-bs-toggle="tab"
+                            data-bs-target="#confirmation">Back
+                    </button>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+
+            <div class="card-body d-flex align-items-center justify-content-center gap-3">
+                <div id="submitContainer">
+                    <button type="submit" class="btn btn-primary" id="orderButton">Place Order</button>
+                </div>
+                <div class="form-group form-check">
+                                <input type="checkbox" class="form-check-input" id="id_agree_terms" required>
+                                <label class="form-check-label" for="id_agree_terms">
+                                    I agree to the
+                                    <a href="{% url 'terms_and_conditions' %}" target="_blank">Terms and Conditions</a>
+                                    and
+                                    <a href="{% url 'privacy_policy' %}" target="_blank">Privacy Policy</a>.
+                                </label>
+                            </div>
+
+            </div>
+        </div>
+
+
+    </form>
+</div>
     
 <!-- Checkout Instructions Modal -->
 <div class="modal fade" id="checkoutInstructionsModal" tabindex="-1" aria-labelledby="checkoutInstructionsModalLabel" aria-hidden="true">
@@ -767,120 +866,106 @@
         }
     }
 
-  function submitFormViaAjax() {
-    let form = $('form');  // Reference to the form
-    let formData = form.serialize();  // Serialize the form data
+    function submitFormViaAjax() {
+        let form = $('form');  // Reference to the form
+        let formData = form.serialize();  // Serialize the form data
 
-    $.ajax({
-        type: 'POST',
-        url: form.attr('action'),  // Use the form's action attribute as the URL
-        data: formData,
-        dataType: 'json',
-        success: function (response) {
-    console.log('Response received:', response);  // Debugging line
+        $.ajax({
+            type: 'POST',
+            url: form.attr('action'),  // Use the form's action attribute as the URL
+            data: formData,
+            dataType: 'json',
+            success: function (response) {
+        console.log('Response received:', response);  // Debugging line
 
-    if (response.status === 'success') {
-        const order = response.order;
+        if (response.status === 'success') {
+            const order = response.order;
 
-        // Check if order exists and has the expected structure
-        if (order && order.items && order.items.length > 0) {
-            // Generate order details HTML
-            let orderDetailsHtml = `
-                <div id="order-confirmation-content">
-                    <h2 class="w-100 text-center fw-bold pb-3 mb-3 border-bottom">Thank you for your order!</h2>
-                    <h3 class="w-100 text-start" style="margin-top: 20px; font-weight: bold;">Shipping Information</h3>
-                    ${order.shipping_address ? `
-                        <div class="row">
-                            <div class="col-auto text-start">
-                                <div>${order.shipping_address.shipping_full_name}</div> 
-                                <div>${order.shipping_address.shipping_street_address}, ${order.shipping_address.shipping_apartment_suite}</div>
+            // Check if order exists and has the expected structure
+            if (order && order.items && order.items.length > 0) {
+                // Generate order details HTML
+                let orderDetailsHtml = `
+                    <div id="order-confirmation-content">
+                        <h2 class="w-100 text-center fw-bold pb-3 mb-3 border-bottom">Thank you for your order!</h2>
+                        <h3 class="w-100 text-start" style="margin-top: 20px; font-weight: bold;">Shipping Information</h3>
+                        ${order.shipping_address ? `
+                            <div class="row">
+                                <div class="col-auto text-start">
+                                    <div>${order.shipping_address.shipping_full_name}</div>
+                                    <div>${order.shipping_address.shipping_street_address}, ${order.shipping_address.shipping_apartment_suite}</div>
 
-                                <div class="row"> 
-                                    <div class="col-auto">${order.shipping_address.shipping_city},</div>
-                                    <div class="col-auto">${order.shipping_address.shipping_state}</div>
-                                    <div class="col-auto">${order.shipping_address.shipping_zip_code}</div>
+                                    <div class="row">
+                                        <div class="col-auto">${order.shipping_address.shipping_city},</div>
+                                        <div class="col-auto">${order.shipping_address.shipping_state}</div>
+                                        <div class="col-auto">${order.shipping_address.shipping_zip_code}</div>
+                                    </div>
+                                    <div>${order.shipping_address.shipping_country}</div>
                                 </div>
-                                <div>${order.shipping_address.shipping_country}</div>
                             </div>
-                        </div>
-                    ` : `<p>No shipping address available.</p>`}
-            
+                        ` : `<p>No shipping address available.</p>`}
 
-                 <h3 class="w-100 text-start" style="margin-top: 20px; font-weight: bold;">Order Summary</h3>
-                <ul style="list-style-type: none; padding: 0;">
-            `;
 
-            order.items.forEach(item => {
-                orderDetailsHtml += `
-                    <li style="border-bottom: 1px solid #ccc; padding: 10px 0;">
-                        <div class="row">
-                            <div class="col-2 text-center">Quantity</div>
-                            <div class="col-8 text-start">Description</div>
-                            <div class="col-2 text-end">Price</div>
-                        </div>
-                    </li>
-                    <li style="border-bottom: 1px solid #ccc; padding: 10px 0;">
-                        <div class="row">
-                            <div class="col-2 text-center">${item.quantity}</div>
-                            <div class="col-8 text-start">${item.auction_title}</div>
-                            <div class="col-2 text-end">$${item.price}</div>
-                        </div>
-                    </li>
+                     <h3 class="w-100 text-start" style="margin-top: 20px; font-weight: bold;">Order Summary</h3>
+                    <ul style="list-style-type: none; padding: 0;">
                 `;
-            });
-            orderDetailsHtml += `
-                </ul>
-                <p style="font-weight: bold; text-align: right; margin-top: 20px;">Total: $${order.total_amount}</p>
 
-                <p class="text-start">Your order number is <strong>${order.id}</strong>.</p>
-                <p class="text-start">You will receive an email confirmation shortly at <strong>${order.email}</strong>.</p>
-                <p class="text-start">If you have any questions about your order, please <a href="{% url 'inbox' %}" target="_blank">contact us</a>.</p>
-            </div>`;
+                order.items.forEach(item => {
+                    orderDetailsHtml += `
+                        <li style="border-bottom: 1px solid #ccc; padding: 10px 0;">
+                            <div class="row">
+                                <div class="col-2 text-center">Quantity</div>
+                                <div class="col-8 text-start">Description</div>
+                                <div class="col-2 text-end">Price</div>
+                            </div>
+                        </li>
+                        <li style="border-bottom: 1px solid #ccc; padding: 10px 0;">
+                            <div class="row">
+                                <div class="col-2 text-center">${item.quantity}</div>
+                                <div class="col-8 text-start">${item.auction_title}</div>
+                                <div class="col-2 text-end">$${item.price}</div>
+                            </div>
+                        </li>
+                    `;
+                });
+                orderDetailsHtml += `
+                    </ul>
+                    <p style="font-weight: bold; text-align: right; margin-top: 20px;">Total: $${order.total_amount}</p>
 
-            // Display order confirmation in SweetAlert2
+                    <p class="text-start">Your order number is <strong>${order.id}</strong>.</p>
+                    <p class="text-start">You will receive an email confirmation shortly at <strong>${order.email}</strong>.</p>
+                    <p class="text-start">If you have any questions about your order, please <a href="{% url 'inbox' %}" target="_blank">contact us</a>.</p>
+                </div>`;
+
+                // Display order confirmation in SweetAlert2
+                Swal.fire({
+                    title: '',
+                    html: orderDetailsHtml,
+                    icon: 'success',
+                    showCancelButton: true,
+                    confirmButtonText: 'OK',
+                    cancelButtonText: 'Print',
+                    customClass: {
+                        confirmButton: 'btn btn-primary me-2',
+                        cancelButton: 'btn btn-secondary ms-2',
+                        popup: 'custom-swal-width'
+                    },
+                    buttonsStyling: false,
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Redirect to order confirmation page or any other action
+                        window.location.href = `/auction/active`;
+                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+                        // Handle print action
+                        printOrderConfirmation();
+                    }
+                });
+            } else {
+                console.error('Order data is missing or invalid:', order);  // Debugging line
+            }
+        } else if (response.status === 'error') {
             Swal.fire({
-                title: '',
-                html: orderDetailsHtml,
-                icon: 'success',
-                showCancelButton: true,
-                confirmButtonText: 'OK',
-                cancelButtonText: 'Print',
-                customClass: {
-                    confirmButton: 'btn btn-primary me-2',
-                    cancelButton: 'btn btn-secondary ms-2',
-                    popup: 'custom-swal-width'
-                },
-                buttonsStyling: false,
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Redirect to order confirmation page or any other action
-                    window.location.href = `/auction/active`;
-                } else if (result.dismiss === Swal.DismissReason.cancel) {
-                    // Handle print action
-                    printOrderConfirmation();
-                }
-            });
-        } else {
-            console.error('Order data is missing or invalid:', order);  // Debugging line
-        }
-    } else if (response.status === 'error') {
-        Swal.fire({
-            title: 'Error',
-            text: response.message,
-            icon: 'error',
-            confirmButtonText: 'OK',
-            customClass: {
-                confirmButton: 'btn btn-primary'
-            },
-            buttonsStyling: false
-        });
-    }
-},
-
-        error: function (xhr, status, error) {
-            Swal.fire({
-                title: 'Submission Failed',
-                text: 'There was an error processing your order. Please try again.',
+                title: 'Error',
+                text: response.message,
                 icon: 'error',
                 confirmButtonText: 'OK',
                 customClass: {
@@ -889,28 +974,40 @@
                 buttonsStyling: false
             });
         }
-    });
-}
+    },
 
-function printOrderConfirmation() {
-    const orderContent = document.getElementById('order-confirmation-content').innerHTML;
-    const printWindow = window.open('', '', 'height=600,width=800');
-    printWindow.document.write('<html><head><title>Order Confirmation</title>');
-    printWindow.document.write('<link rel="stylesheet" href="{% static "css/checkout.css" %}" type="text/css"/>'); // Adjust the path to your CSS file
-    printWindow.document.write('<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" type="text/css"/>'); // Bootstrap CDN
-    printWindow.document.write('</head><body >');
-    printWindow.document.write(orderContent);
-    printWindow.document.write('</body></html>');
-    printWindow.document.close();
-    printWindow.print();
-    
-    // Navigate to auction/active after a slight delay
-    setTimeout(() => {
-        window.location.href = '/auction/active';
-    }, 1000); // Adjust the delay time as needed
-}
+            error: function (xhr, status, error) {
+                Swal.fire({
+                    title: 'Submission Failed',
+                    text: 'There was an error processing your order. Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                    customClass: {
+                        confirmButton: 'btn btn-primary'
+                    },
+                    buttonsStyling: false
+                });
+            }
+        });
+    }
 
+    function printOrderConfirmation() {
+        const orderContent = document.getElementById('order-confirmation-content').innerHTML;
+        const printWindow = window.open('', '', 'height=600,width=800');
+        printWindow.document.write('<html><head><title>Order Confirmation</title>');
+        printWindow.document.write('<link rel="stylesheet" href="{% static "css/checkout.css" %}" type="text/css"/>'); // Adjust the path to your CSS file
+        printWindow.document.write('<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" type="text/css"/>'); // Bootstrap CDN
+        printWindow.document.write('</head><body >');
+        printWindow.document.write(orderContent);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.print();
 
+        // Navigate to auction/active after a slight delay
+        setTimeout(() => {
+            window.location.href = '/auction/active';
+        }, 1000); // Adjust the delay time as needed
+    }
 
     // Bind the validate function to the submit button click event
     $('button[type="submit"]').on('click', function (e) {
@@ -918,6 +1015,8 @@ function printOrderConfirmation() {
         validateAndSubmitForm(); // Call the validation function
     });
 });
+
+
 
 
     </script>

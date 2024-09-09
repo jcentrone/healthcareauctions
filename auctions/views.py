@@ -1345,6 +1345,7 @@ def checkout(request):
     if default_shipping_address:
         initial_data.update({
             'shipping_full_name': request.user.first_name + " " + request.user.last_name,
+            'shipping_company_name': request.user.company_name,
             'shipping_street_address': default_shipping_address.street,
             'shipping_apartment_suite': default_shipping_address.suite,
             'shipping_city': default_shipping_address.city,
@@ -1356,6 +1357,7 @@ def checkout(request):
     if default_billing_address:
         initial_data.update({
             'billing_full_name': f"{request.user.first_name} {request.user.last_name}",
+            'billing_company_name': request.user.company_name,
             'billing_street_address': default_billing_address.street,
             'billing_apartment_suite': default_billing_address.suite,
             'billing_city': default_billing_address.city,
@@ -1493,29 +1495,29 @@ def order_confirmation(request, order_id):
 @login_required
 def add_to_cart(request, auction_id):
     auction = get_object_or_404(Auction, id=auction_id)
+
+    # Get or create a cart for the current user (assuming you don't need an 'active' field)
     cart, created = Cart.objects.get_or_create(user=request.user)
 
     if request.method == 'POST':
-        cart_item, created = CartItem.objects.get_or_create(cart=cart, auction=auction)
-        return redirect('view_cart')
+        form = AddToCartForm(request.POST, auction=auction)
+        if form.is_valid():
+            cart_item = form.save(commit=False)
+            cart_item.cart = cart  # Associate the cart with the cart item
+            cart_item.save()  # Now save the cart item
+            return redirect('view_cart')
+    else:
+        form = AddToCartForm(auction=auction)
 
-    return render(request, 'add_to_cart.html', {'auction': auction})
+    return render(request, 'add_to_cart.html', {'form': form, 'auction': auction})
 
 
 @login_required
 def view_cart(request):
-    watchlist = Auction.objects.none()
-
-    if request.user.is_authenticated:
-        watchlist = request.user.watchlist.all()
-        for auction in watchlist:
-            auction.image = auction.get_images.first()
-
     cart = get_object_or_404(Cart, user=request.user)
 
     return render(request, 'view_cart.html', {
         'cart': cart,
-        'watchlist': watchlist,
     })
 
 
