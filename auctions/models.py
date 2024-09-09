@@ -82,6 +82,10 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
+    def is_tax_exempt(self):
+        """Check if the user is tax exempt based on the presence of a reseller certificate."""
+        return bool(self.reseller_cert)
+
 
 class ShippingAccounts(models.Model):
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='shipping_accounts')
@@ -439,6 +443,8 @@ class Order(models.Model):
             total_shipping_cost = sum(carrier.shipping_cost for parcel in self.parcels.all())
             return total_shipping_cost if total_shipping_cost else Decimal(0.00)
         return Decimal(0.00)
+
+
 
 
 class OrderItem(models.Model):

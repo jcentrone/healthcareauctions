@@ -190,3 +190,8 @@ if not ENCRYPTION_KEY:
 UPS_ACCESS_LICENSE_NUMBER = os.environ.get('UPS_ACCESS_LICENSE_NUMBER')
 UPS_USERNAME = os.environ.get('UPS_USERNAME')
 UPS_PASSWORD = os.environ.get('UPS_PASSWORD')
+
+# Zip Tax Credentials
+ZIP_TAX_API_KEY = os.environ.get('ZIP_TAX_API_KEY')
+
+# a5ROqNT2axDJmrSlGQFkMsKx

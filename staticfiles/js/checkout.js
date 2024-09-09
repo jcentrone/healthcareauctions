@@ -1,9 +1,10 @@
 document.addEventListener('DOMContentLoaded', function () {
     validateCreditCardForm();
     disableEnableSubmit();
-    toggleEdit();
-
     toggleShippingForms();
+    toggleEdit();
+    setRequiredFields();
+
 
 });
 
@@ -108,75 +109,126 @@ function toggleShippingForms() {
     const customerShippingRadio = document.getElementById('customer_shipping');
     const ourShippingForm = document.getElementById('our_shipping_form');
     const customerShippingForm = document.getElementById('customer_shipping_form');
+
+    const shippingAmountField = document.getElementById('shipping-amount');
+    const taxAmountField = document.getElementById('tax-amount');
+    const totalAmountField = document.getElementById('total-amount');
+    const dataHolder = document.getElementById('dataHolder');
+    const orderSummaryNote = document.getElementById('order-summary-note');
+    let subtotal = dataHolder.dataset.subtotal;
+    let sales_tax_no_shipping = dataHolder.dataset.sales_tax_no_shipping;
+    let total_no_shipping = dataHolder.dataset.total_no_shipping;
+    let tax_exempt = dataHolder.dataset.tax_exempt;
+
     if (customerShippingRadio.checked) {
+        //Customer's Account
         ourShippingForm.style.display = 'none';
         customerShippingForm.style.display = 'block';
+        // Update the totals
+        shippingAmountField.innerText = '$0.00';
+        if (tax_exempt) {
+            taxAmountField.innerText = '$0.00';
+            totalAmountField.innerText = subtotal;
+        } else{
+            taxAmountField.innerText = sales_tax_no_shipping;
+            totalAmountField.innerText = 'TBD';
+        }
+
+
     } else {
+        // HCA Account
         ourShippingForm.style.display = 'block';
         customerShippingForm.style.display = 'none';
+        // Update the totals
+        shippingAmountField.innerText = '$TBD';
+        if (tax_exempt) {
+            taxAmountField.innerText = '$0.00';
+            totalAmountField.innerText = 'TBD';
+        } else{
+            taxAmountField.innerText = 'TBD';
+            totalAmountField.innerText = 'TBD';
+        }
+
+
     }
 
     // Attach event listeners to radio buttons
     ourShippingRadio.addEventListener('change', toggleShippingForms);
     customerShippingRadio.addEventListener('change', toggleShippingForms);
+
+
 }
 
 function toggleEdit(section) {
-    let sectionFields = document.querySelectorAll('.form-control');
-    let formGroups = document.querySelectorAll('.form-group');
-    sectionFields.forEach(function (field) {
-        if (field.readOnly) {
-            field.readOnly = false;
-            field.classList.remove('read-only');
-        } else {
-            field.readOnly = true;
-            field.classList.add('read-only');
-        }
+    let sections = [
+        document.getElementById('order-contact'),
+        document.getElementById('order-shipping-billing')
+    ];
+
+
+    sections.forEach(function (section) {
+        let formGroups = section.querySelectorAll('.form-group');
+        let formControls = section.querySelectorAll('.form-control');
+
+        formControls.forEach(function (field) {
+
+            if (field.readOnly) {
+                field.readOnly = false;
+                field.classList.remove('read-only');
+            } else {
+                field.readOnly = true;
+                field.classList.add('read-only');
+            }
+            if (field.id === 'auction-search' || field.id === 'payment_method' || field.id === 'id_card_number' || field.id === 'id_expiration_date' || field.id === 'id_cvv') {
+                field.classList.remove('read-only');
+            }
+        });
+
+        formGroups.forEach(function (field) {
+            // console.log('Field', field);
+            if (field.id !== 'auction-search') {
+
+                if (field.classList.contains('no-margin-bottom')) {
+                    field.classList.remove('no-margin-bottom');
+                } else {
+
+                    field.classList.add('no-margin-bottom');
+                }
+            }
+        });
+
+        // Optionally, you can toggle the text of the edit button
+        let editButtons = document.querySelectorAll('.edit-button');
+        editButtons.forEach(function (editButton) {
+            if (editButton.innerText === "Edit") {
+                editButton.innerText = "Save";
+            } else {
+                editButton.innerText = "Edit";
+            }
+
+        });
+
     });
 
-    formGroups.forEach(function (field) {
-        if (field.classList.contains('no-margin-bottom')) {
-            field.classList.remove('no-margin-bottom');
-        } else {
+    let roShipping = document.getElementById('cszReadOnly_shipping');
+    let roBilling = document.getElementById('cszReadOnly_billing');
+    let eShipping = document.getElementById('cszEdit_shipping');
+    let eBilling = document.getElementById('cszEdit_billing')
 
-            field.classList.add('no-margin-bottom');
-        }
-    });
-
-    // Optionally, you can toggle the text of the edit button
-    let editButtons = document.querySelectorAll('.edit-button');
-    editButtons.forEach(function (editButton) {
-        if (editButton.innerText === "Save") {
-            editButton.innerText = "Edit";
-        } else {
-            editButton.innerText = "Save";
-        }
-
-    });
-
+    if (eShipping.style.display === 'none' && eBilling.style.display === 'none') {
+        roShipping.style.display = 'none';
+        roBilling.style.display = 'none';
+        eShipping.style.display = 'flex';
+        eBilling.style.display = 'flex';
+    } else {
+        roShipping.style.display = 'flex';
+        roBilling.style.display = 'flex';
+        eShipping.style.display = 'none';
+        eBilling.style.display = 'none';
+    }
 }
 
-
-// Modal functions and operations:
-$(document).ready(function () {
-    // Check if the user has previously opted to hide the instructions
-    const hideInstructions = localStorage.getItem('hideInstructionsForever');
-
-    // If not, show the modal on page load
-    if (!hideInstructions) {
-        $('#checkoutInstructionsModal').modal('show');
-    }
-
-    // When the modal is closed, check if the user wants to hide it in the future
-    $('#checkoutInstructionsModal').on('hidden.bs.modal', function () {
-        if ($('#hideInstructionsForever').is(':checked')) {
-            localStorage.setItem('hideInstructionsForever', 'true');
-        }
-    });
-
-    // Initially set the required fields for the default selected option
-    setRequiredFields();
-
+function setRequiredFields() {
     // Listen to changes in the shipping option buttons
     $('input[name="shipping_option"]').on('change', function () {
         if ($(this).attr('id') === 'our_shipping') {
@@ -192,22 +244,36 @@ $(document).ready(function () {
         setRequiredFields();
     });
 
-    function setRequiredFields() {
-        // Clear all required attributes first
-        $('#shipping_method_form input').removeAttr('required');
-        $('#shipping_accounts_form input').removeAttr('required');
+    // Clear all required attributes first
+    $('#shipping_method_form input').removeAttr('required');
+    $('#shipping_accounts_form input').removeAttr('required');
 
-        // Determine which option is selected
-        if ($('#our_shipping').is(':checked')) {
-            // Our Shipping is selected, make relevant fields required
-            $('#shipping_method_form input[name="shipping_method"]').attr('required', 'required');
-        } else {
-            // Customer Shipping is selected, make relevant fields required
-            $('#shipping_accounts_form input[name="carrier_name"]').attr('required', 'required');
-            $('#shipping_accounts_form input[name="carrier_account_number"]').attr('required', 'required');
-        }
+    // Determine which option is selected
+    if ($('#our_shipping').is(':checked')) {
+        // Our Shipping is selected, make relevant fields required
+        $('#shipping_method_form input[name="shipping_method"]').attr('required', 'required');
+    } else {
+        // Customer Shipping is selected, make relevant fields required
+        $('#shipping_accounts_form input[name="carrier_name"]').attr('required', 'required');
+        $('#shipping_accounts_form input[name="carrier_account_number"]').attr('required', 'required');
+    }
+}
+
+// Hide Modal Instructions forever.
+$(document).ready(function () {
+    // Check if the user has previously opted to hide the instructions
+    const hideInstructions = localStorage.getItem('hideInstructionsForever');
+
+    // If not, show the modal on page load
+    if (!hideInstructions) {
+        $('#checkoutInstructionsModal').modal('show');
     }
 
-
+    // When the modal is closed, check if the user wants to hide it in the future
+    $('#checkoutInstructionsModal').on('hidden.bs.modal', function () {
+        if ($('#hideInstructionsForever').is(':checked')) {
+            localStorage.setItem('hideInstructionsForever', 'true');
+        }
+    });
 });
 

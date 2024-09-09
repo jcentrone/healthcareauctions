@@ -406,21 +406,55 @@ function postListing(listingIds) {
 }
 
 function submitAllForms(url) {
-    let formData = $('#settings-form, #billing-form, #shipping-form, #shipping-account-form').serialize();
+    // Show SweetAlert for processing
+    Swal.fire({
+        title: 'Processing...',
+        text: 'Please wait while your data is being saved.',
+        icon: 'info',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        willOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    // Create a FormData object to hold all form data, including files
+    let formData = new FormData();
+
+    // Append each form's data to the FormData object
+    $('#settings-form, #billing-form, #shipping-form, #shipping-account-form').each(function() {
+        let formElement = $(this)[0];
+        let formFormData = new FormData(formElement);
+
+        // Append each form's data to the main FormData object
+        formFormData.forEach((value, key) => {
+            formData.append(key, value);
+        });
+    });
 
     $.ajax({
         type: 'POST',
         url: url,
         data: formData,
+        processData: false,  // Prevent jQuery from automatically transforming the data into a query string
+        contentType: false,  // Ensure that the content type is set to multipart/form-data
         success: function (response) {
+            Swal.close();  // Close the SweetAlert processing dialog
+
             if (response.status === 'success') {
                 // Display a Bootstrap success alert
-                $('#main-content').prepend(`
+                let alertElement = $(`
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
                         ${response.message}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 `);
+                $('#main-content').prepend(alertElement);
+
+                // Set a timer to hide the alert after 5 seconds
+                setTimeout(() => {
+                    alertElement.alert('close');
+                }, 5000);
             } else {
                 // Display errors using Bootstrap alerts
                 let errors = response.errors;
@@ -437,6 +471,7 @@ function submitAllForms(url) {
             }
         },
         error: function (response) {
+            Swal.close();  // Close the SweetAlert processing dialog
             // Display a generic Bootstrap error alert
             $('#alert-container').html(`
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -447,6 +482,8 @@ function submitAllForms(url) {
         }
     });
 }
+
+
 
 
 document.addEventListener('DOMContentLoaded', function () {

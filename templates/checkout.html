@@ -3,7 +3,7 @@
 {% block title %}Checkout{% endblock %}
 {% block body %}
 <div class="container">
-    <form method="post">
+    <form method="post" action="{% url 'checkout' %}" id="orderForm">
         {% csrf_token %}
         <div class="tab-content" id="checkoutTabContent">
             <!-- Contact & Shipping Addresses -->
@@ -209,10 +209,10 @@
                                                 <div class="col-4 filler-column">City, State Zip Code</div>
                                                 <div class="col-8">
 
-                                                    <div class="col-6 read-only cszReadOnly" id="cszReadOnly_billing"  style="display: none">
+                                                    <div class="col-6 read-only cszReadOnly" id="cszReadOnly_billing" style="display: none" >
                                                         {{ billing_form.billing_city.value }}, {{ billing_form.billing_state.value }} {{ billing_form.billing_zip_code.value }}
                                                     </div>
-                                                    <div id="cszEdit" class="cszEdit_billing">
+                                                    <div id="cszEdit_billing" class="cszEdit_billing" >
                                                         <div class="row">
                                                             <div class="col-6 city-col">
                                                                 <div class="form-group align-items-center">
@@ -262,21 +262,32 @@
                             </div>
                         </div>
                 </div>
+                <!-- Order Summary -->
                 <div class="card mt-3">
                     <div class="card-header">
                         <h3 class="m-0">Order Summary</h3>
                     </div>
                     <div class="card-body position-relative">
                         <div class="table p-3">
-                            <div class="row fw-bold">
-                                <div class="col-6">Item</div>
+                            <div class="row fw-bold pb-1 border-bottom">
+                                <div class="col-2"></div>
+                                <div class="col-4">Item</div>
                                 <div class="col-2 text-center">Quantity</div>
                                 <div class="col-2 text-start">Price</div>
                                 <div class="col-2 text-end">Total</div>
                             </div>
                             {% for item in cart.items.all %}
-                                <div class="row">
-                                    <div class="col-6">{{ item.auction.title }}</div>
+                                <div class="row py-2">
+                                    <div class="col-2">
+                                        {% with item.get_image as image %}
+                                            {% if image %}
+                                                <img src="{{ image.image.url }}" alt="{{ item.auction.title }}" style="width:185px">
+                                            {% else %}
+                                                <img src="{% static 'images/no_image.png' %}" alt="Default Image">
+                                            {% endif %}
+                                        {% endwith %}
+                                    </div>
+                                    <div class="col-4">{{ item.auction.title }}</div>
                                     <div class="col-2 text-center">{{ item.quantity }}</div>
                                     <!-- Assuming 'quantity' is a field in CartItem model -->
                                     <div class="col-2 text-start">${{ item.auction.buyItNowPrice }}</div>
@@ -284,33 +295,48 @@
                                     <div class="col-2 text-end">${{ item.total_price }}</div>
                                 </div>
                             {% endfor %}
-    
+
                             <div class="row fw-bold border-top pt-3">
                                 <div class="col text-end">Subtotal:</div>
                                 <div class="col-1 text-end total-column">${{ cart.total_cost }}</div>
                             </div>
                             <div class="row">
                                 <div class="col text-end">Shipping:</div>
-                                <div class="col-1 text-end total-column">TBD</div>
+                                <div class="col-1 text-end total-column" id="shipping-amount">{% if shipping_accounts_form.use_as_default_shipping_method.value %}$0.00{% else %}TBD{% endif %}</div>
                             </div>
                             <div class="row">
                                 <div class="col text-end">Taxes:</div>
-                                <div class="col-1 text-end total-column">TBD</div>
+                                <div class="col-1 text-end total-column" id="tax-amount">
+                                    {% if request.user.is_tax_exempt %}
+                                    $0.00
+                                    {% elif shipping_accounts_form.use_as_default_shipping_method.value and not request.user.is_tax_exempt %}
+                                    ${{ sales_tax_no_shipping }}
+                                    {% else %}
+                                    TBD
+                                    {% endif %}
+                                </div>
                             </div>
                             <div class="row fw-bold pt-2">
                                 <div class="col"></div>
                                 <div class="col-1 border-top text-end total-column">Total:</div>
-                                <div class="col-1 border-top text-end total-column">TBD</div>
+                                <div class="col-1 border-top text-end total-column" id="total-amount">
+                                    {% if request.user.is_tax_exempt and shipping_accounts_form.use_as_default_shipping_method.value %}
+                                    ${{ cart.total_cost }}
+                                    {% elif shipping_accounts_form.use_as_default_shipping_method.value and not request.user.is_tax_exempt %}
+                                    ${{ total_no_shipping }}
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
-                    <p class="position-absolute bottom-0 ms-3 mt-5">Please note: The final total will be provided
+                    <p class="position-absolute bottom-0 ms-3 mt-5" id="order-summary-note">Please note: The final total will be provided
                         at the time of order confirmation once shipping
                         has been calculated.</p>
                 </div>
                 </div>
 
                 <!-- Shipping Method and Payment -->
-                <div class="d-flex gap-3">
+                <div class="d-flex gap-3" style="height:425px;">
+                    <!-- Shipping Method -->
                     <div class="card mt-3 col-md-6">
                         <!-- Shipping Method and Account -->
                         <div class="card-header d-flex align-items-center justify-content-between">
@@ -320,11 +346,11 @@
                         <!-- Button Group for Shipping Method Selection -->
                         <div class="btn-group mb-3" role="group" aria-label="Shipping Method Selection">
                             <input type="radio" class="btn-check" name="shipping_option" id="our_shipping" autocomplete="off"
-                                   {% if not shipping_account_form.use_as_default_shipping_method.value %} checked {% endif %}>
+                                   {% if not shipping_accounts_form.use_as_default_shipping_method.value %} checked {% endif %}>
                             <label class="btn btn-outline-secondary" for="our_shipping">Our Shipping</label>
 
                             <input type="radio" class="btn-check" name="shipping_option" id="customer_shipping" autocomplete="off"
-                                   {% if shipping_account_form.use_as_default_shipping_method.value %} checked {% endif %}>
+                                   {% if shipping_accounts_form.use_as_default_shipping_method.value %} checked {% endif %}>
                             <label class="btn btn-outline-secondary" for="customer_shipping">Use My Account</label>
                         </div>
 
@@ -380,6 +406,7 @@
                         </div>
                         </div>
                     </div>
+                    <!-- Payment Method -->
                     <div class="card mt-3 col">
                         <div class="card-header">
                             <h3 class="m-0">Payment Method</h3>
@@ -456,177 +483,31 @@
                     </div>
                 </div>
             </div>
-
-
-
-            <!-- Order Confirmation -->
-            <div class="tab-pane fade" id="confirmation" role="tabpanel" aria-labelledby="confirmation-tab">
-                <div class="card-header">
-                    <h3 class="m-0">Order Summary</h3>
-                </div>
-                <div class="card-body position-relative">
-                    <div class="table p-3">
-                        <div class="row fw-bold">
-                            <div class="col-6">Item</div>
-                            <div class="col-2 text-center">Quantity</div>
-                            <div class="col-2 text-start">Price</div>
-                            <div class="col-2 text-end">Total</div>
-                        </div>
-                        {% for item in cart.items.all %}
-                            <div class="row">
-                                <div class="col-6">{{ item.auction.title }}</div>
-                                <div class="col-2 text-center">{{ item.quantity }}</div>
-                                <!-- Assuming 'quantity' is a field in CartItem model -->
-                                <div class="col-2 text-start">${{ item.auction.buyItNowPrice }}</div>
-                                <!-- Adjust field name as needed -->
-                                <div class="col-2 text-end">${{ item.total_price }}</div>
-                            </div>
-                        {% endfor %}
-
-                        <div class="row fw-bold border-top pt-3">
-                            <div class="col text-end">Subtotal:</div>
-                            <div class="col-1 text-end total-column">${{ cart.total_cost }}</div>
-                        </div>
-                        <div class="row">
-                            <div class="col text-end">Shipping:</div>
-                            <div class="col-1 text-end total-column">TBD</div>
-                        </div>
-                        <div class="row">
-                            <div class="col text-end">Taxes:</div>
-                            <div class="col-1 text-end total-column">TBD</div>
-                        </div>
-                        <div class="row fw-bold pt-2">
-                            <div class="col"></div>
-                            <div class="col-1 border-top text-end total-column">Total:</div>
-                            <div class="col-1 border-top text-end total-column">TBD</div>
-                        </div>
-                    </div>
-                    <p class="position-absolute bottom-0 end-0 me-3">Please note: The final total will be provided
-                        at the time of order confirmation once shipping
-                        has been calculated.</p>
-                </div>
-
-                <div class="card-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-toggle="tab" data-bs-target="#contact">
-                        Back
-                    </button>
-                    <button type="button" class="btn btn-primary" data-bs-toggle="tab" data-bs-target="#payment">
-                        Next
-                    </button>
-                </div>
-            </div>
-            <!-- Payment & Submit -->
-            <div class="tab-pane fade" id="payment" role="tabpanel" aria-labelledby="payment-tab">
-                <div class="card-header">
-                    <h3 class="m-0">Payment Method</h3>
-                </div>
-                <div class="card-body">
-                    <!-- Payment Method -->
-                    <div class="form-group mb-3">
-                        <label for="payment_method">Choose Payment Method</label>
-                        <select id="payment_method" name="payment_method" class="form-control">
-                            <option value="credit-card">Credit Card</option>
-                            <option value="ach">ACH</option>
-                            <option value="zelle">Zelle</option>
-                            <option value="venmo">Venmo</option>
-                            <option value="paypal">PayPal</option>
-                            <option value="cashapp">CashApp</option>
-                        </select>
-                        <div id="cc-logo-container">
-                            <img class="payment-logo" src="{% static "images/credit-card-logos.png" %}">
-                        </div>
-                        <div id="zelle-logo-container">
-                            <img class="payment-logo" src="{% static "images/zelle-logo.png" %}">
-                        </div>
-                        <div id="venmo-logo-container">
-                            <img class="payment-logo" src="{% static "images/venmo-logo.png" %}">
-                        </div>
-                        <div id="paypal-logo-container">
-                            <img class="payment-logo" src="{% static "images/paypal-logo.png" %}">
-                        </div>
-                        <div id="cashapp-logo-container">
-                            <img class="payment-logo" src="{% static "images/cashapp-logo.png" %}">
-                        </div>
-                    </div>
-                    <!-- Credit Card Form -->
-                    <div id="credit-card-form" class="payment-form">
-                        <div class="form-group" id="card-number-field">
-                            <label for="{{ credit_card_form.card_number.id_for_label }}">{{ credit_card_form.card_number.label }}</label>
-                            {{ credit_card_form.card_number }}
-                        </div>
-                        <div class="form-group" id="expiration-date">
-                            <label for="{{ credit_card_form.expiration_date.id_for_label }}">{{ credit_card_form.expiration_date.label }}</label>
-                            {{ credit_card_form.expiration_date }}
-                        </div>
-                        <div class="form-group">
-                            <label for="{{ credit_card_form.cvv.id_for_label }}">{{ credit_card_form.cvv.label }}</label>
-                            {{ credit_card_form.cvv }}
-                        </div>
-                    </div>
-                    <!-- ACH Form -->
-                    <div id="ach-form" class="payment-form" style="display: none;">
-                        <p class="ms-3">ACH instructions will be sent to your email address along with the order
-                            confirmation.
-                            Please check your inbox for further details on how to complete your payment.</p>
-
-                    </div>
-                    <!-- Zelle Form -->
-                    <div id="zelle-form" class="payment-form" style="display: none;">
-                        {{ zelle_form.as_p }}
-                    </div>
-                    <!-- Venmo Form -->
-                    <div id="venmo-form" class="payment-form" style="display: none;">
-                        {{ venmo_form.as_p }}
-                    </div>
-                    <!-- Paypal Form -->
-                    <div id="paypal-form" class="payment-form" style="display: none;">
-                        {{ paypal_form.as_p }}
-                    </div>
-                    <!-- Cashapp Form -->
-                    <div id="cashapp-form" class="payment-form" style="display: none;">
-                        {{ cashapp_form.as_p }}
-                    </div>
-
-                    <div class="form-group form-check mt-3 ms-3">
-                        <input type="checkbox" class="form-check-input" id="id_agree_terms" required>
-                        <label class="form-check-label" for="id_agree_terms">
-                            I agree to the
-                            <a href="{% url 'terms_and_conditions' %}" target="_blank">Terms and Conditions</a>
-                            and
-                            <a href="{% url 'privacy_policy' %}" target="_blank">Privacy Policy</a>.
-                        </label>
-                    </div>
-                </div>
-                <div class="card-footer d-flex gap-2">
-                    <button type="button" class="btn btn-secondary" data-bs-toggle="tab"
-                            data-bs-target="#confirmation">Back
-                    </button>
-
-                </div>
-            </div>
         </div>
-
         <div class="card mt-3">
-
             <div class="card-body d-flex align-items-center justify-content-center gap-3">
                 <div id="submitContainer">
                     <button type="submit" class="btn btn-primary" id="orderButton">Place Order</button>
                 </div>
                 <div class="form-group form-check">
-                                <input type="checkbox" class="form-check-input" id="id_agree_terms" required>
-                                <label class="form-check-label" for="id_agree_terms">
-                                    I agree to the
-                                    <a href="{% url 'terms_and_conditions' %}" target="_blank">Terms and Conditions</a>
-                                    and
-                                    <a href="{% url 'privacy_policy' %}" target="_blank">Privacy Policy</a>.
-                                </label>
-                            </div>
-
+                    <input type="checkbox" class="form-check-input" id="id_agree_terms" required>
+                    <label class="form-check-label" for="id_agree_terms">
+                        I agree to the
+                        <a href="{% url 'terms_and_conditions' %}" target="_blank">Terms and Conditions</a>
+                        and
+                        <a href="{% url 'privacy_policy' %}" target="_blank">Privacy Policy</a>.
+                    </label>
+                    </div>
             </div>
         </div>
-
-
     </form>
+    
+    <div id="dataHolder" 
+    data-sales_tax_no_shipping="{{ sales_tax_no_shipping }}"
+    data-total_no_shipping="{{ total_no_shipping }}"
+    data-subtotal="{{ cart.total_cost }}"
+    data-tax_exempt="{{ request.user.is_tax_exempt }}"
+    ></div>
 </div>
     
 <!-- Checkout Instructions Modal -->
@@ -673,43 +554,6 @@
             $('#id_phone_number').mask("(999) 999-9999");
             $('#id_shipping_phone_number').mask("(999) 999-9999");
             $('#id_billing_phone_number').mask("(999) 999-9999");
-            
-
-            // Handle tab navigation
-            $('#checkoutTabs button').on('click', function () {
-                let target = $(this).data('bs-target');
-                let tab = new bootstrap.Tab($(target)[0]);
-                tab.show();
-            });
-
-            // Manually trigger tab change when clicking Next/Back buttons
-            $("#next-btn-1").on("click", function () {
-                let nextTab = new bootstrap.Tab("#confirmation-tab");
-                nextTab.show();
-            });
-
-            $("#confirmation .btn-secondary").on("click", function () {
-                let prevTab = new bootstrap.Tab("#contact-tab");
-                prevTab.show();
-            });
-
-            $("#confirmation .btn-primary").on("click", function () {
-                let nextTab = new bootstrap.Tab("#payment-tab");
-                nextTab.show();
-            });
-
-            $("#payment .btn-secondary").on("click", function () {
-                let prevTab = new bootstrap.Tab("#confirmation-tab");
-                prevTab.show();
-            });
-
-            $('#copyEmailButton').click(function () {
-                // Get the value from the email input field
-                let emailValue = $('#id_email').val();
-                // Set the value to the shipping email input field
-                $('#id_shipping_email').val(emailValue);
-            });
-
             $('#zelle-logo-container').hide();
             $('#venmo-logo-container').hide();
             $('#paypal-logo-container').hide();
@@ -803,183 +647,170 @@
     <!-- Order Validation -->
     <script>
         $(document).ready(function () {
-    function validateAndSubmitForm() {
-        let missingFields = [];
-
-        // Loop through all required fields
-        $('.required').each(function () {
-            if (!$(this).val()) {
-                // Find the corresponding label using the input's id and the label's for attribute
-                let label = $(`label[for="${$(this).attr('id')}"]`).text();
-                missingFields.push({
-                    id: $(this).attr('id'),
-                    label: label || 'Field' // Fallback if label is not found
-                });
-            }
-        });
-
-        // If there are missing fields, show SweetAlert2
-        if (missingFields.length > 0) {
-            let inputsHtml = '';
-            // Generate HTML for SweetAlert2 input fields based on missing fields
-            missingFields.forEach(field => {
-                inputsHtml += `
-                    <div class="mb-2">
-                        <label class="text-body text-start w-100 fs-6 mb-1" for="swal-input-${field.id}">${field.label}</label>
-                        <input type="text" id="swal-input-${field.id}" class="form-control swal-input" placeholder="Enter ${field.label.toLowerCase()}">
-                    </div>
-                `;
-            });
-
-            // Show SweetAlert2 with the inputs for missing fields
-            Swal.fire({
-                title: 'Please fill the required fields',
-                html: inputsHtml,
-                showCancelButton: true,
-                focusConfirm: false,
-                confirmButtonText: 'Submit',
-                customClass: {
-                    popup: 'rounded',
-                    confirmButton: 'btn btn-primary me-2',  // Apply Bootstrap primary button class
-                    cancelButton: 'btn btn-secondary ms-2',   // Optional: Apply Bootstrap secondary button class
-                    title: 'h3 border-bottom pb-2 bg-light rounded-top',
-                },
-                buttonsStyling: false,  // Disable default SweetAlert2 styling for buttons
-                preConfirm: () => {
-                    // Update form fields with SweetAlert2 inputs
-                    missingFields.forEach(field => {
-                        let value = $(`#swal-input-${field.id}`).val();
-                        if (value) {
-                            $(`#${field.id}`).val(value);
-                        }
+        function validateAndSubmitForm() {
+            let missingFields = [];
+    
+            // Loop through all required fields
+            $('.required').each(function () {
+                if (!$(this).val()) {
+                    // Find the corresponding label using the input's id and the label's for attribute
+                    let label = $(`label[for="${$(this).attr('id')}"]`).text();
+                    missingFields.push({
+                        id: $(this).attr('id'),
+                        label: label || 'Field' // Fallback if label is not found
                     });
                 }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Submit the form via AJAX after updating the fields
-                    submitFormViaAjax();
-                }
             });
-        } else {
-            // No missing fields, submit the form via AJAX
-            submitFormViaAjax();
-        }
-    }
-
-    function submitFormViaAjax() {
-        let form = $('form');  // Reference to the form
-        let formData = form.serialize();  // Serialize the form data
-
-        $.ajax({
-            type: 'POST',
-            url: form.attr('action'),  // Use the form's action attribute as the URL
-            data: formData,
-            dataType: 'json',
-            success: function (response) {
-        console.log('Response received:', response);  // Debugging line
-
-        if (response.status === 'success') {
-            const order = response.order;
-
-            // Check if order exists and has the expected structure
-            if (order && order.items && order.items.length > 0) {
-                // Generate order details HTML
-                let orderDetailsHtml = `
-                    <div id="order-confirmation-content">
-                        <h2 class="w-100 text-center fw-bold pb-3 mb-3 border-bottom">Thank you for your order!</h2>
-                        <h3 class="w-100 text-start" style="margin-top: 20px; font-weight: bold;">Shipping Information</h3>
-                        ${order.shipping_address ? `
-                            <div class="row">
-                                <div class="col-auto text-start">
-                                    <div>${order.shipping_address.shipping_full_name}</div>
-                                    <div>${order.shipping_address.shipping_street_address}, ${order.shipping_address.shipping_apartment_suite}</div>
-
-                                    <div class="row">
-                                        <div class="col-auto">${order.shipping_address.shipping_city},</div>
-                                        <div class="col-auto">${order.shipping_address.shipping_state}</div>
-                                        <div class="col-auto">${order.shipping_address.shipping_zip_code}</div>
-                                    </div>
-                                    <div>${order.shipping_address.shipping_country}</div>
-                                </div>
-                            </div>
-                        ` : `<p>No shipping address available.</p>`}
-
-
-                     <h3 class="w-100 text-start" style="margin-top: 20px; font-weight: bold;">Order Summary</h3>
-                    <ul style="list-style-type: none; padding: 0;">
-                `;
-
-                order.items.forEach(item => {
-                    orderDetailsHtml += `
-                        <li style="border-bottom: 1px solid #ccc; padding: 10px 0;">
-                            <div class="row">
-                                <div class="col-2 text-center">Quantity</div>
-                                <div class="col-8 text-start">Description</div>
-                                <div class="col-2 text-end">Price</div>
-                            </div>
-                        </li>
-                        <li style="border-bottom: 1px solid #ccc; padding: 10px 0;">
-                            <div class="row">
-                                <div class="col-2 text-center">${item.quantity}</div>
-                                <div class="col-8 text-start">${item.auction_title}</div>
-                                <div class="col-2 text-end">$${item.price}</div>
-                            </div>
-                        </li>
+    
+            // If there are missing fields, show SweetAlert2
+            if (missingFields.length > 0) {
+                let inputsHtml = '';
+                // Generate HTML for SweetAlert2 input fields based on missing fields
+                missingFields.forEach(field => {
+                    inputsHtml += `
+                        <div class="mb-2">
+                            <label class="text-body text-start w-100 fs-6 mb-1" for="swal-input-${field.id}">${field.label}</label>
+                            <input type="text" id="swal-input-${field.id}" class="form-control swal-input" placeholder="Enter ${field.label.toLowerCase()}">
+                        </div>
                     `;
                 });
-                orderDetailsHtml += `
-                    </ul>
-                    <p style="font-weight: bold; text-align: right; margin-top: 20px;">Total: $${order.total_amount}</p>
-
-                    <p class="text-start">Your order number is <strong>${order.id}</strong>.</p>
-                    <p class="text-start">You will receive an email confirmation shortly at <strong>${order.email}</strong>.</p>
-                    <p class="text-start">If you have any questions about your order, please <a href="{% url 'inbox' %}" target="_blank">contact us</a>.</p>
-                </div>`;
-
-                // Display order confirmation in SweetAlert2
+    
+                // Show SweetAlert2 with the inputs for missing fields
                 Swal.fire({
-                    title: '',
-                    html: orderDetailsHtml,
-                    icon: 'success',
+                    title: 'Please fill the required fields',
+                    html: inputsHtml,
                     showCancelButton: true,
-                    confirmButtonText: 'OK',
-                    cancelButtonText: 'Print',
+                    focusConfirm: false,
+                    confirmButtonText: 'Submit',
                     customClass: {
-                        confirmButton: 'btn btn-primary me-2',
-                        cancelButton: 'btn btn-secondary ms-2',
-                        popup: 'custom-swal-width'
+                        popup: 'rounded',
+                        confirmButton: 'btn btn-primary me-2',  // Apply Bootstrap primary button class
+                        cancelButton: 'btn btn-secondary ms-2',   // Optional: Apply Bootstrap secondary button class
+                        title: 'h3 border-bottom pb-2 bg-light rounded-top',
                     },
-                    buttonsStyling: false,
+                    buttonsStyling: false,  // Disable default SweetAlert2 styling for buttons
+                    preConfirm: () => {
+                        // Update form fields with SweetAlert2 inputs
+                        missingFields.forEach(field => {
+                            let value = $(`#swal-input-${field.id}`).val();
+                            if (value) {
+                                $(`#${field.id}`).val(value);
+                            }
+                        });
+                    }
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Redirect to order confirmation page or any other action
-                        window.location.href = `/auction/active`;
-                    } else if (result.dismiss === Swal.DismissReason.cancel) {
-                        // Handle print action
-                        printOrderConfirmation();
+                        // Submit the form via AJAX after updating the fields
+                        submitFormViaAjax();
                     }
                 });
             } else {
-                console.error('Order data is missing or invalid:', order);  // Debugging line
+                // No missing fields, submit the form via AJAX
+                submitFormViaAjax();
             }
-        } else if (response.status === 'error') {
-            Swal.fire({
-                title: 'Error',
-                text: response.message,
-                icon: 'error',
-                confirmButtonText: 'OK',
-                customClass: {
-                    confirmButton: 'btn btn-primary'
-                },
-                buttonsStyling: false
-            });
         }
-    },
-
-            error: function (xhr, status, error) {
+    
+        function submitFormViaAjax() {
+            let form = $('#orderForm');  // Reference to the form
+            let formData = form.serialize();  // Serialize the form data
+            console.log('Sending AJAX request:', formData);
+    
+            $.ajax({
+                type: 'POST',
+                url: form.attr('action'),  // Use the form's action attribute as the URL
+                data: formData,
+                dataType: 'json',
+                success: function (response) {
+                console.log('Response received:', response);  // Debugging line
+    
+            if (response.status === 'success') {
+                const order = response.order;
+    
+                // Check if order exists and has the expected structure
+                if (order && order.items && order.items.length > 0) {
+                    // Generate order details HTML
+                    let orderDetailsHtml = `
+                        <div id="order-confirmation-content">
+                            <h2 class="w-100 text-center fw-bold pb-3 mb-3 border-bottom">Thank you for your order!</h2>
+                            <h3 class="w-100 text-start" style="margin-top: 20px; font-weight: bold;">Shipping Information</h3>
+                            ${order.shipping_address ? `
+                                <div class="row">
+                                    <div class="col-auto text-start">
+                                        <div>${order.shipping_address.shipping_full_name}</div>
+                                        <div>${order.shipping_address.shipping_street_address}, ${order.shipping_address.shipping_apartment_suite}</div>
+    
+                                        <div class="row">
+                                            <div class="col-auto">${order.shipping_address.shipping_city},</div>
+                                            <div class="col-auto">${order.shipping_address.shipping_state}</div>
+                                            <div class="col-auto">${order.shipping_address.shipping_zip_code}</div>
+                                        </div>
+                                        <div>${order.shipping_address.shipping_country}</div>
+                                    </div>
+                                </div>
+                            ` : `<p>No shipping address available.</p>`}
+    
+    
+                         <h3 class="w-100 text-start" style="margin-top: 20px; font-weight: bold;">Order Summary</h3>
+                        <ul style="list-style-type: none; padding: 0;">
+                    `;
+    
+                    order.items.forEach(item => {
+                        orderDetailsHtml += `
+                            <li style="border-bottom: 1px solid #ccc; padding: 10px 0;">
+                                <div class="row">
+                                    <div class="col-2 text-center">Quantity</div>
+                                    <div class="col-8 text-start">Description</div>
+                                    <div class="col-2 text-end">Price</div>
+                                </div>
+                            </li>
+                            <li style="border-bottom: 1px solid #ccc; padding: 10px 0;">
+                                <div class="row">
+                                    <div class="col-2 text-center">${item.quantity}</div>
+                                    <div class="col-8 text-start">${item.auction_title}</div>
+                                    <div class="col-2 text-end">$${item.price}</div>
+                                </div>
+                            </li>
+                        `;
+                    });
+                    orderDetailsHtml += `
+                        </ul>
+                        <p style="font-weight: bold; text-align: right; margin-top: 20px;">Total: $${order.total_amount}</p>
+    
+                        <p class="text-start">Your order number is <strong>${order.id}</strong>.</p>
+                        <p class="text-start">You will receive an email confirmation shortly at <strong>${order.email}</strong>.</p>
+                        <p class="text-start">If you have any questions about your order, please <a href="{% url 'inbox' %}" target="_blank">contact us</a>.</p>
+                    </div>`;
+    
+                    // Display order confirmation in SweetAlert2
+                    Swal.fire({
+                        title: '',
+                        html: orderDetailsHtml,
+                        icon: 'success',
+                        showCancelButton: true,
+                        confirmButtonText: 'OK',
+                        cancelButtonText: 'Print',
+                        customClass: {
+                            confirmButton: 'btn btn-primary me-2',
+                            cancelButton: 'btn btn-secondary ms-2',
+                            popup: 'custom-swal-width'
+                        },
+                        buttonsStyling: false,
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Redirect to order confirmation page or any other action
+                            window.location.href = `/auction/active`;
+                        } else if (result.dismiss === Swal.DismissReason.cancel) {
+                            // Handle print action
+                            printOrderConfirmation();
+                        }
+                    });
+                } else {
+                    console.error('Order data is missing or invalid:', order);  // Debugging line
+                }
+            } else if (response.status === 'error') {
                 Swal.fire({
-                    title: 'Submission Failed',
-                    text: 'There was an error processing your order. Please try again.',
+                    title: 'Error',
+                    text: response.message,
                     icon: 'error',
                     confirmButtonText: 'OK',
                     customClass: {
@@ -988,10 +819,27 @@
                     buttonsStyling: false
                 });
             }
-        });
-    }
-
-    function printOrderConfirmation() {
+        },
+    
+                error: function (xhr, status, error) {
+                        console.log("XHR Response:", xhr.responseText);  // Log the full response from the server
+    
+                    Swal.fire({
+                        title: 'Submission Failed',
+                        text: error,
+                        {#text: 'There was an error processing your order. Please try again.',#}
+                        icon: 'error',
+                        confirmButtonText: 'OK',
+                        customClass: {
+                            confirmButton: 'btn btn-primary'
+                        },
+                        buttonsStyling: false
+                    });
+                }
+            });
+        }
+    
+        function printOrderConfirmation() {
         const orderContent = document.getElementById('order-confirmation-content').innerHTML;
         const printWindow = window.open('', '', 'height=600,width=800');
         printWindow.document.write('<html><head><title>Order Confirmation</title>');

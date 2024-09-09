@@ -32,6 +32,7 @@ from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, 
     EditProductDetailFormSet, ShippingAccountsForm
 from .models import Bid, Category, Image, User, Address, CartItem, Cart, ProductDetail, Message, Order, Payment, \
     OrderItem, Parcel, ProductImage, ShippingAccounts
+from .utils.calculate_tax import get_sales_tax
 from .utils.helpers import update_categories_from_fda
 from .utils.openai import get_chat_completion_request
 from .utils.scrape import scrape_images
@@ -1331,7 +1332,9 @@ def export_listings_to_excel(request):
 # ORDER MANAGEMENT
 @login_required
 def checkout(request):
+    print(request.POST )
     cart = request.user.cart
+
 
     # Populate initial data from the user profile
     initial_data = {
@@ -1366,6 +1369,33 @@ def checkout(request):
             'billing_country': "USA",
         })
 
+    # Calculate Taxes
+    zip_code = default_shipping_address.zip_code
+    state = default_shipping_address.state
+    city = default_shipping_address.city
+
+    tax_info = get_sales_tax(zip_code, state, city)
+
+    combined_sales_tax_rate = Decimal(0)
+    sales_tax_no_shipping = Decimal(0)
+    total_no_shipping = Decimal(0)
+    if "error" not in tax_info:
+        combined_sales_tax_rate = (
+                Decimal(tax_info.get('stateSalesTax', 0)) +
+                Decimal(tax_info.get('countySalesTax', 0)) +
+                Decimal(tax_info.get('citySalesTax', 0)) +
+                Decimal(tax_info.get('districtSalesTax', 0))
+        )
+        sales_tax_no_shipping = round(combined_sales_tax_rate * cart.total_cost(), 2)
+        total_no_shipping = round(cart.total_cost() + sales_tax_no_shipping, 2)
+        print(sales_tax_no_shipping)
+    else:
+        print(tax_info["error"])
+
+    tax_exempt = False
+    if request.user.reseller_cert:
+        tax_exempt = True
+
     credit_card_form = CreditCardForm(request.POST or None)
     ach_form = ACHForm(request.POST or None)
     zelle_form = ZelleForm(request.POST or None)
@@ -1373,11 +1403,11 @@ def checkout(request):
     paypal_form = PayPalForm(request.POST or None)
     cashapp_form = CashAppForm(request.POST or None)
     shipping_account_instance = request.user.shipping_accounts.first()
-    print(shipping_account_instance)
     shipping_accounts_form = ShippingAccountsForm(request.POST or None, instance=shipping_account_instance)
     shipping_method_form = ShippingMethodForm(request.POST or None, initial=initial_data)
 
     if request.method == 'POST':
+        print(request.POST)
         shipping_form = ShippingAddressForm(request.POST)
         billing_form = BillingAddressForm(request.POST)
 
@@ -1400,7 +1430,7 @@ def checkout(request):
                 OrderItem.objects.create(
                     order=order,
                     auction=item.auction,
-                    quantity=item.quantity(),
+                    quantity=item.quantity,
                     price=item.total_price()
                 )
 
@@ -1467,9 +1497,9 @@ def checkout(request):
             }
             return JsonResponse({'status': 'error', 'message': 'Form validation failed.', 'errors': errors})
 
-    else:
-        shipping_form = ShippingAddressForm(initial=initial_data)
-        billing_form = BillingAddressForm(initial=initial_data)
+    # Handling GET request - rendering checkout page
+    shipping_form = ShippingAddressForm(initial=initial_data)
+    billing_form = BillingAddressForm(initial=initial_data)
 
     return render(request, 'checkout.html', {
         'shipping_accounts_form': shipping_accounts_form,
@@ -1483,7 +1513,13 @@ def checkout(request):
         'paypal_form': paypal_form,
         'cashapp_form': cashapp_form,
         'cart': cart,
+        'combined_sales_tax_rate': combined_sales_tax_rate,
+        'sales_tax_no_shipping': sales_tax_no_shipping,
+        'total_no_shipping': total_no_shipping,
     })
+
+
+
 
 
 @login_required
