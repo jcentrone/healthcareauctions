@@ -2,48 +2,71 @@
 {% load static %}
 {% block body %}
     <div class="container mt-5" style="min-height:80vh">
-        <h2 class="mb-4">Your Cart</h2>
-        <div class="div-table table-bordered">
-            <div class="div-table-row div-table-header">
-                <div class="div-table-col">Product</div>
-                <div class="div-table-col"></div>
-                <div class="div-table-col">Quantity</div>
-                <div class="div-table-col">Total Price</div>
-                <div class="div-table-col"></div>
-            </div>
-            {% for item in cart.items.all %}
-                <div class="div-table-row">
-                    <div class="div-table-col">
-                        {% with item.get_image as image %}
-                            {% if image %}
-                                <img src="{{ image.image.url }}" alt="{{ item.auction.title }}">
-                            {% else %}
-                                <img src="{% static 'images/no_image.png' %}" alt="Default Image">
-                            {% endif %}
-                        {% endwith %}
+        {% if cart.item_count > 0 %}
+            <h2 class="mb-4">Your Cart</h2>
+            <div class="div-table table-bordered">
+                <div class="div-table-row div-table-header">
+                    <div class="div-table-col">Product</div>
+                    <div class="div-table-col"></div>
+                    <div class="div-table-col">Quantity</div>
+                    <div class="div-table-col">Total Price</div>
+                    <div class="div-table-col"></div>
+                </div>
+                {% for item in cart.items.all %}
+                    <div class="div-table-row">
+                        <div class="div-table-col">
+                            {% with item.get_image as image %}
+                                {% if image %}
+                                    <img src="{{ image.image.url }}" alt="{{ item.auction.title }}">
+                                {% else %}
+                                    <img src="{% static 'images/no_image.png' %}" alt="Default Image">
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                        <div class="div-table-col">{{ item.auction.title }}</div>
+                        <div class="div-table-col">{{ item.quantity }}</div>
+                        <div class="div-table-col">${{ item.total_price }}</div>
+                        <div class="div-table-col">
+                            <form method="post" action="{% url 'remove_from_cart' item.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+                            </form>
+                        </div>
                     </div>
-                    <div class="div-table-col">{{ item.auction.title }}</div>
-                    <div class="div-table-col">{{ item.quantity }}</div>
-                    <div class="div-table-col">${{ item.total_price }}</div>
-                    <div class="div-table-col">
-                        <form method="post" action="{% url 'remove_from_cart' item.id %}">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-danger btn-sm">
-                                <i class="fa-regular fa-trash-can"></i>
-                            </button>
-                        </form>
+                {% endfor %}
+            </div>
+            <div class="mt-4 d-flex justify-content-between">
+                <div class="d-flex gap-3">
+                    <a href="{% url 'checkout' %}" class="btn btn-primary">Proceed to Checkout</a>
+                    <a href="{% url 'active_auctions_view' %}" class="btn btn-outline-secondary">Back to Shopping</a>
+                </div>
+                <h4>Total: ${{ cart.total_cost }}</h4>
+
+            </div>
+        {% else %}
+            <div class="container-fluid  mt-100">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="">
+                            
+                            <div class="card-body">
+                                <div class="col-sm-12 empty-cart-cls text-center">
+                                    <img src="{% static 'images/emptyCart.png' %}" width="130" height="130"
+                                         class="img-fluid mb-4 mr-3">
+                                    <h3><strong>Your Cart is Empty</strong></h3>
+                                    <h4>Add something to make me happy :)</h4>
+                                    <a href="{% url 'active_auctions_view' %}" class="btn btn-primary cart-btn-transform m-3" data-abc="true">Continue
+                                        Shopping</a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            {% endfor %}
-        </div>
-        <div class="mt-4 d-flex justify-content-between">
-            <div class="d-flex gap-3">
-                <a href="{% url 'checkout' %}" class="btn btn-primary">Proceed to Checkout</a>
-                <a href="{% url 'active_auctions_view' %}" class="btn btn-outline-secondary">Back to Shopping</a>
             </div>
-            <h4>Total: ${{ cart.total_cost }}</h4>
+        {% endif %}
 
-        </div>
 
     </div>
     <link href='{% static "css/cart.css" %}' rel='stylesheet'>

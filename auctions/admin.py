@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.contrib import admin
 
 from .models import Auction, Image, Bid, Comment, Category, User, Message, Order, OrderItem, ShippingAddress, \
-    BillingAddress, Payment, Carrier, Parcel, ProductDetail
+    BillingAddress, Payment, Carrier, Parcel, ProductDetail, ShippingAccounts
 
 # admin.site.register(Auction)
 # admin.site.register(Image)
@@ -146,6 +146,11 @@ class ParcelInline(admin.TabularInline):
     extra = 0
 
 
+class ShippingAccountInline(admin.TabularInline):
+    model = ShippingAccounts
+    extra = 0
+
+
 class OrderAdmin(admin.ModelAdmin):
     change_form_template = 'admin/admin_view_order.html'
     list_display = ('id', 'user', 'user_email', 'status', 'tax_amount', 'total_amount', 'created_at', 'updated_at', )
@@ -155,8 +160,10 @@ class OrderAdmin(admin.ModelAdmin):
     inlines = [
         PaymentInline,
         OrderItemInline,
+        ShippingAccountInline,
         CarrierInline,
         ParcelInline,
+
     ]
 
     fieldsets = (
@@ -186,7 +193,7 @@ class OrderAdmin(admin.ModelAdmin):
         # Remove ShippingAddressInline and BillingAddressInline from the default inlines
         return [
             inline for inline in inline_instances
-            if not isinstance(inline, (ShippingAddressInline, BillingAddressInline))
+            if not isinstance(inline, (ShippingAddressInline, BillingAddressInline, ShippingAccounts))
         ]
 
     def change_view(self, request, object_id, form_url='', extra_context=None):

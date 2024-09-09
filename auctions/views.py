@@ -1332,9 +1332,8 @@ def export_listings_to_excel(request):
 # ORDER MANAGEMENT
 @login_required
 def checkout(request):
-    print(request.POST )
+    print(request.POST)
     cart = request.user.cart
-
 
     # Populate initial data from the user profile
     initial_data = {
@@ -1425,7 +1424,6 @@ def checkout(request):
                 shipping_method=shipping_method,
                 special_instructions=special_instructions,
             )
-
             for item in cart.items.all():
                 OrderItem.objects.create(
                     order=order,
@@ -1433,6 +1431,16 @@ def checkout(request):
                     quantity=item.quantity,
                     price=item.total_price()
                 )
+
+                # Update auction quantity or deactivate auction based on type and available quantity
+                if item.auction.auction_type == 'sale':
+                    item.auction.available_quantity -= item.quantity
+                    if item.auction.available_quantity <= 0:
+                        item.auction.active = False
+                else:  # Assuming auction type 'auction' or other types should be deactivated
+                    item.auction.active = False
+
+                item.auction.save()
 
             shipping_address = shipping_form.save(commit=False)
             shipping_address.order = order
@@ -1473,7 +1481,8 @@ def checkout(request):
             payment.save()
 
             cart.items.all().delete()
-            order.auction.active = False
+
+            # order.auction.active = False
             order.auction.save()
 
             order_data = model_to_dict(order)
@@ -1517,9 +1526,6 @@ def checkout(request):
         'sales_tax_no_shipping': sales_tax_no_shipping,
         'total_no_shipping': total_no_shipping,
     })
-
-
-
 
 
 @login_required
