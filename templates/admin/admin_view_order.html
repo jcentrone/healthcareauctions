@@ -1,145 +1,547 @@
 {% extends "admin/change_form.html" %}
 
 {% load static %}
-
+{% load custom_filters %}
 {% block after_field_sets %}
     {{ block.super }}
-    <div class="module row">
-        <div class="col-md-6">
-            <h2>Shipping Information</h2>
-            {% if shipping_inline.forms %}
-                {% for form in shipping_inline.forms %}
-                    <div class="form-group mb-2">
-                        <label for="{{ form.shipping_company_name.id_for_label }}">Company Name</label>
-                        <input type="text" name="{{ form.shipping_company_name.name }}"
-                               value="{{ form.shipping_company_name.value }}" readonly class="form-control" style="font-size: .875rem;">
-                    </div>
-                    <div class="form-group mb-2">
-                        <label for="{{ form.shipping_full_name.id_for_label }}">Attention</label>
-                        <input type="text" name="{{ form.shipping_full_name.name }}"
-                               value="{{ form.shipping_full_name.value }}" readonly class="form-control" style="font-size: .875rem;">
-                    </div>
-                    <div class="form-group mb-2">
-                        <label for="{{ form.shipping_street_address.id_for_label }}">Street Address</label>
-                        <input type="text" name="{{ form.shipping_street_address.name }}"
-                               value="{{ form.shipping_street_address.value }}" readonly class="form-control" style="font-size: .875rem;">
-                    </div>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
 
-                    <div class="form-group mb-2">
-                        <label for="{{ form.shipping_apartment_suite.id_for_label }}">Suite</label>
-                        <input type="text" name="{{ form.shipping_apartment_suite.name }}"
-                               value="{{ form.shipping_apartment_suite.value }}" readonly class="form-control" style="font-size: .875rem;">
+
+    <div class="mt-5">
+        <!-- Nav Tabs -->
+        <ul class="nav nav-tabs gap-2" id="orderTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="order-details-tab" data-bs-toggle="tab"
+                        data-bs-target="#order-details" type="button" role="tab" aria-controls="order-details"
+                        aria-selected="true">Order Details
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="billing-shipping-tab" data-bs-toggle="tab"
+                        data-bs-target="#billing-shipping" type="button" role="tab" aria-controls="billing-shipping"
+                        aria-selected="false">Billing and Shipping
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="payment-tab" data-bs-toggle="tab" data-bs-target="#payment" type="button"
+                        role="tab" aria-controls="payment" aria-selected="false">Payment
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="messages-tab" data-bs-toggle="tab" data-bs-target="#messages" type="button"
+                        role="tab" aria-controls="messages" aria-selected="false">Messages
+                </button>
+            </li>
+        </ul>
+        <!-- Nav Tabs Content -->
+        <div class="tab-content border border-top-0 p-3" id="orderTabsContent">
+            <div class="tab-pane fade show active" id="order-details" role="tabpanel"
+                 aria-labelledby="order-details-tab">
+                <!-- Order Information -->
+                <div class="module col">
+                    <div class="d-flex">
+                        <div class="module col-lg-6 p-0 pe-2 m-0 text-white">
+                            <h2 class="">Buyer Information</h2>
+                            {% csrf_token %}
+                            <div class="form-group m-3 d-flex align-items-center justify-content-start gap-3">
+                                <label><strong>Buyer:</strong></label>
+                                <div class="form-control-static">{{ order.user.first_name }} {{ order.user.last_name }}</div>
+                            </div>
+                            <div class="m-3">
+                                <div class="form-group mb-3">
+                                    <div class="d-flex align-items-center justify-content-start gap-3">
+                                        <label for="{{ order_form.status.id_for_label }}"><strong>Order
+                                            Status</strong></label>
+
+                                        <select name="{{ order_form.status.name }}"
+                                                id="{{ order_form.status.id_for_label }}"
+                                                class="form-control p-1"
+                                                style="font-size: .875rem; width:100px;">
+                                            {% for choice in order_form.status.field.choices %}
+                                                <option value="{{ choice.0 }}"
+                                                        {% if choice.0 == order_form.status.value %}selected{% endif %}>
+                                                    {{ choice.1 }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group mb-3 d-flex align-items-center justify-content-start gap-3">
+                                    <label><strong>Shipping Method:</strong></label>
+                                    <div class="form-control-static">{{ order.shipping_method|capfirst }}</div>
+                                </div>
+
+                                <div class="form-group mb-3 d-flex align-items-center justify-content-start gap-3">
+                                    <label><strong>Special Instructions:</strong></label>
+                                    <div class="form-control-static">{{ order.special_instructions }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="module col-lg-6 p-0 ps-2 m-0 text-white">
+                            <h2 class="modal-header">Dates</h2>
+                            <div class="form-group m-3 d-flex align-items-center justify-content-start gap-3">
+                                <label><strong>Created At:</strong></label>
+                                <div class="form-control-static">{{ order.created_at }}</div>
+                            </div>
+                            <div class="form-group m-3 d-flex align-items-center justify-content-start gap-3">
+                                <label><strong>Updated At:</strong></label>
+                                <div class="form-control-static">{{ order.updated_at }}</div>
+                            </div>
+
+                        </div>
                     </div>
-
-                    <div class="form-group mb-2">
-                        <label for="{{ form.shipping_city.id_for_label }}">City</label>
-                        <input type="text" name="{{ form.shipping_city.name }}"
-                               value="{{ form.shipping_city.value }}" readonly class="form-control" style="font-size: .875rem;">
+                </div>
+                <!-- Order Items -->
+                <div class="module col text-white">
+                    <h2 class="modal-header">Item Ordered</h2>
+                    {{ order_items_inline.management_form }}  <!-- Include the management form -->
+                    <!-- Header Row -->
+                    <div class="col pt-3 overflow-hidden">
+                        <div class="row pb-1 border-bottom font-weight-bold">
+                            <div class="col-md-2">
+                                <p class="mb-0"></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-0"><strong>Item</strong></p>
+                            </div>
+                            <div class="col-md-2">
+                                <p class="mb-0"><strong>Quantity</strong></p>
+                            </div>
+                            <div class="col-md-2">
+                                <p class="mb-0"><strong>Price</strong></p>
+                            </div>
+                        </div>
                     </div>
+                    <!-- Order Items -->
+                    <div class="col overflow-hidden p-2">
+                        {% for form in order_items_inline.forms %}
+                            <div class="row my-3 pb-3 border-bottom align-items-center">
+                                <div class="col-md-2">
 
-                    <div class="form-group mb-2">
-                        <label for="{{ form.shipping_state.id_for_label }}">State</label>
-                        <input type="text" name="{{ form.shipping_state.name }}"
-                               value="{{ form.shipping_state.value }}" readonly class="form-control" style="font-size: .875rem;">
+                                    <img src="{{ form.instance.auction.get_image.image.url }}" class="img-fluid"
+                                         alt="{{ form.instance.auction.title }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-0">
+                                        <strong>{{ form.instance.auction.title }}</strong>
+                                        - {{ form.instance.auction.manufacturer }}
+                                    </p>
+                                </div>
+                                <div class="col-md-2">
+                                    <p class="mb-0">{{ form.instance.quantity }}</p>
+                                </div>
+                                <div class="col-md-2">
+                                    <p class="mb-0">${{ form.instance.price }}</p>
+                                </div>
+                            </div>
+
+                        {% endfor %}
                     </div>
+                    <!-- Order Total -->
+                    <div class="row text-white">
+                        <div class="col-md-8"></div>
+                        <div class="col-md-2">
+                            <label><strong>Shipping Amount:</strong></label><br>
+                            <label><strong>Tax Amount:</strong></label><br>
+                            <label><strong>Total Due:</strong></label><br>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-control-static">${{ order.shipping_amount|default:"0.00" }}</div>
+                            <div class="form-control-static">${{ order.tax_amount }}</div>
+                            <div class="form-control-static">${{ order.total_amount }}</div>
 
-                    <div class="form-group mb-2">
-                        <label for="{{ form.shipping_zip_code.id_for_label }}">Zip Code</label>
-                        <input type="text" name="{{ form.shipping_zip_code.name }}"
-                               value="{{ form.shipping_zip_code.value }}" readonly class="form-control" style="font-size: .875rem;">
+                        </div>
                     </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="billing-shipping" role="tabpanel" aria-labelledby="billing-shipping-tab">
+                <!-- Content for Billing and Shipping -->
+                <!-- Billing  and Shipping Info -->
+                <div class="module row">
+                    <div class="col-md-6">
+                        <h2>Shipping Information</h2>
+                        {% if shipping_inline.forms %}
+                            {% for form in shipping_inline.forms %}
+                                <div class="form-group mb-2">
+                                    <label for="{{ form.shipping_company_name.id_for_label }}">Company Name</label>
+                                    <input type="text" name="{{ form.shipping_company_name.name }}"
+                                           value="{{ form.shipping_company_name.value }}" readonly class="form-control"
+                                           style="font-size: .875rem;">
+                                </div>
+                                <div class="form-group mb-2">
+                                    <label for="{{ form.shipping_full_name.id_for_label }}">Attention</label>
+                                    <input type="text" name="{{ form.shipping_full_name.name }}"
+                                           value="{{ form.shipping_full_name.value }}" readonly class="form-control"
+                                           style="font-size: .875rem;">
+                                </div>
+                                <div class="form-group mb-2">
+                                    <label for="{{ form.shipping_street_address.id_for_label }}">Street Address</label>
+                                    <input type="text" name="{{ form.shipping_street_address.name }}"
+                                           value="{{ form.shipping_street_address.value }}" readonly
+                                           class="form-control"
+                                           style="font-size: .875rem;">
+                                </div>
 
-{#                    <div class="form-group mb-2">#}
-{#                        <label for="{{ form.shipping_country.id_for_label }}">Country</label>#}
-{#                        <input type="text" name="{{ form.shipping_country.name }}"#}
-{#                               value="{{ form.shipping_country.value }}" readonly class="form-control" style="font-size: .875rem;">#}
-{#                    </div>#}
+                                <div class="form-group mb-2">
+                                    <label for="{{ form.shipping_apartment_suite.id_for_label }}">Suite</label>
+                                    <input type="text" name="{{ form.shipping_apartment_suite.name }}"
+                                           value="{{ form.shipping_apartment_suite.value }}" readonly
+                                           class="form-control"
+                                           style="font-size: .875rem;">
+                                </div>
 
-{#                    <div class="form-group mb-2">#}
-{#                        <label for="{{ form.shipping_email.id_for_label }}">Email</label>#}
-{#                        <input type="email" name="{{ form.shipping_email.name }}"#}
-{#                               value="{{ form.shipping_email.value }}" readonly class="form-control" style="font-size: .875rem;">#}
-{#                    </div>#}
-{##}
-{#                    <div class="form-group mb-2">#}
-{#                        <label for="{{ form.shipping_phone_number.id_for_label }}">Phone</label>#}
-{#                        <input type="text" name="{{ form.shipping_phone_number.name }}"#}
-{#                               value="{{ form.shipping_phone_number.value }}" readonly class="form-control" style="font-size: .875rem;">#}
-{#                    </div>#}
+                                <div class="form-group mb-2">
+                                    <label for="{{ form.shipping_city.id_for_label }}">City</label>
+                                    <input type="text" name="{{ form.shipping_city.name }}"
+                                           value="{{ form.shipping_city.value }}" readonly class="form-control"
+                                           style="font-size: .875rem;">
+                                </div>
 
-                {% endfor %}
-            {% else %}
-                <p>No forms in Shipping Inline.</p>
-            {% endif %}
-        </div>
-        <div class="col-md-6">
-            <h2>Billing Information</h2>
-            {% if billing_inline.forms %}
-                {% for form in billing_inline.forms %}
-                    <div class="form-group mb-2">
-                        <label for="{{ form.billing_full_name.id_for_label }}">Company Name</label>
-                        <input type="text" name="{{ form.billing_full_name.name }}"
-                               value="{{ form.billing_full_name.value }}" readonly class="form-control" style="font-size: .875rem;">
+                                <div class="form-group mb-2">
+                                    <label for="{{ form.shipping_state.id_for_label }}">State</label>
+                                    <input type="text" name="{{ form.shipping_state.name }}"
+                                           value="{{ form.shipping_state.value }}" readonly class="form-control"
+                                           style="font-size: .875rem;">
+                                </div>
+
+                                <div class="form-group mb-2">
+                                    <label for="{{ form.shipping_zip_code.id_for_label }}">Zip Code</label>
+                                    <input type="text" name="{{ form.shipping_zip_code.name }}"
+                                           value="{{ form.shipping_zip_code.value }}" readonly class="form-control"
+                                           style="font-size: .875rem;">
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p>No forms in Shipping Inline.</p>
+                        {% endif %}
                     </div>
-                    <div class="form-group mb-2">
-                        <label for="{{ form.billing_full_name.id_for_label }}">Attention</label>
-                        <input type="text" name="{{ form.billing_full_name.name }}"
-                               value="{{ form.billing_full_name.value }}" readonly class="form-control" style="font-size: .875rem;">
-                    </div>
-                    <div class="form-group mb-2">
-                        <label for="{{ form.billing_street_address.id_for_label }}">Street Address</label>
-                        <input type="text" name="{{ form.billing_street_address.name }}"
-                               value="{{ form.billing_street_address.value }}" readonly class="form-control" style="font-size: .875rem;">
-                    </div>
+                    <div class="col-md-6">
+                        <h2>Billing Information</h2>
+                        {% if billing_inline.forms %}
+                            {% for form in billing_inline.forms %}
+                                <div class="form-group mb-2">
+                                    <label for="{{ form.billing_company_name.id_for_label }}">Company Name</label>
+                                    <input type="text" name="{{ form.billing_company_name.name }}"
+                                           value="{{ form.billing_company_name.value }}" readonly class="form-control"
+                                           style="font-size: .875rem;">
+                                </div>
+                                <div class="form-group mb-2">
+                                    <label for="{{ form.billing_full_name.id_for_label }}">Attention</label>
+                                    <input type="text" name="{{ form.billing_full_name.name }}"
+                                           value="{{ form.billing_full_name.value }}" readonly class="form-control"
+                                           style="font-size: .875rem;">
+                                </div>
+                                <div class="form-group mb-2">
+                                    <label for="{{ form.billing_street_address.id_for_label }}">Street Address</label>
+                                    <input type="text" name="{{ form.billing_street_address.name }}"
+                                           value="{{ form.billing_street_address.value }}" readonly class="form-control"
+                                           style="font-size: .875rem;">
+                                </div>
 
-                    <div class="form-group mb-2">
-                        <label for="{{ form.billing_apartment_suite.id_for_label }}">Suite</label>
-                        <input type="text" name="{{ form.billing_apartment_suite.name }}"
-                               value="{{ form.billing_apartment_suite.value }}" readonly class="form-control" style="font-size: .875rem;">
+                                <div class="form-group mb-2">
+                                    <label for="{{ form.billing_apartment_suite.id_for_label }}">Suite</label>
+                                    <input type="text" name="{{ form.billing_apartment_suite.name }}"
+                                           value="{{ form.billing_apartment_suite.value }}" readonly
+                                           class="form-control"
+                                           style="font-size: .875rem;">
+                                </div>
+
+                                <div class="form-group mb-2">
+                                    <label for="{{ form.billing_city.id_for_label }}">City</label>
+                                    <input type="text" name="{{ form.billing_city.name }}"
+                                           value="{{ form.billing_city.value }}" readonly class="form-control"
+                                           style="font-size: .875rem;">
+                                </div>
+
+                                <div class="form-group mb-2">
+                                    <label for="{{ form.billing_state.id_for_label }}">State</label>
+                                    <input type="text" name="{{ form.billing_state.name }}"
+                                           value="{{ form.billing_state.value }}" readonly class="form-control"
+                                           style="font-size: .875rem;">
+                                </div>
+
+                                <div class="form-group mb-2">
+                                    <label for="{{ form.billing_zip_code.id_for_label }}">Zip Code</label>
+                                    <input type="text" name="{{ form.billing_zip_code.name }}"
+                                           value="{{ form.billing_zip_code.value }}" readonly class="form-control"
+                                           style="font-size: .875rem;">
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p>No forms in Billing Inline.</p>
+                        {% endif %}
                     </div>
+                </div>
+                <!-- Carrier Inline -->
+                <div class="module">
+                    <h2 class="modal-header">Carriers</h2>
+                    <table class="w-100">
+                        <thead>
+                        <tr>
+                            <th class="original"></th>
+                            <th class="column-carrier required">Carrier</th>
+                            <th class="column-delivery_method required">Delivery Method</th>
+                            <th class="column-shipping_cost">Shipping Cost</th>
+                            <th>Delete?</th>
+                        </tr>
+                        </thead>
+                        <tbody id="carriers_FORMS_CONTAINER">
+                        {% for form in carrier_inline.forms %}
+                            <tr class="form-row">
+                                <td class="original">
+                                    {{ form.id }}
+                                    {{ form.order }}
+                                </td>
+                                <td class="field-carrier">
+                                    {{ form.carrier }}
+                                </td>
+                                <td class="field-delivery_method">
+                                    {{ form.delivery_method }}
+                                </td>
+                                <td class="field-shipping_cost">
+                                    {{ form.shipping_cost }}
+                                </td>
+                                <td class="delete">
+                                    {{ form.DELETE }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        <tr class="form-row carriers-empty-form" style="display:none;">
+                            <td class="original">
+                                {{ carrier_inline.empty_form.id }}
+                                {{ carrier_inline.empty_form.order }}
+                            </td>
+                            <td class="field-carrier">
+                                {{ carrier_inline.empty_form.carrier }}
+                            </td>
+                            <td class="field-delivery_method">
+                                {{ carrier_inline.empty_form.delivery_method }}
+                            </td>
+                            <td class="field-shipping_cost">
+                                {{ carrier_inline.empty_form.shipping_cost }}
+                            </td>
+                            <td class="delete">
+                                {{ carrier_inline.empty_form.DELETE }}
+                            </td>
+                        </tr>
+                        <tr class="add-row">
+                            <td colspan="5">
+                                <svg width="13" height="13" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill="#70bf2b"
+                                          d="M1600 796v192q0 40-28 68t-68 28h-416v416q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-416h-416q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h416v-416q0-40 28-68t68-28h192q40 0 68 28t28 68v416h416q40 0 68 28t28 68z"/>
+                                </svg>
+                                <a href="#">Add Another Carrier</a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Parcel Inline -->
+                <div class="module">
+                    <h2 class="modal-header">Parcels</h2>
+                    <table class="w-100">
+                        <thead>
+                        <tr>
+                            <th class="original"></th>
+                            <th class="">Height</th>
+                            <th class="column-carrier required">Length</th>
+                            <th class="column-delivery_method required">Width</th>
+                            <th class="column-shipping_cost">Weight</th>
+                            <th class="column-shipping_cost">tracking Number</th>
+                            <th class="column-shipping_cost">Delivery Status</th>
+                            <th>Delete?</th>
+                        </tr>
+                        </thead>
+                        <tbody id="parcels_FORMS_CONTAINER">
+                        {% for form in parcel_inline.forms %}
+                            <tr class="form-row">
+                                <td class="original">
+                                    {{ parcel_inline.id }}
+                                    {{ parcel_inline.order }}
+                                </td>
+                                <td class="field-height">
+                                    {{ form.height }}
+                                </td>
+                                <td class="field-length">
+                                    {{ form.length }}
+                                </td>
+                                <td class="field-width">
+                                    {{ form.width }}
+                                </td>
+                                <td class="field-weight">
+                                    {{ form.weight }}
+                                </td>
+                                <td class="field-tracking_number">
+                                    {{ form.tracking_number }}
+                                </td>
+                                <td class="field-delivery_status">
+                                    {{ form.delivery_status }}
+                                </td>
+                                <td class="delete">
+                                    {{ form.DELETE }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        <tr class="form-row parcels-empty-form" style="display:none;">
+                            <td class="original">
+                                {{ parcel_inline.empty_form.id }}
+                                {{ parcel_inline.empty_form.order }}
+                            </td>
+                            <td class="field-height">
+                                {{ parcel_inline.empty_form.height }}
+                            </td>
+                            <td class="field-length">
+                                {{ parcel_inline.empty_form.length }}
+                            </td>
+                            <td class="field-width">
+                                {{ parcel_inline.empty_form.width }}
+                            </td>
+                            <td class="field-weight">
+                                {{ parcel_inline.empty_form.weight }}
+                            </td>
+                            <td class="field-tracking_number">
+                                {{ parcel_inline.empty_form.tracking_number }}
+                            </td>
+                            <td class="field-delivery_status">
+                                {{ parcel_inline.empty_form.delivery_status }}
+                            </td>
+                            <td class="delete">
+                                {{ parcel_inline.empty_form.DELETE }}
+                            </td>
+                        </tr>
+                        <tr class="add-row">
+                            <td colspan="8">
+                                <svg width="13" height="13" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill="#70bf2b"
+                                          d="M1600 796v192q0 40-28 68t-68 28h-416v416q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-416h-416q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h416v-416q0-40 28-68t68-28h192q40 0 68 28t28 68v416h416q40 0 68 28t28 68z"/>
+                                </svg>
+                                <a href="#">Add Another Parcel</a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="payment" role="tabpanel" aria-labelledby="payment-tab">
+                <!-- Payment Information -->
+                <div class="module col text-white">
+                    <h2 class="modal-header">Payment Information</h2>
+                    {{ payments_inline.management_form }}  <!-- Include the management form -->
 
-                    <div class="form-group mb-2">
-                        <label for="{{ form.billing_city.id_for_label }}">City</label>
-                        <input type="text" name="{{ form.billing_city.name }}"
-                               value="{{ form.billing_city.value }}" readonly class="form-control" style="font-size: .875rem;">
-                    </div>
+                    {% for form in payments_inline.forms %}
+                        <div class="form-group mb-2 p-2">
+                            <label for="{{ form.payment_method.id_for_label }}"
+                                   class="form-label">Payment Method</label>
+                            <select name="{{ form.payment_method.name }}"
+                                    id="{{ form.payment_method.id_for_label }}"
+                                    class="form-control w-100"
+                                    style="font-size: .875rem;">
+                                {% for choice in form.payment_method.field.choices %}
+                                    <option value="{{ choice.0 }}"
+                                            {% if choice.0 == form.payment_method.value %}selected{% endif %}>
+                                        {{ choice.1 }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
 
-                    <div class="form-group mb-2">
-                        <label for="{{ form.billing_state.id_for_label }}">State</label>
-                        <input type="text" name="{{ form.billing_state.name }}"
-                               value="{{ form.billing_state.value }}" readonly class="form-control" style="font-size: .875rem;">
-                    </div>
-
-                    <div class="form-group mb-2">
-                        <label for="{{ form.billing_zip_code.id_for_label }}">Zip Code</label>
-                        <input type="text" name="{{ form.billing_zip_code.name }}"
-                               value="{{ form.billing_zip_code.value }}" readonly class="form-control" style="font-size: .875rem;">
-                    </div>
-
-{#                    <div class="form-group mb-2">#}
-{#                        <label for="{{ form.billing_country.id_for_label }}">Phone</label>#}
-{#                        <input type="text" name="{{ form.billing_country.name }}"#}
-{#                               value="{{ form.billing_country.value }}" readonly class="form-control" style="font-size: .875rem;">#}
-{#                    </div>#}
-{##}
-{#                    <div class="form-group mb-2">#}
-{#                        <label for="{{ form.billing_email.id_for_label }}">Email</label>#}
-{#                        <input type="email" name="{{ form.billing_email.name }}"#}
-{#                               value="{{ form.billing_email.value }}" readonly class="form-control" style="font-size: .875rem;">#}
-{#                    </div>#}
-
-{#                    <div class="form-group mb-2">#}
-{#                        <label for="{{ form.billing_phone_number.id_for_label }}">Phone</label>#}
-{#                        <input type="text" name="{{ form.billing_phone_number.name }}"#}
-{#                               value="{{ form.billing_phone_number.value }}" readonly class="form-control">#}
-{#                    </div>#}
-                {% endfor %}
-            {% else %}
-                <p>No forms in Billing Inline.</p>
-            {% endif %}
+                        {% if form.payment_method.value == 'credit_card' %}
+                            <div class="form-group mb-2">
+                                <label for="{{ form.card_last_four.id_for_label }}">Card Last Four</label>
+                                <input type="text" name="{{ form.card_last_four.name }}"
+                                       value="{{ form.card_last_four.value }}" readonly class="form-control"
+                                       style="font-size: .875rem;">
+                            </div>
+                            <!-- Add other credit card fields here -->
+                        {% elif form.payment_method.value == 'paypal' or form.payment_method.value == 'zelle' or form.payment_method.value == 'venmo' or form.payment_method.value == 'cashapp' %}
+                            <div class="form-group mb-2">
+                                <label for="{{ form.payer_email.id_for_label }}">Payer Email</label>
+                                <input type="email" name="{{ form.payer_email.name }}"
+                                       value="{{ form.payer_email.value }}" readonly class="form-control"
+                                       style="font-size: .875rem;">
+                            </div>
+                        {% elif form.payment_method.value == 'ach' %}
+                            <div class="form-group mb-2">
+                                <p class="ms-2">Email the buyer our ACH instructions</p>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="tab-pane fade" id="messages" role="tabpanel" aria-labelledby="messages-tab">
+                <!-- Content for Messages -->
+                <h2 class="modal-header">Send a Message</h2>
+                <form method="post" action="">
+                    {% csrf_token %}
+                    {{ message_form.as_p }}
+                    <button type="submit" name="send_message" class="btn btn-primary">Send Message</button>
+                </form>
+            </div>
         </div>
     </div>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Function to add a new form
+            function addInlineForm(prefix) {
+                const totalForms = document.querySelector(`#id_${prefix}-TOTAL_FORMS`);
+                if (!totalForms) {
+                    console.error(`Total forms element not found: #id_${prefix}-TOTAL_FORMS`);
+                    return;
+                }
+                const currentFormCount = parseInt(totalForms.value);
+                const emptyForm = document.querySelector(`.${prefix}-empty-form`);
+                if (!emptyForm) {
+                    console.error(`Empty form template not found: .${prefix}-empty-form`);
+                    return;
+                }
+                const clonedForm = emptyForm.cloneNode(true);
+                const formRegex = new RegExp('__prefix__', 'g');
+
+                // Update the form fields with the current form count
+                clonedForm.innerHTML = clonedForm.innerHTML.replace(formRegex, currentFormCount);
+                clonedForm.classList.remove(`${prefix}-empty-form`);
+                clonedForm.style.display = ''; // Make sure the form is visible
+
+                // Find the add-row element to insert the new form above it
+                const addRowElement = document.querySelector(`#${prefix}_FORMS_CONTAINER .add-row`);
+                if (!addRowElement) {
+                    console.error(`Add row element not found: #${prefix}_FORMS_CONTAINER .add-row`);
+                    return;
+                }
+
+                // Insert the new form before the add-row element
+                addRowElement.parentNode.insertBefore(clonedForm, addRowElement);
+
+                // Update the total form count
+                totalForms.value = currentFormCount + 1;
+            }
+
+            // Attach the addInlineForm function to the "Add another Carrier" link
+            document.querySelectorAll('.add-row a').forEach(function (link) {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const prefix = link.closest('tbody').id.split('_')[0];
+                    addInlineForm(prefix);
+                });
+            });
+        });
+
+
+    </script>
+
     <style>
         .content {
             background: #121212;
@@ -150,15 +552,66 @@
         }
 
         .form-row div,
-        table{
+        table {
             color: white;
         }
+
         .inline-group .tabular td.original p {
             font-size: .75rem;
             height: 20px;
         }
-        .submit-row a.deletelink{
+
+        .submit-row a.deletelink {
             height: auto;
         }
+
+        .form-control {
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 0 6px;
+            margin-top: 0;
+            color: var(--body-fg);
+            background-color: var(--body-bg);
+        }
+
+        #update_order_status {
+            background: var(--button-bg);
+            padding: 4px 15px;
+            border: none;
+            border-radius: 4px;
+            color: var(--button-fg);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        #update_order_status:hover {
+            background: #609AB6;
+        }
+
+        #content h2 {
+            display: none;
+        }
+
+        .module h2 {
+            display: block !important;
+        }
+
+        .form-row.field-status .flex-container {
+            display: none;
+        }
+
+        .add-row {
+            background: #212121 !important;
+        }
+
+        tr {
+            background: #121212 !important;
+        }
+
+        .nav-item {
+            list-style-type: none;
+        }
+
+
     </style>
 {% endblock %}

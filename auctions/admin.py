@@ -1,9 +1,13 @@
 from decimal import Decimal
 
 from django.contrib import admin
+from django.forms import modelform_factory
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 
+from .forms import MessageForm
 from .models import Bid, User, Message, Order, OrderItem, ShippingAddress, \
-    BillingAddress, Payment, Carrier, Parcel, ProductDetail, ShippingAccounts
+    BillingAddress, Payment, Carrier, Parcel, ProductDetail, ShippingAccounts, Auction
 
 # admin.site.register(Auction)
 # admin.site.register(Image)
@@ -11,132 +15,6 @@ admin.site.register(Bid)
 # admin.site.register(Comment)
 # admin.site.register(Category)
 admin.site.register(User)
-
-
-class OrderItemInline(admin.TabularInline):
-    model = OrderItem
-    extra = 0  # Prevent extra empty forms
-    can_delete = False
-
-    def get_readonly_fields(self, request, obj=None):
-        return [field.name for field in self.model._meta.fields]
-
-    def get_max_num(self, request, obj=None, **kwargs):
-        # Set the max_num to the current number of items in the order
-        if obj:
-            return obj.items.count()
-        return 0  # No new items can be added
-
-    def has_add_permission(self, request, obj=None):
-        # Disable the add button
-        return False
-
-
-class ShippingAddressInline(admin.StackedInline):
-    model = ShippingAddress
-    extra = 0  # Prevent extra empty forms
-
-
-class BillingAddressInline(admin.StackedInline):
-    model = BillingAddress
-    extra = 0  # Prevent extra empty forms
-
-
-class PaymentInline(admin.TabularInline):
-    model = Payment
-    extra = 0  # Prevent extra empty forms
-    can_delete = False
-
-    def get_fields(self, request, obj=None):
-        payment = self.get_object_payment(obj)  # Ensure we are working with a Payment instance
-
-        if payment:
-            if payment.payment_method == 'credit_card':
-                return (
-                    'payment_method',
-                    'card_last_four',
-                    'decrypted_card_number',
-                    'decrypted_expiration_date',
-                    'decrypted_cvv'
-                )
-            elif payment.payment_method in ['paypal', 'zelle', 'venmo', 'cashapp']:
-                return (
-                    'payment_method',
-                    'payer_email'
-                )
-            elif payment.payment_method == 'ach':
-                return (
-                    'payment_method',
-                )
-        # Fallback to default fields if no payment instance is found or payment_method is unknown
-        return (
-            'payment_method',
-            'card_last_four',
-            'decrypted_card_number',
-            'decrypted_expiration_date',
-            'decrypted_cvv'
-        )
-
-    def get_readonly_fields(self, request, obj=None):
-        payment = self.get_object_payment(obj)  # Ensure we are working with a Payment instance
-
-        if payment:
-            if payment.payment_method == 'credit_card':
-                return (
-                    'payment_method',
-                    'card_last_four',
-                    'decrypted_card_number',
-                    'decrypted_expiration_date',
-                    'decrypted_cvv'
-                )
-            elif payment.payment_method in ['paypal', 'zelle', 'venmo', 'cashapp']:
-                return (
-                    'payment_method',
-                    'payer_email'
-                )
-            elif payment.payment_method == 'ach':
-                return (
-                    'payment_method',
-                    'payer_email',  # Add other fields related to ACH if applicable
-                )
-        # Fallback to default fields if no payment instance is found or payment_method is unknown
-        return super().get_readonly_fields(request, obj)
-
-    # Helper method to get the Payment instance from the Order
-    def get_object_payment(self, obj):
-        # Ensure we are working with a Payment instance
-        return obj.payment if isinstance(obj, Order) and hasattr(obj, 'payment') else obj
-
-    # Decrypt sensitive fields
-    def decrypted_card_number(self, obj):
-        return obj.get_card_number() if obj.encrypted_card_number else 'N/A'
-
-    decrypted_card_number.short_description = 'Card Number'
-
-    def decrypted_expiration_date(self, obj):
-        return obj.get_expiration_date() if obj.encrypted_expiration_date else 'N/A'
-
-    decrypted_expiration_date.short_description = 'Expiration Date'
-
-    def decrypted_cvv(self, obj):
-        return obj.get_cvv() if obj.encrypted_cvv_number else 'N/A'
-
-    decrypted_cvv.short_description = 'CVV'
-
-
-class CarrierInline(admin.TabularInline):
-    model = Carrier
-    can_delete = True
-    extra = 0
-
-
-class ParcelInline(admin.TabularInline):
-    model = Parcel
-    extra = 0
-
-
-from django.contrib import admin
-from .models import Auction
 
 
 class AuctionInline(admin.TabularInline):
@@ -170,6 +48,124 @@ class AuctionInline(admin.TabularInline):
         return False
 
 
+class ShippingAddressInline(admin.StackedInline):
+    model = ShippingAddress
+    extra = 0  # Prevent extra empty forms
+
+
+class BillingAddressInline(admin.StackedInline):
+    model = BillingAddress
+    extra = 0  # Prevent extra empty forms
+
+
+class PaymentInline(admin.TabularInline):
+    model = Payment
+    extra = 0  # Prevent extra empty forms
+    can_delete = False
+    fields = []  # Empty fields to avoid rendering issues
+    readonly_fields = []
+
+
+# class PaymentInline(admin.TabularInline):
+#     model = Payment
+#     extra = 0  # Prevent extra empty forms
+#     can_delete = False
+#
+#     def get_fields(self, request, obj=None):
+#         payment = self.get_object_payment(obj)  # Ensure we are working with a Payment instance
+#
+#         if payment:
+#             if payment.payment_method == 'credit_card':
+#                 return (
+#                     'payment_method',
+#                     'card_last_four',
+#                     'decrypted_card_number',
+#                     'decrypted_expiration_date',
+#                     'decrypted_cvv'
+#                 )
+#             elif payment.payment_method in ['paypal', 'zelle', 'venmo', 'cashapp']:
+#                 return (
+#                     'payment_method',
+#                     'payer_email'
+#                 )
+#             elif payment.payment_method == 'ach':
+#                 return (
+#                     'payment_method',
+#                 )
+#         # Fallback to default fields if no payment instance is found or payment_method is unknown
+#         return (
+#             'payment_method',
+#             'card_last_four',
+#             'decrypted_card_number',
+#             'decrypted_expiration_date',
+#             'decrypted_cvv'
+#         )
+#
+#     def get_readonly_fields(self, request, obj=None):
+#         payment = self.get_object_payment(obj)  # Ensure we are working with a Payment instance
+#
+#         if payment:
+#             if payment.payment_method == 'credit_card':
+#                 return (
+#                     'payment_method',
+#                     'card_last_four',
+#                     'decrypted_card_number',
+#                     'decrypted_expiration_date',
+#                     'decrypted_cvv'
+#                 )
+#             elif payment.payment_method in ['paypal', 'zelle', 'venmo', 'cashapp']:
+#                 return (
+#                     'payment_method',
+#                     'payer_email'
+#                 )
+#             elif payment.payment_method == 'ach':
+#                 return (
+#                     'payment_method',
+#                     'payer_email',  # Add other fields related to ACH if applicable
+#                 )
+#         # Fallback to default fields if no payment instance is found or payment_method is unknown
+#         return super().get_readonly_fields(request, obj)
+#
+#     # Helper method to get the Payment instance from the Order
+#     def get_object_payment(self, obj):
+#         # Ensure we are working with a Payment instance
+#         return obj.payment if isinstance(obj, Order) and hasattr(obj, 'payment') else obj
+#
+#     # Decrypt sensitive fields
+#     def decrypted_card_number(self, obj):
+#         return obj.get_card_number() if obj.encrypted_card_number else 'N/A'
+#
+#     decrypted_card_number.short_description = 'Card Number'
+#
+#     def decrypted_expiration_date(self, obj):
+#         return obj.get_expiration_date() if obj.encrypted_expiration_date else 'N/A'
+#
+#     decrypted_expiration_date.short_description = 'Expiration Date'
+#
+#     def decrypted_cvv(self, obj):
+#         return obj.get_cvv() if obj.encrypted_cvv_number else 'N/A'
+#
+#     decrypted_cvv.short_description = 'CVV'
+
+
+class CarrierInline(admin.TabularInline):
+    model = Carrier
+    can_delete = True
+    extra = 0
+
+
+class ParcelInline(admin.TabularInline):
+    model = Parcel
+    extra = 0
+
+
+class OrderItemInline(admin.TabularInline):
+    model = OrderItem
+    extra = 0  # Prevent extra empty forms
+    can_delete = False
+
+
+
 class ShippingAccountInline(admin.TabularInline):
     model = ShippingAccounts
     extra = 0
@@ -188,73 +184,80 @@ class OrderAdmin(admin.ModelAdmin):
     )
     list_filter = ('status', 'created_at', 'updated_at')
     search_fields = ('user__username', 'user__email', 'id')
-
-    inlines = [
-        OrderItemInline,
-        PaymentInline,
-        ShippingAccountInline,
-        CarrierInline,
-        ParcelInline,
-
-    ]
-
-    fieldsets = (
-        ('Dates', {
-            'fields': ('created_at', 'updated_at'),
-        }),
-        ('Order Information', {
-            'fields': ('user', 'status', 'shipping_method', 'special_instructions')
-        }),
-
-        ('Tax & Total', {
-            'fields': ('tax_amount', 'shipping_amount', 'total_amount',),
-        }),
-
-    )
-    readonly_fields = (
-        'created_at',
-        'updated_at',
-        'user',
-        'shipping_method',
-        'special_instructions'
-    )
-
-    def get_inline_instances(self, request, obj=None):
-        inline_instances = super().get_inline_instances(request, obj)
-        # Remove ShippingAddressInline and BillingAddressInline from the default inlines
-        return [
-            inline for inline in inline_instances
-            if not isinstance(inline, (ShippingAddressInline, BillingAddressInline, ShippingAccounts))
-        ]
+    fields = ('status',)
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
         obj = self.get_object(request, object_id)  # Fetch the Order instance
 
+        # Create the form class for the Order model
+        OrderForm = modelform_factory(Order, fields=('status', 'shipping_method', 'special_instructions'))
+
+        # Create an instance of the forms with the Order object Message Form
+        if request.method == 'POST':
+            if 'send_message' in request.POST:
+                message_form = MessageForm(request.POST)
+                if message_form.is_valid():
+                    message = message_form.save(commit=False)
+                    message.sender = User.objects.get(username='CustomerService')
+                    message.recipient = obj.items.first().auction.creator  # Assuming seller is the auction creator
+                    message.listing = obj.items.first().auction  # Associate the message with the auction
+                    message.save()
+                    self.message_user(request, "Message sent successfully.")
+                    return HttpResponseRedirect(reverse('admin:auctions_order_change', args=[obj.pk]))
+            else:
+                form = OrderForm(request.POST, instance=obj)
+                if form.is_valid():
+                    form.save()
+        else:
+            form = OrderForm(instance=obj)
+            message_form = MessageForm()
+
+        # Pass the Order form to the template as extra context
+        extra_context['order_form'] = form
+        extra_context['message_form'] = message_form
+
         # Create inline formsets
         shipping_inline = ShippingAddressInline(self.model, self.admin_site)
         billing_inline = BillingAddressInline(self.model, self.admin_site)
+        payments_inline = PaymentInline(self.model, self.admin_site)
+        order_items_inline = OrderItemInline(self.model, self.admin_site)
+        carrier_inline = CarrierInline(self.model, self.admin_site)
+        parcel_inline = ParcelInline(self.model, self.admin_site)
 
         shipping_formset = shipping_inline.get_formset(request, obj)(instance=obj)
         billing_formset = billing_inline.get_formset(request, obj)(instance=obj)
+        payments_formset = payments_inline.get_formset(request, obj)(instance=obj)
+        order_items_formset = order_items_inline.get_formset(request, obj)(instance=obj)
+        carrier_formset = carrier_inline.get_formset(request, obj)(instance=obj)
+        parcel_formset = parcel_inline.get_formset(request, obj)(instance=obj)
 
         # Pass the formsets to the template
         extra_context['shipping_inline'] = shipping_formset
         extra_context['billing_inline'] = billing_formset
+        extra_context['payments_inline'] = payments_formset
+        extra_context['order_items_inline'] = order_items_formset
+        extra_context['carrier_inline'] = carrier_formset
+        extra_context['parcel_inline'] = parcel_formset
 
-        # Get auction-related information
         if obj.items.exists():
+            # Pass the Order object to the template as extra context
+            extra_context['order'] = obj
+            # Get buyer-related information
+            extra_context['buyer_name'] = obj.user.first_name + ' ' + obj.user.last_name
+            # Get auction-related information
             auction = obj.items.first().auction
             extra_context['auction_creator_company_name'] = auction.creator.company_name
             extra_context['auction_creator_phone_number'] = auction.creator.phone_number
             extra_context['auction_creator_email'] = auction.creator.email
+
         else:
             extra_context['auction_creator_company_name'] = None
             extra_context['auction_creator_phone_number'] = None
             extra_context['auction_creator_email'] = None
 
         # Customize the title
-        extra_context['title'] = f''
+        extra_context['title'] = f'Order #{obj.id} for {obj.user.company_name} - {obj.status.capitalize()} '
 
         return super().change_view(request, object_id, form_url, extra_context)
 
