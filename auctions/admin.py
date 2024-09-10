@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from django.contrib import admin
 
-from .models import Auction, Image, Bid, Comment, Category, User, Message, Order, OrderItem, ShippingAddress, \
+from .models import Bid, User, Message, Order, OrderItem, ShippingAddress, \
     BillingAddress, Payment, Carrier, Parcel, ProductDetail, ShippingAccounts
 
 # admin.site.register(Auction)
@@ -67,7 +67,6 @@ class PaymentInline(admin.TabularInline):
             elif payment.payment_method == 'ach':
                 return (
                     'payment_method',
-                    'payer_email',  # Add other fields related to ACH if applicable
                 )
         # Fallback to default fields if no payment instance is found or payment_method is unknown
         return (
@@ -111,14 +110,17 @@ class PaymentInline(admin.TabularInline):
     # Decrypt sensitive fields
     def decrypted_card_number(self, obj):
         return obj.get_card_number() if obj.encrypted_card_number else 'N/A'
+
     decrypted_card_number.short_description = 'Card Number'
 
     def decrypted_expiration_date(self, obj):
         return obj.get_expiration_date() if obj.encrypted_expiration_date else 'N/A'
+
     decrypted_expiration_date.short_description = 'Expiration Date'
 
     def decrypted_cvv(self, obj):
         return obj.get_cvv() if obj.encrypted_cvv_number else 'N/A'
+
     decrypted_cvv.short_description = 'CVV'
 
 
@@ -126,19 +128,6 @@ class CarrierInline(admin.TabularInline):
     model = Carrier
     can_delete = True
     extra = 0
-    # max_num = 1  # Limit to one Carrier
-    #
-    # def get_max_num(self, request, obj=None, **kwargs):
-    #     if obj and obj.carriers.exists():
-    #         return 1  # Prevent adding more than one Carrier
-    #     return super().get_max_num(request, obj, **kwargs)
-
-    # def has_add_permission(self, request, obj=None):
-    #     # Allow adding a Carrier only if one doesn't exist
-    #     if obj and obj.carriers.exists():
-    #         return False
-    #     return super().has_add_permission(request, obj)
-
 
 
 class ParcelInline(admin.TabularInline):
@@ -146,20 +135,63 @@ class ParcelInline(admin.TabularInline):
     extra = 0
 
 
+from django.contrib import admin
+from .models import Auction
+
+
+class AuctionInline(admin.TabularInline):
+    model = Auction
+    extra = 0
+    readonly_fields = ('creator_company_name', 'creator', 'creator_phone_number', 'creator_email')
+
+    # These are not part of the Auction model, but we will add them using custom methods
+    fields = ('creator_company_name', 'creator', 'creator_phone_number', 'creator_email')
+
+    def creator_company_name(self, obj):
+        return obj.creator.company_name
+
+    def creator_phone_number(self, obj):
+        return obj.creator.phone_number
+
+    def creator_email(self, obj):
+        return obj.creator.email
+
+    # To give appropriate labels in the admin interface
+    creator_company_name.short_description = 'Seller Company Name'
+    creator_phone_number.short_description = 'Seller Phone Number'
+    creator_email.short_description = 'Seller Email'
+
+    def has_add_permission(self, request, obj=None):
+        # Prevent adding auctions directly from the Order admin
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        # Prevent deleting auctions directly from the Order admin
+        return False
+
+
 class ShippingAccountInline(admin.TabularInline):
     model = ShippingAccounts
     extra = 0
+    fields = ('carrier_name', 'carrier_account_number', 'use_as_default_shipping_method')
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class OrderAdmin(admin.ModelAdmin):
     change_form_template = 'admin/admin_view_order.html'
-    list_display = ('id', 'user', 'user_email', 'status', 'tax_amount', 'total_amount', 'created_at', 'updated_at', )
+    list_display = (
+        'id', 'user', 'user_email', 'status', 'tax_amount', 'total_amount', 'created_at', 'updated_at',
+        'shipping_amount',
+        'auction_creator_company_name', 'auction_creator_phone_number', 'auction_creator_email',
+    )
     list_filter = ('status', 'created_at', 'updated_at')
     search_fields = ('user__username', 'user__email', 'id')
 
     inlines = [
-        PaymentInline,
         OrderItemInline,
+        PaymentInline,
         ShippingAccountInline,
         CarrierInline,
         ParcelInline,
@@ -173,17 +205,16 @@ class OrderAdmin(admin.ModelAdmin):
         ('Order Information', {
             'fields': ('user', 'status', 'shipping_method', 'special_instructions')
         }),
-        ('Tax & Total', {
-            'fields': ('tax_amount', 'total_amount',),
-        }),
 
+        ('Tax & Total', {
+            'fields': ('tax_amount', 'shipping_amount', 'total_amount',),
+        }),
 
     )
     readonly_fields = (
         'created_at',
         'updated_at',
         'user',
-        'total_amount',
         'shipping_method',
         'special_instructions'
     )
@@ -211,6 +242,17 @@ class OrderAdmin(admin.ModelAdmin):
         extra_context['shipping_inline'] = shipping_formset
         extra_context['billing_inline'] = billing_formset
 
+        # Get auction-related information
+        if obj.items.exists():
+            auction = obj.items.first().auction
+            extra_context['auction_creator_company_name'] = auction.creator.company_name
+            extra_context['auction_creator_phone_number'] = auction.creator.phone_number
+            extra_context['auction_creator_email'] = auction.creator.email
+        else:
+            extra_context['auction_creator_company_name'] = None
+            extra_context['auction_creator_phone_number'] = None
+            extra_context['auction_creator_email'] = None
+
         # Customize the title
         extra_context['title'] = f''
 
@@ -220,6 +262,21 @@ class OrderAdmin(admin.ModelAdmin):
         return obj.user.email
 
     user_email.short_description = 'User Email'
+
+    def auction_creator_company_name(self, obj):
+        return obj.items.first().auction.creator.company_name if obj.items.exists() else None
+
+    auction_creator_company_name.short_description = 'Seller Company Name'
+
+    def auction_creator_phone_number(self, obj):
+        return obj.items.first().auction.creator.phone_number if obj.items.exists() else None
+
+    auction_creator_phone_number.short_description = 'Seller Phone Number'
+
+    def auction_creator_email(self, obj):
+        return obj.items.first().auction.creator.email if obj.items.exists() else None
+
+    auction_creator_email.short_description = 'Seller Email'
 
     def save_model(self, request, obj, form, change):
         # Calculate items total
@@ -271,6 +328,7 @@ class ProductDetailInline(admin.TabularInline):
     extra = 0  # Prevent extra empty forms
     readonly_fields = ('sku', 'reference_number', 'lot_number', 'production_date', 'expiration_date')
     can_delete = False
+
 
 class BidInline(admin.TabularInline):
     model = Bid

@@ -69,6 +69,33 @@ CARRIER_CHOICES = (
     ('fedex', 'FedEx'),
     ('dhl', 'DHL'),
 )
+DURATION_CHOICES = [
+    (1, '1 day'),
+    (3, '3 days'),
+    (5, '5 days'),
+    (7, '7 days'),
+    (10, '10 days')
+]
+PACKAGE_TYPE_CHOICES = [
+    ('BAG', 'Bag'),
+    ('BOT', 'Bottle'),
+    ('BOX', 'Box'),
+    ('CAR', 'Cartridge'),
+    ('CA', 'Case'),
+    ('CTN', 'Carton'),
+    ('DRM', 'Drum'),
+    ('JAR', 'Jar'),
+    ('PKG', 'Package'),
+    ('PKT', 'Packet'),
+    ('ROL', 'Roll'),
+    ('SAK', 'Sack'),
+    ('SET', 'Set'),
+    ('TRY', 'Tray'),
+    ('TUB', 'Tub'),
+    ('VIAL', 'Vial'),
+    ('OTHER', 'Other'),
+]
+
 
 class User(AbstractUser):
     company_name = models.CharField(max_length=255, blank=True)
@@ -89,7 +116,8 @@ class User(AbstractUser):
 
 class ShippingAccounts(models.Model):
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='shipping_accounts')
-    order = models.ForeignKey('Order', on_delete=models.CASCADE, related_name='shipping_accounts', null=True, blank=True)
+    order = models.ForeignKey('Order', on_delete=models.CASCADE, related_name='shipping_accounts', null=True,
+                              blank=True)
     carrier_name = models.CharField(max_length=10, choices=CARRIER_CHOICES)
     use_as_default_shipping_method = models.BooleanField(default=True, null=True, blank=True)
     carrier_account_number = models.CharField(max_length=15, blank=True)
@@ -110,7 +138,6 @@ class Address(models.Model):
     zip_code = models.CharField(max_length=10)
     country = models.CharField(max_length=255)
     use_as_default_shipping_method_address = models.BooleanField(default=True, null=True, blank=True)
-
 
     def __str__(self):
         return f'{self.address_type} address for {self.user.username}'
@@ -134,33 +161,6 @@ class Category(models.Model):
 
 
 class Auction(models.Model):
-    DURATION_CHOICES = [
-        (1, '1 day'),
-        (3, '3 days'),
-        (5, '5 days'),
-        (7, '7 days'),
-        (10, '10 days')
-    ]
-    PACKAGE_TYPE_CHOICES = [
-        ('BAG', 'Bag'),
-        ('BOT', 'Bottle'),
-        ('BOX', 'Box'),
-        ('CAR', 'Cartridge'),
-        ('CA', 'Case'),
-        ('CTN', 'Carton'),
-        ('DRM', 'Drum'),
-        ('JAR', 'Jar'),
-        ('PKG', 'Package'),
-        ('PKT', 'Packet'),
-        ('ROL', 'Roll'),
-        ('SAK', 'Sack'),
-        ('SET', 'Set'),
-        ('TRY', 'Tray'),
-        ('TUB', 'Tub'),
-        ('VIAL', 'Vial'),
-        ('OTHER', 'Other'),
-    ]
-
     title = models.CharField('Title', max_length=100)
     description = models.TextField(max_length=2000, null=False, default='')
     creator = models.ForeignKey(User, on_delete=models.PROTECT, related_name='auction_creator')
@@ -219,8 +219,6 @@ class Auction(models.Model):
     auction_duration = models.IntegerField('Listing Duration', choices=DURATION_CHOICES, default=7)
     fullPackage = models.BooleanField('Package(s) Full', default=False)
     hold_for_import = models.BooleanField('', default=False)
-
-
 
     def __str__(self):
         return f'Auction #{self.id}: {self.title} ({self.creator})'
@@ -393,7 +391,6 @@ class CartItem(models.Model):
     auction = models.ForeignKey(Auction, on_delete=models.CASCADE)
     quantity = models.IntegerField(null=True, blank=True)
 
-
     def __str__(self):
         return f'{self.auction.title}'
 
@@ -423,9 +420,14 @@ class Order(models.Model):
     )
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     shipping_method = models.CharField(max_length=50, null=True, blank=True)
+    shipping_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     special_instructions = models.TextField(null=True, blank=True)
-    tax_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0.00)
+    tax_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     order_note = models.TextField(max_length=2000, null=False, default='')
+    tax_exempt = models.BooleanField(null=True, blank=True)
+    combined_sales_tax_rate = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    sales_tax_no_shipping = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    total_no_shipping = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def __str__(self):
         return f'Order #{self.id} for {self.user.username}'
@@ -443,8 +445,6 @@ class Order(models.Model):
             total_shipping_cost = sum(carrier.shipping_cost for parcel in self.parcels.all())
             return total_shipping_cost if total_shipping_cost else Decimal(0.00)
         return Decimal(0.00)
-
-
 
 
 class OrderItem(models.Model):
@@ -610,4 +610,3 @@ class Parcel(models.Model):
         if not hasattr(self, 'carrier') and self.order.carriers.exists():
             self.carrier = self.order.carriers.first()
         super().save(*args, **kwargs)
-

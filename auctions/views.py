@@ -1416,6 +1416,14 @@ def checkout(request):
 
             auction = cart.items.first().auction
 
+            shipping_amount, tax_amount = None, None
+            if request.user.shipping_accounts.use_as_default_shipping_method:
+                shipping_amount = 0.00
+                if tax_exempt:
+                    tax_amount = 0.00
+                else:
+                    tax_amount = sales_tax_no_shipping
+
             order = Order.objects.create(
                 user=request.user,
                 cart=cart,
@@ -1423,6 +1431,13 @@ def checkout(request):
                 total_amount=cart.total_cost(),
                 shipping_method=shipping_method,
                 special_instructions=special_instructions,
+                tax_exempt=tax_exempt,
+                combined_sales_tax_rate = combined_sales_tax_rate,
+                sales_tax_no_shipping = sales_tax_no_shipping,
+                total_no_shipping = total_no_shipping,
+                tax_amount = tax_amount,
+                shipping_amount = shipping_amount,
+
             )
             for item in cart.items.all():
                 OrderItem.objects.create(
