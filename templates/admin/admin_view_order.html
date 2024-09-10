@@ -23,10 +23,17 @@
                 </button>
             </li>
             <li class="nav-item" role="presentation">
+                <button class="nav-link" id="seller-info-tab" data-bs-toggle="tab" data-bs-target="#seller-information"
+                        type="button"
+                        role="tab" aria-controls="seller-information" aria-selected="false">Seller Info
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
                 <button class="nav-link" id="payment-tab" data-bs-toggle="tab" data-bs-target="#payment" type="button"
                         role="tab" aria-controls="payment" aria-selected="false">Payment
                 </button>
             </li>
+
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="messages-tab" data-bs-toggle="tab" data-bs-target="#messages" type="button"
                         role="tab" aria-controls="messages" aria-selected="false">Messages
@@ -423,62 +430,106 @@
                     </table>
                 </div>
             </div>
-            <div class="tab-pane fade" id="payment" role="tabpanel" aria-labelledby="payment-tab">
-                <!-- Payment Information -->
-                <div class="module col text-white">
-                    <h2 class="modal-header">Payment Information</h2>
-                    {{ payments_inline.management_form }}  <!-- Include the management form -->
-
-                    {% for form in payments_inline.forms %}
-                        <div class="form-group mb-2 p-2">
-                            <label for="{{ form.payment_method.id_for_label }}"
-                                   class="form-label">Payment Method</label>
-                            <select name="{{ form.payment_method.name }}"
-                                    id="{{ form.payment_method.id_for_label }}"
-                                    class="form-control w-100"
-                                    style="font-size: .875rem;">
-                                {% for choice in form.payment_method.field.choices %}
-                                    <option value="{{ choice.0 }}"
-                                            {% if choice.0 == form.payment_method.value %}selected{% endif %}>
-                                        {{ choice.1 }}
-                                    </option>
-                                {% endfor %}
-                            </select>
+            <div class="tab-pane fade text-white" id="seller-information" role="tabpanel"
+                 aria-labelledby="messages-tab">
+                <h2>Seller Information</h2>
+                <div class="form-group mb-3">
+                    <label><strong>Name:</strong></label>
+                    <div class="form-control-static">{{ order.auction.creator.first_name }} {{ order.auction.creator.last_name }}</div>
+                </div>
+                <div class="form-group mb-3">
+                    <label><strong>Email:</strong></label>
+                    <div class="form-control-static">{{ order.auction.creator.email }}</div>
+                </div>
+                <div class="form-group mb-3">
+                    <label><strong>Phone:</strong></label>
+                    <div class="form-control-static">{{ order.auction.creator.phone_number }}</div>
+                </div>
+                <div class="d-flex gap-5">
+                    <div>
+                        <h3>Billing Address</h3>
+                        <div class="form-group mb-3">
+                            <div class="form-control-static">{{ billing_address.street }}</div>
+                            <div class="form-control-static">{{ billing_address.suite }}</div>
+                            <div class="d-flex gap-1">
+                                <div class="form-control-static">{{ billing_address.city }},</div>
+                                <div class="form-control-static">{{ billing_address.state }}</div>
+                                <div class="form-control-static">{{ billing_address.zip_code }}</div>
+                            </div>
                         </div>
-
-                        {% if form.payment_method.value == 'credit_card' %}
-                            <div class="form-group mb-2">
-                                <label for="{{ form.card_last_four.id_for_label }}">Card Last Four</label>
-                                <input type="text" name="{{ form.card_last_four.name }}"
-                                       value="{{ form.card_last_four.value }}" readonly class="form-control"
-                                       style="font-size: .875rem;">
+                    </div>
+                    <div>
+                        <h3>Shipping Address</h3>
+                        <div class="form-group mb-3">
+                            <div class="form-control-static">{{ billing_address.street }}</div>
+                            <div class="form-control-static">{{ billing_address.suite }}</div>
+                            <div class="d-flex gap-1">
+                                <div class="form-control-static">{{ billing_address.city }}</div>
+                                <div class="form-control-static">{{ billing_address.state }}</div>
+                                <div class="form-control-static">{{ billing_address.zip_code }}</div>
                             </div>
-                            <!-- Add other credit card fields here -->
-                        {% elif form.payment_method.value == 'paypal' or form.payment_method.value == 'zelle' or form.payment_method.value == 'venmo' or form.payment_method.value == 'cashapp' %}
-                            <div class="form-group mb-2">
-                                <label for="{{ form.payer_email.id_for_label }}">Payer Email</label>
-                                <input type="email" name="{{ form.payer_email.name }}"
-                                       value="{{ form.payer_email.value }}" readonly class="form-control"
-                                       style="font-size: .875rem;">
-                            </div>
-                        {% elif form.payment_method.value == 'ach' %}
-                            <div class="form-group mb-2">
-                                <p class="ms-2">Email the buyer our ACH instructions</p>
-                            </div>
-                        {% endif %}
-                    {% endfor %}
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="tab-pane fade" id="messages" role="tabpanel" aria-labelledby="messages-tab">
-                <!-- Content for Messages -->
-                <h2 class="modal-header">Send a Message</h2>
-                <form method="post" action="">
-                    {% csrf_token %}
-                    {{ message_form.as_p }}
-                    <button type="submit" name="send_message" class="btn btn-primary">Send Message</button>
-                </form>
+        </div>
+
+        <div class="tab-pane fade" id="payment" role="tabpanel" aria-labelledby="payment-tab">
+            <!-- Payment Information -->
+            <div class="module col text-white">
+                <h2 class="modal-header">Payment Information</h2>
+                {{ payments_inline.management_form }}  <!-- Include the management form -->
+
+                {% for form in payments_inline.forms %}
+                    <div class="form-group mb-2 p-2">
+                        <label for="{{ form.payment_method.id_for_label }}"
+                               class="form-label">Payment Method</label>
+                        <select name="{{ form.payment_method.name }}"
+                                id="{{ form.payment_method.id_for_label }}"
+                                class="form-control w-100"
+                                style="font-size: .875rem;">
+                            {% for choice in form.payment_method.field.choices %}
+                                <option value="{{ choice.0 }}"
+                                        {% if choice.0 == form.payment_method.value %}selected{% endif %}>
+                                    {{ choice.1 }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    {% if form.payment_method.value == 'credit_card' %}
+                        <div class="form-group mb-2">
+                            <label for="{{ form.card_last_four.id_for_label }}">Card Last Four</label>
+                            <input type="text" name="{{ form.card_last_four.name }}"
+                                   value="{{ form.card_last_four.value }}" readonly class="form-control"
+                                   style="font-size: .875rem;">
+                        </div>
+                        <!-- Add other credit card fields here -->
+                    {% elif form.payment_method.value == 'paypal' or form.payment_method.value == 'zelle' or form.payment_method.value == 'venmo' or form.payment_method.value == 'cashapp' %}
+                        <div class="form-group mb-2">
+                            <label for="{{ form.payer_email.id_for_label }}">Payer Email</label>
+                            <input type="email" name="{{ form.payer_email.name }}"
+                                   value="{{ form.payer_email.value }}" readonly class="form-control"
+                                   style="font-size: .875rem;">
+                        </div>
+                    {% elif form.payment_method.value == 'ach' %}
+                        <div class="form-group mb-2">
+                            <p class="ms-2">Email the buyer our ACH instructions</p>
+                        </div>
+                    {% endif %}
+                {% endfor %}
             </div>
         </div>
+        <div class="tab-pane fade" id="messages" role="tabpanel" aria-labelledby="messages-tab">
+            <!-- Content for Messages -->
+            <h2 class="modal-header">Send a Message</h2>
+            <form method="post" action="">
+                {% csrf_token %}
+                {{ message_form.as_p }}
+                <button type="submit" name="send_message" class="btn btn-primary">Send Message</button>
+            </form>
+        </div>
+    </div>
     </div>
 
 

@@ -149,6 +149,27 @@ class MessageForm(forms.ModelForm):
         }
 
 
+class MessageThreadForm(forms.ModelForm):
+    reply = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 3,
+            'placeholder': 'Write your reply...',
+            'maxlength': '1000'
+        }),
+        required=False,
+        label='Reply'
+    )
+
+    class Meta:
+        model = Message
+        fields = ['subject', 'body']
+        widgets = {
+            'subject': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+            'body': forms.Textarea(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+        }
+
+
 class AddToCartForm(forms.ModelForm):
     quantity = forms.IntegerField(
         min_value=1,  # Minimum quantity allowed

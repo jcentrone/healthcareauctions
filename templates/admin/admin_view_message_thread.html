@@ -1,0 +1,43 @@
+{% extends "admin/change_form.html" %}
+{% load i18n static %}
+
+{% block content %}
+    <div id="message-preview" class="rounded-3 border p-3">
+        <h5 class="border-bottom pb-3">{{ form.instance.subject }}</h5>
+        <div class="message-thread">
+            {% for msg in thread %}
+                <div class="message-reply p-2 my-2 card {% if msg.sender_id == request.user.id %}text-end{% else %}text-start{% endif %}">
+                    <div class="">{{ msg.body }}</div>
+                    <small class="text-muted">{% if msg.sender_id == request.user.id %}
+                        Me{% elif msg.sender.username == 'CustomerService' %}Customer Service{% else %}
+                        {{ msg.sender.username }}{% endif %}
+                        - {{ msg.date_sent }}</small>
+                </div>
+            {% endfor %}
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group mt-3">
+                {{ form.reply.label_tag }}{{ form.reply }}
+            </div>
+            <div class="d-flex justify-content-between">
+                <small id="charCount" class="form-text text-muted ps-1">0/1000 characters used</small>
+                <button type="submit" class="btn btn-primary mt-2">Send Reply</button>
+            </div>
+        </form>
+    </div>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link href='{% static "css/inbox.css" %}' rel='stylesheet'>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const textarea = document.querySelector('textarea[name="reply"]');
+            const charCount = document.getElementById('charCount');
+
+            textarea.addEventListener('input', function () {
+                charCount.textContent = `${textarea.value.length}/1000 characters used`;
+            });
+        });
+    </script>
+{% endblock %}

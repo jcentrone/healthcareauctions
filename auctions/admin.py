@@ -3,9 +3,10 @@ from decimal import Decimal
 from django.contrib import admin
 from django.forms import modelform_factory
 from django.http import HttpResponseRedirect
+from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse
 
-from .forms import MessageForm
+from .forms import MessageForm, MessageThreadForm
 from .models import Bid, User, Message, Order, OrderItem, ShippingAddress, \
     BillingAddress, Payment, Carrier, Parcel, ProductDetail, ShippingAccounts, Auction
 
@@ -165,7 +166,6 @@ class OrderItemInline(admin.TabularInline):
     can_delete = False
 
 
-
 class ShippingAccountInline(admin.TabularInline):
     model = ShippingAccounts
     extra = 0
@@ -216,6 +216,10 @@ class OrderAdmin(admin.ModelAdmin):
         # Pass the Order form to the template as extra context
         extra_context['order_form'] = form
         extra_context['message_form'] = message_form
+
+        # Pass the seller billing address
+        billing_address = obj.auction.creator.addresses.filter(address_type='billing').first()
+        extra_context['billing_address'] = billing_address
 
         # Create inline formsets
         shipping_inline = ShippingAddressInline(self.model, self.admin_site)
@@ -294,38 +298,84 @@ class OrderAdmin(admin.ModelAdmin):
 admin.site.register(Order, OrderAdmin)
 
 
-class IsReadFilter(admin.SimpleListFilter):
-    title = 'Read Status'
-    parameter_name = 'is_read'
-
-    def lookups(self, request, model_admin):
-        return (
-            ('read', 'Read'),
-            ('unread', 'Unread'),
-        )
-
-    def queryset(self, request, queryset):
-        if self.value() == 'read':
-            return queryset.filter(date_read__isnull=False)
-        if self.value() == 'unread':
-            return queryset.filter(date_read__isnull=True)
-        return queryset
-
-
-@admin.register(Message)
-class MessageAdmin(admin.ModelAdmin):
-    list_display = ('subject', 'sender', 'recipient', 'date_sent', 'message_type', 'is_read')
-    list_filter = ('message_type', IsReadFilter)
-    search_fields = ('subject', 'body', 'sender__username', 'recipient__username')
-    readonly_fields = ('date_sent', 'date_responded')
-
-    def save_model(self, request, obj, form, change):
-        if not change:  # When creating a new message
-            obj.sender = request.user
-        super().save_model(request, obj, form, change)
+# Messages
+# class IsReadFilter(admin.SimpleListFilter):
+#     title = 'Read Status'
+#     parameter_name = 'is_read'
+#
+#     def lookups(self, request, model_admin):
+#         return (
+#             ('read', 'Read'),
+#             ('unread', 'Unread'),
+#         )
+#
+#     def queryset(self, request, queryset):
+#         if self.value() == 'read':
+#             return queryset.filter(date_read__isnull=False)
+#         if self.value() == 'unread':
+#             return queryset.filter(date_read__isnull=True)
+#         return queryset
+#
+#
+# @admin.register(Message)
+# class MessageAdmin(admin.ModelAdmin):
+#     list_display = ('subject', 'sender', 'recipient', 'date_sent', 'message_type', 'is_read')
+#     list_filter = ('message_type', IsReadFilter)
+#     search_fields = ('subject', 'body', 'sender__username', 'recipient__username')
+#     readonly_fields = ('date_sent', 'date_responded')
+#
+#     def save_model(self, request, obj, form, change):
+#         if not change:  # When creating a new message
+#             obj.sender = request.user
+#         super().save_model(request, obj, form, change)
 
 
 # AUCTIONS
+
+
+# class MessageAdmin(admin.ModelAdmin):
+#     form = MessageThreadForm
+#     change_form_template = 'admin/admin_view_message_thread.html'
+#
+#     def change_view(self, request, object_id, form_url='', extra_context=None):
+#         message = get_object_or_404(Message, pk=object_id)
+#         thread = message.get_thread()
+#
+#         if request.method == 'POST':
+#             form = self.get_form(request, message)(request.POST, instance=message)
+#
+#             # Set default subject if not provided
+#             if not form.data.get('subject'):
+#                 form.data = form.data.copy()  # Make the data mutable
+#                 form.data['subject'] = "Message from Customer Service"
+#
+#             if form.is_valid() and 'reply' in form.cleaned_data:
+#                 reply_message = Message(
+#                     sender=User.objects.get(username='CustomerService'),
+#                     recipient=message.sender if request.user != message.sender else message.recipient,
+#                     listing=message.listing,
+#                     subject=form.cleaned_data['subject'],
+#                     body=form.cleaned_data['reply'],
+#                     message_type='cs',  # or 'question', depending on context
+#                     parent=message,
+#                 )
+#                 reply_message.save()
+#                 self.message_user(request, "Reply sent successfully.")
+#                 return redirect('.')
+#             else:
+#                 print("Form is invalid:", form.errors)
+#         else:
+#             form = self.get_form(request, message)(instance=message)
+#
+#         extra_context = extra_context or {}
+#         extra_context['form'] = form
+#         extra_context['thread'] = thread
+#
+#         return super().change_view(request, object_id, form_url, extra_context=extra_context)
+#
+# admin.site.register(Message, MessageAdmin)
+
+
 class ProductDetailInline(admin.TabularInline):
     model = ProductDetail
     extra = 0  # Prevent extra empty forms
