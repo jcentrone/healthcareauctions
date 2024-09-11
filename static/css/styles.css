@@ -47,6 +47,10 @@ dce-component video {
     object-fit: cover !important;
 }
 
+.modal-title{
+    max-width: 90%;
+}
+
 dce-video-container {
     object-fit: cover !important;
 }
@@ -1411,10 +1415,10 @@ video {
 .mapping-row,
 .mapping-header {
     display: grid;
-    grid-template-columns: 1fr 25px 170px;
+    grid-template-columns: 1fr 25px .75fr;
     align-items: center;
-    justify-content: center;
-    gap: 20px;
+    justify-content: space-between;
+    gap: 8px;
     margin-bottom: 20px;
 }
 
@@ -1586,7 +1590,7 @@ i {
 
 .scan-control {
     position: absolute;
-    top: 26px;
+    top: 33px;
     right: 15px;
     border: 1px solid transparent;
     border-radius: var(--border-radius);
@@ -1595,6 +1599,10 @@ i {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.scan-date{
+    right: 40px;
 }
 
 .scan-control:hover {

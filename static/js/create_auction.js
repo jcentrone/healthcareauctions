@@ -238,17 +238,32 @@ function getCsrfToken() {
     return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 }
 
-function populateForm(data) {
+function populateForm(data, overwrite = false) {
     if (data && data.gudid && data.gudid.device) {
         const device = data.gudid.device;
         const udi = data.udi;
         document.getElementById('id_product_name').value = device.brandName || '';
         document.getElementById('id_manufacturer').value = toProperCase(device.companyName) || '';
+
         if (udi) {
-            document.getElementById('id_form-0-lot_number').value = capitalizeAll(udi.lotNumber) || '';
-            document.getElementById('id_form-0-expiration_date').value = udi.expirationDate || '';
-            document.getElementById('id_form-0-production_date').value = udi.manufacturingDate || '';
+            const lotNumberField = document.getElementById('id_form-0-lot_number');
+            const expirationDateField = document.getElementById('id_form-0-expiration_date');
+            const productionDateField = document.getElementById('id_form-0-production_date');
+
+            // Check if the field is empty before assigning a new value
+            if (!lotNumberField.value) {
+                lotNumberField.value = capitalizeAll(udi.lotNumber) || '';
+            }
+
+            if (!expirationDateField.value) {
+                expirationDateField.value = udi.expirationDate || '';
+            }
+
+            if (!productionDateField.value) {
+                productionDateField.value = udi.manufacturingDate || '';
+            }
         }
+
 
         let description = device.deviceDescription || '';
         let gmdnTerms = device.gmdnTerms.gmdn[0].gmdnPTDefinition || '';
@@ -449,6 +464,7 @@ document.querySelectorAll('[id^="scanButton-"]').forEach(button => {
 // Event listener for the Save button
 document.getElementById('closeScanModal').addEventListener('click', function () {
     transferDataToAuctionForm();
+
 });
 
 // Function to extract data from the mapping table
@@ -476,36 +492,33 @@ function transferDataToAuctionForm() {
         '10': 'id_form-0-lot_number',  // Batch or Lot Number
         '11': 'id_form-0-production_date',  // Production Date (assuming you have this field)
         '17': 'id_form-0-expiration_date',  // Expiration Date
-        'ref': 'id_form-0-reference_number' // Reference Number
-        // Add more mappings as needed
+        'ref': 'id_form-0-reference_number', // Reference Number
+        'unknown': 'unknown' // Reference Number
     };
 
-    for (const [key, value] of Object.entries(data)) {
+    // Loop through each key in the data object
+    Object.keys(data).forEach(key => {
+        // Find the corresponding field ID from the fieldMap
         const fieldId = fieldMap[key];
+
+        // If the fieldId exists in the fieldMap, update the corresponding HTML element
         if (fieldId) {
-            let field = document.getElementById(fieldId);
+            const element = document.getElementById(fieldId);
 
-            if (fieldId === 'id_udi') {
-                parseBarcode('01' + value);
-                field.value = '01' + value;
-            } else if (fieldId === 'id_production_date' || fieldId === 'id_expiration_date') {
-                if (!value.includes("/")) {
-                    field.value = convertDate(value);
-                } else {
-                    field.value = value;
+            if (element) {
+                // Update the element's value with the data
+                element.value = data[key];
+                if (fieldId === 'id_form-0-sku') {
+                    console.log('code', '01' + data[key]);
+                    let code = '01' + data[key];
+                    parseBarcode(code);
                 }
-            } else {
-                console.log('Field', field);
-                console.log('Value', value);
-
-                // field.value = value;
             }
-
-
         }
-    }
-    // stopScanner();
+    })
+
     document.getElementById('scanModal').style.display = 'none';
+    closeModal();
 }
 
 // Info Icons
@@ -540,6 +553,10 @@ document.addEventListener("DOMContentLoaded", function () {
     if (isMobileDevice()) {
         document.querySelectorAll('.mobile-only').forEach(function (element) {
             element.setAttribute('style', 'display: block !important;');
+            document.getElementById('scanModal').style.display = 'block';
+            closeModal();
+
+
         });
     }
 });

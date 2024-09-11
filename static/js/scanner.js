@@ -29,9 +29,7 @@ Dynamsoft.Core.CoreModule.loadWasm(["dbr"]);
     await cameraEnhancer.open();
     await cvRouter.startCapturing("ReadBarcodes_Balance");
 
-
-
-    console.log(cameraView.getUIElement());
+    // console.log(cameraView.getUIElement());
 })();
 
 function processDetectedBarcode(result) {
@@ -55,13 +53,72 @@ function triggerHapticFeedback() {
 
 const aiOptions = [
     { label: 'GTIN/UDI', value: '01' },
-    { label: 'Batch or Lot Number', value: '10' },
+    { label: 'Lot Number', value: '10' },
     { label: 'Production Date', value: '11' },
     { label: 'Expiration Date', value: '17' },
     { label: 'Reference Number', value: 'ref' },
     { label: 'Package Qty', value: '30' },
-    { label: 'Unknown/Not Needed', value: 'Unknown' }
+    { label: 'Not Needed', value: 'unknown' }
 ];
+
+// function displayDetectedBarcode(code, parsedResult) {
+//     const barcodeResults = document.getElementById('barcode-results');
+//     const existingSelections = new Set(); // To track already added values
+//
+//     // Collect existing selections to avoid duplicates
+//     const existingRows = barcodeResults.querySelectorAll('.mapping-row');
+//     existingRows.forEach(row => {
+//         const selectedValue = row.querySelector('select').value;
+//         existingSelections.add(selectedValue);
+//     });
+//
+//     const resultDiv = document.createElement('div');
+//     resultDiv.id = 'mapping-table';
+//
+//     for (const [key, value] of Object.entries(parsedResult)) {
+//         const matchingOption = aiOptions.find(option => option.label === key);
+//         if (matchingOption && !existingSelections.has(matchingOption.value)) {
+//             // If the option is not a duplicate, proceed with adding the row
+//
+//             const row = document.createElement('div');
+//             row.classList.add('mapping-row');
+//
+//             const leftCell = document.createElement('div');
+//             leftCell.classList.add('mapping-cell');
+//             const select = document.createElement('select');
+//             select.classList.add('form-control');
+//
+//             aiOptions.forEach(option => {
+//                 const opt = document.createElement('option');
+//                 opt.value = option.value;
+//                 opt.innerText = option.label;
+//                 if (option.label === key) {
+//                     opt.selected = true;
+//                     existingSelections.add(option.value); // Add to the set of selected values
+//                 }
+//                 select.appendChild(opt);
+//             });
+//
+//             leftCell.appendChild(select);
+//
+//             const arrowCell = document.createElement('div');
+//             arrowCell.classList.add('arrow');
+//             arrowCell.innerHTML = `<i class="fa-solid fa-arrow-right"></i>`;
+//
+//             const rightCell = document.createElement('div');
+//             rightCell.classList.add('mapping-cell');
+//             rightCell.innerText = (key === 'Production Date' || key === 'Expiration Date') ? convertDate(value) : value;
+//
+//             row.appendChild(leftCell);
+//             row.appendChild(arrowCell);
+//             row.appendChild(rightCell);
+//
+//             resultDiv.appendChild(row);
+//         }
+//     }
+//
+//     barcodeResults.appendChild(resultDiv);
+// }
 
 function displayDetectedBarcode(code, parsedResult) {
     const barcodeResults = document.getElementById('barcode-results');
@@ -106,6 +163,7 @@ function displayDetectedBarcode(code, parsedResult) {
 
     barcodeResults.appendChild(resultDiv);
 }
+
 
 function parseGS1Barcode(code) {
     console.log(code);
@@ -158,7 +216,7 @@ function parseGS1Barcode(code) {
             let endIndex = code.indexOf(',', index);
             if (endIndex === -1) endIndex = code.length;
             const unknownValue = code.substring(index, endIndex);
-            parsedResult['Unknown/Not Needed'] = unknownValue.replace(/[^0-9A-Za-z]/g, "");
+            parsedResult['Not Needed'] = unknownValue.replace(/[^0-9A-Za-z]/g, "");
             index = endIndex + 1;
         }
     }

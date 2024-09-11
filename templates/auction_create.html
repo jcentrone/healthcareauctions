@@ -39,14 +39,19 @@
                 <div id="scanModal" class="modal">
                     <div class="modal-content">
                         <h2>Scan Barcode</h2>
-                        {#                    <button id="start-scan">Start Scan</button>#}
+
                         <div id="camera-preview" class="camera-preview">
-
-
                             <div style="position: relative; grid-row: span 2">
                                 <h4>Scanner</h4>
-                                <p>Place camera in front of barcodes</p>
-                                <div id="camera-view-container" style="width: 100%; height: 60vh">
+                                <p>We've made it as easy as possible to create your listings by automatically populating
+                                    as much information as possible. Start by scanning your QR codes or Barcodes and
+                                    we'll try to match them.
+                                    
+                                   
+                                </p>
+                                <p>If you prefer to enter manually just press close below.</p>
+
+                                <div id="camera-view-container" style="width: 100%; height: 25vh">
                                     <div class="dce-video-container"
                                          style="position:absolute;width:100%;height:-webkit-fill-available;"></div>
                                     <div id="dce-mask" hidden
@@ -330,7 +335,6 @@
                                                             <div class="scan-control mobile-only">
                                                                 <i class="fa-solid fa-qrcode"></i>
                                                                 <i class="fa-solid fa-barcode"></i>
-                                                                {#
                                                             </div>
                                                         </div>
                                                         <!-- Column 2 -->
@@ -371,37 +375,31 @@
                                                                    id="{{ form.production_date.id_for_label }}"
                                                                    value="{{ form.production_date.value|default_if_none:'' }}"
                                                                    class="form-control">
-                                                            <div class="scan-control mobile-only">
+                                                            <div class="scan-control mobile-only scan-date">
                                                                 <i class="fa-solid fa-qrcode"></i>
                                                                 <i class="fa-solid fa-barcode"></i>
                                                             </div>
                                                         </div>
                                                         <!-- Column 5 -->
                                                         <div class="form-group bid-scan-item">
-                                                             <label for="{{ form.expiration_date.id_for_label }}"
+                                                            <label for="{{ form.expiration_date.id_for_label }}"
                                                                    class="form-label">Expiration Date</label>
                                                             <input type="date"
                                                                    name="{{ form.expiration_date.name }}"
                                                                    id="{{ form.expiration_date.id_for_label }}"
                                                                    value="{{ form.expiration_date.value|default_if_none:'' }}"
                                                                    class="form-control">
-                                                            
-                                                            
+
+
                                                             <div class="scan-control mobile-only">
                                                                 <i class="fa-solid fa-qrcode"></i>
                                                                 <i class="fa-solid fa-barcode"></i>
                                                             </div>
                                                         </div>
-                                                        {#                                                        <button type="button" class="btn btn-danger remove-form-row ">#}
-                                                        {#                                                            Remove#}
-                                                        {#                                                        </button>#}
+
                                                     </div>
                                                 {% endfor %}
                                             </div>
-                                            {#                                            <button type="button" id="add-product-detail" class="btn btn-info my-3 ">#}
-                                            {#                                                Add Product Detail#}
-                                            {#                                            </button>#}
-
 
                                         </div>
                                         <!-- End Page 2 -->
