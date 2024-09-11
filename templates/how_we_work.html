@@ -1,0 +1,91 @@
+{% extends 'new_base.html' %}
+{% load static %}
+
+{% block title %}Auctions | {{ title }} {% endblock %}
+
+
+{% block body %}
+    <div class="container mt-5">
+        <div class="text-center mb-5">
+            <h1>How We Work</h1>
+            <p class="lead">At Healthcare Auctions, we bridge the gap between buyers and sellers, creating a seamless
+                and trustworthy marketplace for medical devices and products.</p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Our Marketplace</h2>
+                <p>Our platform serves both sellers and buyers with equal dedication. Sellers, often entities with
+                    excess inventory or products nearing expiration, list their items on our site. We also actively
+                    source and add inventory to ensure a wide range of products.</p>
+                <p>Every item listed on Healthcare Auctions comes with our commitment to quality and satisfaction.</p>
+            </div>
+            <div class="col-md-6">
+                <img src="your-marketplace-image.jpg" class="img-fluid" alt="Marketplace">
+            </div>
+        </div>
+
+        <hr class="my-5">
+
+        <div class="row">
+            <div class="col-md-6 order-md-2">
+                <h2>What We Do for Sellers</h2>
+                <ul class="list-unstyled">
+                    <li><strong>Effortless Listing:</strong> Our platform provides an easy-to-use interface that allows
+                        you to list your products quickly and efficiently. Your items reach the right audience,
+                        maximizing sales potential.
+                    </li>
+                    <li><strong>Excel Import:</strong> You can download our listing template and import your own
+                        listings in Excel format, making bulk uploads fast and easy.
+                    </li>
+                    <li><strong>Guaranteed Shipping Coordination:</strong> Once your item is sold, we handle all aspects
+                        of shipping, ensuring a smooth transaction from sale to delivery.
+                    </li>
+                    <li><strong>Dedicated Support:</strong> Our inside team is always available to assist with listing,
+                        order management, or any other concerns you may have.
+                    </li>
+                </ul>
+            </div>
+            <div class="col-md-6 order-md-1">
+                <img src="seller-support-image.jpg" class="img-fluid" alt="Seller Support">
+            </div>
+        </div>
+
+        <hr class="my-5">
+
+        <div class="row">
+            <div class="col-md-6">
+                <h2>What We Do for Buyers</h2>
+                <ul class="list-unstyled">
+                    <li><strong>Wide Selection:</strong> Browse a diverse range of medical devices and products from
+                        trusted sellers. We ensure you have access to the items you need, when you need them.
+                    </li>
+                    <li><strong>Worry-Free Returns:</strong> If there’s ever an issue with a product, you can return it
+                        with confidence, no questions asked.
+                    </li>
+                    <li><strong>Personalized Assistance:</strong> Our dedicated customer service team is here to help
+                        with sourcing specific items, answering order-related questions, and providing general support.
+                    </li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <img src="buyer-support-image.jpg" class="img-fluid" alt="Buyer Support">
+            </div>
+        </div>
+
+        <hr class="my-5">
+
+        <div class="text-center">
+            <h2>Our Commitment to Both Buyers and Sellers</h2>
+            <p class="lead">At Healthcare Auctions, we’re more than just a marketplace; we’re a partner in your
+                business. We coordinate every step of the process—from listing and sourcing to shipping and customer
+                service—ensuring a positive experience for both buyers and sellers.</p>
+            <p>Join us today and experience a better way to buy and sell medical devices and products.</p>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.11/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+{% endblock %}

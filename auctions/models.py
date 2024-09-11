@@ -105,6 +105,7 @@ class User(AbstractUser):
     company_w9 = models.FileField(storage=W9Storage(), blank=True, null=True)
     reseller_cert = models.FileField(storage=ResellerCertificateStorage(), blank=True, null=True)
     tax_exempt = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=False)
 
     def __str__(self):
         return self.username

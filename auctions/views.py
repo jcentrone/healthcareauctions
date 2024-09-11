@@ -1768,3 +1768,7 @@ def add_order_note(request, order_id):
             messages.error(request, 'There was an error adding your note.')
 
     return redirect('dashboard')
+
+
+def how_we_work(request):
+    return render(request, 'how_we_work.html')
