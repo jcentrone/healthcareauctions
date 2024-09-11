@@ -467,43 +467,43 @@ function extractMappingTableData() {
 
 // Function to map extracted data to the auction form fields
 function transferDataToAuctionForm() {
-    const data = extractMappingTableData();
-    console.log(data);
-
-    // Mapping keys to form field IDs
-    const fieldMap = {
-        '01': 'id_form-0-sku',  // GTIN/UDI
-        '10': 'id_form-0-lot_number',  // Batch or Lot Number
-        '11': 'id_form-0-production_date',  // Production Date (assuming you have this field)
-        '17': 'id_form-0-expiration_date',  // Expiration Date
-        'ref': 'id_form-0-reference_number' // Reference Number
-        // Add more mappings as needed
-    };
-
-    for (const [key, value] of Object.entries(data)) {
-        const fieldId = fieldMap[key];
-        if (fieldId) {
-            let field = document.getElementById(fieldId);
-
-            if (fieldId === 'id_udi') {
-                parseBarcode('01' + value);
-                field.value = '01' + value;
-            } else if (fieldId === 'id_production_date' || fieldId === 'id_expiration_date') {
-                if (!value.includes("/")) {
-                    field.value = convertDate(value);
-                } else {
-                    field.value = value;
-                }
-            } else {
-                console.log('Field', field);
-                console.log('Value', value);
-
-                field.value = value;
-            }
-
-
-        }
-    }
+    // const data = extractMappingTableData();
+    // console.log(data);
+    //
+    // // Mapping keys to form field IDs
+    // const fieldMap = {
+    //     '01': 'id_form-0-sku',  // GTIN/UDI
+    //     '10': 'id_form-0-lot_number',  // Batch or Lot Number
+    //     '11': 'id_form-0-production_date',  // Production Date (assuming you have this field)
+    //     '17': 'id_form-0-expiration_date',  // Expiration Date
+    //     'ref': 'id_form-0-reference_number' // Reference Number
+    //     // Add more mappings as needed
+    // };
+    //
+    // for (const [key, value] of Object.entries(data)) {
+    //     const fieldId = fieldMap[key];
+    //     if (fieldId) {
+    //         let field = document.getElementById(fieldId);
+    //
+    //         if (fieldId === 'id_udi') {
+    //             parseBarcode('01' + value);
+    //             field.value = '01' + value;
+    //         } else if (fieldId === 'id_production_date' || fieldId === 'id_expiration_date') {
+    //             if (!value.includes("/")) {
+    //                 field.value = convertDate(value);
+    //             } else {
+    //                 field.value = value;
+    //             }
+    //         } else {
+    //             console.log('Field', field);
+    //             console.log('Value', value);
+    //
+    //             field.value = value;
+    //         }
+    //
+    //
+    //     }
+    // }
     // stopScanner();
     document.getElementById('scanModal').style.display = 'none';
 }
