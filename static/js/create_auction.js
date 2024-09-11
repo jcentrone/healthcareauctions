@@ -472,11 +472,11 @@ function transferDataToAuctionForm() {
 
     // Mapping keys to form field IDs
     const fieldMap = {
-        '01': 'id_udi',  // GTIN/UDI
-        '10': 'id_lot_number',  // Batch or Lot Number
-        '11': 'id_production_date',  // Production Date (assuming you have this field)
-        '17': 'id_expiration_date',  // Expiration Date
-        'ref': 'id_reference_number' // Reference Number
+        '01': 'id_form-0-sku',  // GTIN/UDI
+        '10': 'id_form-0-lot_number',  // Batch or Lot Number
+        '11': 'id_form-0-production_date',  // Production Date (assuming you have this field)
+        '17': 'id_form-0-expiration_date',  // Expiration Date
+        'ref': 'id_form-0-reference_number' // Reference Number
         // Add more mappings as needed
     };
 
@@ -505,6 +505,7 @@ function transferDataToAuctionForm() {
     document.getElementById('scanModal').style.display = 'none';
 }
 
+// Info Icons
 document.addEventListener('DOMContentLoaded', function () {
     const infoIcons = document.querySelectorAll('.fa-info-circle');
 
@@ -527,7 +528,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-
+// Is mobile Device
 document.addEventListener("DOMContentLoaded", function () {
     function isMobileDevice() {
         return /Mobi|Android/i.test(navigator.userAgent);
@@ -918,8 +919,8 @@ document.addEventListener('DOMContentLoaded', function () {
     let formCount = parseInt(totalFormsInput.value);
 
     const parentElement = document.querySelector('[data-form-index="0"]');
-    const childElement = parentElement.querySelector('.remove-form-row');
-    childElement.style.opacity = '0';
+    // const childElement = parentElement.querySelector('.remove-form-row');
+    // childElement.style.opacity = '0';
 
     addButton.addEventListener('click', function () {
         const newForm = formsetContainer.querySelector('.product-detail-form').cloneNode(true);
