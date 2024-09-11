@@ -3,11 +3,9 @@ import logging
 import random
 import re
 from datetime import timedelta
-from decimal import Decimal
 
 import openpyxl
 from django import forms
-from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
@@ -18,8 +16,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import IntegrityError
 from django.db.models import Q, Case, When, BooleanField, DecimalField, Max, F
 from django.forms import model_to_dict
-from django.http import HttpResponseRedirect, JsonResponse, FileResponse, HttpResponse
-from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse, FileResponse, HttpResponse
+from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -61,7 +59,7 @@ def index(request):
     unread_message_count = 0
     watchlist, cart_count = None, None
 
-    # # Filter categories to include only those with at least one auction
+    # Filter categories to include only those with at least one auction
     categories_with_auctions = Category.objects.filter(auction_category__isnull=False).distinct().order_by(
         'category_name')
     category_count = categories_with_auctions.count()
@@ -93,7 +91,9 @@ def index(request):
         watchlist = request.user.watchlist.all()
         watchlist = add_images_to_auctions(watchlist)
         watchlist_ids = watchlist.values_list('id', flat=True)
-        recent_views = AuctionView.objects.filter(user=request.user).order_by('-viewed_at')[:8]
+        recent_views = AuctionView.objects.filter(user=request.user, auction__active=True) \
+                           .order_by('auction__id', '-viewed_at') \
+                           .distinct('auction__id')[:8]
 
         auctions_cat1 = auctions_cat1.annotate(
             is_watched=Case(
@@ -896,12 +896,14 @@ def active_auctions_view(request, auction_id=None):
         pages = paginator.page(paginator.num_pages)
 
     # If on the first page, prepend the specific auction
-    if specific_auction and page == '1':
-        pages.object_list = [specific_auction] + list(pages.object_list)
+    auctions_list = list(pages.object_list)
+    if specific_auction:
+        auctions_list = [specific_auction] + auctions_list
+
+    # print(specific_auction)
 
     return render(request, 'auctions_active.html', {
-        # 'categories': Category.objects.all(),
-        'auctions': pages,
+        'auctions': auctions_list,
         'search_query': search_query,
         'bid_form': BidForm(),
         'add_to_cart_form': AddToCartForm(),
@@ -1074,14 +1076,19 @@ def terms_and_conditions(request):
     })
 
 
+from django.contrib import messages
+from django.http import HttpResponseRedirect
+from django.shortcuts import redirect, get_object_or_404
+from decimal import Decimal
+
+
 @login_required
 def auction_bid(request, auction_id):
     """
-    It allows the signed in users to bid on the item
+    It allows the signed-in users to bid on the item.
     """
-    auction = Auction.objects.get(id=auction_id)
+    auction = get_object_or_404(Auction, id=auction_id)
     amount = Decimal(request.POST['amount'])
-    print('bid')
 
     if amount >= auction.starting_bid and (auction.current_bid is None or amount > auction.current_bid):
         auction.current_bid = amount
@@ -1092,16 +1099,15 @@ def auction_bid(request, auction_id):
         new_bid.save()
         auction.save()
 
-        return HttpResponseRedirect(reverse('auction_details_view', args=[auction_id]))
+        # Add a success message
+        messages.success(request, 'Your bid was placed successfully!')
+
+        return HttpResponseRedirect(reverse('active_auctions_view'))
     else:
-        return render(request, 'auction.html', {
-            'categories': Category.objects.all(),
-            'auction': auction,
-            'images': auction.get_images.all(),
-            'form': BidForm(),
-            'error_min_value': True,
-            'title': 'Auction'
-        })
+        # Add an error message
+        messages.error(request, 'Your bid must be higher than the current bid and starting bid.')
+
+        return redirect('active_auctions_view')
 
 
 @login_required
@@ -1432,11 +1438,11 @@ def checkout(request):
                 shipping_method=shipping_method,
                 special_instructions=special_instructions,
                 tax_exempt=tax_exempt,
-                combined_sales_tax_rate = combined_sales_tax_rate,
-                sales_tax_no_shipping = sales_tax_no_shipping,
-                total_no_shipping = total_no_shipping,
-                tax_amount = tax_amount,
-                shipping_amount = shipping_amount,
+                combined_sales_tax_rate=combined_sales_tax_rate,
+                sales_tax_no_shipping=sales_tax_no_shipping,
+                total_no_shipping=total_no_shipping,
+                tax_amount=tax_amount,
+                shipping_amount=shipping_amount,
 
             )
             for item in cart.items.all():

@@ -1,0 +1,30 @@
+<!-- Message Form -->
+<!-- (Initially hidden) -->
+<form id="questionForm-{{ auction.id }}" class="message-form card shadow-sm d-flex gap-3"
+      method="POST"
+      action="{% url 'send_message' auction.id %}" style="display: none !important;">
+    {% csrf_token %}
+    <div class="card-header">
+        <div>New Message</div>
+    </div>
+    <div class="card-body">
+        <div>Subject:</div>
+        <div class="pb-3">{{ auction.message_form.subject }}</div>
+        <div>Message:</div>
+        <div class="">{{ auction.message_form.body }}</div>
+        <small id="charCount" class="form-text text-muted pe-1 text-end">0/1000 characters
+            used</small>
+    </div>
+    <div class="card-footer text-end">
+        <button type="submit" class="btn btn-primary">Send Question</button>
+    </div>
+</form>
+<script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('auction-modal-body').addEventListener('click', function () {
+            
+            document.getElementById('questionForm-{{ auction.id }}').style.setProperty('display', 'none', 'important');
+        });
+    });
+</script>

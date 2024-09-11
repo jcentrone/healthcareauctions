@@ -221,6 +221,11 @@ class OrderAdmin(admin.ModelAdmin):
         billing_address = obj.auction.creator.addresses.filter(address_type='billing').first()
         extra_context['billing_address'] = billing_address
 
+        # Pass the seller shipping address
+        shipping_address = obj.auction.creator.addresses.filter(address_type='shipping').first()
+        extra_context['shipping_address'] = shipping_address
+
+
         # Create inline formsets
         shipping_inline = ShippingAddressInline(self.model, self.admin_site)
         billing_inline = BillingAddressInline(self.model, self.admin_site)

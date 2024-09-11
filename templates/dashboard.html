@@ -1039,7 +1039,7 @@
                                     <tbody>
                                     {% for auction in auctions %}
                                         <tr>
-                                            <td>{{ auction.title }}</td>
+                                            <td><a href="{% url 'active_auctions_with_id' auction.id %}"> {{ auction.title }}</a></td>
                                             <td>{{ auction.highest_bid }}</td>
                                             <td>{{ auction.user_highest_bid }}</td>
                                             <td>{{ auction.user_is_highest_bidder|yesno:"Yes,No" }}</td>
