@@ -61,108 +61,108 @@ const aiOptions = [
     { label: 'Not Needed', value: 'unknown' }
 ];
 
-// function displayDetectedBarcode(code, parsedResult) {
-//     const barcodeResults = document.getElementById('barcode-results');
-//     const existingSelections = new Set(); // To track already added values
-//
-//     // Collect existing selections to avoid duplicates
-//     const existingRows = barcodeResults.querySelectorAll('.mapping-row');
-//     existingRows.forEach(row => {
-//         const selectedValue = row.querySelector('select').value;
-//         existingSelections.add(selectedValue);
-//     });
-//
-//     const resultDiv = document.createElement('div');
-//     resultDiv.id = 'mapping-table';
-//
-//     for (const [key, value] of Object.entries(parsedResult)) {
-//         const matchingOption = aiOptions.find(option => option.label === key);
-//         if (matchingOption && !existingSelections.has(matchingOption.value)) {
-//             // If the option is not a duplicate, proceed with adding the row
-//
-//             const row = document.createElement('div');
-//             row.classList.add('mapping-row');
-//
-//             const leftCell = document.createElement('div');
-//             leftCell.classList.add('mapping-cell');
-//             const select = document.createElement('select');
-//             select.classList.add('form-control');
-//
-//             aiOptions.forEach(option => {
-//                 const opt = document.createElement('option');
-//                 opt.value = option.value;
-//                 opt.innerText = option.label;
-//                 if (option.label === key) {
-//                     opt.selected = true;
-//                     existingSelections.add(option.value); // Add to the set of selected values
-//                 }
-//                 select.appendChild(opt);
-//             });
-//
-//             leftCell.appendChild(select);
-//
-//             const arrowCell = document.createElement('div');
-//             arrowCell.classList.add('arrow');
-//             arrowCell.innerHTML = `<i class="fa-solid fa-arrow-right"></i>`;
-//
-//             const rightCell = document.createElement('div');
-//             rightCell.classList.add('mapping-cell');
-//             rightCell.innerText = (key === 'Production Date' || key === 'Expiration Date') ? convertDate(value) : value;
-//
-//             row.appendChild(leftCell);
-//             row.appendChild(arrowCell);
-//             row.appendChild(rightCell);
-//
-//             resultDiv.appendChild(row);
-//         }
-//     }
-//
-//     barcodeResults.appendChild(resultDiv);
-// }
-
 function displayDetectedBarcode(code, parsedResult) {
     const barcodeResults = document.getElementById('barcode-results');
+    const existingSelections = new Set(); // To track already added values
+
+    // Collect existing selections to avoid duplicates
+    const existingRows = barcodeResults.querySelectorAll('.mapping-row');
+    existingRows.forEach(row => {
+        const selectedValue = row.querySelector('select').value;
+        existingSelections.add(selectedValue);
+    });
+
     const resultDiv = document.createElement('div');
     resultDiv.id = 'mapping-table';
 
     for (const [key, value] of Object.entries(parsedResult)) {
-        const row = document.createElement('div');
-        row.classList.add('mapping-row');
+        const matchingOption = aiOptions.find(option => option.label === key);
+        if (matchingOption && !existingSelections.has(matchingOption.value)) {
+            // If the option is not a duplicate, proceed with adding the row
 
-        const leftCell = document.createElement('div');
-        leftCell.classList.add('mapping-cell');
-        const select = document.createElement('select');
-        select.classList.add('form-control');
+            const row = document.createElement('div');
+            row.classList.add('mapping-row');
 
-        aiOptions.forEach(option => {
-            const opt = document.createElement('option');
-            opt.value = option.value;
-            opt.innerText = option.label;
-            if (option.label === key) {
-                opt.selected = true;
-            }
-            select.appendChild(opt);
-        });
+            const leftCell = document.createElement('div');
+            leftCell.classList.add('mapping-cell');
+            const select = document.createElement('select');
+            select.classList.add('form-control');
 
-        leftCell.appendChild(select);
+            aiOptions.forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option.value;
+                opt.innerText = option.label;
+                if (option.label === key) {
+                    opt.selected = true;
+                    existingSelections.add(option.value); // Add to the set of selected values
+                }
+                select.appendChild(opt);
+            });
 
-        const arrowCell = document.createElement('div');
-        arrowCell.classList.add('arrow');
-        arrowCell.innerHTML = `<i class="fa-solid fa-arrow-right"></i>`;
+            leftCell.appendChild(select);
 
-        const rightCell = document.createElement('div');
-        rightCell.classList.add('mapping-cell');
-        rightCell.innerText = (key === 'Production Date' || key === 'Expiration Date') ? convertDate(value) : value;
+            const arrowCell = document.createElement('div');
+            arrowCell.classList.add('arrow');
+            arrowCell.innerHTML = `<i class="fa-solid fa-arrow-right"></i>`;
 
-        row.appendChild(leftCell);
-        row.appendChild(arrowCell);
-        row.appendChild(rightCell);
+            const rightCell = document.createElement('div');
+            rightCell.classList.add('mapping-cell');
+            rightCell.innerText = (key === 'Production Date' || key === 'Expiration Date') ? convertDate(value) : value;
 
-        resultDiv.appendChild(row);
+            row.appendChild(leftCell);
+            row.appendChild(arrowCell);
+            row.appendChild(rightCell);
+
+            resultDiv.appendChild(row);
+        }
     }
 
     barcodeResults.appendChild(resultDiv);
 }
+
+// function displayDetectedBarcode(code, parsedResult) {
+//     const barcodeResults = document.getElementById('barcode-results');
+//     const resultDiv = document.createElement('div');
+//     resultDiv.id = 'mapping-table';
+//
+//     for (const [key, value] of Object.entries(parsedResult)) {
+//         const row = document.createElement('div');
+//         row.classList.add('mapping-row');
+//
+//         const leftCell = document.createElement('div');
+//         leftCell.classList.add('mapping-cell');
+//         const select = document.createElement('select');
+//         select.classList.add('form-control');
+//
+//         aiOptions.forEach(option => {
+//             const opt = document.createElement('option');
+//             opt.value = option.value;
+//             opt.innerText = option.label;
+//             if (option.label === key) {
+//                 opt.selected = true;
+//             }
+//             select.appendChild(opt);
+//         });
+//
+//         leftCell.appendChild(select);
+//
+//         const arrowCell = document.createElement('div');
+//         arrowCell.classList.add('arrow');
+//         arrowCell.innerHTML = `<i class="fa-solid fa-arrow-right"></i>`;
+//
+//         const rightCell = document.createElement('div');
+//         rightCell.classList.add('mapping-cell');
+//         rightCell.innerText = (key === 'Production Date' || key === 'Expiration Date') ? convertDate(value) : value;
+//
+//         row.appendChild(leftCell);
+//         row.appendChild(arrowCell);
+//         row.appendChild(rightCell);
+//
+//         resultDiv.appendChild(row);
+//     }
+//
+//     barcodeResults.appendChild(resultDiv);
+// }
 
 
 function parseGS1Barcode(code) {
