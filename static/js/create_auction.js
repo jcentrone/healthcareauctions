@@ -495,6 +495,9 @@ function transferDataToAuctionForm() {
                     field.value = value;
                 }
             } else {
+                console.log('Field', field);
+                console.log('Value', value);
+
                 field.value = value;
             }
 
