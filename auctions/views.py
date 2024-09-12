@@ -696,7 +696,7 @@ def register(request):
                 )
 
                 # Welcome Email
-                send_welcome_email_html(user.email)
+                send_welcome_email_html(user.email, first_name)
 
             except IntegrityError:
                 return render(request, 'register.html', {
