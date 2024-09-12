@@ -1,10 +1,123 @@
-from django import forms
+from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.forms import UserChangeForm
 from django.core.exceptions import ValidationError
 from django.forms import modelformset_factory, inlineformset_factory
+from django import forms
 
 from .models import Auction, Bid, Comment, Image, Category, CartItem, ProductDetail, Message, Order, ShippingAddress, \
     BillingAddress, STATE_CHOICES, User, Address, ShippingAccounts
+
+
+class RegistrationForm(forms.Form):
+    username = forms.CharField(max_length=150, widget=forms.TextInput(attrs={
+        'class': 'form-control rounded',
+        'placeholder': 'Username',
+        'autofocus': True,
+        'required': True,
+    }))
+    email = forms.EmailField(widget=forms.EmailInput(attrs={
+        'class': 'form-control rounded',
+        'placeholder': 'Email Address',
+        'required': True,
+    }))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={
+        'class': 'form-control rounded',
+        'placeholder': 'Password',
+        'required': True,
+    }))
+    confirmation = forms.CharField(widget=forms.PasswordInput(attrs={
+        'class': 'form-control rounded',
+        'placeholder': 'Confirm Password',
+        'required': True,
+    }))
+    company_name = forms.CharField(max_length=255, required=False, widget=forms.TextInput(attrs={
+        'class': 'form-control rounded',
+        'placeholder': 'Company Name',
+    }))
+    shipping_street = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Street',
+        'required': True,
+    }))
+    shipping_city = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'City',
+        'required': True,
+    }))
+    shipping_state = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'State',
+        'required': True,
+    }))
+    shipping_zip = forms.CharField(max_length=10, widget=forms.TextInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Zip Code',
+        'required': True,
+    }))
+    shipping_country = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Country',
+        'required': True,
+    }))
+    billing_street = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Street',
+        'required': True,
+    }))
+    billing_city = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'City',
+        'required': True,
+    }))
+    billing_state = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'State',
+        'required': True,
+    }))
+    billing_zip = forms.CharField(max_length=10, widget=forms.TextInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Zip Code',
+        'required': True,
+    }))
+    billing_country = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Country',
+        'required': True,
+    }))
+    first_name = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
+        'class': 'form-control rounded',
+        'placeholder': 'First Name',
+        'autofocus': True,
+        'required': True,
+    }))
+    last_name = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
+        'class': 'form-control rounded',
+        'placeholder': 'Last Name',
+        'autofocus': True,
+        'required': True,
+    }))
+    phone = forms.CharField(max_length=15, widget=forms.TextInput(attrs={
+        'class': 'form-control rounded',
+        'placeholder': 'Phone',
+        'autofocus': True,
+        'required': True,
+    }))
+    company_w9 = forms.FileField(required=False, widget=forms.FileInput(attrs={
+        'class': 'form-control rounded',
+        'accept': '.pdf,.doc,.docx,.jpg,.png,.jpeg',
+    }))
+    reseller_certificate = forms.FileField(required=False, widget=forms.FileInput(attrs={
+        'class': 'form-control rounded',
+        'accept': '.pdf,.doc,.docx,.jpg,.png,.jpeg',
+    }))
+    profile_image = forms.FileField(required=False, widget=forms.FileInput(attrs={
+        'class': 'form-control',
+        'accept': 'image/*',
+    }))
+    company_logo = forms.FileField(required=False, widget=forms.FileInput(attrs={
+        'class': 'form-control',
+        'accept': 'image/*',
+    }))
 
 
 class AuctionForm(forms.ModelForm):
@@ -235,7 +348,8 @@ class ShippingMethodForm(forms.ModelForm):
         fields = ['shipping_method', 'special_instructions']
         widgets = {
             'shipping_method': forms.Select(
-                choices=[('standard', 'Standard Shipping: 7 - 10 Days'), ('expedited', 'Expedited Shipping: 5 - 7 Days')],
+                choices=[('standard', 'Standard Shipping: 7 - 10 Days'),
+                         ('expedited', 'Expedited Shipping: 5 - 7 Days')],
                 attrs={'class': 'form-control required'}),
             'special_instructions': forms.Textarea(
                 attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Any special instructions...'}),
@@ -249,7 +363,8 @@ class ShippingAccountsForm(forms.ModelForm):
         widgets = {
             'carrier_name': forms.Select(attrs={'class': 'form-control required'}),
             'use_as_default_shipping_method': forms.Select(attrs={'class': 'form-check-input required'}),
-            'carrier_account_number': forms.TextInput(attrs={'class': 'form-control required text-uppercase', 'placeholder': 'Enter your account number'}),
+            'carrier_account_number': forms.TextInput(
+                attrs={'class': 'form-control required text-uppercase', 'placeholder': 'Enter your account number'}),
         }
         labels = {
             'carrier_name': 'Carrier Name',
@@ -387,7 +502,8 @@ class EditProductDetailForm(forms.ModelForm):
         }
 
 
-EditProductDetailFormSet = inlineformset_factory(Auction, ProductDetail, form=EditProductDetailForm, extra=0, can_delete=True)
+EditProductDetailFormSet = inlineformset_factory(Auction, ProductDetail, form=EditProductDetailForm, extra=0,
+                                                 can_delete=True)
 
 
 class EditAuctionForm(forms.ModelForm):

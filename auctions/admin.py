@@ -3,19 +3,20 @@ from decimal import Decimal
 from django.contrib import admin
 from django.forms import modelform_factory
 from django.http import HttpResponseRedirect
-from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.utils.translation import gettext_lazy as _
 
-from .forms import MessageForm, MessageThreadForm
-from .models import Bid, User, Message, Order, OrderItem, ShippingAddress, \
-    BillingAddress, Payment, Carrier, Parcel, ProductDetail, ShippingAccounts, Auction
+from .forms import MessageForm
+from .models import Bid, User, Order, OrderItem, ShippingAddress, \
+    BillingAddress, Payment, Carrier, Parcel, ProductDetail, ShippingAccounts, Auction, Address
 
 # admin.site.register(Auction)
 # admin.site.register(Image)
 admin.site.register(Bid)
 # admin.site.register(Comment)
 # admin.site.register(Category)
-admin.site.register(User)
+# admin.site.register(User)
 
 
 class AuctionInline(admin.TabularInline):
@@ -65,8 +66,6 @@ class PaymentInline(admin.TabularInline):
     can_delete = False
     fields = []  # Empty fields to avoid rendering issues
     readonly_fields = []
-
-
 
 
 class CarrierInline(admin.TabularInline):
@@ -144,7 +143,6 @@ class OrderAdmin(admin.ModelAdmin):
         # Pass the seller shipping address
         shipping_address = obj.auction.creator.addresses.filter(address_type='shipping').first()
         extra_context['shipping_address'] = shipping_address
-
 
         # Create inline formsets
         shipping_inline = ShippingAddressInline(self.model, self.admin_site)
@@ -370,3 +368,62 @@ class AuctionAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Auction, AuctionAdmin)
+
+
+class AddressInline(admin.TabularInline):
+    model = Address
+    extra = 0
+
+    fields = ('address_type', 'street', 'suite','city', 'state', 'zip_code')
+
+
+
+class UserAdmin(BaseUserAdmin):
+    # Fields to be displayed in the list view
+    list_display = ('username', 'email', 'company_name', 'phone_number', 'is_approved', 'is_tax_exempt', 'is_active')
+
+    # Filters for the right sidebar in the list view
+    list_filter = ('is_approved', 'is_active', 'is_staff', 'is_superuser', 'groups')
+
+    # Fields to search within the list view
+    search_fields = ('username', 'email', 'company_name', 'phone_number')
+
+    # Fields to display in the detail view
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        (_('Personal info'), {'fields': ('first_name', 'last_name', 'email', 'phone_number')}),
+        (_('Company info'), {'fields': ('company_name', 'company_logo', 'company_w9', 'reseller_cert', 'tax_exempt')}),
+        (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
+    )
+
+    inlines = [
+        AddressInline
+    ]
+
+    # Fields that should be read-only
+    readonly_fields = ('last_login', 'date_joined')
+
+    # Fields to include when creating or editing a user
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': (
+                'username', 'email', 'password1', 'password2', 'company_name', 'phone_number', 'is_approved',
+                'tax_exempt'),
+        }),
+    )
+
+    # Order of fields in the list view
+    ordering = ('username',)
+
+    # Custom method for displaying the tax-exempt status
+    def is_tax_exempt(self, obj):
+        return obj.is_tax_exempt()
+
+    is_tax_exempt.boolean = True
+    is_tax_exempt.short_description = 'Tax Exempt'
+
+
+# Register the custom User admin
+admin.site.register(User, UserAdmin)

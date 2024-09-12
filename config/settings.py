@@ -194,4 +194,16 @@ UPS_PASSWORD = os.environ.get('UPS_PASSWORD')
 # Zip Tax Credentials
 ZIP_TAX_API_KEY = os.environ.get('ZIP_TAX_API_KEY')
 
-# a5ROqNT2axDJmrSlGQFkMsKx
+
+# Mailjet API configuration
+MAILJET_API_KEY = os.environ.get('MAILJET_API_KEY')
+MAILJET_API_SECRET = os.environ.get('MAILJET_API_SECRET')
+
+# Django Email Backend Configuration (Optional)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'in-v3.mailjet.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = MAILJET_API_KEY
+EMAIL_HOST_PASSWORD = MAILJET_API_SECRET
+DEFAULT_FROM_EMAIL = 'notifications@healthcareauctions.com'
