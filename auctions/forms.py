@@ -10,101 +10,102 @@ from .models import Auction, Bid, Comment, Image, Category, CartItem, ProductDet
 
 class RegistrationForm(forms.Form):
     username = forms.CharField(max_length=150, widget=forms.TextInput(attrs={
-        'class': 'form-control rounded',
+        'class': 'form-control rounded required',
         'placeholder': 'Username',
         'autofocus': True,
         'required': True,
     }))
     email = forms.EmailField(widget=forms.EmailInput(attrs={
-        'class': 'form-control rounded',
+        'class': 'form-control rounded required',
         'placeholder': 'Email Address',
         'required': True,
     }))
     password = forms.CharField(widget=forms.PasswordInput(attrs={
-        'class': 'form-control rounded',
+        'class': 'form-control rounded required',
         'placeholder': 'Password',
         'required': True,
     }))
     confirmation = forms.CharField(widget=forms.PasswordInput(attrs={
-        'class': 'form-control rounded',
+        'class': 'form-control rounded required',
         'placeholder': 'Confirm Password',
         'required': True,
     }))
     company_name = forms.CharField(max_length=255, required=False, widget=forms.TextInput(attrs={
-        'class': 'form-control rounded',
+        'class': 'form-control rounded required',
         'placeholder': 'Company Name',
     }))
     shipping_street = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
-        'class': 'form-control',
+        'class': 'form-control required',
         'placeholder': 'Street',
         'required': True,
     }))
     shipping_city = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
-        'class': 'form-control',
+        'class': 'form-control required',
         'placeholder': 'City',
         'required': True,
     }))
     shipping_state = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
-        'class': 'form-control',
+        'class': 'form-control required',
         'placeholder': 'State',
         'required': True,
     }))
     shipping_zip = forms.CharField(max_length=10, widget=forms.TextInput(attrs={
-        'class': 'form-control',
+        'class': 'form-control required',
         'placeholder': 'Zip Code',
         'required': True,
     }))
     shipping_country = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
-        'class': 'form-control',
+        'class': 'form-control required',
         'placeholder': 'Country',
         'required': True,
     }))
     billing_street = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
-        'class': 'form-control',
+        'class': 'form-control required',
         'placeholder': 'Street',
         'required': True,
     }))
     billing_city = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
-        'class': 'form-control',
+        'class': 'form-control required',
         'placeholder': 'City',
         'required': True,
     }))
     billing_state = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
-        'class': 'form-control',
+        'class': 'form-control required',
         'placeholder': 'State',
         'required': True,
     }))
     billing_zip = forms.CharField(max_length=10, widget=forms.TextInput(attrs={
-        'class': 'form-control',
+        'class': 'form-control required',
         'placeholder': 'Zip Code',
         'required': True,
     }))
     billing_country = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
-        'class': 'form-control',
+        'class': 'form-control required',
         'placeholder': 'Country',
         'required': True,
     }))
     first_name = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
-        'class': 'form-control rounded',
+        'class': 'form-control rounded required',
         'placeholder': 'First Name',
         'autofocus': True,
         'required': True,
     }))
     last_name = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
-        'class': 'form-control rounded',
+        'class': 'form-control rounded required',
         'placeholder': 'Last Name',
         'autofocus': True,
         'required': True,
     }))
     phone = forms.CharField(max_length=15, widget=forms.TextInput(attrs={
-        'class': 'form-control rounded',
+        'class': 'form-control rounded required',
         'placeholder': 'Phone',
         'autofocus': True,
         'required': True,
     }))
     company_w9 = forms.FileField(required=False, widget=forms.FileInput(attrs={
-        'class': 'form-control rounded',
+        'class': 'form-control rounded required',
         'accept': '.pdf,.doc,.docx,.jpg,.png,.jpeg',
+        'required': True,
     }))
     reseller_certificate = forms.FileField(required=False, widget=forms.FileInput(attrs={
         'class': 'form-control rounded',
