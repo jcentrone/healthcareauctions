@@ -22,7 +22,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from config.storage_backends import ProfileImageStorage, CompanyLogoStorage, W9Storage, ResellerCertificateStorage
+from config.storage_backends import W9Storage, ResellerCertificateStorage
 from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, ProductDetailFormSet, MessageForm, \
     ShippingMethodForm, ShippingAddressForm, BillingAddressForm, CreditCardForm, ACHForm, ZelleForm, VenmoForm, \
     PayPalForm, CashAppForm, CustomUserChangeForm, UserAddressForm, OrderNoteForm, EditAuctionForm, \
@@ -124,8 +124,11 @@ def index(request):
     else:
         auctions_cat1 = add_images_to_auctions(auctions_cat1)
         auctions_cat2 = add_images_to_auctions(auctions_cat2)
+        categories_with_auctions = categories_with_auctions
+        print(categories_with_auctions)
 
     return render(request, 'index.html', {
+        'categories': categories_with_auctions,
         'auctions_cat1': auctions_cat1,
         'auctions_cat1_name': random_category1,
         'auctions_cat2': auctions_cat2,
@@ -468,132 +471,6 @@ def post_listing(request, auction_id):
 
     return JsonResponse({'success': False, 'message': 'Invalid request method.'})
 
-
-# def register(request):
-#     if request.method == 'POST':
-#         username = request.POST['username']
-#         email = request.POST['email']
-#         password = request.POST['password']
-#         confirmation = request.POST['confirmation']
-#         company_name = request.POST['company_name']
-#         first_name = request.POST['first_name']
-#         last_name = request.POST['last_name']
-#         phone_number = request.POST['phone']
-#         print('first_name', first_name)
-#         print('last_name', last_name)
-#         print('phone_number', phone_number)
-#
-#         # Billing Address
-#         billing_street = request.POST['billing_street']
-#         billing_city = request.POST['billing_city']
-#         billing_state = request.POST['billing_state']
-#         billing_zip = request.POST['billing_zip']
-#         billing_country = request.POST['billing_country']
-#
-#         # Shipping Address
-#         shipping_street = request.POST['shipping_street']
-#         shipping_city = request.POST['shipping_city']
-#         shipping_state = request.POST['shipping_state']
-#         shipping_zip = request.POST['shipping_zip']
-#         shipping_country = request.POST['shipping_country']
-#
-#         # Handle profile image and company logo
-#         profile_image = request.FILES.get('profile_image')
-#         company_logo = request.FILES.get('company_logo')
-#         company_w9 = request.FILES.get('company_w9')
-#         reseller_certificate = request.FILES.get('reseller_certificate')
-#
-#         if password != confirmation:
-#             return render(request, 'register.html', {
-#                 'message': 'Passwords must match.',
-#                 'title': 'Register',
-#                 'categories': Category.objects.all()
-#             })
-#
-#         try:
-#             user = User.objects.create_user(username, email, password)
-#             user.company_name = company_name
-#             user.first_name = first_name
-#             user.last_name = last_name
-#             user.phone_number = phone_number
-#
-#             if profile_image:
-#                 profile_image_storage = get_storage_class('myapp.custom_storage_backend.ProfileImageStorage')()
-#                 user.profile_image = profile_image_storage.save(profile_image.name, profile_image)
-#
-#             if company_logo:
-#                 company_logo_storage = get_storage_class('myapp.custom_storage_backend.CompanyLogoStorage')()
-#                 user.company_logo = company_logo_storage.save(company_logo.name, company_logo)
-#
-#             if company_w9:
-#                 w9_storage = get_storage_class('myapp.custom_storage_backend.W9Storage')()
-#                 user.company_w9 = w9_storage.save(company_w9.name, company_w9)
-#
-#             if reseller_certificate:
-#                 reseller_certificate_storage = get_storage_class(
-#                     'myapp.custom_storage_backend.ResellerCertificateStorage')()
-#                 user.reseller_cert = reseller_certificate_storage.save(company_w9.name, company_w9)
-#
-#             # Save the user object to persist changes
-#             user.save()
-#
-#             # Save billing address
-#             Address.objects.create(
-#                 user=user,
-#                 address_type='billing',
-#                 street=billing_street,
-#                 city=billing_city,
-#                 state=billing_state,
-#                 zip_code=billing_zip,
-#                 country=billing_country
-#             )
-#
-#             # Save shipping address
-#             Address.objects.create(
-#                 user=user,
-#                 address_type='shipping',
-#                 street=shipping_street,
-#                 city=shipping_city,
-#                 state=shipping_state,
-#                 zip_code=shipping_zip,
-#                 country=shipping_country
-#             )
-#
-#             # Message Center Info
-#             Message.objects.create(
-#                 message_type='info',
-#                 subject='Message Center Guidelines',
-#                 body='Welcome to our message center, where you can communicate securely with other users and our customer service team. '
-#                      'Please keep in mind that our auctions are blind, so avoid sharing personal or company information during communication.',
-#                 sender=User.objects.get(username='CustomerService'),
-#                 recipient=user,
-#             )
-#
-#             # Welcome Message
-#             Message.objects.create(
-#                 message_type='welcome',
-#                 subject='Welcome to Healthcare Auctions',
-#                 body=f'We’re thrilled to have you as part of our community! At Healthcare Auctions, we aim to make your experience as rewarding and enjoyable as possible. Whether you’re here to browse, bid, or sell, we’re here to support you every step of the way. '
-#                      f'\n\nDon’t hesitate to reach out to our team if you have any questions or need assistance getting started. Happy auctioning!',
-#                 sender=User.objects.get(username='CustomerService'),  # Assuming a system user
-#                 recipient=user,
-#             )
-#
-#             # Welcome Email
-#             send_welcome_email_html(user.email)
-#
-#         except IntegrityError:
-#             return render(request, 'register.html', {
-#                 'message': 'Username already taken.',
-#                 'title': 'Register',
-#             })
-#
-#         login(request, user)
-#         return redirect(reverse('index'))
-#     else:
-#         return render(request, 'register.html', {
-#             'title': 'Register',
-#         })
 
 def register(request):
     if request.method == 'POST':
