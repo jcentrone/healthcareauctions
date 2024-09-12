@@ -105,7 +105,6 @@ class RegistrationForm(forms.Form):
     company_w9 = forms.FileField(required=False, widget=forms.FileInput(attrs={
         'class': 'form-control rounded required',
         'accept': '.pdf,.doc,.docx,.jpg,.png,.jpeg',
-        'required': True,
     }))
     reseller_certificate = forms.FileField(required=False, widget=forms.FileInput(attrs={
         'class': 'form-control rounded',

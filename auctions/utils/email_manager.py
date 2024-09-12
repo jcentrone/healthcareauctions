@@ -44,7 +44,8 @@ def generate_welcome_email(username):
         "<h3 style='font-size: 18px; color: #131C31;'>Your Dashboard</h3>"
         "<p style='font-size: 16px;'>"
         "Your dashboard is your command center, where you can view and track orders, manage your account details, and more. "
-        "Simply log in to get started and take full advantage of the features we’ve designed to make your experience with Healthcare Auctions smooth and efficient."
+        "Simply log in to get started and take full advantage of the features we’ve designed to make your experience with Healthcare Auctions smooth and efficient. "
+        "<a href='www.healtcareauctions.com/dashboard' style='color: #00B2FF;'>View My Dashboard</a>"
         "</p>"
 
         "<h3 style='font-size: 18px; color: #131C31;'>Have Questions?</h3>"
