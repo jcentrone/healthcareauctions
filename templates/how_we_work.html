@@ -15,13 +15,16 @@
         <div class="row">
             <div class="col-md-6">
                 <h2>Our Marketplace</h2>
-                <p>Our platform serves both sellers and buyers with equal dedication. Sellers, often entities with
+                <p class="lh-lg">Our platform serves both sellers and buyers with equal dedication. Sellers, often
+                    entities with
                     excess inventory or products nearing expiration, list their items on our site. We also actively
                     source and add inventory to ensure a wide range of products.</p>
-                <p>Every item listed on Healthcare Auctions comes with our commitment to quality and satisfaction.</p>
+                <p class="lh-lg">Every item listed on Healthcare Auctions comes with our commitment to quality and
+                    satisfaction.</p>
+                <a href="{% url 'active_auctions_view' %}" class="btn btn-primary">View Listings</a>
             </div>
             <div class="col-md-6">
-                <img src="your-marketplace-image.jpg" class="img-fluid" alt="Marketplace">
+                <img src="{% static 'images/marketplace.jpg' %}" class="img-fluid" alt="Marketplace">
             </div>
         </div>
 
@@ -30,7 +33,7 @@
         <div class="row">
             <div class="col-md-6 order-md-2">
                 <h2>What We Do for Sellers</h2>
-                <ul class="list-unstyled">
+                <ul class="list-unstyled lh-lg">
                     <li><strong>Effortless Listing:</strong> Our platform provides an easy-to-use interface that allows
                         you to list your products quickly and efficiently. Your items reach the right audience,
                         maximizing sales potential.
@@ -47,7 +50,7 @@
                 </ul>
             </div>
             <div class="col-md-6 order-md-1">
-                <img src="seller-support-image.jpg" class="img-fluid" alt="Seller Support">
+                <img src="{% static 'images/seller_support.png' %}" class="img-fluid" alt="Seller Support">
             </div>
         </div>
 
@@ -56,7 +59,7 @@
         <div class="row">
             <div class="col-md-6">
                 <h2>What We Do for Buyers</h2>
-                <ul class="list-unstyled">
+                <ul class="list-unstyled lh-lg">
                     <li><strong>Wide Selection:</strong> Browse a diverse range of medical devices and products from
                         trusted sellers. We ensure you have access to the items you need, when you need them.
                     </li>
@@ -67,9 +70,10 @@
                         with sourcing specific items, answering order-related questions, and providing general support.
                     </li>
                 </ul>
+
             </div>
             <div class="col-md-6">
-                <img src="buyer-support-image.jpg" class="img-fluid" alt="Buyer Support">
+                <img src="{% static 'images/customer_support.webp' %}" class="img-fluid" alt="Buyer Support">
             </div>
         </div>
 
@@ -81,11 +85,29 @@
                 business. We coordinate every step of the process—from listing and sourcing to shipping and customer
                 service—ensuring a positive experience for both buyers and sellers.</p>
             <p>Join us today and experience a better way to buy and sell medical devices and products.</p>
+
+            <div class="cta-buttons">
+                <a href="{% url 'register' %}" class="btn btn-primary btn-lg m-2">Register Now</a>
+                <a href="{% url 'active_auctions_view' %}" class="btn btn-secondary btn-lg m-2">Browse Listings</a>
+                <a href="mailto:inquire@healthcareauctions.com" class="btn btn-outline-primary btn-lg m-2">Contact Us</a>
+
+            </div>
         </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.11/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <style>
+        .cta-buttons {
+            margin-top: 20px;
+        }
+
+        .cta-buttons .btn {
+            min-width: 200px;
+        }
+
+    </style>
 
 {% endblock %}

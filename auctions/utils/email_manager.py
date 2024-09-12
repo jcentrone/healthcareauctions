@@ -2,8 +2,6 @@ from django.conf import settings
 from django.core.mail import send_mail
 
 
-
-
 def generate_welcome_email(username):
     welcome_message_text = (
         f"Dear {username},\n\n"
@@ -39,6 +37,8 @@ def generate_welcome_email(username):
         "Our platform bridges the gap between buyers and sellers, providing a marketplace where quality and satisfaction are our top priorities. "
         "Sellers, often with excess inventory or products nearing expiration, list their items with ease, and we ensure they reach the right audience. "
         "As a buyer, you’ll have access to a wide selection of trusted products, with the assurance of worry-free returns and personalized assistance whenever needed."
+        "<a href='www.healtcareauctions.com/auction/active' style='color: #00B2FF;'>View Listings</a>"
+
         "</p>"
 
         "<h3 style='font-size: 18px; color: #131C31;'>Your Dashboard</h3>"
@@ -68,7 +68,7 @@ def generate_welcome_email(username):
     return welcome_message_text, welcome_message_html
 
 
-def send_welcome_email_html(to_email, user_first_Name ):
+def send_welcome_email_html(to_email, user_first_Name):
     welcome_message_text, welcome_message_html = generate_welcome_email(user_first_Name)
 
     subject = 'Welcome to Healthcare Auctions!'
