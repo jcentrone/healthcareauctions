@@ -1593,10 +1593,11 @@ def remove_from_cart(request, item_id):
 @method_decorator(csrf_exempt, name='dispatch')
 def track_auction_view(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
-        auction_id = data.get('auction_id')
-        auction = Auction.objects.get(id=auction_id)
-        AuctionView.objects.create(user=request.user, auction=auction)
+        if request.user.is_authenticated:
+            data = json.loads(request.body)
+            auction_id = data.get('auction_id')
+            auction = Auction.objects.get(id=auction_id)
+            AuctionView.objects.create(user=request.user, auction=auction)
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'fail'}, status=400)
 

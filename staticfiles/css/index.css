@@ -605,12 +605,12 @@ footer .social-media a:hover {
     position: relative;
 }
 
-.registration-nav{
+.registration-nav {
     position: absolute;
     bottom: 15px;
 }
 
-.input-group-text{
+.input-group-text {
     width: 50px;
     display: flex;
     justify-content: center;
@@ -752,6 +752,10 @@ footer .social-media a:hover {
 
     #registration-image-container {
         gap: 20px;
+    }
+
+    #welcome-message {
+        width: 100%;
     }
 }
 

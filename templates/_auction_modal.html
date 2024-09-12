@@ -99,7 +99,7 @@
                                 {% csrf_token %}
                                 <div class="card-body">
                                     <div class='form-group input-group mb-3'>
-                                        <div class='input-group-prepend'>
+                                        <div class='input-group-prepend icon'>
                                                 <span class='input-group-text'>
                                                     <i class='fa fa-user'></i>
                                                 </span>
@@ -109,7 +109,7 @@
                                                autofocus>
                                     </div>
                                     <div class='form-group input-group mb-3'>
-                                        <div class='input-group-prepend'>
+                                        <div class='input-group-prepend icon'>
                                                 <span class='input-group-text'>
                                                     <i class='fa fa-lock'></i>
                                                 </span>
@@ -142,23 +142,25 @@
             </div>
             <div class="modal-footer d-flex justify-content-between">
                 <div>
-                    <!-- Watch Icon -->
-                    <a class='btn btn-secondary mt-auto rounded'
-                       href="{% url 'watchlist_edit' auction.id 'active_auctions_with_id' %}">
-                        {% if auction.is_watched %}
-                            <i class="fa-solid fa-eye-slash"></i>
-                        {% else %}
-                            <i class="fa-regular fa-eye"></i>
-                        {% endif %}
-                    </a>
-                    <!-- Question Mark Icon -->
-                    <button type="button" class="btn btn-outline-primary fs-3"
-                            id="question-icon-{{ auction.id }}"
-                            data-bs-toggle="tooltip" title="Ask a Question">
-                        <i class="fa-solid fa-question-circle"></i>
-                    </button>
-                    <!-- Include the question form -->
-                    {% include '_message_form.html' %}
+                    {% if request.user.is_authenticated %}
+                        <!-- Watch Icon -->
+                        <a class='btn btn-secondary mt-auto rounded'
+                           href="{% url 'watchlist_edit' auction.id 'active_auctions_with_id' %}">
+                            {% if auction.is_watched %}
+                                <i class="fa-solid fa-eye-slash"></i>
+                            {% else %}
+                                <i class="fa-regular fa-eye"></i>
+                            {% endif %}
+                        </a>
+                        <!-- Question Mark Icon -->
+                        <button type="button" class="btn btn-outline-primary fs-3"
+                                id="question-icon-{{ auction.id }}"
+                                data-bs-toggle="tooltip" title="Ask a Question">
+                            <i class="fa-solid fa-question-circle"></i>
+                        </button>
+                        <!-- Include the question form -->
+                        {% include '_message_form.html' %}
+                    {% endif %}
 
                 </div>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -167,3 +169,6 @@
     </div>
 </div>
 
+<script>
+    
+</script>

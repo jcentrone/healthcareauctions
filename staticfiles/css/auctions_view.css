@@ -199,6 +199,30 @@ img.img-thumbnail {
 
 
 @media (max-width: 767.98px) {
+    /* Hide the card body initially when collapsed */
+    .card.collapsed .card-body {
+        display: none;
+    }
+
+    /* Style the card header to indicate it's clickable */
+    .card-header {
+        cursor: pointer;
+        user-select: none;
+    }
+
+    /* Optional: Add an icon to indicate collapsibility */
+    .card-header::after {
+        content: '\f078'; /* FontAwesome down arrow */
+        font-family: 'FontAwesome';
+        float: right;
+        transition: transform 0.3s ease;
+    }
+
+    .card.collapsed .card-header::after {
+        transform: rotate(-90deg); /* Rotate the icon to indicate collapsed state */
+    }
+
+
     .auction-card {
         grid-template-columns: 1fr;
         grid-template-rows: 250px 1fr;
@@ -222,8 +246,8 @@ img.img-thumbnail {
         /*grid-template-columns: 1fr;*/
     }
 
-    .card-body {
-        padding: 0;
+    .icon {
+        display: none;
     }
 
     .bid-form {
@@ -244,8 +268,9 @@ img.img-thumbnail {
         flex-direction: column;
         align-items: flex-end;
     }
+
     #filter-container > .d-md-block.filters.collapse.show,
-    #filter-container > .d-md-block.filters.collapse{
+    #filter-container > .d-md-block.filters.collapse {
         align-self: center;
     }
 

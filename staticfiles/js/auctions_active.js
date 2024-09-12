@@ -151,6 +151,21 @@ function getAdditionalDetails(auctionId) {
         });
 }
 
+document.addEventListener('DOMContentLoaded', function() {
+    const cardHeader = document.querySelector('.card-header');
+    const card = document.querySelector('.card');
+
+    // Check if the screen width is mobile size (767px or less)
+    if (window.innerWidth <= 767) {
+        card.classList.add('collapsed');  // Collapse the card on mobile by default
+    } else {
+        card.classList.remove('collapsed');  // Ensure card is expanded on desktop by default
+    }
+
+    cardHeader.addEventListener('click', function() {
+        card.classList.toggle('collapsed');
+    });
+});
 
 document.addEventListener('DOMContentLoaded', function () {
     // Extract auction ID from the URL
