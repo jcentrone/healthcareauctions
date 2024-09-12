@@ -115,3 +115,66 @@ textarea.form-control {
     resize: vertical;
     height: auto;
 }
+
+
+@media (max-width: 767.98px) {
+    /*#dashboardTabs {*/
+    /*    flex-direction: column !important;*/
+    /*}*/
+
+    /*.row-cols-5>*{*/
+    /*    width: 100%;*/
+    /*}*/
+
+    /* Media query for mobile devices */
+@media (max-width: 767px) {
+    /* Stack nav-tabs vertically on mobile */
+    #dashboardTabs {
+        flex-wrap: wrap;
+        flex-direction: column;
+        row-gap: 10px; /* Add spacing between items */
+    }
+
+    /* Ensure each nav item takes full width */
+    #dashboardTabs .nav-item {
+        width: 100%;
+    }
+
+    /* Adjust button styles */
+    #dashboardTabs .nav-link {
+        width: 100%;
+        padding: 0;
+        margin-bottom: 10px;
+    }
+
+    /* Adjust card styles within nav items */
+    #dashboardTabs .tab-nav {
+        margin: 0;
+        border: none;
+    }
+
+    /* Adjust card header and body */
+    #dashboardTabs .tab-nav .card-header {
+        font-size: 1.2rem;
+        padding: 10px;
+    }
+
+    #dashboardTabs .tab-nav .card-body {
+        padding: 10px;
+    }
+
+    /* Center the text and icons */
+    #dashboardTabs .tab-nav .card-text,
+    #dashboardTabs .tab-nav i {
+        text-align: center;
+        font-size: 1.5rem;
+    }
+
+    /* Remove unnecessary borders */
+    #dashboardTabs .tab-nav {
+        border: none;
+        box-shadow: none;
+    }
+}
+
+}
