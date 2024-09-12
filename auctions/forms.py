@@ -35,54 +35,60 @@ class RegistrationForm(forms.Form):
         'placeholder': 'Company Name',
     }))
     shipping_street = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
-        'class': 'form-control required',
+        'class': 'form-control rounded required',
         'placeholder': 'Street',
         'required': True,
     }))
+    shipping_street_2 = forms.CharField(max_length=255, required=False, widget=forms.TextInput(attrs={
+        'class': 'form-control rounded',
+        'placeholder': 'Street 2',
+    }))
     shipping_city = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
-        'class': 'form-control required',
+        'class': 'form-control rounded required',
         'placeholder': 'City',
         'required': True,
     }))
-    shipping_state = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
-        'class': 'form-control required',
+    shipping_state = forms.ChoiceField(choices=STATE_CHOICES, widget=forms.Select(attrs={
+        'class': 'form-control rounded required',
         'placeholder': 'State',
         'required': True,
     }))
     shipping_zip = forms.CharField(max_length=10, widget=forms.TextInput(attrs={
-        'class': 'form-control required',
+        'class': 'form-control rounded required',
         'placeholder': 'Zip Code',
         'required': True,
     }))
-    shipping_country = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
-        'class': 'form-control required',
+    shipping_country = forms.CharField(max_length=255, required=False, widget=forms.TextInput(attrs={
+        'class': 'form-control rounded required',
         'placeholder': 'Country',
-        'required': True,
     }))
     billing_street = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
-        'class': 'form-control required',
+        'class': 'form-control rounded required',
         'placeholder': 'Street',
         'required': True,
     }))
+    billing_street_2 = forms.CharField(max_length=255, required=False, widget=forms.TextInput(attrs={
+        'class': 'form-control rounded',
+        'placeholder': 'Street 2',
+    }))
     billing_city = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
-        'class': 'form-control required',
+        'class': 'form-control rounded required',
         'placeholder': 'City',
         'required': True,
     }))
-    billing_state = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
-        'class': 'form-control required',
+    billing_state = forms.ChoiceField(choices=STATE_CHOICES, widget=forms.Select(attrs={
+        'class': 'form-control rounded required',
         'placeholder': 'State',
         'required': True,
     }))
     billing_zip = forms.CharField(max_length=10, widget=forms.TextInput(attrs={
-        'class': 'form-control required',
+        'class': 'form-control rounded required',
         'placeholder': 'Zip Code',
         'required': True,
     }))
-    billing_country = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
+    billing_country = forms.CharField(max_length=255, required=False, widget=forms.TextInput(attrs={
         'class': 'form-control required',
         'placeholder': 'Country',
-        'required': True,
     }))
     first_name = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
         'class': 'form-control rounded required',
@@ -102,22 +108,16 @@ class RegistrationForm(forms.Form):
         'autofocus': True,
         'required': True,
     }))
-    company_w9 = forms.FileField(required=False, widget=forms.FileInput(attrs={
+    company_w9 = forms.FileField(widget=forms.FileInput(attrs={
         'class': 'form-control rounded required',
         'accept': '.pdf,.doc,.docx,.jpg,.png,.jpeg',
+        'required': True,
     }))
     reseller_certificate = forms.FileField(required=False, widget=forms.FileInput(attrs={
         'class': 'form-control rounded',
         'accept': '.pdf,.doc,.docx,.jpg,.png,.jpeg',
     }))
-    profile_image = forms.FileField(required=False, widget=forms.FileInput(attrs={
-        'class': 'form-control',
-        'accept': 'image/*',
-    }))
-    company_logo = forms.FileField(required=False, widget=forms.FileInput(attrs={
-        'class': 'form-control',
-        'accept': 'image/*',
-    }))
+
 
 
 class AuctionForm(forms.ModelForm):

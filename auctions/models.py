@@ -138,7 +138,7 @@ class Address(models.Model):
     state = models.CharField(max_length=50, choices=STATE_CHOICES)
     # state = models.CharField(max_length=255)
     zip_code = models.CharField(max_length=10)
-    country = models.CharField(max_length=255)
+    country = models.CharField(max_length=255, default='USA')
     use_as_default_shipping_method_address = models.BooleanField(default=True, null=True, blank=True)
 
     def __str__(self):

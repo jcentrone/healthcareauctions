@@ -11,7 +11,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.views import PasswordChangeView
 from django.contrib.messages import get_messages
-from django.core.files.storage import get_storage_class
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import IntegrityError
 from django.db.models import Q, Case, When, BooleanField, DecimalField, Max, F
@@ -23,6 +22,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
+from config.storage_backends import ProfileImageStorage, CompanyLogoStorage, W9Storage, ResellerCertificateStorage
 from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, ProductDetailFormSet, MessageForm, \
     ShippingMethodForm, ShippingAddressForm, BillingAddressForm, CreditCardForm, ACHForm, ZelleForm, VenmoForm, \
     PayPalForm, CashAppForm, CustomUserChangeForm, UserAddressForm, OrderNoteForm, EditAuctionForm, \
@@ -609,19 +609,19 @@ def register(request):
             phone_number = form.cleaned_data['phone']
 
             billing_street = form.cleaned_data['billing_street']
+            billing_street_2 = form.cleaned_data['billing_street_2']
             billing_city = form.cleaned_data['billing_city']
             billing_state = form.cleaned_data['billing_state']
             billing_zip = form.cleaned_data['billing_zip']
             billing_country = form.cleaned_data['billing_country']
 
             shipping_street = form.cleaned_data['shipping_street']
+            shipping_street_2 = form.cleaned_data['shipping_street_2']
             shipping_city = form.cleaned_data['shipping_city']
             shipping_state = form.cleaned_data['shipping_state']
             shipping_zip = form.cleaned_data['shipping_zip']
             shipping_country = form.cleaned_data['shipping_country']
 
-            profile_image = form.cleaned_data['profile_image']
-            company_logo = form.cleaned_data['company_logo']
             company_w9 = form.cleaned_data['company_w9']
             reseller_certificate = form.cleaned_data['reseller_certificate']
 
@@ -632,22 +632,11 @@ def register(request):
                 user.last_name = last_name
                 user.phone_number = phone_number
 
-                if profile_image:
-                    profile_image_storage = get_storage_class('myapp.custom_storage_backend.ProfileImageStorage')()
-                    user.profile_image = profile_image_storage.save(profile_image.name, profile_image)
-
-                if company_logo:
-                    company_logo_storage = get_storage_class('myapp.custom_storage_backend.CompanyLogoStorage')()
-                    user.company_logo = company_logo_storage.save(company_logo.name, company_logo)
-
                 if company_w9:
-                    w9_storage = get_storage_class('myapp.custom_storage_backend.W9Storage')()
-                    user.company_w9 = w9_storage.save(company_w9.name, company_w9)
+                    user.company_w9 = W9Storage().save(company_w9.name, company_w9)
 
                 if reseller_certificate:
-                    reseller_certificate_storage = get_storage_class(
-                        'myapp.custom_storage_backend.ResellerCertificateStorage')()
-                    user.reseller_cert = reseller_certificate_storage.save(reseller_certificate.name,
+                    user.reseller_cert = ResellerCertificateStorage().save(reseller_certificate.name,
                                                                            reseller_certificate)
 
                 # Save the user object to persist changes
@@ -658,6 +647,7 @@ def register(request):
                     user=user,
                     address_type='billing',
                     street=billing_street,
+                    suite=shipping_street_2,
                     city=billing_city,
                     state=billing_state,
                     zip_code=billing_zip,
@@ -669,6 +659,7 @@ def register(request):
                     user=user,
                     address_type='shipping',
                     street=shipping_street,
+                    suite=billing_street_2,
                     city=shipping_city,
                     state=shipping_state,
                     zip_code=shipping_zip,
@@ -708,6 +699,7 @@ def register(request):
             login(request, user)
             return redirect(reverse('index'))
         else:
+            print(form.errors)
             return render(request, 'register.html', {
                 'form': form,
                 'title': 'Register',
@@ -931,7 +923,8 @@ def active_auctions_view(request, auction_id=None):
         try:
             specific_auction = Auction.objects.get(id=auction_id, active=True)
             specific_auction.image = specific_auction.get_images.first()
-            specific_auction.is_watched = request.user.is_authenticated and request.user in specific_auction.watchers.all()
+            if request.user.is_authenticated:
+                specific_auction.is_watched = request.user in specific_auction.watchers.all()
             auctions = auctions.exclude(id=auction_id)  # Exclude the specific auction from the queryset
         except Auction.DoesNotExist:
             pass
@@ -999,19 +992,17 @@ def active_auctions_view(request, auction_id=None):
             Q(product_name__icontains=search_query) |
             Q(gmdnPTDefinition__icontains=search_query) |
             Q(manufacturer__icontains=search_query) |
-            Q(product_details__reference_number__icontains=search_query) |  # Correct usage
-            Q(product_details__sku__icontains=search_query) |  # Correct usage
-            Q(product_details__lot_number__icontains=search_query)  # Correct usage
-            # Q(category_name__icontains=search_query) |
-
+            Q(product_details__reference_number__icontains=search_query) |
+            Q(product_details__sku__icontains=search_query) |
+            Q(product_details__lot_number__icontains=search_query)
         )
 
     # Add additional fields to auctions
-    # if request.user.is_authenticated:
     for auction in auctions:
         auction.image = auction.get_images.first()
-        auction.is_watched = request.user in auction.watchers.all()
-        auction.message_form = MessageForm(initial={'subject': f'Question about {auction.title}'})
+        if request.user.is_authenticated:
+            auction.is_watched = request.user in auction.watchers.all()
+            auction.message_form = MessageForm(initial={'subject': f'Question about {auction.title}'})
 
     # Pagination
     paginator = Paginator(auctions, 10)
@@ -1027,9 +1018,8 @@ def active_auctions_view(request, auction_id=None):
     if specific_auction:
         auctions_list = [specific_auction] + auctions_list
 
-    # print(specific_auction)
-
-    return render(request, 'auctions_active.html', {
+    # Context for the template
+    context = {
         'auctions': auctions_list,
         'search_query': search_query,
         'bid_form': BidForm(),
@@ -1044,8 +1034,13 @@ def active_auctions_view(request, auction_id=None):
         'manufacturer_filter': manufacturer_filter,
         'my_auctions': my_auctions,
         'expired_filter': expired_filter,
-        'has_active_auctions': Auction.objects.filter(creator=request.user, active=True).exists(),
-    })
+    }
+
+    # Add authenticated-specific context
+    if request.user.is_authenticated:
+        context['has_active_auctions'] = Auction.objects.filter(creator=request.user, active=True).exists()
+
+    return render(request, 'auctions_active.html', context)
 
 
 def get_auction_images(request, auction_id):
