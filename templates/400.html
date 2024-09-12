@@ -1,0 +1,15 @@
+{% extends 'new_base.html' %}
+{% load static %}
+{% block title %}Auctions | {{ title }} {% endblock %}
+
+
+
+{% block body %}
+    <div class="error-container">
+        <h1>400 - Bad Request</h1>
+        <p>Your browser sent a request that this server could not understand.</p>
+        <a href="{% url 'index' %}">Go back to homepage</a>
+    </div>
+    
+
+{% endblock %}

@@ -1,36 +1,93 @@
-
-
 Dynamsoft.License.LicenseManager.initLicense("DLS2eyJoYW5kc2hha2VDb2RlIjoiMTAzMDA4ODA4LTEwMzIwMTcyMCIsIm1haW5TZXJ2ZXJVUkwiOiJodHRwczovL21sdHMuZHluYW1zb2Z0LmNvbS8iLCJvcmdhbml6YXRpb25JRCI6IjEwMzAwODgwOCIsInN0YW5kYnlTZXJ2ZXJVUkwiOiJodHRwczovL3NsdHMuZHluYW1zb2Z0LmNvbS8iLCJjaGVja0NvZGUiOjg3Njc1NzAyNn0=");
 Dynamsoft.Core.CoreModule.loadWasm(["dbr"]);
 
-(async () => {
-    let cvRouter = await Dynamsoft.CVR.CaptureVisionRouter.createInstance();
-    let cameraView = await Dynamsoft.DCE.CameraView.createInstance(document.getElementById('camera-view-container'));
-    let cameraEnhancer = await Dynamsoft.DCE.CameraEnhancer.createInstance(cameraView);
+// (async () => {
+//     let cvRouter = await Dynamsoft.CVR.CaptureVisionRouter.createInstance();
+//     let cameraView = await Dynamsoft.DCE.CameraView.createInstance(document.getElementById('camera-view-container'));
+//     let cameraEnhancer = await Dynamsoft.DCE.CameraEnhancer.createInstance(cameraView);
+//
+//     cvRouter.setInput(cameraEnhancer);
+//
+//     const dceSelCamera = cameraView.getUIElement('dce-sel-camera');
+//
+//     console.log(dceSelCamera);
+//     dceSelCamera.classList.add('dropdowm');
+//
+//     cvRouter.addResultReceiver({
+//         onDecodedBarcodesReceived: (result) => {
+//             processDetectedBarcode(result);
+//         }
+//     });
+//
+//     let filter = new Dynamsoft.Utility.MultiFrameResultCrossFilter();
+//     filter.enableResultCrossVerification("barcode", true);
+//     filter.enableResultDeduplication("barcode", true);
+//     await cvRouter.addResultFilter(filter);
+//
+//     await cameraEnhancer.open();
+//     await cvRouter.startCapturing("ReadBarcodes_Balance");
+//
+//     // console.log(cameraView.getUIElement());
+// })();
 
-    cvRouter.setInput(cameraEnhancer);
+// Declare variables outside the function if you need to access them elsewhere
+let cvRouter;
+let cameraView;
+let cameraEnhancer;
+let scannerInitialized = false;
 
-    const dceSelCamera = cameraView.getUIElement('dce-sel-camera') ;
+async function initScanner() {
+    if (scannerInitialized) {
+        console.log('Scanner is already initialized.');
+        return;
+    }
+    scannerInitialized = true;
 
-    console.log(dceSelCamera);
-    dceSelCamera.classList.add('dropdowm');
+    try {
+        cvRouter = await Dynamsoft.CVR.CaptureVisionRouter.createInstance();
+        cameraView = await Dynamsoft.DCE.CameraView.createInstance(document.getElementById('camera-view-container'));
+        cameraEnhancer = await Dynamsoft.DCE.CameraEnhancer.createInstance(cameraView);
 
-    cvRouter.addResultReceiver({
-        onDecodedBarcodesReceived: (result) => {
-            processDetectedBarcode(result);
+        cvRouter.setInput(cameraEnhancer);
+
+        const dceSelCamera = cameraView.getUIElement('dce-sel-camera');
+
+        console.log(dceSelCamera);
+        dceSelCamera.classList.add('dropdown'); // Corrected 'dropdowm' to 'dropdown'
+
+        cvRouter.addResultReceiver({
+            onDecodedBarcodesReceived: (result) => {
+                processDetectedBarcode(result);
+            }
+        });
+
+        let filter = new Dynamsoft.Utility.MultiFrameResultCrossFilter();
+        filter.enableResultCrossVerification("barcode", true);
+        filter.enableResultDeduplication("barcode", true);
+        await cvRouter.addResultFilter(filter);
+
+        await cameraEnhancer.open();
+        await cvRouter.startCapturing("ReadBarcodes_Balance");
+
+        // console.log(cameraView.getUIElement());
+    } catch (error) {
+        console.error('Error initializing scanner:', error);
+    }
+}
+
+async function stopScanner() {
+    try {
+        if (cvRouter) {
+            await cvRouter.stopCapturing();
         }
-    });
+        if (cameraEnhancer) {
+            await cameraEnhancer.close();
+        }
+    } catch (error) {
+        console.error('Error stopping scanner:', error);
+    }
+}
 
-    let filter = new Dynamsoft.Utility.MultiFrameResultCrossFilter();
-    filter.enableResultCrossVerification("barcode", true);
-    filter.enableResultDeduplication("barcode", true);
-    await cvRouter.addResultFilter(filter);
-
-    await cameraEnhancer.open();
-    await cvRouter.startCapturing("ReadBarcodes_Balance");
-
-    // console.log(cameraView.getUIElement());
-})();
 
 function processDetectedBarcode(result) {
     console.log(result);
@@ -52,19 +109,19 @@ function triggerHapticFeedback() {
 }
 
 const aiOptions = [
-    { label: 'GTIN/UDI', value: '01' },
-    { label: 'Lot Number', value: '10' },
-    { label: 'Production Date', value: '11' },
-    { label: 'Expiration Date', value: '17' },
-    { label: 'Reference Number', value: 'ref' },
-    { label: 'Package Qty', value: '30' },
-    { label: 'Not Needed', value: 'unknown' }
+    {label: 'GTIN/UDI', value: '01'},
+    {label: 'Lot Number', value: '10'},
+    {label: 'Production Date', value: '11'},
+    {label: 'Expiration Date', value: '17'},
+    {label: 'Reference Number', value: 'ref'},
+    {label: 'Package Qty', value: '30'},
+    {label: 'Not Needed', value: 'unknown'}
 ];
 
 function displayDetectedBarcode(code, parsedResult) {
     const barcodeResults = document.getElementById('barcode-results');
-    const existingSelections = new Set(); // To track already added values
-
+    const existingSelections = new Set();
+    console.log(parsedResult);
     // Collect existing selections to avoid duplicates
     const existingRows = barcodeResults.querySelectorAll('.mapping-row');
     existingRows.forEach(row => {
@@ -75,11 +132,20 @@ function displayDetectedBarcode(code, parsedResult) {
     const resultDiv = document.createElement('div');
     resultDiv.id = 'mapping-table';
 
-    for (const [key, value] of Object.entries(parsedResult)) {
-        const matchingOption = aiOptions.find(option => option.label === key);
-        if (matchingOption && !existingSelections.has(matchingOption.value)) {
-            // If the option is not a duplicate, proceed with adding the row
+    // Create a mapping from lowercased labels to options for easier matching
+    const aiOptionsMap = {};
+    aiOptions.forEach(option => {
+        aiOptionsMap[option.label.toLowerCase()] = option;
+    });
 
+    for (const [key, value] of Object.entries(parsedResult)) {
+        // Normalize the key for matching
+        const normalizedKey = key.trim().toLowerCase();
+
+        // Find the matching option
+        const matchingOption = aiOptionsMap[normalizedKey];
+
+        if (matchingOption && !existingSelections.has(matchingOption.value)) {
             const row = document.createElement('div');
             row.classList.add('mapping-row');
 
@@ -92,7 +158,7 @@ function displayDetectedBarcode(code, parsedResult) {
                 const opt = document.createElement('option');
                 opt.value = option.value;
                 opt.innerText = option.label;
-                if (option.label === key) {
+                if (option.value === matchingOption.value) {
                     opt.selected = true;
                     existingSelections.add(option.value); // Add to the set of selected values
                 }
@@ -107,18 +173,22 @@ function displayDetectedBarcode(code, parsedResult) {
 
             const rightCell = document.createElement('div');
             rightCell.classList.add('mapping-cell');
-            rightCell.innerText = (key === 'Production Date' || key === 'Expiration Date') ? convertDate(value) : value;
+            rightCell.innerText = (normalizedKey === 'production date' || normalizedKey === 'expiration date') ? convertDate(value) : value;
 
             row.appendChild(leftCell);
             row.appendChild(arrowCell);
             row.appendChild(rightCell);
 
             resultDiv.appendChild(row);
+        } else {
+            // If there's no matching option, you can decide whether to display it or not
+            console.warn(`No matching option found for key: ${key}`);
         }
     }
 
     barcodeResults.appendChild(resultDiv);
 }
+
 
 // function displayDetectedBarcode(code, parsedResult) {
 //     const barcodeResults = document.getElementById('barcode-results');
@@ -171,8 +241,8 @@ function parseGS1Barcode(code) {
 
     const aiMap = {
         '00': 'SSCC',
-        '01': 'GTIN',
-        '10': 'Batch or Lot Number',
+        '01': 'GTIN/UDI',
+        '10': 'Lot Number',
         '11': 'Production Date',
         '17': 'Expiration Date',
         '21': 'Serial Number',

@@ -323,6 +323,7 @@ function closeModal() {
     moveElement('listingTypeContainer', 'sku-container');
     document.getElementById('sku-intro').setAttribute('hidden', 'hidden');
     // document.getElementById('sku-intro').style.display = 'none';
+
 }
 
 // Function to handle actions within the modal
@@ -464,6 +465,8 @@ document.querySelectorAll('[id^="scanButton-"]').forEach(button => {
 // Event listener for the Save button
 document.getElementById('closeScanModal').addEventListener('click', function () {
     transferDataToAuctionForm();
+    $('#scanModal').modal('hide');
+    stopScanner();
 
 });
 
@@ -544,19 +547,34 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+
+
 // Is mobile Device
+// Function to check if the device is mobile
+function isMobileDevice() {
+    return /Mobi|Android/i.test(navigator.userAgent);
+}
+
+// DOMContentLoaded event listener
 document.addEventListener("DOMContentLoaded", function () {
-    function isMobileDevice() {
-        return /Mobi|Android/i.test(navigator.userAgent);
-    }
-
     if (isMobileDevice()) {
+        // Show elements meant only for mobile devices
         document.querySelectorAll('.mobile-only').forEach(function (element) {
-            element.setAttribute('style', 'display: block !important;');
-            document.getElementById('scanModal').style.display = 'block';
-            closeModal();
+            element.style.display = 'block';
+        });
 
+        // If you have a modal to display, you can show it here
+        // For example, if you have a modal with id 'scanModal':
+        document.getElementById('scanModal').style.display = 'block';
 
+        // Automatically start the scanner
+        initScanner().catch(err => {
+            console.error('Failed to initialize scanner:', err);
+        });
+    } else {
+        // Hide mobile-only elements on non-mobile devices
+        document.querySelectorAll('.mobile-only').forEach(function (element) {
+            element.style.display = 'none';
         });
     }
 });
@@ -932,52 +950,52 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-document.addEventListener('DOMContentLoaded', function () {
-    const formsetContainer = document.getElementById('product-detail-formset');
-    const addButton = document.getElementById('add-product-detail');
-    const totalFormsInput = document.querySelector('#id_form-TOTAL_FORMS');
-    let formCount = parseInt(totalFormsInput.value);
-
-    const parentElement = document.querySelector('[data-form-index="0"]');
-    // const childElement = parentElement.querySelector('.remove-form-row');
-    // childElement.style.opacity = '0';
-
-    addButton.addEventListener('click', function () {
-        const newForm = formsetContainer.querySelector('.product-detail-form').cloneNode(true);
-        const formRegex = RegExp(`form-(\\d){1}-`, 'g');
-        newForm.innerHTML = newForm.innerHTML.replace(formRegex, `form-${formCount}-`);
-        newForm.setAttribute('data-form-index', formCount);
-
-        // Clear the input values
-        Array.from(newForm.querySelectorAll('input')).forEach(input => {
-            input.value = '';
-        });
-
-
-        // Append the new form and update the form count
-        formsetContainer.appendChild(newForm);
-        formCount++;
-        totalFormsInput.value = formCount;
-
-        // Add event listener to the remove button of the new form
-        const removeButton = newForm.querySelector('.remove-form-row');
-        removeButton.style.opacity = '1';
-        removeButton.addEventListener('click', function () {
-            newForm.remove();
-            formCount--;
-            totalFormsInput.value = formCount;
-        });
-    });
-
-    // Attach remove event to initial forms
-    document.querySelectorAll('.remove-form-row').forEach(button => {
-        button.addEventListener('click', function (event) {
-            event.target.closest('.product-detail-form').remove();
-            formCount--;
-            totalFormsInput.value = formCount;
-        });
-    });
-});
+// document.addEventListener('DOMContentLoaded', function () {
+//     const formsetContainer = document.getElementById('product-detail-formset');
+//     const addButton = document.getElementById('add-product-detail');
+//     const totalFormsInput = document.querySelector('#id_form-TOTAL_FORMS');
+//     let formCount = parseInt(totalFormsInput.value);
+//
+//     const parentElement = document.querySelector('[data-form-index="0"]');
+//     // const childElement = parentElement.querySelector('.remove-form-row');
+//     // childElement.style.opacity = '0';
+//
+//     addButton.addEventListener('click', function () {
+//         const newForm = formsetContainer.querySelector('.product-detail-form').cloneNode(true);
+//         const formRegex = RegExp(`form-(\\d){1}-`, 'g');
+//         newForm.innerHTML = newForm.innerHTML.replace(formRegex, `form-${formCount}-`);
+//         newForm.setAttribute('data-form-index', formCount);
+//
+//         // Clear the input values
+//         Array.from(newForm.querySelectorAll('input')).forEach(input => {
+//             input.value = '';
+//         });
+//
+//
+//         // Append the new form and update the form count
+//         formsetContainer.appendChild(newForm);
+//         formCount++;
+//         totalFormsInput.value = formCount;
+//
+//         // Add event listener to the remove button of the new form
+//         const removeButton = newForm.querySelector('.remove-form-row');
+//         removeButton.style.opacity = '1';
+//         removeButton.addEventListener('click', function () {
+//             newForm.remove();
+//             formCount--;
+//             totalFormsInput.value = formCount;
+//         });
+//     });
+//
+//     // Attach remove event to initial forms
+//     document.querySelectorAll('.remove-form-row').forEach(button => {
+//         button.addEventListener('click', function (event) {
+//             event.target.closest('.product-detail-form').remove();
+//             formCount--;
+//             totalFormsInput.value = formCount;
+//         });
+//     });
+// });
 
 document.getElementById('id_form-0-reference_number').addEventListener('input', function () {
     const referenceNumber = this.value;
