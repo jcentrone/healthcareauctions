@@ -2,6 +2,7 @@ import json
 import logging
 import random
 import re
+import tempfile
 from datetime import timedelta
 
 import openpyxl
@@ -11,16 +12,19 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.views import PasswordChangeView
 from django.contrib.messages import get_messages
+from django.core.mail import EmailMessage
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import IntegrityError
 from django.db.models import Q, Case, When, BooleanField, DecimalField, Max, F
 from django.forms import model_to_dict
 from django.http import JsonResponse, FileResponse, HttpResponse
+from django.template.loader import render_to_string
 from django.urls import reverse_lazy, reverse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from weasyprint import HTML
 
 from config.storage_backends import W9Storage, ResellerCertificateStorage
 from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, ProductDetailFormSet, MessageForm, \
@@ -1535,6 +1539,24 @@ def checkout(request):
             order_data['shipping_address'] = model_to_dict(shipping_address)
             order_data['billing_address'] = model_to_dict(billing_address)
             order_data['email'] = request.user.email
+
+            # Generate Order PDF for Email
+            html_string = render_to_string('order_confirmation_pdf.html', {
+                'order': order,
+                'shipping_address': shipping_address,
+                'billing_address': billing_address,
+            })
+
+            # Create a temporary file to save the PDF
+            with tempfile.NamedTemporaryFile(delete=True, suffix='.pdf') as output:
+                HTML(string=html_string).write_pdf(output.name)
+
+                # Send the email with the PDF attached
+                subject = f'Order Confirmation - Order #{order.id}'
+                message = 'Thank you for your order! Please find the order confirmation attached.'
+                email = EmailMessage(subject, message, to=[request.user.email])
+                email.attach(f'order_{order.id}.pdf', output.read(), 'application/pdf')
+                email.send()
 
             return JsonResponse({'status': 'success', 'order': order_data})
 

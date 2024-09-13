@@ -66,3 +66,8 @@ def expired_filter_label(value):
         'not_expired': 'In Date Items',
     }
     return labels.get(value, 'All Items')
+
+
+@register.filter
+def mul(value, arg):
+    return float(value) * float(arg)

@@ -1,0 +1,113 @@
+{% load custom_filters %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Order Confirmation - Order #{{ order.id }}</title>
+    <style>
+        /* Add your CSS styling here */
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .header {
+            text-align: center;
+        }
+
+        .order-details {
+            margin: 20px 0;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .items-table th, .items-table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+        }
+
+        .items-table th {
+            background-color: #f2f2f2;
+        }
+
+        .total {
+            text-align: right;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>Order Confirmation</h1>
+    <p>Order #{{ order.id }}</p>
+</div>
+
+<div class="order-details">
+    <h2>Order Details</h2>
+    <p><strong>Date:</strong> {{ order.created_at }}</p>
+    <p><strong>Email:</strong> {{ order.user.email }}</p>
+</div>
+
+<div class="shipping-address">
+    <h2>Shipping Address</h2>
+    <p>
+        {{ shipping_address.full_name }}<br>
+        {{ shipping_address.company_name }}<br>
+        {{ shipping_address.street_address }}<br>
+        {% if shipping_address.apartment_suite %}
+            {{ shipping_address.apartment_suite }}<br>
+        {% endif %}
+        {{ shipping_address.city }}, {{ shipping_address.state }} {{ shipping_address.zip_code }}<br>
+        {{ shipping_address.country }}
+    </p>
+</div>
+
+<div class="billing-address">
+    <h2>Billing Address</h2>
+    <p>
+        {{ billing_address.full_name }}<br>
+        {{ billing_address.company_name }}<br>
+        {{ billing_address.street_address }}<br>
+        {% if billing_address.apartment_suite %}
+            {{ billing_address.apartment_suite }}<br>
+        {% endif %}
+        {{ billing_address.city }}, {{ billing_address.state }} {{ billing_address.zip_code }}<br>
+        {{ billing_address.country }}
+    </p>
+</div>
+
+<div class="order-items">
+    <h2>Items</h2>
+    <table class="items-table">
+        <thead>
+        <tr>
+            <th>Item</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Total</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for item in order.items.all %}
+            <tr>
+                <td>{{ item.auction.title }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>${{ item.price }}</td>
+                <td>${{ item.quantity|mul:item.price }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="total">
+    <p><strong>Subtotal:</strong> ${{ order.total_amount }}</p>
+    <p><strong>Sales Tax:</strong> ${{ order.tax_amount }}</p>
+    <p><strong>Shipping:</strong> ${{ order.shipping_amount }}</p>
+    <p><strong>Total:</strong> ${{ order.total_amount + order.tax_amount + order.shipping_amount }}</p>
+</div>
+</body>
+</html>
