@@ -909,6 +909,8 @@ def active_auctions_view(request, auction_id=None):
         'manufacturer_filter': manufacturer_filter,
         'my_auctions': my_auctions,
         'expired_filter': expired_filter,
+        'auction_type': auction_type,
+
     }
 
     # Add authenticated-specific context
@@ -1033,30 +1035,30 @@ def watchlist_edit(request, auction_id, reverse_method):
 
 
 # Should be able to remove
-def auction_details_view(request, auction_id):
-    """
-    It renders a page that displays the details of a selected auction
-    """
-    if not request.user.is_authenticated:
-        return HttpResponseRedirect(reverse('login'))
-
-    auction = Auction.objects.get(id=auction_id)
-
-    if request.user in auction.watchers.all():
-        auction.is_watched = True
-    else:
-        auction.is_watched = False
-
-    return render(request, 'auction.html', {
-        'categories': Category.objects.all(),
-        'auction': auction,
-        'images': auction.get_images.all(),
-        'bid_form': BidForm(),
-        'buy_it_now_form': AddToCartForm(),
-        'comments': auction.get_comments.all(),
-        'comment_form': CommentForm(),
-        'title': 'Auction'
-    })
+# def auction_details_view(request, auction_id):
+#     """
+#     It renders a page that displays the details of a selected auction
+#     """
+#     if not request.user.is_authenticated:
+#         return HttpResponseRedirect(reverse('login'))
+#
+#     auction = Auction.objects.get(id=auction_id)
+#
+#     if request.user in auction.watchers.all():
+#         auction.is_watched = True
+#     else:
+#         auction.is_watched = False
+#
+#     return render(request, 'auction.html', {
+#         'categories': Category.objects.all(),
+#         'auction': auction,
+#         'images': auction.get_images.all(),
+#         'bid_form': BidForm(),
+#         'buy_it_now_form': AddToCartForm(),
+#         'comments': auction.get_comments.all(),
+#         'comment_form': CommentForm(),
+#         'title': 'Auction'
+#     })
 
 
 def privacy_policy(request):

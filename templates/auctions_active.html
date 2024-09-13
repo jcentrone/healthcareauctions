@@ -73,7 +73,8 @@
                         <form id="auction-filter-form" method="get" class="form-inline">
                             <!-- Filter By Time -->
                             <div class="form-group mb-2">
-                                <h6>Filter By: Ending Days</h6>
+                                <h6 class="text-capitalize">Filter By:
+                                    {% if time_filter %}{{ time_filter }}{% else %}Ending Days{% endif %}</h6>
                                 <div class="dropdown">
                                     <button class="btn border dropdown-toggle d-flex align-items-center justify-content-between"
                                             type="button" id="time-filter"
@@ -95,26 +96,35 @@
                             </div>
                             <!-- Sort By -->
                             <div class="form-group mb-2">
-                                <h6>Sort By</h6>
+                                <h6>Sort By: {{ sort_by|sort_by_label }}</h6>
                                 <div class="dropdown">
                                     <button class="btn border dropdown-toggle d-flex align-items-center justify-content-between"
                                             type="button" id="sort-by"
                                             data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        Best Match
+                                        {{ sort_by|sort_by_label }}
                                     </button>
                                     <div class="dropdown-menu" aria-labelledby="sort-by">
-                                        <a class="dropdown-item" href="#" data-value="">Best Match</a>
-                                        <a class="dropdown-item" href="#" data-value="ending_soonest">Ending Soonest</a>
-                                        <a class="dropdown-item" href="#" data-value="newly_listed">Newly Listed</a>
-                                        <a class="dropdown-item" href="#" data-value="price_highest">Price Highest</a>
-                                        <a class="dropdown-item" href="#" data-value="price_lowest">Price Lowest</a>
-                                        <a class="dropdown-item" href="#" data-value="fewest_bids">Fewest Bids</a>
-                                        <a class="dropdown-item" href="#" data-value="most_bids">Most Bids</a>
+                                        <a class="dropdown-item {% if sort_by == '' %}active{% endif %}" href="#"
+                                           data-value="">Best Match</a>
+                                        <a class="dropdown-item {% if sort_by == 'ending_soonest' %}active{% endif %}"
+                                           href="#" data-value="ending_soonest">Ending Soonest</a>
+                                        <a class="dropdown-item {% if sort_by == 'newly_listed' %}active{% endif %}"
+                                           href="#" data-value="newly_listed">Newly Listed</a>
+                                        <a class="dropdown-item {% if sort_by == 'price_highest' %}active{% endif %}"
+                                           href="#" data-value="price_highest">Price Highest</a>
+                                        <a class="dropdown-item {% if sort_by == 'price_lowest' %}active{% endif %}"
+                                           href="#" data-value="price_lowest">Price Lowest</a>
+                                        <a class="dropdown-item {% if sort_by == 'fewest_bids' %}active{% endif %}"
+                                           href="#" data-value="fewest_bids">Fewest Bids</a>
+                                        <a class="dropdown-item {% if sort_by == 'most_bids' %}active{% endif %}"
+                                           href="#" data-value="most_bids">Most Bids</a>
                                         <a class="dropdown-item" href="#" data-value="">Reset</a>
                                     </div>
                                 </div>
                                 <input type="hidden" name="sort_by" id="sort-by-value">
                             </div>
+
+
                             <!-- Manufacturer Filter -->
                             <div class="form-group mb-2">
                                 <h6>Select Manufacturer</h6>
@@ -122,12 +132,18 @@
                                     <button class="btn border dropdown-toggle d-flex align-items-center justify-content-between"
                                             type="button" id="mfg-filter"
                                             data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        Select Manufacturer
+                                        {% if manufacturer_filter %}
+                                            {{ manufacturer_filter }}
+                                        {% else %}
+                                            Select Manufacturer
+                                        {% endif %}
                                     </button>
                                     <div class="dropdown-menu" aria-labelledby="mfg-filter">
-                                        <a class="dropdown-item" href="#" data-value="">Select Manufacturer</a>
+                                        <a class="dropdown-item {% if mfg_filter == '' %}active{% endif %}" href="#"
+                                           data-value="">Select Manufacturer</a>
                                         {% for manufacturer in unique_manufacturers %}
-                                            <a class="dropdown-item" href="#"
+                                            <a class="dropdown-item {% if manufacturer_filter == manufacturer %}active{% endif %}"
+                                               href="#"
                                                data-value="{{ manufacturer }}">{{ manufacturer }}</a>
                                         {% endfor %}
                                         <a class="dropdown-item" href="#" data-value="">Reset</a>
@@ -135,40 +151,49 @@
                                 </div>
                                 <input type="hidden" name="mfg_filter" id="mfg-filter-value">
                             </div>
+
                             <!-- Auction Type Filter -->
                             <div class="form-group mb-2">
-                                <h6>Listing Type</h6>
+                                <h6>Listing Type: {{ auction_type|auction_type_label }}</h6>
                                 <div class="dropdown">
                                     <button class="btn border dropdown-toggle d-flex align-items-center justify-content-between"
                                             type="button" id="auction-type"
                                             data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        Listing Type
+                                        {{ auction_type|auction_type_label }}
                                     </button>
                                     <div class="dropdown-menu" aria-labelledby="auction-type">
-                                        <a class="dropdown-item" href="#" data-value="">All</a>
-                                        <a class="dropdown-item" href="#" data-value="Auction">Auction</a>
-                                        <a class="dropdown-item" href="#" data-value="Sale">Get It Now</a>
+                                        <a class="dropdown-item {% if auction_type == '' %}active{% endif %}" href="#"
+                                           data-value="">All</a>
+                                        <a class="dropdown-item {% if auction_type == 'Auction' %}active{% endif %}"
+                                           href="#" data-value="Auction">Auction</a>
+                                        <a class="dropdown-item {% if auction_type == 'Sale' %}active{% endif %}"
+                                           href="#" data-value="Sale">Get It Now</a>
                                     </div>
                                 </div>
                                 <input type="hidden" name="auction_type" id="auction-type-value">
                             </div>
+
                             <!-- Filter By Expired Items -->
                             <div class="form-group mb-2">
-                                <h6>Filter By: Expiration</h6>
+                                <h6>Expiration: {{ expired_filter|expired_filter_label }}</h6>
                                 <div class="dropdown">
                                     <button class="btn border dropdown-toggle d-flex align-items-center justify-content-between"
                                             type="button" id="expired-filter"
                                             data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        All Items
+                                        {{ expired_filter|expired_filter_label }}
                                     </button>
                                     <div class="dropdown-menu" aria-labelledby="expired-filter">
-                                        <a class="dropdown-item" href="#" data-value="">All Items</a>
-                                        <a class="dropdown-item" href="#" data-value="expired">Expired Items</a>
-                                        <a class="dropdown-item" href="#" data-value="not_expired">In Date Items</a>
+                                        <a class="dropdown-item {% if expired_filter == '' %}active{% endif %}" href="#"
+                                           data-value="">All Items</a>
+                                        <a class="dropdown-item {% if expired_filter == 'expired' %}active{% endif %}"
+                                           href="#" data-value="expired">Expired Items</a>
+                                        <a class="dropdown-item {% if expired_filter == 'not_expired' %}active{% endif %}"
+                                           href="#" data-value="not_expired">In Date Items</a>
                                     </div>
                                 </div>
                                 <input type="hidden" name="expired_filter" id="expired-filter-value">
                             </div>
+
                             <!-- My Listings Checkbox -->
                             {% if user.is_authenticated and has_active_auctions %}
                                 <div class="form-group mb-2">
@@ -192,7 +217,7 @@
                     <div class='col align-items-center'>
                         {% for auction in pages %}
                             {% include '_auction_listing.html' %}
-                         
+
                         {% endfor %}
 
 
@@ -248,7 +273,7 @@
         {% include '_auction_modal.html' %}
     {% endfor %}
 
-    
+
     <div id="zoomed-img-container"></div>
 
     <link href='{% static "css/auctions_view.css" %}' rel='stylesheet'>
