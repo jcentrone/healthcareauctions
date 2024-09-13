@@ -328,11 +328,11 @@
                                                                 accurate and saves you time by pre-filling key details.
                                                                 You can review and edit the information as needed before
                                                                 finalizing your auction. </p>
-                                                            <label for="{{ form.sku.id_for_label }}"
+                                                            <label for="{{ form.sku.auto_id }}"
                                                                    class="form-label">GTIN/SKU</label>
                                                             <input type="text"
-                                                                   name="{{ form.sku.name }}"
-                                                                   id="{{ form.sku.id_for_label }}"
+                                                                   name="{{ form.sku.html_name }}"
+                                                                   id="{{ form.sku.auto_id }}"
                                                                    value="{{ form.sku.value|default_if_none:'' }}"
                                                                    class="form-control sku-input"
                                                                    required>
@@ -343,11 +343,11 @@
                                                         </div>
                                                         <!-- Column 2 -->
                                                         <div class="form-group bid-scan-item">
-                                                            <label for="{{ form.reference_number.id_for_label }}"
-                                                                   class="form-label uppercase">Reference Number</label>
+                                                            <label for="{{ form.reference_number.auto_id }}"
+                                                                   class="form-label">Reference Number</label>
                                                             <input type="text"
-                                                                   name="{{ form.reference_number.name }}"
-                                                                   id="{{ form.reference_number.id_for_label }}"
+                                                                   name="{{ form.reference_number.html_name }}"
+                                                                   id="{{ form.reference_number.auto_id }}"
                                                                    value="{{ form.reference_number.value|default_if_none:'' }}"
                                                                    class="form-control"
                                                                    required>
@@ -358,11 +358,11 @@
                                                         </div>
                                                         <!-- Column 3 -->
                                                         <div class="form-group bid-scan-item">
-                                                            <label for="{{ form.lot_number.id_for_label }}"
-                                                                   class="form-label uppercase">Lot Number</label>
+                                                            <label for="{{ form.lot_number.auto_id }}"
+                                                                   class="form-label">Lot Number</label>
                                                             <input type="text"
-                                                                   name="{{ form.lot_number.name }}"
-                                                                   id="{{ form.lot_number.id_for_label }}"
+                                                                   name="{{ form.lot_number.html_name }}"
+                                                                   id="{{ form.lot_number.auto_id }}"
                                                                    value="{{ form.lot_number.value|default_if_none:'' }}"
                                                                    class="form-control">
                                                             <div class="scan-control mobile-only">
@@ -372,11 +372,11 @@
                                                         </div>
                                                         <!-- Column 4 -->
                                                         <div class="form-group bid-scan-item">
-                                                            <label for="{{ form.production_date.id_for_label }}"
+                                                            <label for="{{ form.production_date.auto_id }}"
                                                                    class="form-label">Production Date</label>
                                                             <input type="date"
-                                                                   name="{{ form.production_date.name }}"
-                                                                   id="{{ form.production_date.id_for_label }}"
+                                                                   name="{{ form.production_date.html_name }}"
+                                                                   id="{{ form.production_date.auto_id }}"
                                                                    value="{{ form.production_date.value|default_if_none:'' }}"
                                                                    class="form-control">
                                                             <div class="scan-control mobile-only scan-date">
@@ -386,24 +386,22 @@
                                                         </div>
                                                         <!-- Column 5 -->
                                                         <div class="form-group bid-scan-item">
-                                                            <label for="{{ form.expiration_date.id_for_label }}"
+                                                            <label for="{{ form.expiration_date.auto_id }}"
                                                                    class="form-label">Expiration Date</label>
                                                             <input type="date"
-                                                                   name="{{ form.expiration_date.name }}"
-                                                                   id="{{ form.expiration_date.id_for_label }}"
+                                                                   name="{{ form.expiration_date.html_name }}"
+                                                                   id="{{ form.expiration_date.auto_id }}"
                                                                    value="{{ form.expiration_date.value|default_if_none:'' }}"
                                                                    class="form-control">
-
-
                                                             <div class="scan-control mobile-only">
                                                                 <i class="fa-solid fa-qrcode"></i>
                                                                 <i class="fa-solid fa-barcode"></i>
                                                             </div>
                                                         </div>
-
                                                     </div>
                                                 {% endfor %}
                                             </div>
+
 
                                         </div>
                                         <!-- End Page 2 -->
@@ -416,7 +414,7 @@
                                             <div class="img-container">
                                                 <div class="main-img">
                                                     <div class="img-thumbnail" id="main-img"
-                                                         onclick="document.getElementById('id_form-0-image').click()">
+                                                         onclick="document.getElementById('id_images-0-image').click()">
                                                         <img id="thumbnail-preview-0" src="#" alt="Upload Icon"
                                                              style="display:none;"/>
                                                         <i class="fa-regular fa-image" id="upload-icon-0"></i>
@@ -432,7 +430,7 @@
                                                         {% if forloop.counter0 > 0 %}
                                                             <div class="side-img">
                                                                 <div class="img-thumbnail"
-                                                                     onclick="document.getElementById('id_form-{{ forloop.counter0 }}-image').click()">
+                                                                     onclick="document.getElementById('id_images-{{ forloop.counter0 }}-image').click()">
                                                                     <img id="thumbnail-preview-{{ forloop.counter0 }}"
                                                                          src="#" alt="Upload Icon"
                                                                          style="display:none;"/>
@@ -521,9 +519,9 @@
     <script src="{% static 'js/create_auction.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/dynamsoft-barcode-reader-bundle@10.2.1000/dist/dbr.bundle.js"></script>
     <script src="{% static 'js/scanner.js' %}"></script>
-{#    <script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.6-beta.14/inputmask.min.js"#}
-{#            integrity="sha512-SF/1EBFQ9uIdO5cEddNUP9IxLkXwoSg2gMiDFvB8B3+oAB3T0uXctHvI0oK+xa8rps5wVV8fA9Lhdunzyz+oKw=="#}
-{#            crossorigin="anonymous" referrerpolicy="no-referrer"></script>#}
+    {#    <script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.6-beta.14/inputmask.min.js"#}
+    {#            integrity="sha512-SF/1EBFQ9uIdO5cEddNUP9IxLkXwoSg2gMiDFvB8B3+oAB3T0uXctHvI0oK+xa8rps5wVV8fA9Lhdunzyz+oKw=="#}
+    {#            crossorigin="anonymous" referrerpolicy="no-referrer"></script>#}
 
     <script>
         $(document).ready(function () {

@@ -112,7 +112,7 @@ function getAdditionalDetails(auctionId) {
                         // Create the table header
                         let thead = document.createElement('thead');
                         let headerRow = document.createElement('tr');
-                        ['SKU', 'Reference Number', 'Lot Number', 'Expiration Date'].forEach(function (headerText) {
+                        ['Reference Number', 'SKU', 'Lot Number', 'Expiration Date'].forEach(function (headerText) {
                             let th = document.createElement('th');
                             th.scope = "col";
                             th.textContent = headerText;
@@ -128,8 +128,9 @@ function getAdditionalDetails(auctionId) {
 
                     // Add a new row to the table for each product detail
                     let row = document.createElement('tr');
-                    ['sku', 'reference_number', 'lot_number', 'expiration_date'].forEach(function (field) {
+                    ['reference_number', 'sku', 'lot_number', 'expiration_date'].forEach(function (field) {
                         let td = document.createElement('td');
+                        td.classList.add('text-uppercase')
                         td.textContent = detail[field] || 'N/A';  // Show 'N/A' if the field is empty
                         row.appendChild(td);
                     });

@@ -170,7 +170,6 @@ class Auction(models.Model):
     description = models.TextField(max_length=2000, null=False, default='')
     creator = models.ForeignKey(User, on_delete=models.PROTECT, related_name='auction_creator')
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='auction_category')
-    date_created = models.DateTimeField(default=timezone.now)
     quantity_available = models.IntegerField('Listing Quantity', null=True, blank=True, default=1)
     starting_bid = models.DecimalField(
         max_digits=7,
@@ -213,6 +212,7 @@ class Auction(models.Model):
     implantable = models.BooleanField(default=False)
     deviceSterile = models.BooleanField('Package(s) Sterile', default=False)
     sterilizationPriorToUse = models.BooleanField(default=False)
+    # expiration_date = models.DateTimeField(blank=True, null=True)
     package_type = models.CharField(
         'Package Type',
         max_length=100,
@@ -221,12 +221,19 @@ class Auction(models.Model):
         blank=True
     )
     sell_full_lot = models.BooleanField('Sell as Full Lot', default=True)
-    auction_duration = models.IntegerField('Listing Duration', choices=DURATION_CHOICES, default=7)
     fullPackage = models.BooleanField('Package(s) Full', default=False)
     hold_for_import = models.BooleanField('', default=False)
+    auction_duration = models.IntegerField('Listing Duration', choices=DURATION_CHOICES, default=7)
+    date_created = models.DateTimeField(auto_now_add=True)
+    auction_ending_date = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return f'Auction #{self.id}: {self.title} ({self.creator})'
+
+    def save(self, *args, **kwargs):
+        if not self.auction_ending_date:
+            self.auction_ending_date = self.date_created + timezone.timedelta(days=self.auction_duration)
+        super(Auction, self).save(*args, **kwargs)
 
     def auction_end_date(self):
         return self.date_created + timedelta(days=self.auction_duration)

@@ -11,7 +11,7 @@
 
 
 {% block body %}
-    <div class=container style="padding: 0;">
+    <div class="container">
 
         <section class="hero">
             {% include 'hero.html' %}
@@ -118,7 +118,7 @@
             {% endif %}
 
             <div class="auctions-category mb-5">
-            <h2>{{ auctions_cat1_name }}</h2>
+                <h2>{{ auctions_cat1_name }}</h2>
                 <div class="auction-items grid">
                     {% for auction in auctions_cat1 %}
                         <div class="auction-item-container">
@@ -213,45 +213,14 @@
             </div>
 
         </section>
-        {#        <script>#}
-        {#            document.addEventListener('DOMContentLoaded', function () {#}
-        {#                const buttons = document.querySelectorAll('.watchlist-btn');#}
-        {##}
-        {#                buttons.forEach(function (button) {#}
-        {#                    button.addEventListener('click', function (event) {#}
-        {#                        event.stopPropagation(); // Prevent the click event from propagating to the parent <a> element#}
-        {#                        const auctionId = button.getAttribute('data-auction-id');#}
-        {#                        const url = `{% url 'watchlist_edit' 0 'active_auctions_with_id' %}`.replace('0', auctionId);#}
-        {#                        window.location.href = url;#}
-        {#                    });#}
-        {#                });#}
-        {#            });#}
-        {#        </script>#}
 
-
-        {#        <section class="testimonials">#}
-        {#            <h2>What Our Clients Say</h2>#}
-        {#            <div class="carousel">#}
-        {#                <div class="testimonial">#}
-        {#                    <p>"Great platform for finding the best healthcare equipment!"</p>#}
-        {#                    <span>- Client Name</span>#}
-        {#                </div>#}
-        {#                <div class="testimonial">#}
-        {#                    <p>"Easy to use and reliable service."</p>#}
-        {#                    <span>- Client Name</span>#}
-        {#                </div>#}
-        {#                <div class="testimonial">#}
-        {#                    <p>"Highly recommend Healthcare Auctions for their excellent support."</p>#}
-        {#                    <span>- Client Name</span>#}
-        {#                </div>#}
-        {#            </div>#}
-        {#        </section>#}
-
-        <section class="call-to-action">
-            <h2>Ready to Start Bidding?</h2>
-            <p>Join us today and find the best deals on healthcare equipment.</p>
-            <a href="{% url 'register' %}" class="button primary">Sign Up Now</a>
-        </section>
+        <div class="container">
+            <div class="call-to-action">
+                <h2>Ready to Start Bidding?</h2>
+                <p>Join us today and find the best deals on healthcare equipment.</p>
+                <a href="{% url 'register' %}" class="button primary">Sign Up Now</a>
+            </div>
+        </div>
     </div>
 {% endblock %}
 

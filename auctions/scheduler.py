@@ -11,15 +11,24 @@ logger = logging.getLogger(__name__)
 
 def deactivate_expired_auctions():
     now = timezone.now()
-    expired_auctions = Auction.objects.filter(active=True, auction_type='Auction',
-                                              date_created__lte=now - timezone.timedelta(days=7))
+    expired_auctions = Auction.objects.filter(
+        active=True,
+        auction_type='Auction',
+        auction_ending_date__lte=now
+    )
 
+    expired_auctions.update(active=False)
     for auction in expired_auctions:
-        auction.active = False
-        auction.save()
         logger.info(f'Auction "{auction.title}" has been deactivated.')
 
-    logger.info('Expired auctions check complete.')
+    # logger.info('Expired auctions check complete.')
+    # print('Expired auctions check complete.')
+
+    # now = timezone.now()
+    # sample_auctions = Auction.objects.filter(active=True, auction_type='Auction')
+    #
+    # for auction in sample_auctions:
+    #     print(f"Auction ID: {auction.id}, Ending Date: {auction.auction_ending_date}, Now: {now}")
 
 
 def start():
@@ -29,7 +38,7 @@ def start():
     scheduler.add_job(
         deactivate_expired_auctions,
         trigger='interval',
-        minutes=5,
+        minutes=1,
         id='deactivate_expired_auctions',
         replace_existing=True
     )

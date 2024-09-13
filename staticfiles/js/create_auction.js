@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
     });
 
-    document.getElementById('id_form-0-sku').required = true;
+    document.getElementById('id_product_details-0-sku').required = true;
     document.getElementById('id_category').required = true;
 });
 
@@ -95,7 +95,7 @@ document.getElementById('scanQRCode').onclick = () => {
 };
 
 document.addEventListener('DOMContentLoaded', function () {
-    const skuInput = document.getElementById('id_form-0-sku');
+    const skuInput = document.getElementById('id_product_details-0-sku');
 
     // Paste event listener
     skuInput.addEventListener('paste', (e) => {
@@ -246,9 +246,9 @@ function populateForm(data, overwrite = false) {
         document.getElementById('id_manufacturer').value = toProperCase(device.companyName) || '';
 
         if (udi) {
-            const lotNumberField = document.getElementById('id_form-0-lot_number');
-            const expirationDateField = document.getElementById('id_form-0-expiration_date');
-            const productionDateField = document.getElementById('id_form-0-production_date');
+            const lotNumberField = document.getElementById('id_product_details-0-lot_number');
+            const expirationDateField = document.getElementById('id_product_details-0-expiration_date');
+            const productionDateField = document.getElementById('id_product_details-0-production_date');
 
             // Check if the field is empty before assigning a new value
             if (!lotNumberField.value) {
@@ -491,11 +491,11 @@ function transferDataToAuctionForm() {
 
     // Mapping keys to form field IDs
     const fieldMap = {
-        '01': 'id_form-0-sku',  // GTIN/UDI
-        '10': 'id_form-0-lot_number',  // Batch or Lot Number
-        '11': 'id_form-0-production_date',  // Production Date (assuming you have this field)
-        '17': 'id_form-0-expiration_date',  // Expiration Date
-        'ref': 'id_form-0-reference_number', // Reference Number
+        '01': 'id_product_details-0-sku',  // GTIN/UDI
+        '10': 'id_product_details-0-lot_number',  // Batch or Lot Number
+        '11': 'id_product_details-0-production_date',  // Production Date (assuming you have this field)
+        '17': 'id_product_details-0-expiration_date',  // Expiration Date
+        'ref': 'id_product_details-0-reference_number', // Reference Number
         'unknown': 'unknown' // Reference Number
     };
 
@@ -511,7 +511,7 @@ function transferDataToAuctionForm() {
             if (element) {
                 // Update the element's value with the data
                 element.value = data[key];
-                if (fieldId === 'id_form-0-sku') {
+                if (fieldId === 'id_product_details-0-sku') {
                     console.log('code', '01' + data[key]);
                     let code = '01' + data[key];
                     parseBarcode(code);
@@ -749,7 +749,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Check if the main image has been uploaded
-        const mainImageInput = document.getElementById('id_form-0-image');
+        const mainImageInput = document.getElementById('id_images-0-image');
         if (!mainImageInput.files.length) {
             Swal.fire({
                 title: 'Main Image Missing!',
@@ -997,10 +997,10 @@ document.addEventListener('DOMContentLoaded', function () {
 //     });
 // });
 
-document.getElementById('id_form-0-reference_number').addEventListener('input', function () {
-    const referenceNumber = this.value;
+document.getElementById('id_product_details-0-reference_number').addEventListener('input', function () {
+    const referenceNumber = this.value.toUpperCase();
     let titleInput = document.getElementById('id_title'); // Get the input field
-    titleInput.value += referenceNumber;
+    titleInput.value = referenceNumber;
 
 
     if (referenceNumber.length > 0) {
@@ -1019,7 +1019,7 @@ document.getElementById('id_form-0-reference_number').addEventListener('input', 
                 document.getElementById('upload-icon-0').style.display = 'none';
 
                 // Set the blob to the file input
-                const fileInput = document.getElementById('id_form-0-image');
+                const fileInput = document.getElementById('id_images-0-image');
                 const file = new File([blob], 'default_image.jpg', {type: blob.type});
                 const dataTransfer = new DataTransfer();
                 dataTransfer.items.add(file);

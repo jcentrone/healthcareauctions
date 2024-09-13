@@ -26,7 +26,7 @@ from config.storage_backends import W9Storage, ResellerCertificateStorage
 from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, ProductDetailFormSet, MessageForm, \
     ShippingMethodForm, ShippingAddressForm, BillingAddressForm, CreditCardForm, ACHForm, ZelleForm, VenmoForm, \
     PayPalForm, CashAppForm, CustomUserChangeForm, UserAddressForm, OrderNoteForm, EditAuctionForm, \
-    EditProductDetailFormSet, ShippingAccountsForm, RegistrationForm
+    EditProductDetailFormSet, ShippingAccountsForm, RegistrationForm, ProductDetailForm
 from .models import Bid, Category, Image, CartItem, Cart, ProductDetail, Order, Payment, \
     OrderItem, Parcel, ProductImage, ShippingAccounts, Address, Message, User
 from .utils.calculate_tax import get_sales_tax
@@ -227,7 +227,6 @@ def dashboard(request):
     bid_status_filter = request.GET.get('bid_status')
     hold_for_import = request.GET.get('hold_for_import', 'False').lower() == 'true'
     active_tab = request.GET.get('active_tab', 'orders')
-    print(active_tab)
 
     # Filters
 
@@ -620,17 +619,15 @@ def logout_view(request):
 @login_required
 def auction_create(request):
     ImageFormSet = forms.modelformset_factory(Image, form=ImageForm, extra=5)
+    ProductDetailFormSet = forms.modelformset_factory(ProductDetail, form=ProductDetailForm, extra=1)  # Ensure this is defined
 
-    # if request.user.is_authenticated:
-    #     watchlist = request.user.watchlist.all()
-    #     for auction in watchlist:
-    #         auction.image = auction.get_images.first()
 
     if request.method == 'POST':
         auction_form = AuctionForm(request.POST, request.FILES)
-        image_formset = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.none())
+        image_formset = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.none(), prefix='images')
         product_detail_formset = ProductDetailFormSet(request.POST, request.FILES,
-                                                      queryset=ProductDetail.objects.none())
+                                                      queryset=ProductDetail.objects.none(), prefix='product_details')
+
 
         print("Product Detail Form Data: %s", product_detail_formset.data)
         print("Product Detail Formset Errors: %s", product_detail_formset.errors)
@@ -658,7 +655,7 @@ def auction_create(request):
                     product_detail.save()
 
             # Redirect URL
-            redirect_url = reverse('active_auctions_view')
+            redirect_url = reverse('active_auctions_with_id', kwargs={'auction_id': new_auction.id})
             return JsonResponse({'success': True, 'auction_id': new_auction.id, 'redirect_url': redirect_url})
         else:
             print("Auction Form Errors: %s", auction_form.errors)
@@ -683,15 +680,16 @@ def auction_create(request):
             return JsonResponse({'success': False, 'errors': errors})
     else:
         auction_form = AuctionForm()
-        image_formset = ImageFormSet(queryset=Image.objects.none())
-        product_detail_formset = ProductDetailFormSet(queryset=ProductDetail.objects.none())
+        image_formset = ImageFormSet(queryset=Image.objects.none(), prefix='images')
+        product_detail_formset = ProductDetailFormSet(queryset=ProductDetail.objects.none(), prefix='product_details')
+
 
     return render(request, 'auction_create.html', {
-        'auction_form': auction_form,
-        'image_formset': image_formset,
-        'product_detail_formset': product_detail_formset,
-        'title': 'Create Listing',
-    })
+            'auction_form': auction_form,
+            'image_formset': image_formset,
+            'product_detail_formset': product_detail_formset,
+            'title': 'Create Listing',
+        })
 
 
 @login_required
@@ -846,7 +844,7 @@ def active_auctions_view(request, auction_id=None):
 
     # Apply sort options
     sort_options = {
-        'ending_soonest': 'expiration_date',
+        'ending_soonest': 'auction_ending_date',
         'newly_listed': '-date_created',
         'price_highest': '-starting_bid',
         'price_lowest': 'starting_bid',
@@ -1386,10 +1384,10 @@ def checkout(request):
     total_no_shipping = Decimal(0)
     if "error" not in tax_info:
         combined_sales_tax_rate = (
-            Decimal(tax_info.get('stateSalesTax', 0)) +
-            Decimal(tax_info.get('countySalesTax', 0)) +
-            Decimal(tax_info.get('citySalesTax', 0)) +
-            Decimal(tax_info.get('districtSalesTax', 0))
+                Decimal(tax_info.get('stateSalesTax', 0)) +
+                Decimal(tax_info.get('countySalesTax', 0)) +
+                Decimal(tax_info.get('citySalesTax', 0)) +
+                Decimal(tax_info.get('districtSalesTax', 0))
         )
         sales_tax_no_shipping = round(combined_sales_tax_rate * cart.total_cost(), 2)
         total_no_shipping = round(cart.total_cost() + sales_tax_no_shipping, 2)
@@ -1420,7 +1418,7 @@ def checkout(request):
         billing_form = BillingAddressForm(request.POST)
 
         if (shipping_method_form.is_valid() and shipping_form.is_valid() and
-            billing_form.is_valid() and shipping_accounts_form.is_valid()):
+                billing_form.is_valid() and shipping_accounts_form.is_valid()):
             shipping_method = shipping_method_form.cleaned_data.get('shipping_method')
             special_instructions = shipping_method_form.cleaned_data.get('special_instructions')
 
@@ -1567,6 +1565,7 @@ def checkout(request):
         'sales_tax_no_shipping': sales_tax_no_shipping,
         'total_no_shipping': total_no_shipping,
     })
+
 
 @login_required
 def order_confirmation(request, order_id):
