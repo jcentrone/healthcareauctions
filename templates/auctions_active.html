@@ -40,6 +40,16 @@
                             href="{% url 'active_auctions_view' %}?time_filter={{ time_filter }}">{{ time_filter|titlecase }}</a>
                     </li>
                 {% endif %}
+                {% if auction_type %}
+                    <li class="breadcrumb-item"><a
+                            href="{% url 'active_auctions_view' %}?auction_type={{ auction_type }}">{{ auction_type|auction_type_label }}</a>
+                    </li>
+                {% endif %}
+                {% if sort_by %}
+                    <li class="breadcrumb-item"><a
+                            href="{% url 'active_auctions_view' %}?sort_by={{ sort_by }}">{{ sort_by|sort_by_label }}</a>
+                    </li>
+                {% endif %}
 
 
             </ol>
