@@ -114,6 +114,9 @@ class User(AbstractUser):
         """Check if the user is tax exempt based on the presence of a reseller certificate."""
         return bool(self.reseller_cert)
 
+    def get_default_shipping_account(self):
+        return self.shipping_accounts.filter(use_as_default_shipping_method=True).first()
+
 
 class ShippingAccounts(models.Model):
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='shipping_accounts')

@@ -54,9 +54,9 @@ INSTALLED_APPS = [
 
     # other apps
     'storages',
-
-
 ]
+
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

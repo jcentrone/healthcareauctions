@@ -64,53 +64,14 @@
         <!-- Admin Section -->
         {% if user.is_authenticated %}
             <div class="p-3">
-
                 {% if auction.auction_type == 'Auction' %}
                     <!-- Start Bid Form -->
-                    <div class='card'>
-                        <div class='card-header'>
-                            <div class="fw-bolder">Place Your Bid</div>
-                        </div>
-                        <div class='form-group'>
-                            <form class="p-3 " action="{% url 'auction_bid' auction.id %}"
-                                  method='POST'
-                                  data-auction-id="{{ auction.id }}"
-                                  data-starting-bid="{{ auction.starting_bid }}"
-                                  data-current-bid="{{ auction.current_bid }}">
-                                {% csrf_token %}
-                                <div class='form-group with-symbol extra-m'>
-                                    {{ bid_form }}
-                                    <br>
-                                    <button type='submit' class='btn btn-primary'>
-                                        Place a Bid
-                                    </button>
-                                </div>
-                            </form>
-
-                        </div>
-                    </div>
+                    {% include '_bid_form.html' %}
                     <!-- End Bid Form -->
                 {% else %}
                     <!-- Start Get It Now Form -->
-                    {% if user.is_authenticated and auction.auction_type == 'Sale' %}
-                        <div class='card'>
-                            <div class='card-header'>
-                                <div class="fw-bolder">Add to Cart</div>
-                            </div>
-                            <div class='form-group'>
-                                <form class="p-3"
-                                      method="POST"
-                                      action="{% url 'add_to_cart' auction.id %}">
-                                    {% csrf_token %}
-                                    {{ add_to_cart_form.quantity.label_tag }}
-                                    {{ add_to_cart_form.quantity }}
-
-                                    <button type="submit" class="btn btn-primary">Add to
-                                        Cart
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
+                    {% if auction.auction_type == 'Sale' %}
+                        {% include '_add_to_cart_form.html' %}
                     {% endif %}
 
                     <!-- End Get It Now Form -->

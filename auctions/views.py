@@ -1346,12 +1346,13 @@ def checkout(request):
         'phone_number': request.user.phone_number,
     }
 
+    # Retrieve default addresses
     default_shipping_address = request.user.addresses.filter(address_type='shipping').first()
     default_billing_address = request.user.addresses.filter(address_type='billing').first()
 
     if default_shipping_address:
         initial_data.update({
-            'shipping_full_name': request.user.first_name + " " + request.user.last_name,
+            'shipping_full_name': f"{request.user.first_name} {request.user.last_name}",
             'shipping_company_name': request.user.company_name,
             'shipping_street_address': default_shipping_address.street,
             'shipping_apartment_suite': default_shipping_address.suite,
@@ -1374,9 +1375,9 @@ def checkout(request):
         })
 
     # Calculate Taxes
-    zip_code = default_shipping_address.zip_code
-    state = default_shipping_address.state
-    city = default_shipping_address.city
+    zip_code = default_shipping_address.zip_code if default_shipping_address else ''
+    state = default_shipping_address.state if default_shipping_address else ''
+    city = default_shipping_address.city if default_shipping_address else ''
 
     tax_info = get_sales_tax(zip_code, state, city)
 
@@ -1385,10 +1386,10 @@ def checkout(request):
     total_no_shipping = Decimal(0)
     if "error" not in tax_info:
         combined_sales_tax_rate = (
-                Decimal(tax_info.get('stateSalesTax', 0)) +
-                Decimal(tax_info.get('countySalesTax', 0)) +
-                Decimal(tax_info.get('citySalesTax', 0)) +
-                Decimal(tax_info.get('districtSalesTax', 0))
+            Decimal(tax_info.get('stateSalesTax', 0)) +
+            Decimal(tax_info.get('countySalesTax', 0)) +
+            Decimal(tax_info.get('citySalesTax', 0)) +
+            Decimal(tax_info.get('districtSalesTax', 0))
         )
         sales_tax_no_shipping = round(combined_sales_tax_rate * cart.total_cost(), 2)
         total_no_shipping = round(cart.total_cost() + sales_tax_no_shipping, 2)
@@ -1396,17 +1397,20 @@ def checkout(request):
     else:
         print(tax_info["error"])
 
-    tax_exempt = False
-    if request.user.reseller_cert:
-        tax_exempt = True
+    # Check if user is tax-exempt
+    tax_exempt = request.user.is_tax_exempt()
 
+    # Initialize forms
     credit_card_form = CreditCardForm(request.POST or None)
     ach_form = ACHForm(request.POST or None)
     zelle_form = ZelleForm(request.POST or None)
     venmo_form = VenmoForm(request.POST or None)
     paypal_form = PayPalForm(request.POST or None)
     cashapp_form = CashAppForm(request.POST or None)
-    shipping_account_instance = request.user.shipping_accounts.first()
+
+    # Retrieve the default shipping account
+    default_shipping_account = request.user.get_default_shipping_account()
+    shipping_account_instance = default_shipping_account
     shipping_accounts_form = ShippingAccountsForm(request.POST or None, instance=shipping_account_instance)
     shipping_method_form = ShippingMethodForm(request.POST or None, initial=initial_data)
 
@@ -1415,20 +1419,31 @@ def checkout(request):
         shipping_form = ShippingAddressForm(request.POST)
         billing_form = BillingAddressForm(request.POST)
 
-        if shipping_method_form.is_valid() and shipping_form.is_valid() and billing_form.is_valid() and shipping_accounts_form.is_valid():
+        if (shipping_method_form.is_valid() and shipping_form.is_valid() and
+            billing_form.is_valid() and shipping_accounts_form.is_valid()):
             shipping_method = shipping_method_form.cleaned_data.get('shipping_method')
             special_instructions = shipping_method_form.cleaned_data.get('special_instructions')
 
             auction = cart.items.first().auction
 
-            shipping_amount, tax_amount = None, None
-            if request.user.shipping_accounts.use_as_default_shipping_method:
-                shipping_amount = 0.00
-                if tax_exempt:
-                    tax_amount = 0.00
-                else:
-                    tax_amount = sales_tax_no_shipping
+            # Determine shipping_amount and tax_amount
+            shipping_amount = None
+            tax_amount = None
 
+            if default_shipping_account and default_shipping_account.use_as_default_shipping_method:
+                # User wants to use their own shipping account
+                shipping_amount = Decimal('0.00')
+            else:
+                # Logic for when the user uses your shipping method
+                # Set shipping_amount accordingly
+                shipping_amount = Decimal('10.00')  # Example shipping fee
+
+            if tax_exempt:
+                tax_amount = Decimal('0.00')
+            else:
+                tax_amount = sales_tax_no_shipping
+
+            # Create Order
             order = Order.objects.create(
                 user=request.user,
                 cart=cart,
@@ -1442,8 +1457,9 @@ def checkout(request):
                 total_no_shipping=total_no_shipping,
                 tax_amount=tax_amount,
                 shipping_amount=shipping_amount,
-
             )
+
+            # Create OrderItems and update auctions
             for item in cart.items.all():
                 OrderItem.objects.create(
                     order=order,
@@ -1452,16 +1468,17 @@ def checkout(request):
                     price=item.total_price()
                 )
 
-                # Update auction quantity or deactivate auction based on type and available quantity
+                # Update auction availability
                 if item.auction.auction_type == 'sale':
                     item.auction.available_quantity -= item.quantity
                     if item.auction.available_quantity <= 0:
                         item.auction.active = False
-                else:  # Assuming auction type 'auction' or other types should be deactivated
+                else:
                     item.auction.active = False
 
                 item.auction.save()
 
+            # Save shipping and billing addresses
             shipping_address = shipping_form.save(commit=False)
             shipping_address.order = order
             shipping_address.save()
@@ -1470,11 +1487,13 @@ def checkout(request):
             billing_address.order = order
             billing_address.save()
 
+            # Save shipping account
             shipping_account = shipping_accounts_form.save(commit=False)
             shipping_account.user = request.user
             shipping_account.order = order
             shipping_account.save()
 
+            # Process payment
             payment_method = request.POST.get('payment_method')
 
             if not payment_method:
@@ -1500,11 +1519,13 @@ def checkout(request):
 
             payment.save()
 
+            # Empty the cart
             cart.items.all().delete()
 
-            # order.auction.active = False
+            # Save the auction
             order.auction.save()
 
+            # Prepare order data for response
             order_data = model_to_dict(order)
             order_data['items'] = []
             for item in order.items.all():
@@ -1546,7 +1567,6 @@ def checkout(request):
         'sales_tax_no_shipping': sales_tax_no_shipping,
         'total_no_shipping': total_no_shipping,
     })
-
 
 @login_required
 def order_confirmation(request, order_id):
