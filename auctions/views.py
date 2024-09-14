@@ -1500,6 +1500,8 @@ def checkout(request):
                 # Create Order
                 order = Order.objects.create(
                     user=request.user,
+                    cart=cart,
+                    auction=auction,
                     total_amount=cart.total_cost(),
                     shipping_method=shipping_method,
                     special_instructions=special_instructions,
@@ -1590,6 +1592,8 @@ def checkout(request):
                             payment.payer_email = cashapp_form.cleaned_data.get('cashapp_username')
                         else:
                             raise ValidationError('Invalid CashApp details.')
+                    elif payment_method == 'ach':
+                        payment.payer_email = request.user.email
                     else:
                         raise ValidationError('Unsupported payment method.')
 
