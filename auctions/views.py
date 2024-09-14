@@ -1,8 +1,10 @@
+import io
 import json
 import logging
 import random
 import re
 from datetime import timedelta
+from decimal import Decimal
 
 import openpyxl
 from django import forms
@@ -11,10 +13,17 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.views import PasswordChangeView
 from django.contrib.messages import get_messages
+from django.contrib import messages
+
+from django.core.exceptions import ValidationError
+from django.core.mail import EmailMessage
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.db import IntegrityError
-from django.db.models import Q, Case, When, BooleanField, DecimalField, Max
-from django.http import FileResponse, HttpResponse
+from django.db import IntegrityError, transaction
+from django.db.models import Q, Case, When, BooleanField, DecimalField, Max, F
+from django.forms import model_to_dict
+from django.http import FileResponse, HttpResponse, JsonResponse, HttpResponseRedirect
+from django.shortcuts import render, get_object_or_404, redirect
+from django.template.loader import render_to_string
 from django.urls import reverse_lazy, reverse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -228,8 +237,6 @@ def dashboard(request):
     hold_for_import = request.GET.get('hold_for_import', 'False').lower() == 'true'
     active_tab = request.GET.get('active_tab', 'orders')
 
-    # Filters
-
     # Listings Filter, add filters to the dictionary based on the parameters
     if listing_status_filter:
         listing_filters &= Q(active=(listing_status_filter == 'active'))
@@ -441,6 +448,7 @@ def edit_auction(request, auction_id):
                 'level': message.level,
                 'tags': message.tags,
             })
+
 
         return JsonResponse({
             'success': success,
@@ -1073,10 +1081,6 @@ def terms_and_conditions(request):
     })
 
 
-from django.contrib import messages
-from django.http import HttpResponseRedirect
-from django.shortcuts import redirect, get_object_or_404
-
 
 @login_required
 def auction_bid(request, auction_id):
@@ -1332,27 +1336,6 @@ def export_listings_to_excel(request):
 
 
 # ORDER MANAGEMENT
-from django.db import transaction
-from django.db.models import F
-from django.http import JsonResponse
-from django.shortcuts import render
-from django.forms import ValidationError
-from decimal import Decimal
-import io
-import logging
-from django.core.mail import EmailMessage
-from django.forms.models import model_to_dict
-from django.template.loader import render_to_string
-from django.contrib.auth.decorators import login_required
-
-# Ensure you have the necessary imports for your forms and models
-# from .forms import CreditCardForm, ACHForm, ZelleForm, VenmoForm, PayPalForm, CashAppForm, ShippingAccountsForm, ShippingMethodForm, ShippingAddressForm, BillingAddressForm
-# from .models import Auction, Order, OrderItem, Payment
-
-# Configure logging
-logger = logging.getLogger(__name__)
-
-
 @login_required
 def checkout(request):
     cart = request.user.cart
@@ -1712,7 +1695,7 @@ def order_confirmation(request, order_id):
 def add_to_cart(request, auction_id):
     auction = get_object_or_404(Auction, id=auction_id)
 
-    # Get or create a cart for the current user (assuming you don't need an 'active' field)
+    # Get or create a cart for the current user
     cart, created = Cart.objects.get_or_create(user=request.user)
 
     if request.method == 'POST':
@@ -1721,11 +1704,21 @@ def add_to_cart(request, auction_id):
             cart_item = form.save(commit=False)
             cart_item.cart = cart  # Associate the cart with the cart item
             cart_item.save()  # Now save the cart item
+            messages.success(request, f'Added {cart_item.quantity} "{auction.title}" to your cart.')
             return redirect('view_cart')
+        else:
+            # Collect all form errors and add as error messages
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, error)
+            return redirect('add_to_cart', auction_id=auction.id)
     else:
         form = AddToCartForm(auction=auction)
 
-    return render(request, 'add_to_cart.html', {'form': form, 'auction': auction})
+    return redirect('active_auctions_view')
+
+    # return render(request, 'add_to_cart.html', {'form': form, 'auction': auction})
+
 
 
 @login_required
