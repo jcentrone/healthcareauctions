@@ -68,6 +68,73 @@ def generate_welcome_email(username):
     return welcome_message_text, welcome_message_html
 
 
+def order_confirmation_message(order, logo_base64):
+    message = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                color: #333;
+                line-height: 1.6;
+                padding: 20px;
+            }}
+            .header {{
+                text-align: center;
+                margin-bottom: 20px;
+            }}
+            .header img {{
+                max-width: 150px;
+                margin-bottom: 10px;
+            }}
+            .content {{
+                font-size: 1.1em;
+            }}
+            .footer {{
+                margin-top: 20px;
+                font-size: 0.9em;
+                color: #777;
+                text-align: center;
+            }}
+            .button {{
+                display: inline-block;
+                background-color: #007BFF;
+                color: #ffffff;
+                padding: 10px 20px;
+                text-align: center;
+                text-decoration: none;
+                border-radius: 5px;
+                margin-top: 20px;
+            }}
+            .button:hover {{
+                background-color: #0056b3;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <img src="data:image/png;base64,{logo_base64}" alt="Company Logo" style="width: 75px;">
+            <h1>Thank You for Your Order!</h1>
+        </div>
+        <div class="content">
+            <p>Dear {order.user.first_name},</p>
+            <p>Thank you for shopping with Healthcare Auctions. We have received your order, #{order.id}, placed on {order.created_at.strftime('%B %d, %Y at %I:%M %p')}.</p>
+            <p>Your order details are attached to this email.</p>
+            <p>If you have any questions or need further assistance, feel free to contact our support team at <a href="mailto:support@healthcareauctions.com">support@healthcareauctions.com</a>.</p>
+            <p>We appreciate your business and look forward to serving you again!</p>
+        </div>
+        <div class="footer">
+            <p>Healthcare Auctions, LLC<br>
+            <p>Email: <a href="mailto:support@healthcareauctions.com">support@healthcareauctions.com</a></p>
+            <p>Phone: (123) 456-7890</p>
+        </div>
+    </body>
+    </html>
+    """
+
+
 def send_welcome_email_html(to_email, user_first_Name):
     welcome_message_text, welcome_message_html = generate_welcome_email(user_first_Name)
 

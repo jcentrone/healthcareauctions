@@ -39,7 +39,7 @@ from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, 
 from .models import Bid, Category, Image, CartItem, Cart, ProductDetail, Order, Payment, \
     OrderItem, Parcel, ProductImage, ShippingAccounts, Address, Message, User
 from .utils.calculate_tax import get_sales_tax
-from .utils.email_manager import send_welcome_email_html
+from .utils.email_manager import send_welcome_email_html, order_confirmation_message
 from .utils.get_base64_logo import get_logo_base64
 from .utils.helpers import update_categories_from_fda
 from .utils.openai import get_chat_completion_request
@@ -1649,7 +1649,7 @@ def checkout(request):
                     if not pdf.err:
                         # Send the email with the PDF attached
                         subject = f'Order Confirmation - Order #{order.id}'
-                        message = 'Thank you for your order! Please find the order confirmation attached.'
+                        message = order_confirmation_message(order, logo_base64)
                         email = EmailMessage(subject, message, to=[request.user.email])
                         email.attach(f'order_{order.id}.pdf', result.getvalue(), 'application/pdf')
                         email.send()

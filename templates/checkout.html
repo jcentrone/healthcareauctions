@@ -809,8 +809,17 @@
                         buttonsStyling: false,
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            // Redirect to order confirmation page or any other action
+                            // Redirect to the listings page
                             window.location.href = `/auction/active`;
+                            
+                            // Show the SweetAlert2 as an information window while redirecting
+                            Swal.fire({
+                                title: 'Redirecting...',
+                                text: 'You are being redirected back to the listings.',
+                                icon: 'info',
+                                showConfirmButton: false,
+                                timer: 1500,  // Time in milliseconds before closing the alert
+                            });
                         } else if (result.dismiss === Swal.DismissReason.cancel) {
                             // Handle print action
                             printOrderConfirmation();
