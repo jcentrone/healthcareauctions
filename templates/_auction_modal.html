@@ -29,6 +29,7 @@
                                             {% else %}
                                                 <strong>Starting Bid:</strong> ${{ auction.starting_bid }}
                                             {% endif %}
+
                                         </p>
                                         <p><strong>Reserve Bid:</strong>
                                             {% if auction.current_bid >= auction.reserve_bid %}
@@ -37,8 +38,15 @@
                                                 Not Met
                                             {% endif %}
                                         </p>
+                                        <p>
+                                        <div class='two-grid-auto-columns'>
+                                            <strong>Time Remaining:</strong>
+                                            <div class="lead time-remaining">{{ auction.formatted_time_remaining }}</div>
+                                        </div>
+                                        </p>
                                     {% else %}
-                                        <p><strong>Get it Now:</strong> ${{ auction.buyItNowPrice }}</p>
+                                        <p>
+                                            <span><strong>Get it Now:</strong> ${{ auction.buyItNowPrice }}</span></p>
                                     {% endif %}
                                 </div>
                             </div>

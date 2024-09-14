@@ -96,6 +96,12 @@ PACKAGE_TYPE_CHOICES = [
     ('OTHER', 'Other'),
 ]
 
+AUCTION_CLOSED_REASONS = (
+    ('expired', 'expired'),
+    ('sold', 'sold'),
+    ('reserve_not_met', 'reserve_not_met'),
+)
+
 
 class User(AbstractUser):
     company_name = models.CharField(max_length=255, blank=True)
@@ -224,6 +230,7 @@ class Auction(models.Model):
     fullPackage = models.BooleanField('Package(s) Full', default=False)
     hold_for_import = models.BooleanField('', default=False)
     auction_duration = models.IntegerField('Listing Duration', choices=DURATION_CHOICES, default=7)
+    auction_end_reason = models.TextField(choices=AUCTION_CLOSED_REASONS, null=True, blank=True)
     date_created = models.DateTimeField(auto_now_add=True)
     auction_ending_date = models.DateTimeField(blank=True, null=True)
 
@@ -276,6 +283,9 @@ class Auction(models.Model):
     def contains_expired_items(self):
         today = timezone.now().date()
         return any(detail.expiration_date and detail.expiration_date < today for detail in self.product_details.all())
+
+    def highest_bid(self):
+        return self.bid_set.order_by('-amount').first()
 
 
 class ProductDetail(models.Model):
@@ -472,8 +482,6 @@ class OrderItem(models.Model):
 
     # def total_price(self):
     #     return self.total_price
-
-
 
 
 class ShippingAddress(models.Model):

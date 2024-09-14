@@ -2,8 +2,6 @@ import json
 import logging
 import random
 import re
-import io
-import tempfile
 from datetime import timedelta
 
 import openpyxl
@@ -13,13 +11,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.views import PasswordChangeView
 from django.contrib.messages import get_messages
-from django.core.mail import EmailMessage
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import IntegrityError
-from django.db.models import Q, Case, When, BooleanField, DecimalField, Max, F
-from django.forms import model_to_dict
-from django.http import JsonResponse, FileResponse, HttpResponse
-from django.template.loader import render_to_string
+from django.db.models import Q, Case, When, BooleanField, DecimalField, Max
+from django.http import FileResponse, HttpResponse
 from django.urls import reverse_lazy, reverse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -27,10 +22,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from xhtml2pdf import pisa
 
-
-
 from config.storage_backends import W9Storage, ResellerCertificateStorage
-from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, ProductDetailFormSet, MessageForm, \
+from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, MessageForm, \
     ShippingMethodForm, ShippingAddressForm, BillingAddressForm, CreditCardForm, ACHForm, ZelleForm, VenmoForm, \
     PayPalForm, CashAppForm, CustomUserChangeForm, UserAddressForm, OrderNoteForm, EditAuctionForm, \
     EditProductDetailFormSet, ShippingAccountsForm, RegistrationForm, ProductDetailForm
@@ -626,15 +619,14 @@ def logout_view(request):
 @login_required
 def auction_create(request):
     ImageFormSet = forms.modelformset_factory(Image, form=ImageForm, extra=5)
-    ProductDetailFormSet = forms.modelformset_factory(ProductDetail, form=ProductDetailForm, extra=1)  # Ensure this is defined
-
+    ProductDetailFormSet = forms.modelformset_factory(ProductDetail, form=ProductDetailForm,
+                                                      extra=1)  # Ensure this is defined
 
     if request.method == 'POST':
         auction_form = AuctionForm(request.POST, request.FILES)
         image_formset = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.none(), prefix='images')
         product_detail_formset = ProductDetailFormSet(request.POST, request.FILES,
                                                       queryset=ProductDetail.objects.none(), prefix='product_details')
-
 
         print("Product Detail Form Data: %s", product_detail_formset.data)
         print("Product Detail Formset Errors: %s", product_detail_formset.errors)
@@ -690,13 +682,12 @@ def auction_create(request):
         image_formset = ImageFormSet(queryset=Image.objects.none(), prefix='images')
         product_detail_formset = ProductDetailFormSet(queryset=ProductDetail.objects.none(), prefix='product_details')
 
-
     return render(request, 'auction_create.html', {
-            'auction_form': auction_form,
-            'image_formset': image_formset,
-            'product_detail_formset': product_detail_formset,
-            'title': 'Create Listing',
-        })
+        'auction_form': auction_form,
+        'image_formset': image_formset,
+        'product_detail_formset': product_detail_formset,
+        'title': 'Create Listing',
+    })
 
 
 @login_required
@@ -1084,8 +1075,7 @@ def terms_and_conditions(request):
 
 from django.contrib import messages
 from django.http import HttpResponseRedirect
-from django.shortcuts import redirect, get_object_or_404, render
-from decimal import Decimal
+from django.shortcuts import redirect, get_object_or_404
 
 
 @login_required
@@ -1342,9 +1332,29 @@ def export_listings_to_excel(request):
 
 
 # ORDER MANAGEMENT
+from django.db import transaction
+from django.db.models import F
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.forms import ValidationError
+from decimal import Decimal
+import io
+import logging
+from django.core.mail import EmailMessage
+from django.forms.models import model_to_dict
+from django.template.loader import render_to_string
+from django.contrib.auth.decorators import login_required
+
+# Ensure you have the necessary imports for your forms and models
+# from .forms import CreditCardForm, ACHForm, ZelleForm, VenmoForm, PayPalForm, CashAppForm, ShippingAccountsForm, ShippingMethodForm, ShippingAddressForm, BillingAddressForm
+# from .models import Auction, Order, OrderItem, Payment
+
+# Configure logging
+logger = logging.getLogger(__name__)
+
+
 @login_required
 def checkout(request):
-    print(request.POST)
     cart = request.user.cart
 
     # Populate initial data from the user profile
@@ -1366,7 +1376,7 @@ def checkout(request):
             'shipping_city': default_shipping_address.city,
             'shipping_state': default_shipping_address.state,
             'shipping_zip_code': default_shipping_address.zip_code,
-            'shipping_country': 'USA',
+            'shipping_country': default_shipping_address.country,  # Made dynamic
         })
 
     if default_billing_address:
@@ -1378,19 +1388,24 @@ def checkout(request):
             'billing_city': default_billing_address.city,
             'billing_state': default_billing_address.state,
             'billing_zip_code': default_billing_address.zip_code,
-            'billing_country': "USA",
+            'billing_country': default_billing_address.country,  # Made dynamic
         })
 
     # Calculate Taxes
-    zip_code = default_shipping_address.zip_code if default_shipping_address else ''
-    state = default_shipping_address.state if default_shipping_address else ''
-    city = default_shipping_address.city if default_shipping_address else ''
+    if default_shipping_address:
+        zip_code = default_shipping_address.zip_code
+        state = default_shipping_address.state
+        city = default_shipping_address.city
+    else:
+        zip_code = ''
+        state = ''
+        city = ''
 
     tax_info = get_sales_tax(zip_code, state, city)
 
-    combined_sales_tax_rate = Decimal(0)
-    sales_tax_no_shipping = Decimal(0)
-    total_no_shipping = Decimal(0)
+    combined_sales_tax_rate = Decimal('0.00')
+    sales_tax_no_shipping = Decimal('0.00')
+    total_no_shipping = Decimal('0.00')
     if "error" not in tax_info:
         combined_sales_tax_rate = (
                 Decimal(tax_info.get('stateSalesTax', 0)) +
@@ -1398,11 +1413,11 @@ def checkout(request):
                 Decimal(tax_info.get('citySalesTax', 0)) +
                 Decimal(tax_info.get('districtSalesTax', 0))
         )
-        sales_tax_no_shipping = round(combined_sales_tax_rate * cart.total_cost(), 2)
-        total_no_shipping = round(cart.total_cost() + sales_tax_no_shipping, 2)
-        print(sales_tax_no_shipping)
+        sales_tax_no_shipping = (combined_sales_tax_rate * cart.total_cost()).quantize(Decimal('0.01'))
+        total_no_shipping = (cart.total_cost() + sales_tax_no_shipping).quantize(Decimal('0.01'))
+        logger.debug(f"Sales Tax Calculated: {sales_tax_no_shipping}")
     else:
-        print(tax_info["error"])
+        logger.error(f"Tax Calculation Error: {tax_info.get('error')}")
 
     # Check if user is tax-exempt
     tax_exempt = request.user.is_tax_exempt()
@@ -1417,178 +1432,253 @@ def checkout(request):
 
     # Retrieve the default shipping account
     default_shipping_account = request.user.get_default_shipping_account()
-    shipping_account_instance = default_shipping_account
-    shipping_accounts_form = ShippingAccountsForm(request.POST or None, instance=shipping_account_instance)
+    shipping_accounts_form = ShippingAccountsForm(request.POST or None, instance=default_shipping_account)
     shipping_method_form = ShippingMethodForm(request.POST or None, initial=initial_data)
 
     if request.method == 'POST':
-        print(request.POST)
-        shipping_form = ShippingAddressForm(request.POST)
-        billing_form = BillingAddressForm(request.POST)
-
-        if (shipping_method_form.is_valid() and shipping_form.is_valid() and
-                billing_form.is_valid() and shipping_accounts_form.is_valid()):
-            shipping_method = shipping_method_form.cleaned_data.get('shipping_method')
-            special_instructions = shipping_method_form.cleaned_data.get('special_instructions')
-
-            auction = cart.items.first().auction
-
-            # Determine shipping_amount and tax_amount
-            shipping_amount = None
-            tax_amount = None
-
-            if default_shipping_account and default_shipping_account.use_as_default_shipping_method:
-                # User wants to use their own shipping account
-                shipping_amount = Decimal('0.00')
-            else:
-                # Logic for when the user uses your shipping method
-                # Set shipping_amount accordingly
-                shipping_amount = Decimal('10.00')  # Example shipping fee
-
-            if tax_exempt:
-                tax_amount = Decimal('0.00')
-            else:
-                tax_amount = sales_tax_no_shipping
-
-            # Create Order
-            order = Order.objects.create(
-                user=request.user,
-                cart=cart,
-                auction=auction,
-                total_amount=cart.total_cost(),
-                shipping_method=shipping_method,
-                special_instructions=special_instructions,
-                tax_exempt=tax_exempt,
-                combined_sales_tax_rate=combined_sales_tax_rate,
-                sales_tax_no_shipping=sales_tax_no_shipping,
-                total_no_shipping=total_no_shipping,
-                tax_amount=tax_amount,
-                shipping_amount=shipping_amount,
+        with transaction.atomic():
+            # Lock the cart and related auction items
+            cart = (
+                Cart.objects
+                .select_related('user')  # Adjust based on your actual relations
+                .prefetch_related(
+                    'items__auction')  # Use prefetch_related for ManyToMany or reverse ForeignKey relations
+                .select_for_update()
+                .get(user=request.user)
             )
 
-            # Create OrderItems and update auctions
+            # Pre-fetch all auctions to minimize database hits
+            auction_ids = cart.items.values_list('auction_id', flat=True)
+            auctions = Auction.objects.select_for_update().filter(id__in=auction_ids)
+            auction_map = {auction.id: auction for auction in auctions}
+
+            # Check availability for each item
             for item in cart.items.all():
-                OrderItem.objects.create(
-                    order=order,
-                    auction=item.auction,
-                    quantity=item.quantity,
-                    total_price=item.total_price(),
-                    price_each=item.price_each,
+                auction = auction_map.get(item.auction_id)
+                if not auction:
+                    logger.warning(f"Auction with ID {item.auction_id} not found.")
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': f'Item "{item.auction.title}" not found.'
+                    })
+
+                if auction.auction_type != 'Sale':
+                    continue  # Only check for 'Sale' type auctions
+
+                if auction.quantity_available < item.quantity:
+                    logger.info(
+                        f'Insufficient stock for Auction "{auction.title}". '
+                        f'Available: {auction.quantity_available}, Requested: {item.quantity}'
+                    )
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': f'Item "{auction.title}" is only available in {auction.quantity_available} units.'
+                    })
+
+            # Initialize address forms with POST data
+            shipping_form = ShippingAddressForm(request.POST)
+            billing_form = BillingAddressForm(request.POST)
+
+            # Validate all forms
+            if (
+                    shipping_method_form.is_valid() and
+                    shipping_form.is_valid() and
+                    billing_form.is_valid() and
+                    shipping_accounts_form.is_valid()
+            ):
+                shipping_method = shipping_method_form.cleaned_data.get('shipping_method')
+                special_instructions = shipping_method_form.cleaned_data.get('special_instructions')
+
+                # Determine shipping_amount and tax_amount
+                if default_shipping_account and default_shipping_account.use_as_default_shipping_method:
+                    shipping_amount = Decimal('0.00')
+                else:
+                    shipping_amount = Decimal('10.00')  # Example shipping fee; consider making this dynamic
+
+                tax_amount = Decimal('0.00') if tax_exempt else sales_tax_no_shipping
+
+                # Create Order
+                order = Order.objects.create(
+                    user=request.user,
+                    total_amount=cart.total_cost(),
+                    shipping_method=shipping_method,
+                    special_instructions=special_instructions,
+                    tax_exempt=tax_exempt,
+                    combined_sales_tax_rate=combined_sales_tax_rate,
+                    sales_tax_no_shipping=sales_tax_no_shipping,
+                    total_no_shipping=total_no_shipping,
+                    tax_amount=tax_amount,
+                    shipping_amount=shipping_amount,
                 )
 
-                # Update auction availability
+                # Create OrderItems and update auctions
+                order_items = []
+                for item in cart.items.all():
+                    auction = auction_map.get(item.auction_id)
+                    order_item = OrderItem(
+                        order=order,
+                        auction=auction,
+                        quantity=item.quantity,
+                        total_price=item.total_price(),
+                        price_each=item.price_each,
+                    )
+                    order_items.append(order_item)
 
-                item.auction.quantity_available -= item.quantity
-                if item.auction.quantity_available <= 0:
-                    item.auction.active = False
-                item.auction.save()
+                    # Update auction quantities using F expressions for atomicity
+                    Auction.objects.filter(id=auction.id).update(
+                        quantity_available=F('quantity_available') - item.quantity
+                    )
 
-            # Save shipping and billing addresses
-            shipping_address = shipping_form.save(commit=False)
-            shipping_address.order = order
-            shipping_address.save()
+                    # Refresh the auction instance to get updated quantity
+                    auction.refresh_from_db()
+                    if auction.quantity_available <= 0:
+                        auction.active = False
+                        auction.save()
 
-            billing_address = billing_form.save(commit=False)
-            billing_address.order = order
-            billing_address.save()
+                OrderItem.objects.bulk_create(order_items)
 
-            # Save shipping account
-            shipping_account = shipping_accounts_form.save(commit=False)
-            shipping_account.user = request.user
-            shipping_account.order = order
-            shipping_account.save()
+                # Save shipping and billing addresses
+                shipping_address = shipping_form.save(commit=False)
+                shipping_address.order = order
+                shipping_address.save()
 
-            # Process payment
-            payment_method = request.POST.get('payment_method')
+                billing_address = billing_form.save(commit=False)
+                billing_address.order = order
+                billing_address.save()
 
-            if not payment_method:
-                return JsonResponse({'status': 'error', 'message': 'Please select a payment method.'})
+                # Save shipping account
+                shipping_account = shipping_accounts_form.save(commit=False)
+                shipping_account.user = request.user
+                shipping_account.order = order
+                shipping_account.save()
 
-            payment = Payment.objects.create(order=order, payment_method=payment_method)
+                # Process payment
+                payment_method = request.POST.get('payment_method')
 
-            if payment_method == 'credit-card' and credit_card_form.is_valid():
-                card_number = credit_card_form.cleaned_data.get('card_number')
-                expiration_date = credit_card_form.cleaned_data.get('expiration_date')
-                cvv_number = credit_card_form.cleaned_data.get('cvv')
-                payment.set_card_number(card_number)
-                payment.set_expiration_date(expiration_date)
-                payment.set_cvv_number(cvv_number)
-            elif payment_method == 'zelle' and zelle_form.is_valid():
-                payment.payer_email = zelle_form.cleaned_data.get('email')
-            elif payment_method == 'venmo' and venmo_form.is_valid():
-                payment.payer_email = venmo_form.cleaned_data.get('venmo_username')
-            elif payment_method == 'paypal' and paypal_form.is_valid():
-                payment.payer_email = paypal_form.cleaned_data.get('paypal_email')
-            elif payment_method == 'cashapp' and cashapp_form.is_valid():
-                payment.payer_email = cashapp_form.cleaned_data.get('cashapp_username')
+                if not payment_method:
+                    logger.warning(f'Payment method not selected by user {request.user.id}.')
+                    return JsonResponse({'status': 'error', 'message': 'Please select a payment method.'})
 
-            payment.save()
+                payment = Payment.objects.create(order=order, payment_method=payment_method)
 
-            # Empty the cart
-            cart.items.all().delete()
+                # Handle payment details based on method
+                try:
+                    if payment_method == 'credit-card':
+                        if credit_card_form.is_valid():
+                            payment.set_card_number(credit_card_form.cleaned_data.get('card_number'))
+                            payment.set_expiration_date(credit_card_form.cleaned_data.get('expiration_date'))
+                            payment.set_cvv_number(credit_card_form.cleaned_data.get('cvv'))
+                        else:
+                            raise ValidationError('Invalid credit card details.')
+                    elif payment_method == 'zelle':
+                        if zelle_form.is_valid():
+                            payment.payer_email = zelle_form.cleaned_data.get('email')
+                        else:
+                            raise ValidationError('Invalid Zelle details.')
+                    elif payment_method == 'venmo':
+                        if venmo_form.is_valid():
+                            payment.payer_email = venmo_form.cleaned_data.get('venmo_username')
+                        else:
+                            raise ValidationError('Invalid Venmo details.')
+                    elif payment_method == 'paypal':
+                        if paypal_form.is_valid():
+                            payment.payer_email = paypal_form.cleaned_data.get('paypal_email')
+                        else:
+                            raise ValidationError('Invalid PayPal details.')
+                    elif payment_method == 'cashapp':
+                        if cashapp_form.is_valid():
+                            payment.payer_email = cashapp_form.cleaned_data.get('cashapp_username')
+                        else:
+                            raise ValidationError('Invalid CashApp details.')
+                    else:
+                        raise ValidationError('Unsupported payment method.')
 
-            # Save the auction
-            order.auction.save()
+                    # Here, integrate with your payment gateway to process the payment
+                    # For example:
+                    # payment_gateway.process(payment)
+                    # if not payment.success:
+                    #     raise ValidationError('Payment processing failed.')
 
-            # Prepare order data for response
-            order_data = model_to_dict(order)
-            order_data['items'] = []
-            for item in order.items.all():
-                item_data = model_to_dict(item)
-                item_data['auction_title'] = item.auction.title
-                order_data['items'].append(item_data)
-            order_data['shipping_address'] = model_to_dict(shipping_address)
-            order_data['billing_address'] = model_to_dict(billing_address)
-            order_data['email'] = request.user.email
+                    payment.save()
+                except ValidationError as ve:
+                    logger.error(f'Payment processing error for Order {order.id}: {ve}')
+                    transaction.set_rollback(True)
+                    return JsonResponse({'status': 'error', 'message': str(ve)})
 
-            # Calculate the total amount including tax and shipping
-            total_amount_with_tax_and_shipping = (
-                    (order.total_amount or Decimal('0.00')) +
-                    (order.tax_amount or Decimal('0.00')) +
-                    (order.shipping_amount or Decimal('0.00'))
-            )
+                except Exception as e:
+                    logger.exception(f'Unexpected error during payment processing for Order {order.id}: {e}')
+                    transaction.set_rollback(True)
+                    return JsonResponse(
+                        {'status': 'error', 'message': 'An unexpected error occurred during payment processing.'})
 
-            print(shipping_address)
+                # Empty the cart
+                cart.items.all().delete()
 
-            # Generate Order PDF for Email
-            html_string = render_to_string('email_templates/order_confirmation_pdf.html', {
-                'order': order,
-                'shipping_address': shipping_address,
-                'billing_address': billing_address,
-                'total_amount_with_tax_and_shipping': total_amount_with_tax_and_shipping,
-                'shipping_account': shipping_account,
+                # Prepare order data for response
+                order_data = model_to_dict(order)
+                order_data['items'] = [
+                    {
+                        'id': item.id,
+                        'auction_title': item.auction.title,
+                        'quantity': item.quantity,
+                        'total_price': str(item.total_price),
+                        'price_each': str(item.price_each),
+                    }
+                    for item in order.items.all()
+                ]
+                order_data['shipping_address'] = model_to_dict(shipping_address)
+                order_data['billing_address'] = model_to_dict(billing_address)
+                order_data['email'] = request.user.email
 
-            })
+                # Calculate the total amount including tax and shipping
+                total_amount_with_tax_and_shipping = (
+                        (order.total_amount or Decimal('0.00')) +
+                        (order.tax_amount or Decimal('0.00')) +
+                        (order.shipping_amount or Decimal('0.00'))
+                ).quantize(Decimal('0.01'))
 
-            result = io.BytesIO()
-            pdf = pisa.pisaDocument(io.BytesIO(html_string.encode('UTF-8')), result)
-            if not pdf.err:
-                # Send the email with the PDF attached
-                subject = f'Order Confirmation - Order #{order.id}'
-                message = 'Thank you for your order! Please find the order confirmation attached.'
-                email = EmailMessage(subject, message, to=[request.user.email])
-                email.attach(f'order_{order.id}.pdf', result.getvalue(), 'application/pdf')
-                email.send()
+                # Generate Order PDF for Email
+                try:
+                    html_string = render_to_string('email_templates/order_confirmation_pdf.html', {
+                        'order': order,
+                        'shipping_address': shipping_address,
+                        'billing_address': billing_address,
+                        'total_amount_with_tax_and_shipping': total_amount_with_tax_and_shipping,
+                        'shipping_account': shipping_account,
+                    })
+
+                    result = io.BytesIO()
+                    pdf = pisa.pisaDocument(io.BytesIO(html_string.encode('UTF-8')), result)
+                    if not pdf.err:
+                        # Send the email with the PDF attached
+                        subject = f'Order Confirmation - Order #{order.id}'
+                        message = 'Thank you for your order! Please find the order confirmation attached.'
+                        email = EmailMessage(subject, message, to=[request.user.email])
+                        email.attach(f'order_{order.id}.pdf', result.getvalue(), 'application/pdf')
+                        email.send()
+                    else:
+                        logger.error(f'PDF generation failed for Order {order.id}.')
+                except Exception as e:
+                    logger.exception(f'Error generating or sending PDF for Order {order.id}: {e}')
+
+                return JsonResponse({'status': 'success', 'order': order_data})
+
             else:
-                # Handle PDF generation error
-                logger.error(f'Error generating PDF for Order #{order.id}')
-
-            return JsonResponse({'status': 'success', 'order': order_data})
-
-        else:
-            errors = {
-                'shipping_method_form': shipping_method_form.errors,
-                'shipping_form': shipping_form.errors,
-                'billing_form': billing_form.errors,
-                'shipping_accounts_form': shipping_accounts_form.errors,
-            }
-            return JsonResponse({'status': 'error', 'message': 'Form validation failed.', 'errors': errors})
+                # Collect form errors
+                errors = {
+                    'shipping_method_form': shipping_method_form.errors,
+                    'shipping_form': shipping_form.errors,
+                    'billing_form': billing_form.errors,
+                    'shipping_accounts_form': shipping_accounts_form.errors,
+                }
+                logger.info(f'Form validation failed for user {request.user.id}: {errors}')
+                return JsonResponse({'status': 'error', 'message': 'Form validation failed.', 'errors': errors})
 
     # Handling GET request - rendering checkout page
     shipping_form = ShippingAddressForm(initial=initial_data)
     billing_form = BillingAddressForm(initial=initial_data)
 
-    return render(request, 'checkout.html', {
+    context = {
         'shipping_accounts_form': shipping_accounts_form,
         'shipping_method_form': shipping_method_form,
         'shipping_form': shipping_form,
@@ -1603,7 +1693,9 @@ def checkout(request):
         'combined_sales_tax_rate': combined_sales_tax_rate,
         'sales_tax_no_shipping': sales_tax_no_shipping,
         'total_no_shipping': total_no_shipping,
-    })
+    }
+
+    return render(request, 'checkout.html', context)
 
 
 @login_required
