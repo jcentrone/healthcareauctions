@@ -40,6 +40,7 @@ from .models import Bid, Category, Image, CartItem, Cart, ProductDetail, Order, 
     OrderItem, Parcel, ProductImage, ShippingAccounts, Address, Message, User
 from .utils.calculate_tax import get_sales_tax
 from .utils.email_manager import send_welcome_email_html
+from .utils.get_base64_logo import get_logo_base64
 from .utils.helpers import update_categories_from_fda
 from .utils.openai import get_chat_completion_request
 from .utils.scrape import scrape_images
@@ -1630,13 +1631,17 @@ def checkout(request):
 
                 # Generate Order PDF for Email
                 try:
+                    logo_base64 = get_logo_base64()
+
                     html_string = render_to_string('email_templates/order_confirmation_pdf.html', {
                         'order': order,
                         'shipping_address': shipping_address,
-                        'shipping_street': order.shipping_address,
+                        'shipping_street': order.shipping_address.shipping_street_address,
                         'billing_address': billing_address,
                         'total_amount_with_tax_and_shipping': total_amount_with_tax_and_shipping,
                         'shipping_account': shipping_account,
+                        'logo_base64': logo_base64,  # Add this line
+
                     })
 
                     result = io.BytesIO()

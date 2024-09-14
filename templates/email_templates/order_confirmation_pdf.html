@@ -1,24 +1,54 @@
 {% load custom_filters %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Order Confirmation - Order #{{ order.id }}</title>
     <style>
-        /* Add your CSS styling here */
+        /* General Styles */
         body {
             font-family: Arial, sans-serif;
+            color: #333;
+            margin: 0;
+            padding: 0;
         }
 
+        .container {
+            width: 80%;
+            margin: auto;
+            padding: 20px;
+        }
+
+        /* Header Styles */
         .header {
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
         }
 
-        .order-details {
-            margin: 20px 0;
+        .header img {
+            max-width: 150px;
+            height: auto;
         }
 
+        .company-info {
+            text-align: right;
+        }
+
+        /* Order Details */
+        .order-details, .shipping-address, .billing-address, .order-items, .total, .shipping-instructions {
+            margin-bottom: 20px;
+        }
+
+        h1, h2 {
+            color: #2E86C1;
+            margin-bottom: 0;
+        }
+
+        /* Table Styles */
         .items-table {
             width: 100%;
             border-collapse: collapse;
@@ -26,88 +56,154 @@
 
         .items-table th, .items-table td {
             border: 1px solid #ccc;
-            padding: 8px;
+            padding: 10px;
+            text-align: left;
         }
 
         .items-table th {
-            background-color: #f2f2f2;
+            background-color: #D6EAF8;
         }
 
-        .total {
-            text-align: right;
-            margin-top: 20px;
+        /* Total Section */
+        .total p {
+            font-size: 1.1em;
+            margin: 5px 0;
+        }
+
+        .total p strong {
+            display: inline-block;
+            width: 150px;
+        }
+
+        /* Shipping Instructions */
+        .shipping-instructions p {
+            font-size: 1em;
+        }
+
+        /* Footer Styles */
+        .footer {
+            text-align: center;
+            font-size: 0.9em;
+            color: #777;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+            margin-top: 30px;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Order Confirmation</h1>
-        <p>Order #{{ order.id }}</p>
-    </div>
+<!-- Header with Logo and Company Info -->
+<table class="header" style="width: 100%; margin-bottom: 20px;">
+    <tr>
+        <!-- Left Column: Logo -->
+        <td style="width: 20%; vertical-align: top;">
+            <img src="data:image/png;base64,{{ logo_base64 }}" alt="Company Logo" style="width:100px;">
+        </td>
 
-    <div class="order-details">
-        <h2>Order Details</h2>
-        <p><strong>Date:</strong> {{ order.created_at }}</p>
-        <p><strong>Email:</strong> {{ order.user.email }}</p>
-    </div>
+        <!-- Right Column: Company Info -->
+        <td style="width: 80%; vertical-align: top; text-align: right;">
+            <p style="text-align: right;">
+                <strong>Healthcare Auctions, LLC</strong><br>
+                9720 N. Armenia Ave. Suite I<br>
+                Tampa, FL 33612<br>
+                Email: Support@HealthcareAuctions.com<br>
+            </p>
+        </td>
+    </tr>
+</table>
 
-    <div class="shipping-address">
-        <h2>Shipping Address</h2>
-        <p>
-            {{ shipping_address.full_name }}<br>
-            {{ shipping_address.company_name }}<br>
-            {{ shipping_address.street_address }}<br>
-            {% if shipping_address.apartment_suite %}
-                {{ shipping_address.apartment_suite }}<br>
-            {% endif %}
-            {{ shipping_address.city }}, {{ shipping_address.state }} {{ shipping_address.zip_code }}<br>
-            {{ shipping_address.country }} <!-- Ensure country is included if necessary -->
-        </p>
-    </div>
+<!-- Order Details -->
+<div class="order-details">
+    <p>
+    <h2>Order Details</h2>
+    <strong>Date:</strong> {{ order.created_at|date:"F j, Y, g:i a" }}<br>
+    <strong>Email:</strong> {{ order.user.email }}<br>
+    <strong>Phone:</strong> {{ order.user.phone_number }}
+    </p>
+</div>
 
-    <div class="billing-address">
-        <h2>Billing Address</h2>
-        <p>
-            {{ billing_address.full_name }}<br>
-            {{ billing_address.company_name }}<br>
-            {{ billing_address.street_address }}<br>
-            {% if billing_address.apartment_suite %}
-                {{ billing_address.apartment_suite }}<br>
-            {% endif %}
-            {{ billing_address.city }}, {{ billing_address.state }} {{ billing_address.zip_code }}<br>
-            {{ billing_address.country }} <!-- Ensure country is included if necessary -->
-        </p>
-    </div>
+<!-- Shipping Address -->
+<div class="shipping-address">
+    <p>
+    <h2>Shipping Address</h2>
 
-    <div class="order-items">
-        <h2>Items</h2>
-        <table class="items-table">
-            <thead>
-                <tr>
-                    <th>Item</th>
-                    <th>Quantity</th>
-                    <th>Price Each</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in order.items.all %}
-                    <tr>
-                        <td>{{ item.auction.title }}</td>
-                        <td>{{ item.quantity }}</td>
-                        <td>${{ item.price_each }}</td>
-                        <td>${{ item.total_price }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+    {{ shipping_address.shipping_full_name }}<br>
+    {% if shipping_address.shipping_company_name %}
+        {{ shipping_address.shipping_company_name }}<br>
+    {% endif %}
+    {{ shipping_address.shipping_street_address }}<br>
+    {% if shipping_address.shipping_apartment_suite %}
+        {{ shipping_address.shipping_apartment_suite }}<br>
+    {% endif %}
+    {{ shipping_address.shipping_city }}, {{ shipping_address.shipping_state }} {{ shipping_address.shipping_zip_code }}<br>
+    </p>
+</div>
 
-    <div class="total">
-        <p><strong>Subtotal:</strong> ${{ order.total_amount }}</p>
-        <p><strong>Sales Tax:</strong> ${{ order.tax_amount }}</p>
-        <p><strong>Shipping:</strong> ${{ order.shipping_amount }}</p>
-        <p><strong>Total:</strong> ${{ total_amount_with_tax_and_shipping }}</p>
-    </div>
+<!-- Billing Address -->
+<div class="billing-address">
+    <p>
+    <h2>Billing Address</h2>
+        {{ billing_address.full_name }}<br>
+        {% if billing_address.billing_company_name %}
+            {{ billing_address.billing_company_name }}<br>
+        {% endif %}
+        {{ billing_address.billing_street_address }}<br>
+        {% if billing_address.billing_apartment_suite %}
+            {{ billing_address.billing_apartment_suite }}<br>
+        {% endif %}
+        {{ billing_address.billing_city }}, {{ billing_address.billing_state }} {{ billing_address.billing_zip_code }}<br>
+    </p>
+</div>
+
+<!-- Order Items -->
+<div class="order-items">
+    <h2>Items</h2>
+    <table class="items-table">
+        <thead>
+        <tr>
+            <th>Item</th>
+            <th>Manufacturer</th>
+            <th>Quantity</th>
+            <th>Price Each</th>
+            <th>Total</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for item in order.items.all %}
+            <tr>
+                <td>{{ item.auction.title }}</td>
+                <td>{{ item.auction.manufacturer }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>${{ item.price_each }}</td>
+                <td>${{ item.total_price }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Totals -->
+<div class="total">
+    <p><strong>Subtotal:</strong> ${{ order.total_amount }}</p>
+    <p><strong>Sales Tax:</strong> ${{ order.tax_amount }}</p>
+    <p><strong>Shipping:</strong> ${{ order.shipping_amount }}</p>
+    <p><strong>Total:</strong> ${{ total_amount_with_tax_and_shipping }}</p>
+</div>
+
+<!-- Shipping Instructions -->
+<div class="shipping-instructions">
+    <h2>Shipping Method & Instructions</h2>
+    <p><strong>Shipping Method:</strong> {{ order.shipping_method }}</p>
+    <p><strong>Special Instructions:</strong> {{ order.special_instructions }}</p>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+    <p>Thank you for your purchase!</p>
+    <p>If you have any questions, feel free to contact us at <a href="mailto:support@healthcareauctions.com">Support@HealthcareAuctions.com</a>.
+    </p>
+    <p>&copy; {{ current_year }} Healthcare Auctions. All rights reserved.</p>
+</div>
+</div>
 </body>
 </html>
