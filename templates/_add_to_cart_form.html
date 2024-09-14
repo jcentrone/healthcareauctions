@@ -9,7 +9,11 @@
             {% csrf_token %}
             {{ add_to_cart_form.quantity.label_tag }}
             {{ add_to_cart_form.quantity }}
-
+            <input type="text"
+                   name="{{ add_to_cart_form.price_each.html_name }}"
+                   id="{{ add_to_cart_form.price_each.auto_id }}"
+                   value="{{ auction.buyItNowPrice|default_if_none:'' }}"
+                   class="form-control" hidden>
             <button type="submit" class="btn btn-primary">Add to
                 Cart
             </button>

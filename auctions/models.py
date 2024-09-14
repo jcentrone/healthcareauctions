@@ -402,12 +402,13 @@ class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
     auction = models.ForeignKey(Auction, on_delete=models.CASCADE)
     quantity = models.IntegerField(null=True, blank=True)
+    price_each = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
         return f'{self.auction.title}'
 
     def total_price(self):
-        return self.auction.buyItNowPrice if self.auction.buyItNowPrice else 0
+        return self.auction.buyItNowPrice * self.quantity if self.auction.buyItNowPrice else 0
 
     def get_image(self):
         # Returns the first image associated with the auction
@@ -463,13 +464,16 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     auction = models.ForeignKey(Auction, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    price_each = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
         return f'{self.quantity}x {self.auction.title}'
 
-    def total_price(self):
-        return self.price
+    # def total_price(self):
+    #     return self.total_price
+
+
 
 
 class ShippingAddress(models.Model):

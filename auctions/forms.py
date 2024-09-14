@@ -289,10 +289,15 @@ class AddToCartForm(forms.ModelForm):
         label="Quantity",
         widget=forms.NumberInput(attrs={'class': 'form-control mt-2 mb-3'}),
     )
+    price_each = forms.DecimalField(
+        min_value=.01,  # Minimum quantity allowed
+        label="Price Each",
+        widget=forms.NumberInput(attrs={'class': 'form-control mt-2 mb-3'}),
+    )
 
     class Meta:
         model = CartItem
-        fields = ['quantity']
+        fields = ['quantity', 'price_each']
 
     def __init__(self, *args, **kwargs):
         self.auction = kwargs.pop('auction', None)

@@ -54,6 +54,7 @@
 <div class="shipping-address">
     <h2>Shipping Address</h2>
     <p>
+        {{ shipping_address }}
         {{ shipping_address.full_name }}<br>
         {{ shipping_address.company_name }}<br>
         {{ shipping_address.street_address }}<br>
@@ -61,21 +62,19 @@
             {{ shipping_address.apartment_suite }}<br>
         {% endif %}
         {{ shipping_address.city }}, {{ shipping_address.state }} {{ shipping_address.zip_code }}<br>
-        {{ shipping_address.country }}
     </p>
 </div>
 
 <div class="billing-address">
     <h2>Billing Address</h2>
     <p>
-        {{ billing_address.full_name }}<br>
-        {{ billing_address.company_name }}<br>
-        {{ billing_address.street_address }}<br>
-        {% if billing_address.apartment_suite %}
-            {{ billing_address.apartment_suite }}<br>
+        {{ order.billing_address.full_name }}<br>
+        {{ order.billing_address.company_name }}<br>
+        {{ order.billing_address.street_address }}<br>
+        {% if order.billing_address.apartment_suite %}
+            {{ order.billing_address.apartment_suite }}<br>
         {% endif %}
-        {{ billing_address.city }}, {{ billing_address.state }} {{ billing_address.zip_code }}<br>
-        {{ billing_address.country }}
+        {{ order.billing_address.city }}, {{ order.billing_address.state }} {{ order.billing_address.zip_code }}<br>
     </p>
 </div>
 
@@ -86,7 +85,7 @@
         <tr>
             <th>Item</th>
             <th>Quantity</th>
-            <th>Price</th>
+            <th>Price Each0</th>
             <th>Total</th>
         </tr>
         </thead>
@@ -95,8 +94,8 @@
             <tr>
                 <td>{{ item.auction.title }}</td>
                 <td>{{ item.quantity }}</td>
-                <td>${{ item.price }}</td>
-                <td>${{ item.quantity|mul:item.price }}</td>
+                <td>${{ item.price_each }}</td>
+                <td>${{ item.total_price }}</td>
             </tr>
         {% endfor %}
         </tbody>
@@ -107,7 +106,7 @@
     <p><strong>Subtotal:</strong> ${{ order.total_amount }}</p>
     <p><strong>Sales Tax:</strong> ${{ order.tax_amount }}</p>
     <p><strong>Shipping:</strong> ${{ order.shipping_amount }}</p>
-    <p><strong>Total:</strong> ${{ order.total_amount + order.tax_amount + order.shipping_amount }}</p>
+    <p><strong>Total:</strong> ${{ total_amount_with_tax_and_shipping }}</p>
 </div>
 </body>
 </html>

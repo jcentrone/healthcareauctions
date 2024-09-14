@@ -2,6 +2,7 @@ import json
 import logging
 import random
 import re
+import io
 import tempfile
 from datetime import timedelta
 
@@ -24,7 +25,9 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-from weasyprint import HTML
+from xhtml2pdf import pisa
+
+
 
 from config.storage_backends import W9Storage, ResellerCertificateStorage
 from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, ProductDetailFormSet, MessageForm, \
@@ -1469,17 +1472,15 @@ def checkout(request):
                     order=order,
                     auction=item.auction,
                     quantity=item.quantity,
-                    price=item.total_price()
+                    total_price=item.total_price(),
+                    price_each=item.price_each,
                 )
 
                 # Update auction availability
-                if item.auction.auction_type == 'sale':
-                    item.auction.available_quantity -= item.quantity
-                    if item.auction.available_quantity <= 0:
-                        item.auction.active = False
-                else:
-                    item.auction.active = False
 
+                item.auction.quantity_available -= item.quantity
+                if item.auction.quantity_available <= 0:
+                    item.auction.active = False
                 item.auction.save()
 
             # Save shipping and billing addresses
@@ -1540,23 +1541,37 @@ def checkout(request):
             order_data['billing_address'] = model_to_dict(billing_address)
             order_data['email'] = request.user.email
 
+            # Calculate the total amount including tax and shipping
+            total_amount_with_tax_and_shipping = (
+                    (order.total_amount or Decimal('0.00')) +
+                    (order.tax_amount or Decimal('0.00')) +
+                    (order.shipping_amount or Decimal('0.00'))
+            )
+
+            print(shipping_address)
+
             # Generate Order PDF for Email
-            html_string = render_to_string('order_confirmation_pdf.html', {
+            html_string = render_to_string('email_templates/order_confirmation_pdf.html', {
                 'order': order,
                 'shipping_address': shipping_address,
                 'billing_address': billing_address,
+                'total_amount_with_tax_and_shipping': total_amount_with_tax_and_shipping,
+                'shipping_account': shipping_account,
+
             })
 
-            # Create a temporary file to save the PDF
-            with tempfile.NamedTemporaryFile(delete=True, suffix='.pdf') as output:
-                HTML(string=html_string).write_pdf(output.name)
-
+            result = io.BytesIO()
+            pdf = pisa.pisaDocument(io.BytesIO(html_string.encode('UTF-8')), result)
+            if not pdf.err:
                 # Send the email with the PDF attached
                 subject = f'Order Confirmation - Order #{order.id}'
                 message = 'Thank you for your order! Please find the order confirmation attached.'
                 email = EmailMessage(subject, message, to=[request.user.email])
-                email.attach(f'order_{order.id}.pdf', output.read(), 'application/pdf')
+                email.attach(f'order_{order.id}.pdf', result.getvalue(), 'application/pdf')
                 email.send()
+            else:
+                # Handle PDF generation error
+                logger.error(f'Error generating PDF for Order #{order.id}')
 
             return JsonResponse({'status': 'success', 'order': order_data})
 

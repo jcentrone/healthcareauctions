@@ -9,6 +9,7 @@
                     <div class="div-table-col">Product</div>
                     <div class="div-table-col"></div>
                     <div class="div-table-col">Quantity</div>
+                    <div class="div-table-col">Price Each</div>
                     <div class="div-table-col">Total Price</div>
                     <div class="div-table-col"></div>
                 </div>
@@ -25,6 +26,7 @@
                         </div>
                         <div class="div-table-col">{{ item.auction.title }}</div>
                         <div class="div-table-col">{{ item.quantity }}</div>
+                        <div class="div-table-col">{{ item.price_each }}</div>
                         <div class="div-table-col">${{ item.total_price }}</div>
                         <div class="div-table-col">
                             <form method="post" action="{% url 'remove_from_cart' item.id %}">

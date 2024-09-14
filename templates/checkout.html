@@ -711,21 +711,35 @@
         }
     
         function submitFormViaAjax() {
-            let form = $('#orderForm');  // Reference to the form
-            let formData = form.serialize();  // Serialize the form data
-            console.log('Sending AJAX request:', formData);
-    
-            $.ajax({
-                type: 'POST',
-                url: form.attr('action'),  // Use the form's action attribute as the URL
-                data: formData,
-                dataType: 'json',
-                success: function (response) {
-                console.log('Response received:', response);  // Debugging line
-    
+    let form = $('#orderForm');  // Reference to the form
+    let formData = form.serialize();  // Serialize the form data
+    console.log('Sending AJAX request:', formData);
+
+    // Show the processing modal
+    Swal.fire({
+        title: '',
+        text: 'Please wait while we process your order.',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    $.ajax({
+        type: 'POST',
+        url: form.attr('action'),  // Use the form's action attribute as the URL
+        data: formData,
+        dataType: 'json',
+        success: function (response) {
+            console.log('Response received:', response);  // Debugging line
+
+            // Close the processing modal
+            Swal.close();
+
             if (response.status === 'success') {
                 const order = response.order;
-    
+
                 // Check if order exists and has the expected structure
                 if (order && order.items && order.items.length > 0) {
                     // Generate order details HTML
@@ -738,7 +752,6 @@
                                     <div class="col-auto text-start">
                                         <div>${order.shipping_address.shipping_full_name}</div>
                                         <div>${order.shipping_address.shipping_street_address}, ${order.shipping_address.shipping_apartment_suite}</div>
-    
                                         <div class="row">
                                             <div class="col-auto">${order.shipping_address.shipping_city},</div>
                                             <div class="col-auto">${order.shipping_address.shipping_state}</div>
@@ -748,26 +761,26 @@
                                     </div>
                                 </div>
                             ` : `<p>No shipping address available.</p>`}
-    
-    
-                         <h3 class="w-100 text-start" style="margin-top: 20px; font-weight: bold;">Order Summary</h3>
-                        <ul style="list-style-type: none; padding: 0;">
+                            <h3 class="w-100 text-start" style="margin-top: 20px; font-weight: bold;">Order Summary</h3>
+                            <ul style="list-style-type: none; padding: 0;">
                     `;
-    
+
                     order.items.forEach(item => {
                         orderDetailsHtml += `
                             <li style="border-bottom: 1px solid #ccc; padding: 10px 0;">
                                 <div class="row">
                                     <div class="col-2 text-center">Quantity</div>
-                                    <div class="col-8 text-start">Description</div>
-                                    <div class="col-2 text-end">Price</div>
+                                    <div class="col-6 text-start">Description</div>
+                                    <div class="col-2 text-end">Price Each</div>
+                                    <div class="col-2 text-end">Total</div>
                                 </div>
                             </li>
                             <li style="border-bottom: 1px solid #ccc; padding: 10px 0;">
                                 <div class="row">
                                     <div class="col-2 text-center">${item.quantity}</div>
-                                    <div class="col-8 text-start">${item.auction_title}</div>
-                                    <div class="col-2 text-end">$${item.price}</div>
+                                    <div class="col-6 text-start">${item.auction_title}</div>
+                                    <div class="col-2 text-start">${item.price_each}</div>
+                                    <div class="col-2 text-end">$${item.total_price}</div>
                                 </div>
                             </li>
                         `;
@@ -775,12 +788,11 @@
                     orderDetailsHtml += `
                         </ul>
                         <p style="font-weight: bold; text-align: right; margin-top: 20px;">Total: $${order.total_amount}</p>
-    
                         <p class="text-start">Your order number is <strong>${order.id}</strong>.</p>
                         <p class="text-start">You will receive an email confirmation shortly at <strong>${order.email}</strong>.</p>
                         <p class="text-start">If you have any questions about your order, please <a href="{% url 'inbox' %}" target="_blank">contact us</a>.</p>
                     </div>`;
-    
+
                     // Display order confirmation in SweetAlert2
                     Swal.fire({
                         title: '',
@@ -806,6 +818,16 @@
                     });
                 } else {
                     console.error('Order data is missing or invalid:', order);  // Debugging line
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Order data is missing or invalid.',
+                        icon: 'error',
+                        confirmButtonText: 'OK',
+                        customClass: {
+                            confirmButton: 'btn btn-primary'
+                        },
+                        buttonsStyling: false
+                    });
                 }
             } else if (response.status === 'error') {
                 Swal.fire({
@@ -820,24 +842,27 @@
                 });
             }
         },
-    
-                error: function (xhr, status, error) {
-                        console.log("XHR Response:", xhr.responseText);  // Log the full response from the server
-    
-                    Swal.fire({
-                        title: 'Submission Failed',
-                        text: error,
-                        {#text: 'There was an error processing your order. Please try again.',#}
-                        icon: 'error',
-                        confirmButtonText: 'OK',
-                        customClass: {
-                            confirmButton: 'btn btn-primary'
-                        },
-                        buttonsStyling: false
-                    });
-                }
+
+        error: function (xhr, status, error) {
+            console.log("XHR Response:", xhr.responseText);  // Log the full response from the server
+
+            // Close the processing modal
+            Swal.close();
+
+            Swal.fire({
+                title: 'Submission Failed',
+                text: 'There was an error processing your order. Please try again.',
+                icon: 'error',
+                confirmButtonText: 'OK',
+                customClass: {
+                    confirmButton: 'btn btn-primary'
+                },
+                buttonsStyling: false
             });
         }
+    });
+}
+
     
         function printOrderConfirmation() {
         const orderContent = document.getElementById('order-confirmation-content').innerHTML;
