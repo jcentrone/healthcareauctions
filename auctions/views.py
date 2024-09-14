@@ -1462,6 +1462,8 @@ def checkout(request):
             shipping_form = ShippingAddressForm(request.POST)
             billing_form = BillingAddressForm(request.POST)
 
+
+
             # Validate all forms
             if (
                     shipping_method_form.is_valid() and
@@ -1476,7 +1478,7 @@ def checkout(request):
                 if default_shipping_account and default_shipping_account.use_as_default_shipping_method:
                     shipping_amount = Decimal('0.00')
                 else:
-                    shipping_amount = Decimal('10.00')  # Example shipping fee; consider making this dynamic
+                    shipping_amount = Decimal('')  # Example shipping fee; consider making this dynamic
 
                 tax_amount = Decimal('0.00') if tax_exempt else sales_tax_no_shipping
 
@@ -1495,6 +1497,8 @@ def checkout(request):
                     tax_amount=tax_amount,
                     shipping_amount=shipping_amount,
                 )
+
+
 
                 # Create OrderItems and update auctions
                 order_items = []
@@ -1629,6 +1633,7 @@ def checkout(request):
                     html_string = render_to_string('email_templates/order_confirmation_pdf.html', {
                         'order': order,
                         'shipping_address': shipping_address,
+                        'shipping_street': order.shipping_address,
                         'billing_address': billing_address,
                         'total_amount_with_tax_and_shipping': total_amount_with_tax_and_shipping,
                         'shipping_account': shipping_account,

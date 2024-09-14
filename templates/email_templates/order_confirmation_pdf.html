@@ -40,73 +40,74 @@
     </style>
 </head>
 <body>
-<div class="header">
-    <h1>Order Confirmation</h1>
-    <p>Order #{{ order.id }}</p>
-</div>
+    <div class="header">
+        <h1>Order Confirmation</h1>
+        <p>Order #{{ order.id }}</p>
+    </div>
 
-<div class="order-details">
-    <h2>Order Details</h2>
-    <p><strong>Date:</strong> {{ order.created_at }}</p>
-    <p><strong>Email:</strong> {{ order.user.email }}</p>
-</div>
+    <div class="order-details">
+        <h2>Order Details</h2>
+        <p><strong>Date:</strong> {{ order.created_at }}</p>
+        <p><strong>Email:</strong> {{ order.user.email }}</p>
+    </div>
 
-<div class="shipping-address">
-    <h2>Shipping Address</h2>
-    <p>
-        {{ shipping_address }}
-        {{ shipping_address.full_name }}<br>
-        {{ shipping_address.company_name }}<br>
-        {{ shipping_address.street_address }}<br>
-        {% if shipping_address.apartment_suite %}
-            {{ shipping_address.apartment_suite }}<br>
-        {% endif %}
-        {{ shipping_address.city }}, {{ shipping_address.state }} {{ shipping_address.zip_code }}<br>
-    </p>
-</div>
+    <div class="shipping-address">
+        <h2>Shipping Address</h2>
+        <p>
+            {{ shipping_address.full_name }}<br>
+            {{ shipping_address.company_name }}<br>
+            {{ shipping_address.street_address }}<br>
+            {% if shipping_address.apartment_suite %}
+                {{ shipping_address.apartment_suite }}<br>
+            {% endif %}
+            {{ shipping_address.city }}, {{ shipping_address.state }} {{ shipping_address.zip_code }}<br>
+            {{ shipping_address.country }} <!-- Ensure country is included if necessary -->
+        </p>
+    </div>
 
-<div class="billing-address">
-    <h2>Billing Address</h2>
-    <p>
-        {{ order.billing_address.full_name }}<br>
-        {{ order.billing_address.company_name }}<br>
-        {{ order.billing_address.street_address }}<br>
-        {% if order.billing_address.apartment_suite %}
-            {{ order.billing_address.apartment_suite }}<br>
-        {% endif %}
-        {{ order.billing_address.city }}, {{ order.billing_address.state }} {{ order.billing_address.zip_code }}<br>
-    </p>
-</div>
+    <div class="billing-address">
+        <h2>Billing Address</h2>
+        <p>
+            {{ billing_address.full_name }}<br>
+            {{ billing_address.company_name }}<br>
+            {{ billing_address.street_address }}<br>
+            {% if billing_address.apartment_suite %}
+                {{ billing_address.apartment_suite }}<br>
+            {% endif %}
+            {{ billing_address.city }}, {{ billing_address.state }} {{ billing_address.zip_code }}<br>
+            {{ billing_address.country }} <!-- Ensure country is included if necessary -->
+        </p>
+    </div>
 
-<div class="order-items">
-    <h2>Items</h2>
-    <table class="items-table">
-        <thead>
-        <tr>
-            <th>Item</th>
-            <th>Quantity</th>
-            <th>Price Each0</th>
-            <th>Total</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for item in order.items.all %}
-            <tr>
-                <td>{{ item.auction.title }}</td>
-                <td>{{ item.quantity }}</td>
-                <td>${{ item.price_each }}</td>
-                <td>${{ item.total_price }}</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-</div>
+    <div class="order-items">
+        <h2>Items</h2>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Price Each</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.items.all %}
+                    <tr>
+                        <td>{{ item.auction.title }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>${{ item.price_each }}</td>
+                        <td>${{ item.total_price }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-<div class="total">
-    <p><strong>Subtotal:</strong> ${{ order.total_amount }}</p>
-    <p><strong>Sales Tax:</strong> ${{ order.tax_amount }}</p>
-    <p><strong>Shipping:</strong> ${{ order.shipping_amount }}</p>
-    <p><strong>Total:</strong> ${{ total_amount_with_tax_and_shipping }}</p>
-</div>
+    <div class="total">
+        <p><strong>Subtotal:</strong> ${{ order.total_amount }}</p>
+        <p><strong>Sales Tax:</strong> ${{ order.tax_amount }}</p>
+        <p><strong>Shipping:</strong> ${{ order.shipping_amount }}</p>
+        <p><strong>Total:</strong> ${{ total_amount_with_tax_and_shipping }}</p>
+    </div>
 </body>
 </html>
