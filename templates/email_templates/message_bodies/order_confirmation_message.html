@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header img {
+            max-width: 150px;
+            margin-bottom: 10px;
+        }
+
+        .content {
+            font-size: 1.1em;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #777;
+            text-align: center;
+        }
+
+        .button {
+            display: inline-block;
+            background-color: #007BFF;
+            color: #ffffff;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<div class="content">
+    <p>Dear {{ user.first_name }},</p>
+    <p>Thank you for shopping with Healthcare Auctions. We have received your order, #{{ id }}, placed on
+        {{ created_at|date:"F d, Y" }}.
+        Your order details are attached to this email.</p>
+    <p>We'll send a confirmation when your order ships.</p>
+
+    <p>If you have any questions or need further assistance, feel free to contact our support team at <a
+            href="mailto:support@healthcareauctions.com">support@healthcareauctions.com</a>.
+        We appreciate your business and look forward to serving you again!</p>
+</div>
+<div class="footer">
+    <p>Healthcare Auctions, LLC<br>
+    <p>Email: <a href="mailto:support@healthcareauctions.com">support@healthcareauctions.com</a></p>
+</div>
+</body>
+</html>

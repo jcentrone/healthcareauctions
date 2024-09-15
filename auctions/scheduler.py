@@ -1,9 +1,15 @@
 import logging
-from django.utils import timezone
+
 from apscheduler.schedulers.background import BackgroundScheduler
-from django_apscheduler.jobstores import DjangoJobStore, register_events
+from django.core.mail import EmailMultiAlternatives
 from django.db import transaction
+from django.utils import timezone
+from django.utils.html import strip_tags
+from django_apscheduler.jobstores import DjangoJobStore, register_events
+
+from config import settings
 from .models import Auction, Bid, Cart, CartItem
+from .utils.email_manager import auction_win_message
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +22,10 @@ def deactivate_expired_auctions():
             auction_type='Auction',
             auction_ending_date__lte=now
         )
+
+
+        site_url = settings.SITE_URL  # Ensure SITE_URL is defined in settings.py
+        cart_url = f"{site_url}/cart/"  # Adjust the cart path if different
 
         for auction in expired_auctions:
             # Get all bids for the auction
@@ -49,6 +59,31 @@ def deactivate_expired_auctions():
                     auction.auction_end_reason = 'sold'
                     logger.info(
                         f'Auction "{auction.title}" won by {highest_bid.user.username} at ${highest_bid_amount}. Item added to cart.')
+
+                    # Send email to the winner
+                    try:
+                        subject = f"Congratulations! You Won the Auction: {auction.title}"
+                        from_email = settings.DEFAULT_FROM_EMAIL
+                        to_email = [highest_bid.user.email]
+                        html_content = auction_win_message(
+                            user=highest_bid.user,
+                            auction=auction,
+                            cart_url=cart_url
+                        )
+
+                        email = EmailMultiAlternatives(
+                            subject=subject,
+                            body=strip_tags(html_content),  # Fallback for plain text
+                            from_email=from_email,
+                            to=to_email,
+                        )
+                        email.attach_alternative(html_content, "text/html")
+                        email.send()
+                        logger.info(
+                            f"Auction win email sent to {highest_bid.user.email} for auction '{auction.title}'.")
+                    except Exception as e:
+                        logger.error(f"Failed to send auction win email to {highest_bid.user.email}: {e}")
+
                 else:
                     # Reserve price not met; auction ends without a winner
                     auction.auction_end_reason = 'reserve_not_met'
@@ -58,19 +93,11 @@ def deactivate_expired_auctions():
                 auction.auction_end_reason = 'expired'
                 logger.info(f'Auction "{auction.title}" expired with no bids.')
 
-
             # Deactivate the auction
             auction.active = False
             auction.save()
 
-        # logger.info('Expired auctions check complete.')
-        # print('Expired auctions check complete.')
-
-        # now = timezone.now()
-        # sample_auctions = Auction.objects.filter(active=True, auction_type='Auction')
-        #
-        # for auction in sample_auctions:
-        #     print(f"Auction ID: {auction.id}, Ending Date: {auction.auction_ending_date}, Now: {now}")
+    logger.info('Expired auctions check complete.')
 
 
 def start():

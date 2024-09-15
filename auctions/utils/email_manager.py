@@ -96,7 +96,7 @@ def order_confirmation_message(order, logo_base64):
                 margin-top: 20px;
                 font-size: 0.9em;
                 color: #777;
-                text-align: center;
+                text-align: left;
             }}
             .button {{
                 display: inline-block;
@@ -122,6 +122,84 @@ def order_confirmation_message(order, logo_base64):
             
             <p>If you have any questions or need further assistance, feel free to contact our support team at <a href="mailto:support@healthcareauctions.com">support@healthcareauctions.com</a>.
             We appreciate your business and look forward to serving you again!</p>
+            
+            
+            <p>Best regards,<br>
+               Healthcare Auctions 
+            </p>
+        </div>
+        <div class="footer">
+            <p>Healthcare Auctions, LLC<br>
+            <p>Email: <a href="mailto:support@healthcareauctions.com">support@healthcareauctions.com</a></p>
+        </div>
+    </body>
+    </html>
+    """
+    return message
+
+
+import base64
+
+
+def auction_win_message(user, auction, logo_base64, cart_url):
+    message = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                color: #333;
+                line-height: 1.6;
+                padding: 20px;
+            }}
+            .header {{
+                text-align: center;
+                margin-bottom: 20px;
+            }}
+            .header img {{
+                max-width: 150px;
+                margin-bottom: 10px;
+            }}
+            .content {{
+                font-size: 1.1em;
+            }}
+            .footer {{
+                margin-top: 20px;
+                font-size: 0.9em;
+                color: #777;
+                text-align: left;
+            }}
+            .button {{
+                display: inline-block;
+                background-color: #007BFF;
+                color: #ffffff;
+                padding: 10px 20px;
+                text-align: center;
+                text-decoration: none;
+                border-radius: 5px;
+                margin-top: 20px;
+            }}
+            .button:hover {{
+                background-color: #0056b3;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="content">
+            <p>Dear {user.first_name},</p>
+            <p>Congratulations! You have won the auction for <strong>{auction.title}</strong> with the highest bid of ${auction.highest_bid_amount}. 
+            The item has been added to your cart.</p>
+            <p>You can view and complete your purchase by visiting your <a href="{cart_url}">cart</a>.</p>
+            <p>Please make sure to complete the payment within the next 48 hours to ensure your order is processed.</p>
+            <p>If you have any questions or need further assistance, feel free to contact our support team at <a href="mailto:support@healthcareauctions.com">support@healthcareauctions.com</a>.</p>
+
+            <p>Thank you for participating in our auction! We appreciate your business and look forward to serving you again.</p>
+
+            <p>Best regards,<br>
+               Healthcare Auctions 
+            </p>
         </div>
         <div class="footer">
             <p>Healthcare Auctions, LLC<br>

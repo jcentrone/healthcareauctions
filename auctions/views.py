@@ -1649,6 +1649,8 @@ def checkout(request):
                     if not pdf.err:
                         # Send the email with the PDF attached
                         subject = f'Order Confirmation - Order #{order.id}'
+                        # order_dict = model_to_dict(order)  # Convert the order object to a dictionary
+                        # message = render_to_string('email_templates/message_bodies/order_confirmation_message.html', order_dict)
                         message = order_confirmation_message(order, logo_base64)
                         email = EmailMessage(subject, message, to=[request.user.email])
                         email.content_subtype = 'html'
@@ -1715,8 +1717,8 @@ def add_to_cart(request, auction_id):
             cart_item = form.save(commit=False)
             cart_item.cart = cart  # Associate the cart with the cart item
             cart_item.save()  # Now save the cart item
-            # messages.success(request, f'Added {cart_item.quantity} "{auction.title}" to your cart.')
-            return redirect('view_cart')
+            messages.success(request, f'Added {cart_item.quantity} "{auction.title}" to your cart.')
+            return redirect('active_auctions_view')
         else:
             # Collect all form errors and add as error messages
             for field, errors in form.errors.items():

@@ -15,6 +15,8 @@ SECRET_KEY = os.environ.get(
     default=secrets.token_urlsafe(nbytes=64),
 )
 
+SITE_URL = 'https://www.healthcareauctions.com'
+
 # DEBUG = config('DEBUG', default=False, cast=bool)
 DEBUG = True
 
