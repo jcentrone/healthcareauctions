@@ -114,25 +114,23 @@ def order_confirmation_message(order, logo_base64):
         </style>
     </head>
     <body>
-        <div class="header">
-            <img src="data:image/png;base64,{logo_base64}" alt="Company Logo" style="width: 75px;">
-            <h1>Thank You for Your Order!</h1>
-        </div>
         <div class="content">
             <p>Dear {order.user.first_name},</p>
-            <p>Thank you for shopping with Healthcare Auctions. We have received your order, #{order.id}, placed on {order.created_at.strftime('%B %d, %Y at %I:%M %p')}.</p>
-            <p>Your order details are attached to this email.</p>
-            <p>If you have any questions or need further assistance, feel free to contact our support team at <a href="mailto:support@healthcareauctions.com">support@healthcareauctions.com</a>.</p>
-            <p>We appreciate your business and look forward to serving you again!</p>
+            <p>Thank you for shopping with Healthcare Auctions. We have received your order, #{order.id}, placed on {order.created_at.strftime('%B %d, %Y')}. 
+            Your order details are attached to this email.</p>
+            <p>We'll send a confirmation when your order ships.</p>
+            
+            <p>If you have any questions or need further assistance, feel free to contact our support team at <a href="mailto:support@healthcareauctions.com">support@healthcareauctions.com</a>.
+            We appreciate your business and look forward to serving you again!</p>
         </div>
         <div class="footer">
             <p>Healthcare Auctions, LLC<br>
             <p>Email: <a href="mailto:support@healthcareauctions.com">support@healthcareauctions.com</a></p>
-            <p>Phone: (123) 456-7890</p>
         </div>
     </body>
     </html>
     """
+    return message
 
 
 def send_welcome_email_html(to_email, user_first_Name):

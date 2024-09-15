@@ -1640,7 +1640,7 @@ def checkout(request):
                         'billing_address': billing_address,
                         'total_amount_with_tax_and_shipping': total_amount_with_tax_and_shipping,
                         'shipping_account': shipping_account,
-                        'logo_base64': logo_base64,  # Add this line
+                        'logo_base64': logo_base64,
 
                     })
 
@@ -1651,6 +1651,7 @@ def checkout(request):
                         subject = f'Order Confirmation - Order #{order.id}'
                         message = order_confirmation_message(order, logo_base64)
                         email = EmailMessage(subject, message, to=[request.user.email])
+                        email.content_subtype = 'html'
                         email.attach(f'order_{order.id}.pdf', result.getvalue(), 'application/pdf')
                         email.send()
                     else:
@@ -1714,14 +1715,14 @@ def add_to_cart(request, auction_id):
             cart_item = form.save(commit=False)
             cart_item.cart = cart  # Associate the cart with the cart item
             cart_item.save()  # Now save the cart item
-            messages.success(request, f'Added {cart_item.quantity} "{auction.title}" to your cart.')
+            # messages.success(request, f'Added {cart_item.quantity} "{auction.title}" to your cart.')
             return redirect('view_cart')
         else:
             # Collect all form errors and add as error messages
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, error)
-            return redirect('add_to_cart', auction_id=auction.id)
+            return redirect('active_auctions_view', auction_id=auction.id)
     else:
         form = AddToCartForm(auction=auction)
 
