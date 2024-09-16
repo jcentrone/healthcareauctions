@@ -80,6 +80,37 @@ let cameraView;
 let cameraEnhancer;
 let scannerInitialized = false;
 let currentZoomLevel = 1; // Initialize zoom level
+const maxZoom = 5;
+const minZoom = 1;
+
+// Fullscreen Helper Functions
+function requestFullscreen(element) {
+    if (element.requestFullscreen) {
+        return element.requestFullscreen();
+    } else if (element.webkitRequestFullscreen) { /* Safari */
+        return element.webkitRequestFullscreen();
+    } else if (element.msRequestFullscreen) { /* IE11 */
+        return element.msRequestFullscreen();
+    } else {
+        return Promise.reject(new Error('Fullscreen API is not supported'));
+    }
+}
+
+function exitFullscreen() {
+    if (document.exitFullscreen) {
+        return document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) { /* Safari */
+        return document.webkitExitFullscreen();
+    } else if (document.msExitFullscreen) { /* IE11 */
+        return document.msExitFullscreen();
+    } else {
+        return Promise.reject(new Error('Fullscreen API is not supported'));
+    }
+}
+
+function getFullscreenElement() {
+    return document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+}
 
 async function initScanner() {
     if (scannerInitialized) {
@@ -124,30 +155,98 @@ async function initScanner() {
 function initializeUI() {
     // Fullscreen Button
     const fullscreenBtn = document.getElementById('fullscreen-btn');
-    fullscreenBtn.addEventListener('click', toggleFullscreen);
+    if (fullscreenBtn) {
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+        console.log('Fullscreen button event listener attached.');
+    } else {
+        console.error('Fullscreen button not found.');
+    }
 
     // Zoom Buttons
     const zoomInBtn = document.getElementById('zoom-in');
     const zoomOutBtn = document.getElementById('zoom-out');
 
-    zoomInBtn.addEventListener('click', () => adjustZoom(0.1));
-    zoomOutBtn.addEventListener('click', () => adjustZoom(-0.1));
+    if (zoomInBtn && zoomOutBtn) {
+        zoomInBtn.addEventListener('click', () => {
+            console.log('Zoom In button clicked.');
+            adjustZoom(0.1);
+        });
+        zoomOutBtn.addEventListener('click', () => {
+            console.log('Zoom Out button clicked.');
+            adjustZoom(-0.1);
+        });
+        console.log('Zoom buttons event listeners attached.');
+    } else {
+        console.error('Zoom buttons not found.');
+    }
+
+    // Initialize zoom display
+    updateZoomDisplay();
 }
 
 function toggleFullscreen() {
-    const cameraContainer = document.getElementById('camera-view-container');
+    const scannerWrapper = document.getElementById('scanner-wrapper');
+    const fullscreenBtnIcon = document.querySelector('#fullscreen-btn i');
 
-    if (!document.fullscreenElement) {
-        cameraContainer.requestFullscreen().catch(err => {
+    if (!getFullscreenElement()) {
+        console.log('Attempting to enter fullscreen.');
+        requestFullscreen(scannerWrapper).then(() => {
+            console.log('Fullscreen mode activated.');
+            if (fullscreenBtnIcon) {
+                fullscreenBtnIcon.classList.remove('fa-expand');
+                fullscreenBtnIcon.classList.add('fa-compress');
+            }
+        }).catch(err => {
             console.error(`Error attempting to enable fullscreen mode: ${err.message}`);
         });
     } else {
-        document.exitFullscreen();
+        console.log('Attempting to exit fullscreen.');
+        exitFullscreen().then(() => {
+            console.log('Fullscreen mode exited.');
+            if (fullscreenBtnIcon) {
+                fullscreenBtnIcon.classList.remove('fa-compress');
+                fullscreenBtnIcon.classList.add('fa-expand');
+            }
+        }).catch(err => {
+            console.error(`Error attempting to exit fullscreen mode: ${err.message}`);
+        });
     }
 }
 
+document.addEventListener('fullscreenchange', () => {
+    console.log('Fullscreen state changed.');
+    const fullscreenBtnIcon = document.querySelector('#fullscreen-btn i');
+    if (getFullscreenElement()) {
+        if (fullscreenBtnIcon) {
+            fullscreenBtnIcon.classList.remove('fa-expand');
+            fullscreenBtnIcon.classList.add('fa-compress');
+        }
+    } else {
+        if (fullscreenBtnIcon) {
+            fullscreenBtnIcon.classList.remove('fa-compress');
+            fullscreenBtnIcon.classList.add('fa-expand');
+        }
+    }
+});
+
+// For Safari on iOS which uses webkitfullscreenchange
+document.addEventListener('webkitfullscreenchange', () => {
+    console.log('webkitFullscreen state changed.');
+    const fullscreenBtnIcon = document.querySelector('#fullscreen-btn i');
+    if (getFullscreenElement()) {
+        if (fullscreenBtnIcon) {
+            fullscreenBtnIcon.classList.remove('fa-expand');
+            fullscreenBtnIcon.classList.add('fa-compress');
+        }
+    } else {
+        if (fullscreenBtnIcon) {
+            fullscreenBtnIcon.classList.remove('fa-compress');
+            fullscreenBtnIcon.classList.add('fa-expand');
+        }
+    }
+});
+
 function adjustZoom(delta) {
-    // Ensure cameraEnhancer is available
     if (!cameraEnhancer) {
         console.error('Camera Enhancer is not initialized.');
         return;
@@ -155,33 +254,26 @@ function adjustZoom(delta) {
 
     // Update zoom level
     currentZoomLevel += delta;
-    currentZoomLevel = Math.max(1, Math.min(currentZoomLevel, 5)); // Limit zoom between 1x and 5x
+    currentZoomLevel = Math.max(minZoom, Math.min(currentZoomLevel, maxZoom));
 
     // Apply zoom
     cameraEnhancer.setZoom(currentZoomLevel)
         .then(() => {
-            console.log(`Zoom level set to ${currentZoomLevel}x`);
+            console.log(`Zoom level set to ${currentZoomLevel.toFixed(1)}x`);
+            updateZoomDisplay();
         })
         .catch(err => {
             console.error('Error setting zoom level:', err);
         });
 }
 
+function updateZoomDisplay() {
+    const zoomDisplay = document.getElementById('zoom-level');
+    zoomDisplay.textContent = `Zoom: ${currentZoomLevel.toFixed(1)}x`;
+}
+
 // Initialize the scanner when the page loads
 window.addEventListener('DOMContentLoaded', initScanner);
-
-async function stopScanner() {
-    try {
-        if (cvRouter) {
-            await cvRouter.stopCapturing();
-        }
-        if (cameraEnhancer) {
-            await cameraEnhancer.close();
-        }
-    } catch (error) {
-        console.error('Error stopping scanner:', error);
-    }
-}
 
 
 function processDetectedBarcode(result) {
