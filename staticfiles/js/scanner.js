@@ -80,8 +80,8 @@ let cameraView;
 let cameraEnhancer;
 let scannerInitialized = false;
 let currentZoomLevel = 1; // Initialize zoom level
-const maxZoom = 5;
-const minZoom = 1;
+let minZoom = 1; // Default values
+let maxZoom = 5; // Default values
 
 // Fullscreen Helper Functions
 function requestFullscreen(element) {
@@ -147,8 +147,33 @@ async function initScanner() {
 
         // Initialize UI event listeners
         initializeUI();
+
+        // Initialize Zoom Capabilities
+        await initializeZoomCapabilities();
     } catch (error) {
         console.error('Error initializing scanner:', error);
+    }
+}
+
+async function initializeZoomCapabilities() {
+    if (!cameraEnhancer) {
+        console.error('Camera Enhancer is not initialized.');
+        return;
+    }
+
+    try {
+        const capabilities = await cameraEnhancer.getCapabilities();
+        console.log('Camera Zoom Capabilities:', capabilities.zoom);
+
+        minZoom = capabilities.zoom.min || 1;
+        maxZoom = capabilities.zoom.max || 5;
+
+        // Optionally, set initial zoom to the minimum or a default value within the range
+        currentZoomLevel = Math.max(minZoom, Math.min(currentZoomLevel, maxZoom));
+        await cameraEnhancer.setZoom({factor: currentZoomLevel});
+        updateZoomDisplay();
+    } catch (error) {
+        console.error('Error retrieving camera capabilities:', error);
     }
 }
 
@@ -156,7 +181,10 @@ function initializeUI() {
     // Fullscreen Button
     const fullscreenBtn = document.getElementById('fullscreen-btn');
     if (fullscreenBtn) {
-        fullscreenBtn.addEventListener('click', toggleFullscreen);
+        fullscreenBtn.addEventListener('click', (e) => {
+            e.preventDefault(); // Prevent default behavior
+            toggleFullscreen();
+        });
         console.log('Fullscreen button event listener attached.');
     } else {
         console.error('Fullscreen button not found.');
@@ -167,11 +195,13 @@ function initializeUI() {
     const zoomOutBtn = document.getElementById('zoom-out');
 
     if (zoomInBtn && zoomOutBtn) {
-        zoomInBtn.addEventListener('click', () => {
+        zoomInBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             console.log('Zoom In button clicked.');
             adjustZoom(0.1);
         });
-        zoomOutBtn.addEventListener('click', () => {
+        zoomOutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             console.log('Zoom Out button clicked.');
             adjustZoom(-0.1);
         });
@@ -196,6 +226,8 @@ function toggleFullscreen() {
                 fullscreenBtnIcon.classList.remove('fa-expand');
                 fullscreenBtnIcon.classList.add('fa-compress');
             }
+            // Adjust scanner-wrapper height to fill the screen
+            scannerWrapper.style.height = '100vh';
         }).catch(err => {
             console.error(`Error attempting to enable fullscreen mode: ${err.message}`);
         });
@@ -207,6 +239,8 @@ function toggleFullscreen() {
                 fullscreenBtnIcon.classList.remove('fa-compress');
                 fullscreenBtnIcon.classList.add('fa-expand');
             }
+            // Reset scanner-wrapper height to initial value
+            scannerWrapper.style.height = '25vh';
         }).catch(err => {
             console.error(`Error attempting to exit fullscreen mode: ${err.message}`);
         });
@@ -254,12 +288,18 @@ function adjustZoom(delta) {
 
     // Update zoom level
     currentZoomLevel += delta;
-    currentZoomLevel = Math.max(minZoom, Math.min(currentZoomLevel, maxZoom));
+    currentZoomLevel = Math.max(minZoom, Math.min(currentZoomLevel, maxZoom)); // Limit zoom between min and max
+
+    console.log(`Attempting to set zoom to: ${currentZoomLevel}x`);
+
+    // Prepare settings object
+    const zoomSettings = {factor: currentZoomLevel};
+    console.log('Zoom Settings:', zoomSettings);
 
     // Apply zoom
-    cameraEnhancer.setZoom(currentZoomLevel)
+    cameraEnhancer.setZoom(zoomSettings)
         .then(() => {
-            console.log(`Zoom level set to ${currentZoomLevel.toFixed(1)}x`);
+            console.log(`Zoom level successfully set to ${currentZoomLevel}x`);
             updateZoomDisplay();
         })
         .catch(err => {
