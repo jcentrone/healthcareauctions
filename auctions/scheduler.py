@@ -60,6 +60,8 @@ def deactivate_expired_auctions():
                     logger.info(
                         f'Auction "{auction.title}" won by {highest_bid.user.username} at ${highest_bid_amount}. Item added to cart.')
 
+                    print(f'Auction "{auction.title}" won by {highest_bid.user.username} at ${highest_bid_amount}. Item added to cart.')
+
                     # Send email to the winner
                     try:
                         subject = f"Congratulations! You Won the Auction: {auction.title}"
@@ -83,6 +85,7 @@ def deactivate_expired_auctions():
                             f"Auction win email sent to {highest_bid.user.email} for auction '{auction.title}'.")
                     except Exception as e:
                         logger.error(f"Failed to send auction win email to {highest_bid.user.email}: {e}")
+                        print(f"Failed to send auction win email to {highest_bid.user.email}: {e}")
 
                 else:
                     # Reserve price not met; auction ends without a winner
@@ -97,7 +100,14 @@ def deactivate_expired_auctions():
             auction.active = False
             auction.save()
 
+            # Clear the auction's watchlist
+            auction.watchers.clear()
+
+            logger.info(f'Auction "{auction.title}" has ended and watchers have been cleared.')
+            print(f'Auction "{auction.title}" has ended and watchers have been cleared.')
+
     logger.info('Expired auctions check complete.')
+    print('Expired auctions check complete.')
 
 
 def start():

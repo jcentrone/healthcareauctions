@@ -8,13 +8,12 @@ from decimal import Decimal
 
 import openpyxl
 from django import forms
+from django.contrib import messages
 from django.contrib.auth import authenticate, logout, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.views import PasswordChangeView
 from django.contrib.messages import get_messages
-from django.contrib import messages
-
 from django.core.exceptions import ValidationError
 from django.core.mail import EmailMessage
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -66,7 +65,6 @@ def index(request):
     """
     The default route which renders the home page
     """
-    unread_message_count = 0
     watchlist, cart_count = None, None
 
     # Filter categories to include only those with at least one auction
@@ -101,9 +99,9 @@ def index(request):
         watchlist = request.user.watchlist.all()
         watchlist = add_images_to_auctions(watchlist)
         watchlist_ids = watchlist.values_list('id', flat=True)
-        recent_views = AuctionView.objects.filter(user=request.user, auction__active=True) \
-                           .order_by('auction__id', '-viewed_at') \
-                           .distinct('auction__id')[:8]
+        recent_views = AuctionView.objects.filter(user=request.user, auction__active=True).order_by('auction__id',
+                                                                                                    '-viewed_at').distinct(
+            'auction__id')[:8]
 
         auctions_cat1 = auctions_cat1.annotate(
             is_watched=Case(
@@ -184,7 +182,7 @@ def save_all_forms(request):
     shipping_account_form = ShippingAccountsForm(request.POST, instance=shipping_account_instance)
 
     # Validate all forms
-    forms = {
+    user_forms = {
         'settings_form': settings_form,
         'billing_form': billing_form,
         'shipping_form': shipping_form,
@@ -192,7 +190,7 @@ def save_all_forms(request):
     }
     errors = {}
 
-    for form_name, form in forms.items():
+    for form_name, form in user_forms.items():
         if not form.is_valid():
             errors[form_name] = form.errors
 
@@ -224,7 +222,7 @@ def dashboard(request):
     listing_filters = Q(creator=user)
     order_filters = Q(user=user)
     sales_filters = Q(user=user)
-    bid_filters = Q(creator=user)
+    # bid_filters = Q(creator=user)
 
     # Get filtering parameters for each tab
     order_status_filter = request.GET.get('order_status')
@@ -319,9 +317,6 @@ def dashboard(request):
     # Count of all auctions the user has bid on
     total_auctions_with_user_bids_count = auctions_with_user_bids.count()
 
-    # Get auction count where the user is the creator
-    auction_count = Auction.objects.filter(creator=request.user, active=True).count()
-
     # Get watchlist items
     watchlist = request.user.watchlist.all() if request.user.is_authenticated else Auction.objects.none()
 
@@ -372,7 +367,7 @@ def dashboard(request):
         order.auction.message_form = MessageForm(initial={'subject': f'Question about {order.auction.title}'})
 
     shipping_account_instance = ShippingAccounts.objects.filter(user=user).first()
-    shipping_account_form = ShippingAccountsForm(request.POST or None, instance=shipping_account_instance)
+    # shipping_account_form = ShippingAccountsForm(request.POST or None, instance=shipping_account_instance)
 
     billing_form = UserAddressForm(instance=user.addresses.filter(address_type='billing').first(),
                                    prefix='billing')
@@ -422,6 +417,7 @@ def dashboard(request):
 @login_required
 def edit_auction(request, auction_id):
     auction = get_object_or_404(Auction, id=auction_id)
+    errors, formset_errors = None, None
 
     if request.method == 'POST':
         form = EditAuctionForm(request.POST, instance=auction)
@@ -449,7 +445,6 @@ def edit_auction(request, auction_id):
                 'level': message.level,
                 'tags': message.tags,
             })
-
 
         return JsonResponse({
             'success': success,
@@ -627,15 +622,16 @@ def logout_view(request):
 
 @login_required
 def auction_create(request):
-    ImageFormSet = forms.modelformset_factory(Image, form=ImageForm, extra=5)
-    ProductDetailFormSet = forms.modelformset_factory(ProductDetail, form=ProductDetailForm,
-                                                      extra=1)  # Ensure this is defined
+    image_form_set = forms.modelformset_factory(Image, form=ImageForm, extra=5)
+    product_detail_form_set = forms.modelformset_factory(ProductDetail, form=ProductDetailForm,
+                                                         extra=1)  # Ensure this is defined
 
     if request.method == 'POST':
         auction_form = AuctionForm(request.POST, request.FILES)
-        image_formset = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.none(), prefix='images')
-        product_detail_formset = ProductDetailFormSet(request.POST, request.FILES,
-                                                      queryset=ProductDetail.objects.none(), prefix='product_details')
+        image_formset = image_form_set(request.POST, request.FILES, queryset=Image.objects.none(), prefix='images')
+        product_detail_formset = product_detail_form_set(request.POST, request.FILES,
+                                                         queryset=ProductDetail.objects.none(),
+                                                         prefix='product_details')
 
         print("Product Detail Form Data: %s", product_detail_formset.data)
         print("Product Detail Formset Errors: %s", product_detail_formset.errors)
@@ -688,8 +684,9 @@ def auction_create(request):
             return JsonResponse({'success': False, 'errors': errors})
     else:
         auction_form = AuctionForm()
-        image_formset = ImageFormSet(queryset=Image.objects.none(), prefix='images')
-        product_detail_formset = ProductDetailFormSet(queryset=ProductDetail.objects.none(), prefix='product_details')
+        image_formset = image_form_set(queryset=Image.objects.none(), prefix='images')
+        product_detail_formset = product_detail_form_set(queryset=ProductDetail.objects.none(),
+                                                         prefix='product_details')
 
     return render(request, 'auction_create.html', {
         'auction_form': auction_form,
@@ -760,8 +757,8 @@ def import_excel(request):
                     print(key)
                     match = re.match(r'images_(\d+)_\d+', key)
                     if match:
-                        row_index = int(match.group(1))
-                        auction_info = auction_data[row_index]
+                        # row_index = int(match.group(1))
+                        # auction_info = auction_data[row_index]
 
                         # Save the image
                         auction_image = Image(auction=auction, image=request.FILES[key])
@@ -780,7 +777,7 @@ def import_excel(request):
 
 def active_auctions_view(request, auction_id=None):
     """
-    Renders a page that displays all of the currently active auction listings.
+    Renders a page that displays all the currently active auction listings.
     Active auctions are paginated: 10 per page.
     """
     # Get request parameters
@@ -931,7 +928,7 @@ def get_auction_images(request, auction_id):
     auction = get_object_or_404(Auction, id=auction_id)
     images = auction.get_images.all()
     image_urls = [image.image.url for image in images]
-    return (JsonResponse({'image_urls': image_urls}))
+    return JsonResponse({'image_urls': image_urls})
 
 
 @login_required
@@ -988,7 +985,7 @@ def get_auction_product_details(request, auction_id):
 @login_required
 def watchlist_view(request):
     """
-    It renders a page that displays all of
+    It renders a page that displays all
     the listings that a user has added to their watchlist
     Auctions are paginated: 3 per page
     """
@@ -1082,7 +1079,6 @@ def terms_and_conditions(request):
     })
 
 
-
 @login_required
 def auction_bid(request, auction_id):
     """
@@ -1114,7 +1110,7 @@ def auction_bid(request, auction_id):
 @login_required
 def auction_close(request, auction_id):
     """
-    It allows the signed in user who created the listing
+    It allows the signed-in user who created the listing
     to “close” the auction, and makes the listing no longer active
     """
     auction = Auction.objects.get(id=auction_id)
@@ -1190,7 +1186,7 @@ def auction_relist(request, auction_id):
 @login_required
 def auction_comment(request, auction_id):
     """
-    It allows the signed in users to add comments to the listing page
+    It allows the signed-in users to add comments to the listing page
     """
     auction = Auction.objects.get(id=auction_id)
     form = CommentForm(request.POST)
@@ -1204,7 +1200,7 @@ def auction_comment(request, auction_id):
 def category_details_view(request, category_name):
     """
     Clicking on the name of any category takes the user to a page that
-    displays all of the active listings in that category
+    displays all the active listings in that category
     Auctions are paginated: 3 per page
     """
     category = Category.objects.get(category_name=category_name)
@@ -1463,8 +1459,6 @@ def checkout(request):
             shipping_form = ShippingAddressForm(request.POST)
             billing_form = BillingAddressForm(request.POST)
 
-
-
             # Validate all forms
             if (
                     shipping_method_form.is_valid() and
@@ -1499,8 +1493,6 @@ def checkout(request):
                     shipping_amount=shipping_amount,
                 )
 
-
-
                 # Create OrderItems and update auctions
                 order_items = []
                 for item in cart.items.all():
@@ -1524,6 +1516,9 @@ def checkout(request):
                     if auction.quantity_available <= 0:
                         auction.active = False
                         auction.save()
+
+                        # Clear the auction's watchlist
+                        auction.watchers.clear()
 
                 OrderItem.objects.bulk_create(order_items)
 
@@ -1725,13 +1720,8 @@ def add_to_cart(request, auction_id):
                 for error in errors:
                     messages.error(request, error)
             return redirect('active_auctions_view', auction_id=auction.id)
-    else:
-        form = AddToCartForm(auction=auction)
 
     return redirect('active_auctions_view')
-
-    # return render(request, 'add_to_cart.html', {'form': form, 'auction': auction})
-
 
 
 @login_required
@@ -1846,7 +1836,7 @@ def send_reply(request, message_id):
 
 @login_required
 def validate_message(request, message):
-    messages = [
+    gpt_messages = [
         {
             'role': 'system',
             'content': 'You are a helpful assistant that is adept at determining if a message contains personally identifiable information.'
@@ -1861,7 +1851,7 @@ def validate_message(request, message):
     ]
 
     try:
-        response = get_chat_completion_request(messages=messages, tools=None, tool_choice=None)
+        response = get_chat_completion_request(messages=gpt_messages, tools=None, tool_choice=None)
         response_content = response.choices[0].message.content
         parsed_content = json.loads(response_content)
         processed_message = parsed_content.get('message', '')

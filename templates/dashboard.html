@@ -1031,6 +1031,7 @@
                                     <thead>
                                     <tr>
                                         <th>Auction Title</th>
+                                        <th>Expiring In</th>
                                         <th>Highest Bid</th>
                                         <th>Your Bid</th>
                                         <th>Is Highest Bidder</th>
@@ -1039,7 +1040,16 @@
                                     <tbody>
                                     {% for auction in auctions %}
                                         <tr>
-                                            <td><a href="{% url 'active_auctions_with_id' auction.id %}"> {{ auction.title }}</a></td>
+                                            <td>
+                                                <a href="{% url 'active_auctions_with_id' auction.id %}"> {{ auction.manufacturer }} - {{ auction.title }} </a>
+                                            </td>
+                                            <td>
+                                                <div class="lead time-remaining">{{ auction.formatted_time_remaining }}
+                                                    
+                                                </div>
+                                            </td>
+
+
                                             <td>{{ auction.highest_bid }}</td>
                                             <td>{{ auction.user_highest_bid }}</td>
                                             <td>{{ auction.user_is_highest_bidder|yesno:"Yes,No" }}</td>
@@ -1830,7 +1840,8 @@
                                                                 </div>
                                                             {% endif %}
                                                             <div>{% if user.profile_image %}Replace{% else %}
-                                                                Add{% endif %} Profile Image</div>
+                                                                Add{% endif %} Profile Image
+                                                            </div>
                                                             <input type="file"
                                                                    name="{{ settings_form.profile_image.name }}"
                                                                    id="{{ settings_form.profile_image.id_for_label }}"
@@ -1858,7 +1869,8 @@
                                                                 </div>
                                                             {% endif %}
                                                             <div>{% if user.company_logo %}Replace{% else %}
-                                                                Add{% endif %} Company Logo</div>
+                                                                Add{% endif %} Company Logo
+                                                            </div>
                                                             <input type="file"
                                                                    name="{{ settings_form.company_logo.name }}"
                                                                    id="{{ settings_form.company_logo.id_for_label }}"

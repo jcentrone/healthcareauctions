@@ -418,7 +418,7 @@ class CartItem(models.Model):
         return f'{self.auction.title}'
 
     def total_price(self):
-        return self.auction.buyItNowPrice * self.quantity if self.auction.buyItNowPrice else 0
+        return self.price_each * self.quantity
 
     def get_image(self):
         # Returns the first image associated with the auction
