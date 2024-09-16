@@ -113,36 +113,58 @@
                                     {{ order_status|capfirst }} Orders
                                 </div>
                                 <div>
-                                    <form method="GET" class="d-flex">
-                                        <input type="hidden" name="active_tab" value="orders">
+                                    <!-- Filter Button for Mobile -->
+                                    <button class="btn btn-primary d-md-none" type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#filterCollapse" aria-expanded="false"
+                                            aria-controls="filterCollapse">
+                                        <i class="fas fa-filter me-1"></i> Filter
+                                    </button>
 
-                                        <select name="order_status" class="form-select me-2">
-                                            <option value="">All Orders</option>
-                                            <option value="pending"
-                                                    {% if order_status == 'pending' %}selected{% endif %}>
-                                                Pending
-                                            </option>
-                                            <option value="processing"
-                                                    {% if order_status == 'processing' %}selected{% endif %}>
-                                                Processing
-                                            </option>
-                                            <option value="shipped"
-                                                    {% if order_status == 'shipped' %}selected{% endif %}>
-                                                Shipped
-                                            </option>
-                                            <option value="completed"
-                                                    {% if order_status == 'completed' %}selected{% endif %}>
-                                                Completed
-                                            </option>
-                                        </select>
-                                        <input type="date" name="order_date" class="form-control me-2"
-                                               value="{{ request.GET.date }}">
-                                        <button type="submit" class="btn btn-primary">Filter</button>
-                                        {% if order_status != 'All' %}
-                                            <a href="{% url 'dashboard' %}?active_tab=orders&order_status=&order_date="
-                                               class="btn btn-secondary ms-2">Reset</a>
-                                        {% endif %}
-                                    </form>
+                                    <!-- Filter Form -->
+                                    <div class="collapse d-md-block" id="filterCollapse">
+                                        <form method="GET"
+                                              class="d-flex flex-column flex-md-row align-items-md-center mt-3 mt-md-0">
+                                            <input type="hidden" name="active_tab" value="orders">
+
+                                            <div class="input-group me-md-2 mb-2 mb-md-0">
+                                                <select name="order_status" class="form-select">
+                                                    <option value="">All Orders</option>
+                                                    <option value="pending"
+                                                            {% if order_status == 'pending' %}selected{% endif %}>
+                                                        Pending
+                                                    </option>
+                                                    <option value="processing"
+                                                            {% if order_status == 'processing' %}selected{% endif %}>
+                                                        Processing
+                                                    </option>
+                                                    <option value="shipped"
+                                                            {% if order_status == 'shipped' %}selected{% endif %}>
+                                                        Shipped
+                                                    </option>
+                                                    <option value="completed"
+                                                            {% if order_status == 'completed' %}selected{% endif %}>
+                                                        Completed
+                                                    </option>
+                                                </select>
+                                            </div>
+
+                                            <div class="input-group me-md-2 mb-2 mb-md-0">
+                                                <input type="date" name="order_date" class="form-control"
+                                                       value="{{ request.GET.date }}">
+                                            </div>
+
+                                            <div class="input-group me-md-2 mb-2 mb-md-0">
+                                                <button type="submit" class="btn btn-primary">Filter</button>
+                                            </div>
+
+                                            {% if order_status != 'All' %}
+                                                <div class="input-group">
+                                                    <a href="{% url 'dashboard' %}?active_tab=orders&order_status=&order_date="
+                                                       class="btn btn-secondary">Reset</a>
+                                                </div>
+                                            {% endif %}
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
                             <div class='card-body'>
@@ -649,38 +671,61 @@
                                     {{ sales_status|capfirst }} Sales
                                 </div>
                                 <div>
-                                    <form method="GET" class="d-flex">
-                                        <input type="hidden" name="active_tab" value="sales">
+                                    <!-- Filter Button for Mobile -->
+                                    <button class="btn btn-primary d-md-none" type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#filterCollapseSales" aria-expanded="false"
+                                            aria-controls="filterCollapseSales" aria-label="Toggle Filter">
+                                        <i class="fas fa-filter me-1"></i> Filter
+                                    </button>
 
-                                        <select name="sales_status" class="form-select me-2">
-                                            <option value="">All Sales</option>
-                                            <option value="pending"
-                                                    {% if sales_status == 'pending' %}selected{% endif %}>
-                                                Pending
-                                            </option>
-                                            <option value="processing"
-                                                    {% if sales_status == 'processing' %}selected{% endif %}>
-                                                Processing
-                                            </option>
-                                            <option value="shipped"
-                                                    {% if sales_status == 'shipped' %}selected{% endif %}>
-                                                Shipped
-                                            </option>
-                                            <option value="completed"
-                                                    {% if sales_status == 'completed' %}selected{% endif %}>
-                                                Completed
-                                            </option>
-                                        </select>
-                                        <input type="date" name="sales_date" class="form-control me-2"
-                                               value="{{ request.GET.date }}">
-                                        <button type="submit" class="btn btn-primary">Filter</button>
-                                        {% if sales_status != 'All' %}
-                                            <a href="{% url 'dashboard' %}?active_tab=sales&sales_status=&sales_date="
-                                               class="btn btn-secondary ms-2">Reset</a>
-                                        {% endif %}
-                                    </form>
+                                    <!-- Filter Form -->
+                                    <div class="collapse d-md-block" id="filterCollapseSales">
+                                        <form method="GET"
+                                              class="d-flex flex-column flex-md-row align-items-md-center mt-3 mt-md-0">
+                                            <input type="hidden" name="active_tab" value="sales">
+
+                                            <div class="input-group me-md-2 mb-2 mb-md-0">
+                                                <select name="sales_status" class="form-select">
+                                                    <option value="">All Sales</option>
+                                                    <option value="pending"
+                                                            {% if sales_status == 'pending' %}selected{% endif %}>
+                                                        Pending
+                                                    </option>
+                                                    <option value="processing"
+                                                            {% if sales_status == 'processing' %}selected{% endif %}>
+                                                        Processing
+                                                    </option>
+                                                    <option value="shipped"
+                                                            {% if sales_status == 'shipped' %}selected{% endif %}>
+                                                        Shipped
+                                                    </option>
+                                                    <option value="completed"
+                                                            {% if sales_status == 'completed' %}selected{% endif %}>
+                                                        Completed
+                                                    </option>
+                                                </select>
+                                            </div>
+
+                                            <div class="input-group me-md-2 mb-2 mb-md-0">
+                                                <input type="date" name="sales_date" class="form-control"
+                                                       value="{{ request.GET.sales_date }}">
+                                            </div>
+
+                                            <div class="input-group me-md-2 mb-2 mb-md-0">
+                                                <button type="submit" class="btn btn-primary">Filter</button>
+                                            </div>
+
+                                            {% if sales_status != 'All' %}
+                                                <div class="input-group">
+                                                    <a href="{% url 'dashboard' %}?active_tab=sales&sales_status=&sales_date="
+                                                       class="btn btn-secondary">Reset</a>
+                                                </div>
+                                            {% endif %}
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
+
                             <div class='card-body'>
                                 <div class="table-like" id="table-like">
                                     <div class="row header table-like-row">
@@ -999,31 +1044,48 @@
                         <div class='my-2 border-top'>
                             <div class='card-header d-flex justify-content-between align-items-center'>
                                 <div>
-                                    <i class='fas fa-table me-1'></i>
+                                    <i class='fas fa-gavel me-1'></i>
                                     {{ bid_status|capfirst }} Active Bids
                                 </div>
                                 <div>
-                                    <form method="GET" class="d-flex">
-                                        <input type="hidden" name="active_tab" value="activeBids">
+                                    <!-- Filter Button for Mobile -->
+                                    <button class="btn btn-primary d-md-none" type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#filterCollapseBids" aria-expanded="false"
+                                            aria-controls="filterCollapseBids" aria-label="Toggle Filter">
+                                        <i class="fas fa-filter me-1"></i> Filter
+                                    </button>
 
-                                        <select name="bid_status" class="form-select me-2">
-                                            <option value="">All Bids</option>
-                                            <option value="highest"
-                                                    {% if bid_status == 'highest' %}selected{% endif %}>
-                                                Highest Bids
-                                            </option>
-                                            <option value="outbid"
-                                                    {% if bid_status == 'outbid' %}selected{% endif %}>
-                                                Outbid
-                                            </option>
-                                        </select>
+                                    <!-- Filter Form -->
+                                    <div class="collapse d-md-block" id="filterCollapseBids">
+                                        <form method="GET"
+                                              class="d-flex flex-column flex-md-row align-items-md-center mt-3 mt-md-0">
+                                            <input type="hidden" name="active_tab" value="activeBids">
 
-                                        <button type="submit" class="btn btn-primary">Filter</button>
-                                        {% if bid_status != 'All' %}
-                                            <a href="{% url 'dashboard' %}?active_tab=activeBids&bid_status="
-                                               class="btn btn-secondary ms-2">Reset</a>
-                                        {% endif %}
-                                    </form>
+                                            <div class="input-group me-md-2 mb-2 mb-md-0">
+                                                <select name="bid_status" class="form-select">
+                                                    <option value="">All Bids</option>
+                                                    <option value="highest"
+                                                            {% if bid_status == 'highest' %}selected{% endif %}>Highest
+                                                        Bids
+                                                    </option>
+                                                    <option value="outbid"
+                                                            {% if bid_status == 'outbid' %}selected{% endif %}>Outbid
+                                                    </option>
+                                                </select>
+                                            </div>
+
+                                            <div class="input-group me-md-2 mb-2 mb-md-0">
+                                                <button type="submit" class="btn btn-primary">Filter</button>
+                                            </div>
+
+                                            {% if bid_status %}
+                                                <div class="input-group">
+                                                    <a href="{% url 'dashboard' %}?active_tab=activeBids&bid_status="
+                                                       class="btn btn-secondary">Reset</a>
+                                                </div>
+                                            {% endif %}
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
                             <div class='card-body'>
@@ -1041,11 +1103,12 @@
                                     {% for auction in auctions %}
                                         <tr>
                                             <td>
-                                                <a href="{% url 'active_auctions_with_id' auction.id %}"> {{ auction.manufacturer }} - {{ auction.title }} </a>
+                                                <a href="{% url 'active_auctions_with_id' auction.id %}"> {{ auction.manufacturer }}
+                                                    - {{ auction.title }} </a>
                                             </td>
                                             <td>
                                                 <div class="lead time-remaining">{{ auction.formatted_time_remaining }}
-                                                    
+
                                                 </div>
                                             </td>
 
@@ -1109,9 +1172,9 @@
                     <!-- My Listings -->
                     <div class="tab-pane fade {% if active_tab == 'listings' %}show active{% endif %}"
                          id="listings"
-                         role="tabpanel" aria-labelledby="listings-tab">
+                         role="tabpanel" aria-labelledby="listings-tab"> 
 
-                        <div class='my-2 border-top'>
+                        <div class='my-2 border-top'> 
                             <div class='card-header d-flex justify-content-between align-items-center'>
                                 <div class="d-flex align-items-center">
                                     <i class='fas fa-table me-1'></i>
@@ -1120,7 +1183,7 @@
                                             style="display: none;">Post All Listings
                                     </button>
                                 </div>
-                                <div>
+                                <div> 
                                     <form method="GET" class="d-flex">
                                         <input type="hidden" name="active_tab" value="listings">
                                         <select name="listing_status" class="form-select me-2">
