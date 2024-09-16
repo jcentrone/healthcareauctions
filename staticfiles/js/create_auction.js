@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     // Attach event listeners to all image upload inputs
-    document.querySelectorAll('input[type="file"][id^="id_form-"]').forEach((input) => {
+    document.querySelectorAll('input[type="file"][id^="id_images-"]').forEach((input) => {
         const index = input.id.match(/\d+/)[0]; // Extract the index from the input ID
         input.addEventListener('change', () => {
             readURL(input, `thumbnail-preview-${index}`, `upload-icon-${index}`);
@@ -909,6 +909,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const quantityAvailableField = document.querySelector('[name="quantity_available"]');
     const packageFullField = document.querySelector('[name="fullPackage"]');
     const partialQuantityField = document.querySelector('[name="package_quantity"]');
+    const qtyContainer = document.getElementById('qty-container');
+    const saleTab = document.getElementById('buyItNow-tab');
+    const auctionTab = document.getElementById('auction-tab');
 
     function updateFieldRequirements() {
         const auctionType = auctionTypeField.value;
@@ -917,9 +920,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (auctionType === "Auction") {
             startingBidField.required = true;
             quantityAvailableField.required = true;
-        } else {
+            qtyContainer.style.display = 'none';
+            quantityAvailableField.value = '1';
+
+        } else if (auctionType === "Sale"){
             startingBidField.required = false;
             quantityAvailableField.required = false;
+            qtyContainer.style.display = 'block';
         }
 
         if (packageFull) {
@@ -936,6 +943,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // Event listeners
     auctionTypeField.addEventListener('change', updateFieldRequirements);
     packageFullField.addEventListener('change', updateFieldRequirements);
+    saleTab.addEventListener('click', updateFieldRequirements);
+    auctionTab.addEventListener('click', updateFieldRequirements);
 });
 
 document.addEventListener('DOMContentLoaded', function () {

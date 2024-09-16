@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     // Attach event listeners to all image upload inputs
-    document.querySelectorAll('input[type="file"][id^="id_images-"]').forEach((input) => {
+    document.querySelectorAll('input[type="file"][id^="id_form-"]').forEach((input) => {
         const index = input.id.match(/\d+/)[0]; // Extract the index from the input ID
         input.addEventListener('change', () => {
             readURL(input, `thumbnail-preview-${index}`, `upload-icon-${index}`);
@@ -921,7 +921,6 @@ document.addEventListener('DOMContentLoaded', function () {
             startingBidField.required = true;
             quantityAvailableField.required = true;
             qtyContainer.style.display = 'none';
-            quantityAvailableField.value = '1';
 
         } else if (auctionType === "Sale"){
             startingBidField.required = false;

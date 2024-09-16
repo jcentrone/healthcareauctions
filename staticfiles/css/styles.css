@@ -47,7 +47,7 @@ dce-component video {
     object-fit: cover !important;
 }
 
-.modal-title{
+.modal-title {
     max-width: 90%;
 }
 
@@ -536,6 +536,48 @@ body.sidebar-toggled footer.sticky-footer {
     color: #fff;
 }
 
+#scanner-wrapper {
+    position: relative;
+    width: 100%;
+    height: 25vh;
+    background-color: #000; /* Optional: Add a background color */
+}
+
+/* Camera View Container */
+#camera-view-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+/* Controls Styling */
+#fullscreen-btn,
+#zoom-controls button,
+#zoom-level {
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#fullscreen-btn:hover,
+#zoom-controls button:hover {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+/* Zoom Controls Container */
+#zoom-controls {
+    display: flex;
+    gap: 10px;
+}
+
+/* Zoom Level Display */
+#zoom-level {
+    font-size: 14px;
+}
+
 @media (max-width: 575.98px) {
     .navbar-expand-sm > .container,
     .navbar-expand-sm > .container-fluid, .navbar-expand-sm > .container-sm, .navbar-expand-sm > .container-md, .navbar-expand-sm > .container-lg, .navbar-expand-sm > .container-xl {
@@ -595,7 +637,7 @@ body.sidebar-toggled footer.sticky-footer {
     }
 
     header {
-        padding: 0 20px;
+        /*padding: 0 20px;*/
     }
 
     .navbar {
@@ -1006,7 +1048,7 @@ button i {
         grid-column: span 2;
     }
 
-    #id_buyItNowPrice{
+    #id_buyItNowPrice {
         max-width: 100% !important;
     }
 
@@ -1038,7 +1080,7 @@ button i {
 
 #id_deviceSterile,
 #id_fullPackage,
-#id_sell_full_lot{
+#id_sell_full_lot {
     width: 22px;
     height: 22px;
     -webkit-appearance: unset;
@@ -1046,7 +1088,7 @@ button i {
     margin-top: 7px;
 }
 
-.fa-info-circle{
+.fa-info-circle {
     /*color: #6C757D !important;*/
 }
 
@@ -1058,6 +1100,7 @@ input:required, select:required, textarea:required {
     border-left: 2px solid red;
 
 }
+
 .swal2-confirm.btn-primary {
     background-color: #007bff;
     border-color: #007bff;
@@ -1125,7 +1168,7 @@ input:required, select:required, textarea:required {
     color: #999;
 }
 
-#id_buyItNowPrice{
+#id_buyItNowPrice {
     max-width: calc(50% - 10px);
 }
 
@@ -1388,10 +1431,12 @@ video {
         grid-column: span 2;
         display: none;
     }
-    #id_auction_duration{
+
+    #id_auction_duration {
         margin-bottom: 20px;
     }
-    .product-detail-form{
+
+    .product-detail-form {
         grid-template-columns: 1fr;
     }
 
@@ -1601,7 +1646,7 @@ i {
     justify-content: center;
 }
 
-.scan-date{
+.scan-date {
     right: 40px;
 }
 

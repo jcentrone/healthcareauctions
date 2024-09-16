@@ -43,33 +43,63 @@
                         <div id="camera-preview" class="camera-preview">
                             <div style="position: relative; grid-row: span 2">
                                 <h4>Scanner</h4>
-                                <p>We've made it as easy as possible to create your listings by automatically populating
-                                    as much information as possible. Start by scanning your QR codes or Barcodes and
-                                    we'll try to match them.
-
-
+                                <p>
+                                    Scan your item’s barcode to easily create a listing. We automatically populate some
+                                    data from available sources.
+                                    You review the auto-filled details, make any changes, and your listing is ready to
+                                    go!
                                 </p>
                                 <p>If you prefer to enter manually just press close below.</p>
 
-                                <div id="camera-view-container" style="width: 100%; height: 25vh">
-                                    <div class="dce-video-container"
-                                         style="position:absolute;width:100%;height:-webkit-fill-available;"></div>
-                                    <div id="dce-mask" hidden
-                                         style="width:100%;height:100%;position:absolute;top:-10px;left:-10px;padding:10px;">
-                                        <div class="dce-corner"
-                                             style="position:absolute;width:50px;height:50px;top:0;left:0;border-left:3px solid #fe8e14;border-top:3px solid #fe8e14;"></div>
-                                        <div class="dce-corner"
-                                             style="position:absolute;width:50px;height:50px;top:0;right:0;border-right:3px solid #fe8e14;border-top:3px solid #fe8e14;"></div>
-                                        <div class="dce-corner"
-                                             style="position:absolute;width:50px;height:50px;left:0;bottom:0;border-left:3px solid #fe8e14;border-bottom:3px solid #fe8e14;"></div>
-                                        <div class="dce-corner"
-                                             style="position:absolute;width:50px;height:50px;bottom:0;right:0;border-right:3px solid #fe8e14;border-bottom:3px solid #fe8e14;"></div>
+                                <!-- Scanner Wrapper -->
+                                <div id="scanner-wrapper" style="position: relative; width: 100%; height: 25vh;">
+                                    <!-- Camera View Container -->
+                                    <div id="camera-view-container" style="width: 100%; height: 100%;">
+                                        <div class="dce-video-container"
+                                             style="position:absolute; width:100%; height:100%;"></div>
+                                        <div id="dce-mask" hidden
+                                             style="width:100%; height:100%; position:absolute; top:0; left:0; padding:10px;">
+                                            <div class="dce-corner"
+                                                 style="position:absolute; width:50px; height:50px; top:0; left:0; border-left:3px solid #fe8e14; border-top:3px solid #fe8e14;"></div>
+                                            <div class="dce-corner"
+                                                 style="position:absolute; width:50px; height:50px; top:0; right:0; border-right:3px solid #fe8e14; border-top:3px solid #fe8e14;"></div>
+                                            <div class="dce-corner"
+                                                 style="position:absolute; width:50px; height:50px; left:0; bottom:0; border-left:3px solid #fe8e14; border-bottom:3px solid #fe8e14;"></div>
+                                            <div class="dce-corner"
+                                                 style="position:absolute; width:50px; height:50px; bottom:0; right:0; border-right:3px solid #fe8e14; border-bottom:3px solid #fe8e14;"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Fullscreen Button -->
+                                    <button id="fullscreen-btn"
+                                            style="position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.5); border: none; color: white; padding: 10px; border-radius: 5px; cursor: pointer; z-index: 1000;">
+                                        <i class="fas fa-expand"></i>
+                                    </button>
+
+                                    <!-- Zoom Controls -->
+                                    <div id="zoom-controls"
+                                         style="position: absolute; bottom: 10px; right: 10px; display: flex; gap: 10px; z-index: 1000;">
+                                        <button id="zoom-in"
+                                                style="background: rgba(0,0,0,0.5); border: none; color: white; padding: 10px; border-radius: 5px; cursor: pointer;">
+                                            <i class="fas fa-search-plus"></i>
+                                        </button>
+                                        <button id="zoom-out"
+                                                style="background: rgba(0,0,0,0.5); border: none; color: white; padding: 10px; border-radius: 5px; cursor: pointer;">
+                                            <i class="fas fa-search-minus"></i>
+                                        </button>
+                                    </div>
+
+                                    <!-- Zoom Level Display (Optional) -->
+                                    <div id="zoom-level"
+                                         style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.5); color: white; padding: 5px 10px; border-radius: 5px; font-size: 14px; z-index: 1000;">
+                                        Zoom: 1.0x
                                     </div>
                                 </div>
+
+                                <!-- Results Table -->
                                 <textarea id="results"
                                           style="display: none; width: 100%; min-height: 10vh; font-size: 3vmin; overflow: auto"
                                           disabled></textarea>
-
                             </div>
 
 
@@ -97,10 +127,10 @@
 
 
                 <!-- Create Auction Form -->
-                <h1 class='h3 mb-4 text-gray-800'>Create A Listing</h1>
-                <p>We've made it easy to create your listings by automatically populating as much information as
-                    possible based on the details you provide. Simply review the auto-filled details, make any necessary
-                    adjustments, and your listing is ready to go!</p>
+                {#                <h1 class='h3 mb-4 text-gray-800'>Create A Listing</h1>#}
+                {#                <p>We've made it easy to create your listings by automatically populating as much information as#}
+                {#                    possible based on the details you provide. Simply review the auto-filled details, make any necessary#}
+                {#                    adjustments, and your listing is ready to go!</p>#}
                 {#                <p>Enter the details of the auction below.</p>#}
                 <div class='card mb-4'>
                     <div class='card-body'>

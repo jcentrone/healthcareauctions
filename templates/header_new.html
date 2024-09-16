@@ -83,11 +83,7 @@
                                                 </h3>
                                                 <div class='btn btn-secondary mt-auto rounded watch-button'
                                                      onclick="window.location.href='{% url 'watchlist_edit' auction.id 'index' %}'">
-                                                    {% if auction.is_watched %}
                                                         <i class="fa-solid fa-eye-slash"></i>
-                                                    {% else %}
-                                                        <i class="fa-regular fa-eye"></i>
-                                                    {% endif %}
                                                 </div>
                                             </div>
                                         </a>
@@ -109,7 +105,7 @@
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end p-2 shadow" id="discover-drop-menu">
                             <li class='nav-item p-2'>
-                                <a class='nav-link' href="{% url 'active_auctions_view' %}">
+                                <a class='nav-link' href="{% url 'active_auctions_view' %}?sort_by=ending_soonest">
                                     All Listings
                                 </a>
                             </li>

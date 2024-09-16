@@ -31,10 +31,55 @@ Dynamsoft.Core.CoreModule.loadWasm(["dbr"]);
 // })();
 
 // Declare variables outside the function if you need to access them elsewhere
+// let cvRouter;
+// let cameraView;
+// let cameraEnhancer;
+// let scannerInitialized = false;
+//
+// async function initScanner() {
+//     if (scannerInitialized) {
+//         console.log('Scanner is already initialized.');
+//         return;
+//     }
+//     scannerInitialized = true;
+//
+//     try {
+//         cvRouter = await Dynamsoft.CVR.CaptureVisionRouter.createInstance();
+//         cameraView = await Dynamsoft.DCE.CameraView.createInstance(document.getElementById('camera-view-container'));
+//         cameraEnhancer = await Dynamsoft.DCE.CameraEnhancer.createInstance(cameraView);
+//
+//         cvRouter.setInput(cameraEnhancer);
+//
+//         const dceSelCamera = cameraView.getUIElement('dce-sel-camera');
+//
+//         console.log(dceSelCamera);
+//         dceSelCamera.classList.add('dropdown'); // Corrected 'dropdowm' to 'dropdown'
+//
+//         cvRouter.addResultReceiver({
+//             onDecodedBarcodesReceived: (result) => {
+//                 processDetectedBarcode(result);
+//             }
+//         });
+//
+//         let filter = new Dynamsoft.Utility.MultiFrameResultCrossFilter();
+//         filter.enableResultCrossVerification("barcode", true);
+//         filter.enableResultDeduplication("barcode", true);
+//         await cvRouter.addResultFilter(filter);
+//
+//         await cameraEnhancer.open();
+//         await cvRouter.startCapturing("ReadBarcodes_Balance");
+//
+//         // console.log(cameraView.getUIElement());
+//     } catch (error) {
+//         console.error('Error initializing scanner:', error);
+//     }
+// }
+
 let cvRouter;
 let cameraView;
 let cameraEnhancer;
 let scannerInitialized = false;
+let currentZoomLevel = 1; // Initialize zoom level
 
 async function initScanner() {
     if (scannerInitialized) {
@@ -69,11 +114,61 @@ async function initScanner() {
         await cameraEnhancer.open();
         await cvRouter.startCapturing("ReadBarcodes_Balance");
 
-        // console.log(cameraView.getUIElement());
+        // Initialize UI event listeners
+        initializeUI();
     } catch (error) {
         console.error('Error initializing scanner:', error);
     }
 }
+
+function initializeUI() {
+    // Fullscreen Button
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+    // Zoom Buttons
+    const zoomInBtn = document.getElementById('zoom-in');
+    const zoomOutBtn = document.getElementById('zoom-out');
+
+    zoomInBtn.addEventListener('click', () => adjustZoom(0.1));
+    zoomOutBtn.addEventListener('click', () => adjustZoom(-0.1));
+}
+
+function toggleFullscreen() {
+    const cameraContainer = document.getElementById('camera-view-container');
+
+    if (!document.fullscreenElement) {
+        cameraContainer.requestFullscreen().catch(err => {
+            console.error(`Error attempting to enable fullscreen mode: ${err.message}`);
+        });
+    } else {
+        document.exitFullscreen();
+    }
+}
+
+function adjustZoom(delta) {
+    // Ensure cameraEnhancer is available
+    if (!cameraEnhancer) {
+        console.error('Camera Enhancer is not initialized.');
+        return;
+    }
+
+    // Update zoom level
+    currentZoomLevel += delta;
+    currentZoomLevel = Math.max(1, Math.min(currentZoomLevel, 5)); // Limit zoom between 1x and 5x
+
+    // Apply zoom
+    cameraEnhancer.setZoom(currentZoomLevel)
+        .then(() => {
+            console.log(`Zoom level set to ${currentZoomLevel}x`);
+        })
+        .catch(err => {
+            console.error('Error setting zoom level:', err);
+        });
+}
+
+// Initialize the scanner when the page loads
+window.addEventListener('DOMContentLoaded', initScanner);
 
 async function stopScanner() {
     try {
