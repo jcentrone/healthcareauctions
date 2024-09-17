@@ -23,7 +23,6 @@ def deactivate_expired_auctions():
             auction_ending_date__lte=now
         )
 
-
         site_url = settings.SITE_URL  # Ensure SITE_URL is defined in settings.py
         cart_url = f"{site_url}/cart/"  # Adjust the cart path if different
 
@@ -106,8 +105,8 @@ def deactivate_expired_auctions():
             logger.info(f'Auction "{auction.title}" has ended and watchers have been cleared.')
             print(f'Auction "{auction.title}" has ended and watchers have been cleared.')
 
-    logger.info('Expired auctions check complete.')
-    print('Expired auctions check complete.')
+        logger.info('Expired auctions check complete.')
+        print('Expired auctions check complete.')
 
 
 def start():

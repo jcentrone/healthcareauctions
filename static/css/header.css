@@ -318,7 +318,7 @@ footer .social-media a:hover {
     .input-group-append,
     .wrap-button,
     #search-button {
-        width: 100%;
+        width: 100% !important;
     }
 
     .custom-select {

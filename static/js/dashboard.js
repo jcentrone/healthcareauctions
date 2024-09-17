@@ -128,10 +128,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 
-
-
-
-
 });
 
 // document.addEventListener('DOMContentLoaded', function () {
@@ -422,7 +418,7 @@ function submitAllForms(url) {
     let formData = new FormData();
 
     // Append each form's data to the FormData object
-    $('#settings-form, #billing-form, #shipping-form, #shipping-account-form').each(function() {
+    $('#settings-form, #billing-form, #shipping-form, #shipping-account-form').each(function () {
         let formElement = $(this)[0];
         let formFormData = new FormData(formElement);
 
@@ -484,8 +480,6 @@ function submitAllForms(url) {
 }
 
 
-
-
 document.addEventListener('DOMContentLoaded', function () {
     const selectAllCheckbox = document.getElementById('select-all-listings');
     const listingCheckboxes = document.querySelectorAll('.listing-checkbox');
@@ -532,4 +526,49 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 });
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Handle Dropdown Item Clicks
+    let dropdownItems = document.querySelectorAll('.dropdown-item[data-bs-toggle="tab"]');
+    dropdownItems.forEach(function (item) {
+        item.addEventListener('click', function (e) {
+            e.preventDefault();
+            let target = this.getAttribute('href');
+            let tabTriggerEl = document.querySelector('[data-bs-target="' + target + '"]');
+            if (tabTriggerEl) {
+                let tab = new bootstrap.Tab(tabTriggerEl);
+                tab.show();
+            }
+        });
+    });
+
+    // Update Dropdown Button Text Based on Active Tab
+    let settingsTabs = document.getElementById('dashboardTabs');
+    let dropdownButton = document.getElementById('dropdownMenuButton');
+
+    if (dropdownButton) {
+        // Function to update the dropdown button text
+        function updateDropdownButton() {
+            let activeTab = settingsTabs.querySelector('.nav-link.active');
+            if (activeTab) {
+                let activeText = activeTab.querySelector('.card-header').textContent.trim();
+                dropdownButton.innerHTML = '<i class="fas fa-bars me-2"></i> ' + activeText;
+            }
+        }
+
+        // Initial update on page load
+        updateDropdownButton();
+
+        // Listen for tab shown events
+        let tabLinks = settingsTabs.querySelectorAll('.nav-link');
+        tabLinks.forEach(function (tab) {
+            tab.addEventListener('shown.bs.tab', function () {
+                updateDropdownButton();
+            });
+        });
+    }
+});
+
+
 

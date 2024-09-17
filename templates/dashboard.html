@@ -29,13 +29,14 @@
         <!-- Tab Container -->
         <div class="card mb-4">
             <div class="px-3">
-                <ul class="nav nav-tabs card-header-tabs mb-1 mt-2 row-cols-5" id="dashboardTabs" role="tablist">
+                <!-- Tab Navigation for Desktop -->
+                <ul class="nav nav-tabs card-header-tabs mb-1 mt-2 row-cols-5 d-none" id="dashboardTabs" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link {% if active_tab == 'orders' %}active{% endif %} w-100"
                                 id="orders-tab"
                                 data-bs-toggle="tab"
                                 data-bs-target="#orders" type="button" role="tab" aria-controls="orders"
-                                aria-selected="true">
+                                aria-selected="{% if active_tab == 'orders' %}true{% else %}false{% endif %}">
                             <div class="card text-center tab-nav">
                                 <h5 class="card-header">{{ order_status|capfirst }} Orders</h5>
                                 <div class="card-body">
@@ -47,8 +48,10 @@
                     <li class="nav-item" role="presentation">
                         <button class="nav-link {% if active_tab == 'sales' %}active{% endif %} w-100"
                                 id="sales-tab"
-                                data-bs-toggle="tab" data-bs-target="#sales"
-                                type="button" role="tab" aria-controls="sales" aria-selected="false">
+                                data-bs-toggle="tab"
+                                data-bs-target="#sales"
+                                type="button" role="tab" aria-controls="sales"
+                                aria-selected="{% if active_tab == 'sales' %}true{% else %}false{% endif %}">
                             <div class="card text-center tab-nav">
                                 <h5 class="card-header">{{ sales_status|capfirst }} Sales</h5>
                                 <div class="card-body">
@@ -58,10 +61,11 @@
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link {% if active_tab == 'activeBids' %}active{% endif %} w-100"
-                                id="my-bids-tab" data-bs-toggle="tab"
+                        <button class="nav-link {% if active_tab == 'active' %}active{% endif %} w-100"
+                                id="active-bids-tab" data-bs-toggle="tab"
                                 data-bs-target="#myActiveBids"
-                                type="button" role="tab" aria-controls="myActiveBids" aria-selected="false">
+                                type="button" role="tab" aria-controls="activeBids"
+                                aria-selected="{% if active_tab == 'active' %}true{% else %}false{% endif %}">
                             <div class="card text-center tab-nav">
                                 <h5 class="card-header">{{ bid_status|capfirst }} Active Bids</h5>
                                 <div class="card-body">
@@ -74,7 +78,8 @@
                         <button class="nav-link {% if active_tab == 'listings' %}active{% endif %} w-100"
                                 id="listings-tab" data-bs-toggle="tab"
                                 data-bs-target="#listings"
-                                type="button" role="tab" aria-controls="listings" aria-selected="false">
+                                type="button" role="tab" aria-controls="listings"
+                                aria-selected="{% if active_tab == 'listings' %}true{% else %}false{% endif %}">
                             <div class="card text-center tab-nav">
                                 <h5 class="card-header">Listings</h5>
                                 <div class="card-body">
@@ -87,7 +92,8 @@
                         <button class="nav-link {% if active_tab == 'settings' %}active{% endif %} w-100"
                                 id="settings-tab" data-bs-toggle="tab"
                                 data-bs-target="#settings"
-                                type="button" role="tab" aria-controls="settings" aria-selected="false">
+                                type="button" role="tab" aria-controls="settings"
+                                aria-selected="{% if active_tab == 'settings' %}true{% else %}false{% endif %}">
                             <div class="card text-center tab-nav">
                                 <h5 class="card-header">Settings</h5>
                                 <div class="card-body">
@@ -97,6 +103,37 @@
                         </button>
                     </li>
                 </ul>
+
+                <!-- Dropdown Menu for Mobile -->
+                <div class="dropdown d-md-none mb-3">
+                    <button class="btn btn-primary dropdown-toggle w-100" type="button" id="dropdownMenuButton"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-bars me-2"></i> Menu
+                    </button>
+                    <ul class="dropdown-menu w-100" aria-labelledby="dropdownMenuButton">
+                        <li>
+                            <a class="dropdown-item {% if active_tab == 'orders' %}active{% endif %}" href="#orders"
+                               data-bs-toggle="tab" role="tab">Orders</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {% if active_tab == 'sales' %}active{% endif %}" href="#sales"
+                               data-bs-toggle="tab" role="tab">Sales</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {% if active_tab == 'active' %}active{% endif %}"
+                               href="#myActiveBids" data-bs-toggle="tab" role="tab">Active Bids</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {% if active_tab == 'listings' %}active{% endif %}" href="#listings"
+                               data-bs-toggle="tab" role="tab">Listings</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {% if active_tab == 'settings' %}active{% endif %}" href="#settings"
+                               data-bs-toggle="tab" role="tab">Settings</a>
+                        </li>
+                    </ul>
+                </div>
+
             </div>
             <div class="">
                 <div class="tab-content" id="dashboardTabsContent">
@@ -112,12 +149,12 @@
                                     <i class='fas fa-table me-1'></i>
                                     {{ order_status|capfirst }} Orders
                                 </div>
-                                <div>
+                                <div class="filter-container">
                                     <!-- Filter Button for Mobile -->
                                     <button class="btn btn-primary d-md-none" type="button" data-bs-toggle="collapse"
                                             data-bs-target="#filterCollapse" aria-expanded="false"
                                             aria-controls="filterCollapse">
-                                        <i class="fas fa-filter me-1"></i> Filter
+                                        <i class="fas fa-filter me-1"></i> Filters
                                     </button>
 
                                     <!-- Filter Form -->
@@ -170,14 +207,14 @@
                             <div class='card-body'>
                                 <div class="table-like" id="table-like">
                                     <div class="row header table-like-row">
-                                        <div class="cell col-md-2"></div>
+                                        <div class="cell col-md-2 image-col"></div>
                                         <div class="cell col-md-7">Order Details</div>
                                         <div class="cell col-md-3 align-items-center">Actions</div>
                                     </div>
 
                                     {% for order in orders %}
                                         <div class="row table-like-row">
-                                            <div class="cell col-md-2 align-items-center border-bottom text-center">
+                                            <div class="image-col cell col-md-2 align-items-center border-bottom text-center ">
                                                 {% if order.auction.get_image %}
                                                     <img src="{{ order.auction.get_image.image.url }}"
                                                          alt="{{ order.auction.title }}"
@@ -618,6 +655,8 @@
                                 {% if orders.has_other_pages %}
                                     <div class='d-flex justify-content-center'>
                                         <ul class='pagination'>
+
+                                            <!-- Previous Page Link -->
                                             {% if orders.has_previous %}
                                                 <li class='page-item'>
                                                     <a class='page-link'
@@ -630,18 +669,46 @@
                                                     <a class='page-link' href='#'>&laquo;</a>
                                                 </li>
                                             {% endif %}
+
+                                            <!-- First Page Link -->
+                                            {% if orders.number > 3 %}
+                                                <li class='page-item'>
+                                                    <a class='page-link'
+                                                       href='?order_page=1&active_tab=orders&order_status={{ order_status }}&order_date={{ order_date }}'>1</a>
+                                                </li>
+                                                <li class='page-item disabled'>
+                                                    <a class='page-link' href='#'>...</a>
+                                                </li>
+                                            {% endif %}
+
+                                            <!-- Page Range Around Current Page -->
                                             {% for i in orders.paginator.page_range %}
-                                                {% if orders.number == i %}
-                                                    <li class='page-item active'>
-                                                        <a class='page-link' href='#'>{{ i }}</a>
-                                                    </li>
-                                                {% else %}
-                                                    <li class='page-item'>
-                                                        <a class='page-link'
-                                                           href='?order_page={{ i }}&active_tab=orders&order_status={{ order_status }}&order_date={{ order_date }}'>{{ i }}</a>
-                                                    </li>
+                                                {% if i >= orders.number|add:'-2' and i <= orders.number|add:'2' %}
+                                                    {% if orders.number == i %}
+                                                        <li class='page-item active'>
+                                                            <a class='page-link' href='#'>{{ i }}</a>
+                                                        </li>
+                                                    {% else %}
+                                                        <li class='page-item'>
+                                                            <a class='page-link'
+                                                               href='?order_page={{ i }}&active_tab=orders&order_status={{ order_status }}&order_date={{ order_date }}'>{{ i }}</a>
+                                                        </li>
+                                                    {% endif %}
                                                 {% endif %}
                                             {% endfor %}
+
+                                            <!-- Last Page Link -->
+                                            {% if orders.number < orders.paginator.num_pages|add:'-2' %}
+                                                <li class='page-item disabled'>
+                                                    <a class='page-link' href='#'>...</a>
+                                                </li>
+                                                <li class='page-item'>
+                                                    <a class='page-link'
+                                                       href='?order_page={{ orders.paginator.num_pages }}&active_tab=orders&order_status={{ order_status }}&order_date={{ order_date }}'>{{ orders.paginator.num_pages }}</a>
+                                                </li>
+                                            {% endif %}
+
+                                            <!-- Next Page Link -->
                                             {% if orders.has_next %}
                                                 <li class='page-item'>
                                                     <a class='page-link'
@@ -652,9 +719,11 @@
                                                     <a class='page-link' href='#'>&raquo;</a>
                                                 </li>
                                             {% endif %}
+
                                         </ul>
                                     </div>
                                 {% endif %}
+
                             </div>
                         </div>
 
@@ -670,7 +739,7 @@
                                     <i class='fas fa-table me-1'></i>
                                     {{ sales_status|capfirst }} Sales
                                 </div>
-                                <div>
+                                <div class="filter-container">
                                     <!-- Filter Button for Mobile -->
                                     <button class="btn btn-primary d-md-none" type="button" data-bs-toggle="collapse"
                                             data-bs-target="#filterCollapseSales" aria-expanded="false"
@@ -729,14 +798,14 @@
                             <div class='card-body'>
                                 <div class="table-like" id="table-like">
                                     <div class="row header table-like-row">
-                                        <div class="cell col-md-2"></div>
+                                        <div class="cell col-md-2 image-col"></div>
                                         <div class="cell col-md-7">Sales Details</div>
                                         <div class="cell col-md-3 align-items-center">Actions</div>
                                     </div>
 
                                     {% for sale in sales %}
                                         <div class="row table-like-row">
-                                            <div class="cell col-md-2 align-items-center border-bottom text-center">
+                                            <div class="image-col cell col-md-2 align-items-center border-bottom text-center">
                                                 {% if sale.auction.get_image %}
                                                     <img src="{{ sale.auction.get_image.image.url }}"
                                                          alt="{{ sale.auction.title }}"
@@ -752,7 +821,7 @@
                                                 <strong>Sold On:</strong> {{ sale.created_at }}<br>
                                                 <strong>Sale ID:</strong> {{ sale.id }}<br>
                                             </div>
-                                            <div class="cell col-md-3 d-grid gap-2 w-100 border-bottom">
+                                            <div class="cell col-md-3 gap-2 w-100 border-bottom">
                                                 <button class="btn btn-info btn-sm w-100 mb-2"
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#saleModal{{ sale.id }}">View Details
@@ -994,7 +1063,9 @@
 
                                 {% if sales.has_other_pages %}
                                     <div class='d-flex justify-content-center'>
-                                        <ul class='pagination'>
+                                        <ul class='pagination flex-wrap justify-content-center'>
+
+                                            <!-- Previous Page Link -->
                                             {% if sales.has_previous %}
                                                 <li class='page-item'>
                                                     <a class='page-link'
@@ -1007,18 +1078,46 @@
                                                     <a class='page-link' href='#'>&laquo;</a>
                                                 </li>
                                             {% endif %}
+
+                                            <!-- First Page Link and Ellipsis -->
+                                            {% if sales.number > 3 %}
+                                                <li class='page-item'>
+                                                    <a class='page-link'
+                                                       href='?sale_page=1&active_tab=sales&sales_status={{ sales_status }}&sales_date={{ sales_date }}'>1</a>
+                                                </li>
+                                                <li class='page-item disabled'>
+                                                    <a class='page-link' href='#'>...</a>
+                                                </li>
+                                            {% endif %}
+
+                                            <!-- Page Range Around Current Page -->
                                             {% for i in sales.paginator.page_range %}
-                                                {% if sales.number == i %}
-                                                    <li class='page-item active'>
-                                                        <a class='page-link' href='#'>{{ i }}</a>
-                                                    </li>
-                                                {% else %}
-                                                    <li class='page-item'>
-                                                        <a class='page-link'
-                                                           href='?sale_page={{ i }}&active_tab=sales&sales_status={{ sales_status }}&sales_date={{ sales_date }}'>{{ i }}</a>
-                                                    </li>
+                                                {% if i >= sales.number|add:'-2' and i <= sales.number|add:'2' %}
+                                                    {% if sales.number == i %}
+                                                        <li class='page-item active'>
+                                                            <a class='page-link' href='#'>{{ i }}</a>
+                                                        </li>
+                                                    {% else %}
+                                                        <li class='page-item'>
+                                                            <a class='page-link'
+                                                               href='?sale_page={{ i }}&active_tab=sales&sales_status={{ sales_status }}&sales_date={{ sales_date }}'>{{ i }}</a>
+                                                        </li>
+                                                    {% endif %}
                                                 {% endif %}
                                             {% endfor %}
+
+                                            <!-- Last Page Link and Ellipsis -->
+                                            {% if sales.number < sales.paginator.num_pages|add:'-2' %}
+                                                <li class='page-item disabled'>
+                                                    <a class='page-link' href='#'>...</a>
+                                                </li>
+                                                <li class='page-item'>
+                                                    <a class='page-link'
+                                                       href='?sale_page={{ sales.paginator.num_pages }}&active_tab=sales&sales_status={{ sales_status }}&sales_date={{ sales_date }}'>{{ sales.paginator.num_pages }}</a>
+                                                </li>
+                                            {% endif %}
+
+                                            <!-- Next Page Link -->
                                             {% if sales.has_next %}
                                                 <li class='page-item'>
                                                     <a class='page-link'
@@ -1029,15 +1128,17 @@
                                                     <a class='page-link' href='#'>&raquo;</a>
                                                 </li>
                                             {% endif %}
+
                                         </ul>
                                     </div>
                                 {% endif %}
+
                             </div>
                         </div>
                     </div>
 
                     <!-- My Active Bids Tab -->
-                    <div class="tab-pane fade {% if active_tab == 'activeBids' %}show active{% endif %}"
+                    <div class="tab-pane fade {% if active_tab == 'active' %}show active{% endif %}"
                          id="myActiveBids"
                          role="tabpanel" aria-labelledby="my-bids-tab">
 
@@ -1047,7 +1148,7 @@
                                     <i class='fas fa-gavel me-1'></i>
                                     {{ bid_status|capfirst }} Active Bids
                                 </div>
-                                <div>
+                                <div class="filter-container">
                                     <!-- Filter Button for Mobile -->
                                     <button class="btn btn-primary d-md-none" type="button" data-bs-toggle="collapse"
                                             data-bs-target="#filterCollapseBids" aria-expanded="false"
@@ -1077,81 +1178,101 @@
                                             <div class="input-group me-md-2 mb-2 mb-md-0">
                                                 <button type="submit" class="btn btn-primary">Filter</button>
                                             </div>
-
-                                            {% if bid_status %}
-                                                <div class="input-group">
-                                                    <a href="{% url 'dashboard' %}?active_tab=activeBids&bid_status="
-                                                       class="btn btn-secondary">Reset</a>
-                                                </div>
-                                            {% endif %}
                                         </form>
                                     </div>
                                 </div>
                             </div>
                             <div class='card-body'>
-                                <table class="table table-hover">
-                                    <thead>
-                                    <tr>
-                                        <th>Auction Title</th>
-                                        <th>Expiring In</th>
-                                        <th>Highest Bid</th>
-                                        <th>Your Bid</th>
-                                        <th>Is Highest Bidder</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    {% for auction in auctions %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
                                         <tr>
-                                            <td>
-                                                <a href="{% url 'active_auctions_with_id' auction.id %}"> {{ auction.manufacturer }}
-                                                    - {{ auction.title }} </a>
-                                            </td>
-                                            <td>
-                                                <div class="lead time-remaining">{{ auction.formatted_time_remaining }}
-
-                                                </div>
-                                            </td>
-
-
-                                            <td>{{ auction.highest_bid }}</td>
-                                            <td>{{ auction.user_highest_bid }}</td>
-                                            <td>{{ auction.user_is_highest_bidder|yesno:"Yes,No" }}</td>
+                                            <th>Auction Title</th>
+                                            <th>Expiring In</th>
+                                            <th>Highest Bid</th>
+                                            <th>Your Bid</th>
+                                            <th>Is Highest Bidder</th>
                                         </tr>
-                                    {% empty %}
-                                        <tr>
-                                            <td colspan="4">No active bids found.</td>
-                                        </tr>
-                                    {% endfor %}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                        {% for auction in auctions %}
+                                            <tr>
+                                                <td>
+                                                    <a href="{% url 'active_auctions_with_id' auction.id %}">
+                                                        {{ auction.manufacturer }} - {{ auction.title }}
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    <div class="lead time-remaining">{{ auction.formatted_time_remaining }}</div>
+                                                </td>
+                                                <td>{{ auction.highest_bid }}</td>
+                                                <td>{{ auction.user_highest_bid }}</td>
+                                                <td>{{ auction.user_is_highest_bidder|yesno:"Yes,No" }}</td>
+                                            </tr>
+                                        {% empty %}
+                                            <tr>
+                                                <td colspan="5">No active bids found.</td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+
 
                                 {% if auctions.has_other_pages %}
                                     <div class='d-flex justify-content-center'>
-                                        <ul class='pagination'>
+                                        <ul class='pagination flex-wrap justify-content-center'>
+
+                                            <!-- Previous Page Link -->
                                             {% if auctions.has_previous %}
                                                 <li class='page-item'>
                                                     <a class='page-link'
-                                                       href='?auction_page={{ auctions.previous_page_number }}'>
-                                                        &laquo;
-                                                    </a>
+                                                       href='?auction_page={{ auctions.previous_page_number }}'>&laquo;</a>
                                                 </li>
                                             {% else %}
                                                 <li class='page-item disabled'>
                                                     <a class='page-link' href='#'>&laquo;</a>
                                                 </li>
                                             {% endif %}
+
+                                            <!-- First Page Link and Ellipsis -->
+                                            {% if auctions.number > 3 %}
+                                                <li class='page-item'>
+                                                    <a class='page-link' href='?auction_page=1'>1</a>
+                                                </li>
+                                                <li class='page-item disabled'>
+                                                    <a class='page-link' href='#'>...</a>
+                                                </li>
+                                            {% endif %}
+
+                                            <!-- Page Range Around Current Page -->
                                             {% for i in auctions.paginator.page_range %}
-                                                {% if auctions.number == i %}
-                                                    <li class='page-item active'>
-                                                        <a class='page-link' href='#'>{{ i }}</a>
-                                                    </li>
-                                                {% else %}
-                                                    <li class='page-item'>
-                                                        <a class='page-link'
-                                                           href='?auction_page={{ i }}'>{{ i }}</a>
-                                                    </li>
+                                                {% if i >= auctions.number|add:'-2' and i <= auctions.number|add:'2' %}
+                                                    {% if auctions.number == i %}
+                                                        <li class='page-item active'>
+                                                            <a class='page-link' href='#'>{{ i }}</a>
+                                                        </li>
+                                                    {% else %}
+                                                        <li class='page-item'>
+                                                            <a class='page-link'
+                                                               href='?auction_page={{ i }}'>{{ i }}</a>
+                                                        </li>
+                                                    {% endif %}
                                                 {% endif %}
                                             {% endfor %}
+
+                                            <!-- Last Page Link and Ellipsis -->
+                                            {% if auctions.number < auctions.paginator.num_pages|add:'-2' %}
+                                                <li class='page-item disabled'>
+                                                    <a class='page-link' href='#'>...</a>
+                                                </li>
+                                                <li class='page-item'>
+                                                    <a class='page-link'
+                                                       href='?auction_page={{ auctions.paginator.num_pages }}'>{{ auctions.paginator.num_pages }}</a>
+                                                </li>
+                                            {% endif %}
+
+                                            <!-- Next Page Link -->
                                             {% if auctions.has_next %}
                                                 <li class='page-item'>
                                                     <a class='page-link'
@@ -1162,9 +1283,11 @@
                                                     <a class='page-link' href='#'>&raquo;</a>
                                                 </li>
                                             {% endif %}
+
                                         </ul>
                                     </div>
                                 {% endif %}
+
                             </div>
                         </div>
                     </div>
@@ -1172,66 +1295,90 @@
                     <!-- My Listings -->
                     <div class="tab-pane fade {% if active_tab == 'listings' %}show active{% endif %}"
                          id="listings"
-                         role="tabpanel" aria-labelledby="listings-tab"> 
+                         role="tabpanel" aria-labelledby="listings-tab">
 
-                        <div class='my-2 border-top'> 
+                        <div class='my-2 border-top'>
                             <div class='card-header d-flex justify-content-between align-items-center'>
                                 <div class="d-flex align-items-center">
-                                    <i class='fas fa-table me-1'></i>
+                                    <i class='fas fa-gavel me-1'></i>
                                     {{ listing_status|capfirst }} Listings
                                     <button type="button" id="post-selected-listings" class="btn btn-warning ms-3"
                                             style="display: none;">Post All Listings
                                     </button>
                                 </div>
-                                <div> 
-                                    <form method="GET" class="d-flex">
-                                        <input type="hidden" name="active_tab" value="listings">
-                                        <select name="listing_status" class="form-select me-2">
-                                            <option value="">All Listings</option>
-                                            <option value="active"
-                                                    {% if listing_status == 'active' %}selected{% endif %}>
-                                                Active
-                                            </option>
-                                            <option value="inactive"
-                                                    {% if listing_status == 'inactive' %}selected{% endif %}>
-                                                Inactive
-                                            </option>
+                                <div class="filter-container">
+                                    <!-- Filter Button for Mobile -->
+                                    <button class="btn btn-primary d-md-none" type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#filterCollapseListings" aria-expanded="false"
+                                            aria-controls="filterCollapseListings" aria-label="Toggle Filter">
+                                        <i class="fas fa-filter me-1"></i> Filter
+                                    </button>
 
-                                        </select>
-                                        <select name="hold_for_import" class="form-select me-2">
-                                            <option value="False"
-                                                    {% if hold_for_import == False or hold_for_import == '' %}
-                                                    selected{% endif %}>
-                                                Not On Hold
-                                            </option>
+                                    <!-- Filter Form -->
+                                    <div class="collapse d-md-block" id="filterCollapseListings">
+                                        <form method="GET"
+                                              class="d-flex flex-column flex-md-row align-items-md-center mt-3 mt-md-0">
+                                            <input type="hidden" name="active_tab" value="listings">
 
-                                            <option value="True"
-                                                    {% if hold_for_import %}selected{% endif %}>
-                                                On Hold
-                                            </option>
-                                        </select>
-                                        <select name="listing_type" class="form-select me-2">
-                                            <option value="">Listings Type</option>
-                                            <option value="Auction"
-                                                    {% if listing_type == 'Auction' %}selected{% endif %}>
-                                                Auction
-                                            </option>
-                                            <option value="Sale"
-                                                    {% if listing_type == 'Sale' %}selected{% endif %}>
-                                                Sale
-                                            </option>
-                                        </select>
-                                        <input type="date" name="listing_date" class="form-control me-2"
-                                               value="{{ request.GET.date }}">
-                                        <button type="submit" class="btn btn-primary">Filter</button>
-                                        {% if listing_status != 'All' %}
-                                            <a href="{% url 'dashboard' %}?active_tab=listings&listing_status=&listing_date="
-                                               class="btn btn-secondary ms-2">Reset</a>
-                                        {% endif %}
+                                            <div class="input-group me-md-2 mb-2 mb-md-0">
+                                                <select name="listing_status" class="form-select">
+                                                    <option value="">All Listings</option>
+                                                    <option value="active"
+                                                            {% if listing_status == 'active' %}selected{% endif %}>
+                                                        Active
+                                                    </option>
+                                                    <option value="inactive"
+                                                            {% if listing_status == 'inactive' %}selected{% endif %}>
+                                                        Inactive
+                                                    </option>
+                                                </select>
+                                            </div>
 
-                                    </form>
+                                            <div class="input-group me-md-2 mb-2 mb-md-0">
+                                                <select name="hold_for_import" class="form-select">
+                                                    <option value="False"
+                                                            {% if hold_for_import == False or hold_for_import == '' %}selected{% endif %}>
+                                                        Not On Hold
+                                                    </option>
+                                                    <option value="True" {% if hold_for_import %}selected{% endif %}>On
+                                                        Hold
+                                                    </option>
+                                                </select>
+                                            </div>
+
+                                            <div class="input-group me-md-2 mb-2 mb-md-0">
+                                                <select name="listing_type" class="form-select">
+                                                    <option value="">Listings Type</option>
+                                                    <option value="Auction"
+                                                            {% if listing_type == 'Auction' %}selected{% endif %}>
+                                                        Auction
+                                                    </option>
+                                                    <option value="Sale"
+                                                            {% if listing_type == 'Sale' %}selected{% endif %}>Sale
+                                                    </option>
+                                                </select>
+                                            </div>
+
+                                            <div class="input-group me-md-2 mb-2 mb-md-0">
+                                                <input type="date" name="listing_date" class="form-control"
+                                                       value="{{ request.GET.listing_date }}">
+                                            </div>
+
+                                            <div class="input-group me-md-2 mb-2 mb-md-0">
+                                                <button type="submit" class="btn btn-primary">Filter</button>
+                                            </div>
+
+                                            {% if listing_status %}
+                                                <div class="input-group">
+                                                    <a href="{% url 'dashboard' %}?active_tab=listings&listing_status=&hold_for_import=&listing_type=&listing_date="
+                                                       class="btn btn-secondary">Reset</a>
+                                                </div>
+                                            {% endif %}
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
+
                             <div class='card-body'>
                                 <div class="table-like" id="table-like">
                                     <div class="row header table-like-row">
@@ -1245,7 +1392,7 @@
                                                 </div>
                                             </div>
                                         {% endif %}
-                                        <div class="cell col-md-2">
+                                        <div class="cell col-md-2 image-col">
                                             <div style=" display: flex; align-items: center; justify-content: center;">
                                                 Image
                                             </div>
@@ -1266,7 +1413,7 @@
                                                            data-listing-id="{{ listing.id }}">
                                                 </div>
                                             {% endif %}
-                                            <div class="cell col-md-2 align-items-center border-bottom text-center">
+                                            <div class="image-col cell col-md-2 align-items-center border-bottom text-center">
                                                 {% if listing.get_image %}
                                                     <img src="{{ listing.get_image.image.url }}"
                                                          alt="{{ listing.title }}"
@@ -1283,26 +1430,27 @@
                                                 <strong>Listed Type:</strong> {{ listing.auction_type }}<br>
                                                 <strong>Listing ID:</strong> {{ listing.id }}<br>
                                             </div>
-                                            <div class="cell col-md-3 d-grid gap-2 w-100 border-bottom">
+
+                                            <div class="cell col-md-3 gap-2 w-100 border-bottom">
                                                 <button class="btn btn-info btn-sm w-100 mb-2"
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#listingModal{{ listing.id }}"
                                                         data-auction-id="{{ listing.id }}">
                                                     View Details
                                                 </button>
-                                                {% if listing_status == 'active' %}
+                                                {% if listing.active %}
                                                     <a href="{% url 'auction_close' listing.id %}"
                                                        class="btn btn-danger btn-sm w-100 mb-2">Close Listing
                                                     </a>
                                                 {% endif %}
-                                                {% if listing_status == 'active' and hold_for_import == 'False' %}
+                                                {% if listing.active == 'False' and listing.hold_for_import == 'False' %}
                                                     <a href="{% url 'auction_relist' listing.id %}"
                                                        class="btn btn-primary btn-sm w-100">Relist
                                                         {% if listing.auction_type == 'Auction' %}For
                                                             Auction{% else %}For Sale{% endif %} </a>
                                                 {% endif %}
 
-                                                {% if hold_for_import %}
+                                                {% if listing.hold_for_import %}
 
                                                     <button type="button" class="btn btn-warning btn-sm w-100"
                                                             onclick="confirmListing({{ listing.id }}, '{{ listing.auction_type }}, {{ active_tab }}, {{ listing_status }}, {{ listing_type }}, {{ listing_date }}, {{ hold_for_import }}')">
@@ -1707,11 +1855,13 @@
 
                                 {% if listings.has_other_pages %}
                                     <div class='d-flex justify-content-center'>
-                                        <ul class='pagination'>
+                                        <ul class='pagination flex-wrap justify-content-center'>
+
+                                            <!-- Previous Page Link -->
                                             {% if listings.has_previous %}
                                                 <li class='page-item'>
                                                     <a class='page-link'
-                                                       href='?listings_page={{ listings.previous_page_number }}&active_tab=listings&listing_status={{ listing_status }}&listing_type={{ listing_type }}&listing_date={{ listing_date }}&hold_for_import{{ hold_for_import }}'>
+                                                       href='?listings_page={{ listings.previous_page_number }}&active_tab=listings&listing_status={{ listing_status }}&listing_type={{ listing_type }}&listing_date={{ listing_date }}&hold_for_import={{ hold_for_import }}'>
                                                         &laquo;
                                                     </a>
                                                 </li>
@@ -1720,18 +1870,46 @@
                                                     <a class='page-link' href='#'>&laquo;</a>
                                                 </li>
                                             {% endif %}
+
+                                            <!-- First Page Link and Ellipsis -->
+                                            {% if listings.number > 3 %}
+                                                <li class='page-item'>
+                                                    <a class='page-link'
+                                                       href='?listings_page=1&active_tab=listings&listing_status={{ listing_status }}&listing_type={{ listing_type }}&listing_date={{ listing_date }}&hold_for_import={{ hold_for_import }}'>1</a>
+                                                </li>
+                                                <li class='page-item disabled'>
+                                                    <a class='page-link' href='#'>...</a>
+                                                </li>
+                                            {% endif %}
+
+                                            <!-- Page Range Around Current Page -->
                                             {% for i in listings.paginator.page_range %}
-                                                {% if listings.number == i %}
-                                                    <li class='page-item active'>
-                                                        <a class='page-link' href='#'>{{ i }}</a>
-                                                    </li>
-                                                {% else %}
-                                                    <li class='page-item'>
-                                                        <a class='page-link'
-                                                           href='?listings_page={{ i }}&active_tab=listings&listing_status={{ listing_status }}&listing_type={{ listing_type }}&listing_date={{ listing_date }}&hold_for_import{{ hold_for_import }}'>{{ i }}</a>
-                                                    </li>
+                                                {% if i >= listings.number|add:'-2' and i <= listings.number|add:'2' %}
+                                                    {% if listings.number == i %}
+                                                        <li class='page-item active'>
+                                                            <a class='page-link' href='#'>{{ i }}</a>
+                                                        </li>
+                                                    {% else %}
+                                                        <li class='page-item'>
+                                                            <a class='page-link'
+                                                               href='?listings_page={{ i }}&active_tab=listings&listing_status={{ listing_status }}&listing_type={{ listing_type }}&listing_date={{ listing_date }}&hold_for_import={{ hold_for_import }}'>{{ i }}</a>
+                                                        </li>
+                                                    {% endif %}
                                                 {% endif %}
                                             {% endfor %}
+
+                                            <!-- Last Page Link and Ellipsis -->
+                                            {% if listings.number < listings.paginator.num_pages|add:'-2' %}
+                                                <li class='page-item disabled'>
+                                                    <a class='page-link' href='#'>...</a>
+                                                </li>
+                                                <li class='page-item'>
+                                                    <a class='page-link'
+                                                       href='?listings_page={{ listings.paginator.num_pages }}&active_tab=listings&listing_status={{ listing_status }}&listing_type={{ listing_type }}&listing_date={{ listing_date }}&hold_for_import={{ hold_for_import }}'>{{ listings.paginator.num_pages }}</a>
+                                                </li>
+                                            {% endif %}
+
+                                            <!-- Next Page Link -->
                                             {% if listings.has_next %}
                                                 <li class='page-item'>
                                                     <a class='page-link'
@@ -1742,9 +1920,12 @@
                                                     <a class='page-link' href='#'>&raquo;</a>
                                                 </li>
                                             {% endif %}
+
                                         </ul>
                                     </div>
                                 {% endif %}
+
+
                             </div>
                         </div>
                     </div>
@@ -1761,15 +1942,16 @@
                             </div>
                         </div>
                         <div class="card-body">
-                            <!-- Tab Navigation -->
-                            <ul class="nav nav-tabs mb-3" id="settingsTabs" role="tablist">
+                            <!-- Tab Navigation for Desktop -->
+                            <ul class="nav nav-tabs mb-3 d-none d-md-flex" id="settingsTabs" role="tablist">
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link sub-nav {% if sub_nav == 'user_details' %}active {% elif sub_nav == '' %}active{% endif %}"
+                                    <button class="nav-link sub-nav {% if sub_nav == 'user_details' or sub_nav == '' %}active{% endif %}"
                                             id="user-details-tab"
                                             data-bs-toggle="tab"
                                             data-bs-target="#user-details"
                                             type="button" role="tab" aria-controls="user-details"
-                                            aria-selected="true">User Details
+                                            aria-selected="{% if sub_nav == 'user_details' or sub_nav == '' %}true{% else %}false{% endif %}">
+                                        User Details
                                     </button>
                                 </li>
                                 <li class="nav-item" role="presentation">
@@ -1778,7 +1960,8 @@
                                             data-bs-toggle="tab"
                                             data-bs-target="#billing-address"
                                             type="button" role="tab" aria-controls="billing-address"
-                                            aria-selected="false">Billing Address
+                                            aria-selected="{% if sub_nav == 'billing_address' %}true{% else %}false{% endif %}">
+                                        Billing Address
                                     </button>
                                 </li>
                                 <li class="nav-item" role="presentation">
@@ -1787,7 +1970,8 @@
                                             data-bs-toggle="tab"
                                             data-bs-target="#shipping-address"
                                             type="button" role="tab" aria-controls="shipping-address"
-                                            aria-selected="false">Shipping Address
+                                            aria-selected="{% if sub_nav == 'shipping_address' %}true{% else %}false{% endif %}">
+                                        Shipping Address
                                     </button>
                                 </li>
                                 <li class="nav-item" role="presentation">
@@ -1796,18 +1980,52 @@
                                             data-bs-toggle="tab"
                                             data-bs-target="#shipping-account"
                                             type="button" role="tab" aria-controls="shipping-account"
-                                            aria-selected="false">Shipping Account
+                                            aria-selected="{% if sub_nav == 'shipping_account' %}true{% else %}false{% endif %}">
+                                        Shipping Account
                                     </button>
                                 </li>
                                 <li class="nav-item" role="presentation">
                                     <button class="nav-link sub-nav {% if sub_nav == 'password' %}active{% endif %}"
                                             id="password-tab"
-                                            data-bs-toggle="tab" data-bs-target="#password" type="button"
-                                            role="tab" aria-controls="password"
-                                            aria-selected="false">Change Password
+                                            data-bs-toggle="tab"
+                                            data-bs-target="#password"
+                                            type="button" role="tab" aria-controls="password"
+                                            aria-selected="{% if sub_nav == 'password' %}true{% else %}false{% endif %}">
+                                        Change Password
                                     </button>
                                 </li>
                             </ul>
+
+                            <!-- Dropdown Menu for Mobile -->
+                            <div class="dropdown d-md-none mb-3">
+                                <button class="btn btn-primary dropdown-toggle w-100" type="button"
+                                        id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-bars me-2"></i> Menu
+                                </button>
+                                <ul class="dropdown-menu w-100" aria-labelledby="dropdownMenuButton">
+                                    <li>
+                                        <a class="dropdown-item {% if sub_nav == 'user_details' or sub_nav == '' %}active{% endif %}"
+                                           href="#user-details" data-bs-toggle="tab" role="tab">User Details</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item {% if sub_nav == 'billing_address' %}active{% endif %}"
+                                           href="#billing-address" data-bs-toggle="tab" role="tab">Billing Address</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item {% if sub_nav == 'shipping_address' %}active{% endif %}"
+                                           href="#shipping-address" data-bs-toggle="tab" role="tab">Shipping Address</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item {% if sub_nav == 'shipping_account' %}active{% endif %}"
+                                           href="#shipping-account" data-bs-toggle="tab" role="tab">Shipping Account</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item {% if sub_nav == 'password' %}active{% endif %}"
+                                           href="#password" data-bs-toggle="tab" role="tab">Change Password</a>
+                                    </li>
+                                </ul>
+                            </div>
+
                             <!-- Tab Content -->
                             <div class="tab-content" id="settingsTabContent">
                                 <!-- User Details Tab -->

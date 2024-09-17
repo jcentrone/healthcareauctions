@@ -141,7 +141,7 @@ def order_confirmation_message(order, logo_base64):
 import base64
 
 
-def auction_win_message(user, auction, logo_base64, cart_url):
+def auction_win_message(user, auction, cart_url):
     message = f"""
     <!DOCTYPE html>
     <html lang="en">
