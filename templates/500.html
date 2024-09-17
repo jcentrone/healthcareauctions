@@ -5,10 +5,12 @@
 
 
 {% block body %}
-    <div class="error-container">
-        <h1>500 - Server Error</h1>
-        <p>Oops, something went wrong on our end. Please try again later.</p>
-        <a href="{% url 'index' %}">Go back to homepage</a>
+    <div class="container">
+        <div class="error-container d-flex flex-column">
+            <h1>500 - Server Error</h1>
+            <p>Oops, something went wrong on our end. Please try again later.</p>
+            <a href="{% url 'index' %}">Go back to homepage</a>
+        </div>
     </div>
 
 {% endblock %}
