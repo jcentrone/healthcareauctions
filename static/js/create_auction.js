@@ -137,7 +137,7 @@ function parseBarcode(code) {
                 return response.json();
             })
             .then(data => {
-                console.log("Device data from AccessGUDID:", data);
+                console.log("Parse Bar Code Result:", data);
                 document.getElementById('lookup-errors').innerText = '';
                 fetchDeviceData(data.udi);
 
@@ -286,9 +286,7 @@ function populateForm(data, overwrite = false) {
                 }
             }
         }
-        let catalogNumber = device.catalogNumber;
-
-        document.getElementById('id_title').value = catalogNumber;
+        document.getElementById('id_title').value = device.catalogNumber;
         document.getElementById('id_package_quantity').value = packageQuantity;
 
         // Map package type to the dropdown
@@ -303,6 +301,7 @@ function populateForm(data, overwrite = false) {
         document.getElementById('id_fullPackage').checked = true;
         document.getElementById('partial-qty').classList.add('hidden-field');
 
+        // generateDataSheet(data.gudid);
 
         let modal = document.getElementById('modal-bg');
         if (!modal.classList.contains('hidden-field')) {
@@ -312,6 +311,84 @@ function populateForm(data, overwrite = false) {
         console.log("No device data found");
     }
 }
+
+
+// let pdfDataUrl = ''; // Variable to hold the generated PDF data URL
+
+// Function to generate the datasheet
+// function generateDataSheet(data) {
+//     console.log('pdfData', data);
+//     const {jsPDF} = window.jspdf;
+//     const doc = new jsPDF();
+//
+//     // data = data.device;
+//
+//
+//     // Set the title
+//     doc.setFontSize(20);
+//     doc.text("Product Datasheet", 10, 10);
+//
+//     // Add device information
+//     doc.setFontSize(12);
+//     doc.text(`Brand Name: ${data.device.brandName}`, 10, 20);
+//     doc.text(`Device Description: ${data.device.deviceDescription.trim()}`, 10, 30);
+//     doc.text(`Model Number: ${data.device.versionModelNumber}`, 10, 40);
+//     doc.text(`DUNS Number: ${data.device.dunsNumber}`, 10, 50);
+//     doc.text(`Company Name: ${data.device.companyName}`, 10, 60);
+//     doc.text(`Public Version Status: ${data.device.publicVersionStatus}`, 10, 70);
+//     doc.text(`Device Status: ${data.device.deviceRecordStatus}`, 10, 80);
+//     doc.text(`Version Number: ${data.device.publicVersionNumber}`, 10, 90);
+//     doc.text(`Version Date: ${new Date(data.device.publicVersionDate).toLocaleDateString()}`, 10, 100);
+//     doc.text(`Device Publish Date: ${new Date(data.device.devicePublishDate).toLocaleDateString()}`, 10, 110);
+//     doc.text(`Commercial Distribution Status: ${data.device.deviceCommDistributionStatus}`, 10, 120);
+//
+//     // Add identifiers
+//     doc.text("Identifiers:", 10, 140);
+//     data.device.identifiers.identifier.forEach((id, index) => {
+//         const line = `Device ID: ${id.deviceId} (Type: ${id.deviceIdType}, Agency: ${id.deviceIdIssuingAgency})`;
+//         doc.text(line, 10, 150 + (index * 10));
+//     });
+//
+//     // Add GMDN Terms
+//     doc.text("GMDN Terms:", 10, 200);
+//     data.device.gmdnTerms.gmdn.forEach((term, index) => {
+//         const gmdnLine = `GMDN Code: ${term.gmdnCode} - ${term.gmdnPTName}`;
+//         doc.text(gmdnLine, 10, 210 + (index * 10));
+//         doc.text(`Definition: ${term.gmdnPTDefinition}`, 10, 220 + (index * 10));
+//     });
+//
+//     // Add Product Codes
+//     doc.text("Product Codes:", 10, 260);
+//     data.device.productCodes.fdaProductCode.forEach((code, index) => {
+//         const productLine = `FDA Product Code: ${code.productCode} - ${code.productCodeName}`;
+//         doc.text(productLine, 10, 270 + (index * 10));
+//     });
+//
+//     // Add Contact Information
+//     const contact = data.device.contacts.customerContact[0];
+//     doc.text("Contact Information:", 10, 320);
+//     doc.text(`Phone: ${contact.phone}`, 10, 330);
+//     doc.text(`Email: ${contact.email}`, 10, 340);
+//
+//     // Save the PDF as a Data URL
+//     pdfDataUrl = doc.output('datauristring'); // Store as a Data URL
+// }
+
+// Function to download the datasheet
+// function downloadDataSheet() {
+//     if (pdfDataUrl) {
+//         const link = document.createElement('a');
+//         link.href = pdfDataUrl;
+//         link.download = 'Product_Datasheet.pdf'; // Set the filename
+//         link.click(); // Trigger the download
+//     } else {
+//         alert("Datasheet is not ready yet.");
+//     }
+// }
+
+// Add event listener to the download button
+// document.getElementById("download-datasheet").addEventListener("click", downloadDataSheet);
+
 
 // Modal Actions - Workflow
 function closeModal() {
@@ -346,17 +423,6 @@ function modalActions() {
 
     // Move description container to modal content
     moveElement('description-name-container', 'modal-content');
-
-    // // Destroy the existing TinyMCE instance
-    // tinymce.get('id_description').remove();
-    // // Reinitialize TinyMCE
-    //
-    // tinymce.init({
-    //     selector: '#id_description',
-    //     menubar: false,
-    //     plugins: 'autolink charmap lists searchreplace visualblocks wordcount linkchecker',
-    //     toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | align lineheight | numlist bullist indent outdent | charmap | removeformat',
-    // });
 
     // Move placeholder to auction summary container
     moveElement('placeholderEL', 'auction-summary-container', true);
@@ -546,7 +612,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
-
 
 
 // Is mobile Device
@@ -923,7 +988,7 @@ document.addEventListener('DOMContentLoaded', function () {
             qtyContainer.style.display = 'none';
             quantityAvailableField.value = '1';
 
-        } else if (auctionType === "Sale"){
+        } else if (auctionType === "Sale") {
             startingBidField.required = false;
             quantityAvailableField.required = false;
             qtyContainer.style.display = 'block';

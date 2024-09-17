@@ -189,7 +189,7 @@ def auction_win_message(user, auction, cart_url):
     <body>
         <div class="content">
             <p>Dear {user.first_name},</p>
-            <p>Congratulations! You have won the auction for <strong>{auction.title}</strong> with the highest bid of ${auction.highest_bid_amount}. 
+            <p>Congratulations! You have won the auction for <strong>{auction.title}</strong> with the highest bid of ${auction.highest_bid.amount}. 
             The item has been added to your cart.</p>
             <p>You can view and complete your purchase by visiting your <a href="{cart_url}">cart</a>.</p>
             <p>Please make sure to complete the payment within the next 48 hours to ensure your order is processed.</p>

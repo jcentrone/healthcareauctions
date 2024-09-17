@@ -341,6 +341,12 @@
                                             </div>
                                             <h5 class="mt-5">Product Specific Details</h5>
                                             <p>Add the details below for each variation.</p>
+
+{#                                            <div class="cta-buttons text-center my-4">#}
+{#                                                <div id="download-datasheet" class="btn btn-primary btn-lg">Download#}
+{#                                                    Datasheet#}
+{#                                                </div>#}
+{#                                            </div>#}
                                             <!-- Product Detail Formset -->
                                             <div class="border-top" id="product-detail-formset">
                                                 {{ product_detail_formset.management_form }}
@@ -545,10 +551,13 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
-    <script src="{% static 'js/create_auction.js' %}"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/dynamsoft-barcode-reader-bundle@10.2.1000/dist/dbr.bundle.js"></script>
     <script src="{% static 'js/scanner.js' %}"></script>
+    <script src="{% static 'js/create_auction.js' %}"></script>
     {#    <script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.6-beta.14/inputmask.min.js"#}
     {#            integrity="sha512-SF/1EBFQ9uIdO5cEddNUP9IxLkXwoSg2gMiDFvB8B3+oAB3T0uXctHvI0oK+xa8rps5wVV8fA9Lhdunzyz+oKw=="#}
     {#            crossorigin="anonymous" referrerpolicy="no-referrer"></script>#}
