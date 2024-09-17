@@ -214,14 +214,30 @@
 
         </section>
 
-        <div class="container">
-            <div class="call-to-action">
-                <h2>Ready to Start Bidding?</h2>
-                <p>Join us today and find the best deals on healthcare equipment.</p>
-                <a href="{% url 'register' %}" class="button primary">Sign Up Now</a>
+        <div class="container p-0">
+            <div class="call-to-action d-flex align-items-center justify-content-center" id="footer-cta">
+                <div class="content">
+                    <h2 class="mb-3">Ready to Start Bidding and Shopping?</h2>
+                    <p class="mb-4">Join us today to participate in exciting auctions and browse exclusive sales on
+                        top-quality healthcare equipment.</p>
+                    <div class="d-flex flex-column flex-md-row gap-3 justify-content-center">
+                        <a href="{% url 'register' %}" class="btn btn-light btn-lg">
+                            Sign Up Now <i class="fas fa-user-plus ms-2"></i>
+                        </a>
+                        <a href="{% url 'active_auctions_view' %}" class="btn btn-outline-light btn-lg">
+                            Browse Listings <i class="fas fa-search ms-2"></i>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
+
     </div>
+
+
+    <style>
+
+    </style>
 {% endblock %}
 
 

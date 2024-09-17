@@ -19,9 +19,8 @@
                     entities with
                     excess inventory or products nearing expiration, list their items on our site. We also actively
                     source and add inventory to ensure a wide range of products.</p>
-                <p class="lh-lg">Every item listed on Healthcare Auctions comes with our commitment to quality and
-                    satisfaction.</p>
-                <a href="{% url 'active_auctions_view' %}" class="btn btn-primary">View Listings</a>
+                <p class="lh-lg">Every item listed on Healthcare Auctions comes with our commitment to your satisfaction.</p>
+                <a href="{% url 'active_auctions_view' %}" class="btn btn-primary mb-2">View Listings</a>
             </div>
             <div class="col-md-6">
                 <img src="{% static 'images/marketplace.jpg' %}" class="img-fluid" alt="Marketplace">
@@ -89,9 +88,24 @@
             <div class="cta-buttons">
                 <a href="{% url 'register' %}" class="btn btn-primary btn-lg m-2">Register Now</a>
                 <a href="{% url 'active_auctions_view' %}" class="btn btn-secondary btn-lg m-2">Browse Listings</a>
-                <a href="mailto:inquire@healthcareauctions.com" class="btn btn-outline-primary btn-lg m-2">Contact Us</a>
+                <a href="mailto:inquire@healthcareauctions.com" class="btn btn-outline-primary btn-lg m-2">Email Us</a>
 
             </div>
+            <p class="mt-3">
+                Prefer to reach out directly? Email us at
+                <a href="mailto:inquire@healthcareauctions.com" class="email-link">inquire@healthcareauctions.com</a>
+                <button class="btn btn-outline-secondary ms-2" onclick="copyEmail()"><i class="fa-regular fa-copy me-2"></i>Copy Email</button>
+            </p>
+            <script>
+                function copyEmail() {
+                    const email = 'inquire@healthcareauctions.com';
+                    navigator.clipboard.writeText(email).then(() => {
+                        alert('Email address copied to clipboard!');
+                    }).catch(err => {
+                        alert('Failed to copy email address.');
+                    });
+                }
+            </script>
         </div>
     </div>
 

@@ -14,8 +14,22 @@
         {% endif %}
 
         <div class="registration-container">
-            <div>
-                <img id="registration-image" src="{% static 'images/registration.png' %}">
+            <div class="position-relative">
+                <img id="login-image" src="{% static 'images/background-gradient-lights.jpg' %}">
+                <div class="position-absolute" id="welcome-message">
+                    <div class="logo mb-3" id="logo-container-register" href="{% url 'index' %}">
+                        <img src="{% static "images/logo.png" %}" alt="Healthcare Auctions Logo">
+                        <div id="logo-text" class="">
+                            <div>Healthcare</div>
+                            <div>Auctions</div>
+                        </div>
+                    </div>
+                    <div class="display-3 mb-3 text-white">Welcome!!</div>
+                    <p class="text-white">Thank you for registering! Get ready to access exclusive auctions and premium sales on
+                        top-quality healthcare supplies.</p>
+
+                </div>
+
             </div>
             <form id="registration-form" action="{% url 'register' %}" method='POST'
                   enctype="multipart/form-data">

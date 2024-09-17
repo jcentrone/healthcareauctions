@@ -157,7 +157,7 @@ h2 a {
     position: relative;
     font-size: 1.25em;
     /*margin-bottom: 40px;*/
-    text-align: left;
+    text-align: center;
 }
 
 a.btn.btn-light.btn-lg.mt-3,
@@ -472,12 +472,27 @@ a.btn.btn-outline-light.btn-lg.mt-3 {
     color: var(--dark-gray);
 }
 
-.call-to-action {
-    padding: 100px 20px;
-    text-align: center;
-    background-color: var(--primary-blue);
-    color: var(--white);
+/*.call-to-action {*/
+/*    padding: 100px 20px;*/
+/*    text-align: center;*/
+/*    background-color: var(--primary-blue);*/
+/*    color: var(--white);*/
+/*    border-radius: 12px;*/
+/*}*/
+
+#footer-cta {
+    /* Background Image */
+    background-image: url('../images/rm218-bb-07.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: rgba(0,0,0, 0);
+    position: relative;
+    color: #ffffff; /* White text */
+    min-height: 400px; /* Minimum height */
+    text-align: center; /* Center text horizontally */
     border-radius: 12px;
+    padding: 100px 20px;
 }
 
 .call-to-action h2 {
@@ -627,6 +642,12 @@ footer .social-media a:hover {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+}
+
+#logo-container-register{
+        background: #fff;
+    border-radius: 12px;
+    padding: 20px;
 }
 
 #logo-text {
