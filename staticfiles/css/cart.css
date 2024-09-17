@@ -1,29 +1,105 @@
-td img {
-    width: 150px;
-}
-
 .div-table {
     display: table;
     width: 100%;
+    table-layout: fixed;
 }
 
 .div-table-row {
     display: table-row;
 }
 
+.div-table-header {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
 .div-table-col {
     display: table-cell;
-    padding: 8px;
+    padding: 12px;
     border: 1px solid #dee2e6;
     vertical-align: middle;
 }
 
-.div-table-header .div-table-col {
-    font-weight: bold;
-    background-color: #f8f9fa;
+/* Responsive Adjustments */
+@media (max-width: 767.98px) {
+    .div-table, .div-table-row, .div-table-col {
+        display: block;
+        width: 100%;
+    }
+
+    .div-table-row {
+        margin-bottom: 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 10px;
+        background-color: #ffffff;
+    }
+
+    .div-table-header {
+        display: none;
+    }
+
+    .div-table-row .div-table-col {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border: none;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .div-table-row .div-table-col:last-child {
+        border-bottom: none;
+    }
+
+    .div-table-row .div-table-col::before {
+        content: attr(data-label);
+        font-weight: bold;
+        width: 50%;
+        text-align: left;
+    }
+
+    .div-table-row .div-table-col img {
+        max-width: 100px;
+        height: auto;
+    }
 }
 
-.div-table img {
-    max-width: 100px;
+/* Additional Styling */
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-end {
+    text-align: right;
+}
+
+.text-start {
+    text-align: left;
+}
+
+.img-fluid {
+    max-width: 75px;
     height: auto;
+}
+
+.cart-buttons {
+    /* Ensure buttons take full width on mobile */
+    width: 100%;
+}
+
+.cart-total {
+    /* Make the total more prominent */
+    font-weight: bold;
+    text-wrap: nowrap;
+}
+
+@media (max-width: 767.98px) {
+    .cart-total {
+        margin-bottom: 1rem;
+    }
 }
