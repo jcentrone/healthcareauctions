@@ -1,0 +1,59 @@
+<div class="container">
+    <div class="row">
+        <div class="col-lg-6">
+{#            <div class="auction-item-container">#}
+{#                <a class="auction-item" href="{% url 'active_auctions_with_id' auctions_cat1.0.auction.id %}">#}
+{#                    {% if auctions_cat1.0.auction.image %}#}
+{#                        <img src="{{ auctions_cat1.0.auction.image.image.url }}" alt="{{ auctions_cat1.0.auction.title }}">#}
+{#                    {% else %}#}
+{#                        <img src="{% static 'images/no_image.png' %}" alt="Default Image">#}
+{#                    {% endif %}#}
+{#                    <h3>{{ auctions_cat1.0.auction.title|truncatechars:30 }}</h3>#}
+{#                    <p>{{ auctions_cat1.0.auction.category }}</p>#}
+{#                    {% if auctions_cat1.0.auction.auction_type == 'Auction' %}#}
+{#                        <h3>#}
+{#                            {% if auctions_cat1.0.auction.current_bid %}#}
+{#                                ${{ auctions_cat1.0.auction.current_bid }}#}
+{#                                <div class="fs-5 fw-light fst-italic">Current Bid</div>#}
+{#                            {% else %}#}
+{#                                ${{ auctions_cat1.0.auction.starting_bid }}#}
+{#                                <div class="fs-5 fw-light fst-italic">Starting Bid</div>#}
+{#                            {% endif %}#}
+{#                            <div class="lead time-remaining">{{ auctions_cat1.0.auction.formatted_time_remaining }}#}
+{#                                Remaining#}
+{#                            </div>#}
+{#                        </h3>#}
+{#                    {% else %}#}
+{#                        <h3>#}
+{#                            ${{ auctions_cat1.0.auction.buyItNowPrice }}#}
+{#                            <div class="fs-5 fw-light fst-italic">Get it Now</div>#}
+{##}
+{#                        </h3>#}
+{#                    {% endif %}#}
+{#                </a>#}
+{#                <a class='btn btn-secondary mt-auto rounded watch-button'#}
+{#                   href="{% url 'watchlist_edit' auction.id 'active_auctions_with_id' %}">#}
+{#                    {% if auctions_cat1.0.auction.is_watched %}#}
+{#                        <i class="fa-solid fa-eye-slash"></i>#}
+{#                    {% else %}#}
+{#                        <i class="fa-regular fa-eye"></i>#}
+{#                    {% endif %}#}
+{#                </a>#}
+{#            </div>#}
+        </div>
+        <div class="col-lg-6">
+            <div class="row">
+                <div class="col-lg-6">
+                </div>
+                <div class="col-lg-6">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-6">
+                </div>
+                <div class="col-lg-6">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -18,7 +18,7 @@ SECRET_KEY = os.environ.get(
 SITE_URL = 'https://www.healthcareauctions.com'
 
 # DEBUG = config('DEBUG', default=False, cast=bool)
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     'localhost',

@@ -312,8 +312,8 @@ function updateZoomDisplay() {
     zoomDisplay.textContent = `Zoom: ${currentZoomLevel.toFixed(1)}x`;
 }
 
-// Initialize the scanner when the page loads
-window.addEventListener('DOMContentLoaded', initScanner);
+// // Initialize the scanner when the page loads
+// window.addEventListener('DOMContentLoaded', initScanner);
 
 
 function processDetectedBarcode(result) {
