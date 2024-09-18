@@ -593,25 +593,28 @@ def register(request):
 
 
 def login_view(request):
-    if request.method == 'POST':
+    next_url = request.GET.get('next') or request.POST.get('next') or reverse('index')
 
+    if request.method == 'POST':
         # Attempt to sign user in
-        username = request.POST['username']
-        password = request.POST['password']
+        username = request.POST.get('username')
+        password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
 
         # Check if authentication successful
         if user is not None:
             login(request, user)
-            return HttpResponseRedirect(reverse('index'))
+            return redirect(next_url)
         else:
-            return render(request, 'login.html', {
+            return render(request, 'registration/login.html', {
                 'message': 'Invalid username and/or password.',
                 'title': 'Log in',
+                'next': next_url,
             })
     else:
-        return render(request, 'login.html', {
+        return render(request, 'registration/login.html', {
             'title': 'Log in',
+            'next': request.GET.get('next', ''),
         })
 
 

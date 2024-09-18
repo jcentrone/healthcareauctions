@@ -6,14 +6,14 @@
                     aria-current="true" aria-label="Slide 1"></button>
             <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"
                     aria-label="Slide 2"></button>
-            {#            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"#}
-            {#                    aria-label="Slide 3"></button>#}
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"
+                    aria-label="Slide 3"></button>
             <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="3"
                     aria-label="Slide 4"></button>
             <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="4"
-                    aria-label="Slide 4"></button>
+                    aria-label="Slide 5"></button>
             {#            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="5"#}
-            {#                    aria-label="Slide 5"></button>#}
+            {#                    aria-label="Slide 6"></button>#}
         </div>
 
 
@@ -58,6 +58,30 @@
                                 the healthcare
                                 industry.</p>
                             <a href="{% url 'how_we_work' %}" class="btn btn-light btn-lg mt-3">Learn More</a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="carousel-item" id="slide3">
+            <div class="image-container" style="background: #089A8C">
+{#                <img src="{% static 'images/instruments.jpg' %}" class="d-block w-100" alt="How It Works Image">#}
+{#                <div class="overlay"></div>#}
+            </div>
+            <div class="carousel-caption d-md-block">
+                <div class="row">
+                    <div class="hero-content">
+                        <div class=" d-flex flex-column align-items-center justify-content-center gap-3">
+                            <div class="text-center display-5">Use a Mobile Device?</div>
+
+
+                            <p class="text-center">
+                                Our scanner automatically opens when you create a listing from your mobile device.
+                                Simply use your device's camera to capture the barcode, and let our system handle the
+                                rest for a seamless listing experience!
+                            </p>
+                            <a href="{% url 'auction_create' %}" class="btn btn-light btn-lg mt-3">Sell</a>
                         </div>
 
                     </div>

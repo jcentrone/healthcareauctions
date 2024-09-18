@@ -17,6 +17,15 @@
             {% include 'hero.html' %}
         </section>
 
+        <section class="container desktop-only">
+            <div class="text-center text-muted">
+                <strong>Better On Mobile</strong>
+                <p>
+                    We see you are on our desktop site. Did you know you can use your mobile device to automatically create a listing
+                    with our QR/Barcode code scanner?
+                </p>
+            </div>
+        </section>
 
         <section class="featured-auctions container">
             {% if user.is_authenticated %}

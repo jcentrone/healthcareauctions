@@ -342,11 +342,11 @@
                                             <h5 class="mt-5">Product Specific Details</h5>
                                             <p>Add the details below for each variation.</p>
 
-{#                                            <div class="cta-buttons text-center my-4">#}
-{#                                                <div id="download-datasheet" class="btn btn-primary btn-lg">Download#}
-{#                                                    Datasheet#}
-{#                                                </div>#}
-{#                                            </div>#}
+                                            {#                                            <div class="cta-buttons text-center my-4">#}
+                                            {#                                                <div id="download-datasheet" class="btn btn-primary btn-lg">Download#}
+                                            {#                                                    Datasheet#}
+                                            {#                                                </div>#}
+                                            {#                                            </div>#}
                                             <!-- Product Detail Formset -->
                                             <div class="border-top" id="product-detail-formset">
                                                 {{ product_detail_formset.management_form }}
@@ -357,15 +357,26 @@
                                                         <!-- Column 1 -->
                                                         <div id="sku-field{{ forloop.counter0 }}"
                                                              class="form-group bid-scan-item">
-                                                            <p id="sku-intro" hidden>When you create an auction and
-                                                                enter a barcode, our
-                                                                system automatically looks up detailed product
-                                                                information for you. This helps ensure your listings are
-                                                                accurate and saves you time by pre-filling key details.
-                                                                You can review and edit the information as needed before
-                                                                finalizing your auction. </p>
+                                                            <div id="sku-intro" hidden>
+                                                                <p>
+                                                                    When you create an auction and
+                                                                    enter a barcode, our
+                                                                    system automatically looks up detailed product
+                                                                    information for you. This helps ensure your listings
+                                                                    are accurate and saves you time by pre-filling key
+                                                                    details. You can review and edit the information as
+                                                                    needed before finalizing your auction.
+                                                                </p>
+                                                                <p>
+                                                                    <strong>Better on Mobile</strong> Our scanner
+                                                                    automatically opens when you create a listing
+                                                                    from your mobile device. Simply use your device's
+                                                                    camera to capture the barcode, and let our system
+                                                                    handle the rest for a seamless listing experience!
+                                                                </p>
+                                                            </div>
                                                             <label for="{{ form.sku.auto_id }}"
-                                                                   class="form-label">GTIN/SKU</label>
+                                                                   class="form-label">GTIN/UDI/SKU</label>
                                                             <input type="text"
                                                                    name="{{ form.sku.html_name }}"
                                                                    id="{{ form.sku.auto_id }}"

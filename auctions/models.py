@@ -494,7 +494,7 @@ class ShippingAddress(models.Model):
     shipping_city = models.CharField(max_length=255)
     shipping_state = models.CharField(max_length=2, choices=STATE_CHOICES)
     shipping_zip_code = models.CharField(max_length=10)
-    shipping_country = models.CharField(max_length=255)
+    shipping_country = models.CharField(max_length=255, default='USA')
     shipping_phone_number = models.CharField(max_length=15, blank=True)
 
     def __str__(self):
@@ -511,7 +511,7 @@ class BillingAddress(models.Model):
     billing_city = models.CharField(max_length=255)
     billing_state = models.CharField(max_length=2, choices=STATE_CHOICES)
     billing_zip_code = models.CharField(max_length=10)
-    billing_country = models.CharField(max_length=255)
+    billing_country = models.CharField(max_length=255, default='USA')
     billing_phone_number = models.CharField(max_length=15, blank=True)
 
     def __str__(self):
