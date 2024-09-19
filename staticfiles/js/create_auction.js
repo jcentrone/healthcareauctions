@@ -114,6 +114,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     document.getElementById('sku-intro').removeAttribute('hidden');
+    document.getElementById('sku-outro').removeAttribute('hidden');
 });
 
 
@@ -180,6 +181,7 @@ function fetchClassificationData(code) {
 
             let classificationData = {
                 medical_specialty_description: data.results[0].medical_specialty_description,
+                medical_specialty_code: data.results[0].medical_specialty,
                 device_class: data.results[0].device_class,
                 device_name: data.results[0].device_name,
                 definition: data.results[0].definition
@@ -211,7 +213,7 @@ function fetchClassificationData(code) {
 function updateCategoryDropdown(result) {
     const selectElement = document.getElementById('id_category');
     const parsedResult = result.category; // Ensure this parsing matches the actual response structure
-    // console.log(parsedResult);
+    console.log(parsedResult);
 
     const newValue = parsedResult.value;
     const newText = parsedResult.category_name;
@@ -399,7 +401,8 @@ function closeModal() {
     moveElement('description-name-container', 'auction-summary-container', true);
     moveElement('listingTypeContainer', 'sku-container');
     document.getElementById('sku-intro').setAttribute('hidden', 'hidden');
-    // document.getElementById('sku-intro').style.display = 'none';
+    document.getElementById('sku-outro').setAttribute('hidden', 'hidden');
+
 
 }
 
@@ -411,6 +414,7 @@ function modalActions() {
     // Move UDI/SKU back to its original position
     moveElement('sku-field0', 'product-detail-container0', true);
     document.getElementById('sku-intro').removeAttribute('hidden');
+    document.getElementById('sku-outro').removeAttribute('hidden');
 
     // Append placeholder to modal content
     document.getElementById('modal-content').appendChild(placeholderEL);

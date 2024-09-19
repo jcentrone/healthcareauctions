@@ -3,7 +3,7 @@ import json
 import logging
 import random
 import re
-from datetime import timedelta
+from datetime import timedelta, datetime
 from decimal import Decimal
 
 import openpyxl
@@ -18,7 +18,7 @@ from django.core.exceptions import ValidationError
 from django.core.mail import EmailMessage
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import IntegrityError, transaction
-from django.db.models import Q, Case, When, BooleanField, DecimalField, Max, F
+from django.db.models import Q, Case, When, BooleanField, DecimalField, Max, F, OuterRef, Subquery
 from django.forms import model_to_dict
 from django.http import FileResponse, HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
@@ -36,7 +36,7 @@ from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, 
     PayPalForm, CashAppForm, CustomUserChangeForm, UserAddressForm, OrderNoteForm, EditAuctionForm, \
     EditProductDetailFormSet, ShippingAccountsForm, RegistrationForm, ProductDetailForm
 from .models import Bid, Category, Image, CartItem, Cart, ProductDetail, Order, Payment, \
-    OrderItem, Parcel, ProductImage, ShippingAccounts, Address, Message, User
+    OrderItem, Parcel, ProductImage, ShippingAccounts, Address, Message, User, MedicalSpecialty
 from .utils.calculate_tax import get_sales_tax
 from .utils.email_manager import send_welcome_email_html, order_confirmation_message
 from .utils.get_base64_logo import get_logo_base64
@@ -84,8 +84,8 @@ def index(request):
     random_category2 = random.choice(remaining_categories)
 
     # Get up to 8 auctions from each of the random categories
-    auctions_cat1 = Auction.objects.filter(category=random_category1)[:8]
-    auctions_cat2 = Auction.objects.filter(category=random_category2)[:8]
+    auctions_cat1 = Auction.objects.filter(category=random_category1, active=True)[:8]
+    auctions_cat2 = Auction.objects.filter(category=random_category2, active=True)[:8]
 
     recent_views = Auction.objects.none()
 
@@ -699,79 +699,162 @@ def auction_create(request):
     })
 
 
+
 @login_required
 @csrf_exempt
 def import_excel(request):
     if request.method == 'POST':
+        print(request.POST)
         try:
-            auction_data_raw = request.POST.get('auction_data', '[]')
-            auction_data = json.loads(auction_data_raw)
+            with transaction.atomic():
+                auction_data_raw = request.POST.get('auction_data', '[]')
+                auction_data = json.loads(auction_data_raw)
 
-            for auction_info in auction_data:
-                category = Category.objects.get(id=auction_info['category_id'])
-                auction = Auction.objects.create(
-                    title=auction_info['title'],
-                    description=auction_info['description'],
-                    creator=request.user,
-                    category=category,
-                    quantity_available=auction_info.get('quantity_available', 1),
-                    starting_bid=auction_info.get('starting_bid'),
-                    reserve_bid=auction_info.get('reserve_bid'),
-                    buyItNowPrice=auction_info.get('buyItNowPrice'),
-                    manufacturer=auction_info['manufacturer'],
-                    auction_type=auction_info['auction_type'],
-                    implantable=auction_info['implantable'],
-                    deviceSterile=auction_info['deviceSterile'],
-                    package_type=auction_info['package_type'],
-                    auction_duration=auction_info['auction_duration'],
-                    hold_for_import=True,  # Mark as held for import
-                    active=False,
-                )
+                for index, auction_info in enumerate(auction_data):
+                    logger.debug(f"Processing auction {index + 1}: {auction_info}")
 
-                # Save the auction first to ensure it has an ID
-                auction.save()
-
-                # Clean the reference number by removing leading zeros
-                auction_reference_number = auction_info.get('reference_number', '')
-
-                # Create product details
-                ProductDetail.objects.create(
-                    auction=auction,
-                    sku=auction_info.get('sku'),
-                    reference_number=auction_reference_number,
-                    lot_number=auction_info.get('lot_number'),
-                    production_date=auction_info.get('production_date'),
-                    expiration_date=auction_info.get('expiration_date')
-                )
-
-                # Check if there is an image with the matching reference number
-                if auction_reference_number:
+                    # Convert auction_duration from string to integer
                     try:
-                        # Look for a product image with the matching reference number
-                        product_image = ProductImage.objects.get(reference_number__iexact=auction_reference_number)
-                        # Create an image associated with the auction
-                        Image.objects.create(auction=auction, image=product_image.image)
-                    except ProductImage.DoesNotExist:
-                        # No matching product image found, do nothing
-                        pass
+                        auction_duration = int(auction_info['auction_duration'])
+                        logger.debug(f"Auction duration for auction {index + 1}: {auction_duration} days")
+                    except ValueError:
+                        return JsonResponse({
+                            'status': 'error',
+                            'message': f"Invalid auction_duration value: {auction_info['auction_duration']}"
+                        })
 
-                # Handle the uploaded images
-                for key in request.FILES:
-                    print(key)
-                    match = re.match(r'images_(\d+)_\d+', key)
-                    if match:
-                        # row_index = int(match.group(1))
-                        # auction_info = auction_data[row_index]
+                    # Convert other numerical fields
+                    try:
+                        quantity_available = int(auction_info.get('quantity_available', 1)) if auction_info.get('quantity_available') else 1
+                    except ValueError:
+                        return JsonResponse({
+                            'status': 'error',
+                            'message': f"Invalid quantity_available value: {auction_info.get('quantity_available')}"
+                        })
 
-                        # Save the image
-                        auction_image = Image(auction=auction, image=request.FILES[key])
-                        auction_image.save()
+                    try:
+                        starting_bid = float(auction_info['starting_bid']) if auction_info.get('starting_bid') else None
+                    except ValueError:
+                        return JsonResponse({
+                            'status': 'error',
+                            'message': f"Invalid starting_bid value: {auction_info.get('starting_bid')}"
+                        })
 
-            return JsonResponse({'status': 'success'})
+                    try:
+                        reserve_bid = float(auction_info['reserve_bid']) if auction_info.get('reserve_bid') else None
+                    except ValueError:
+                        return JsonResponse({
+                            'status': 'error',
+                            'message': f"Invalid reserve_bid value: {auction_info.get('reserve_bid')}"
+                        })
+
+                    try:
+                        buy_it_now_price = float(auction_info['buyItNowPrice']) if auction_info.get('buyItNowPrice') else None
+                    except ValueError:
+                        return JsonResponse({
+                            'status': 'error',
+                            'message': f"Invalid buyItNowPrice value: {auction_info.get('buyItNowPrice')}"
+                        })
+
+                    device_data = {
+                        'medical_specialty_description': auction_info.get('medicalSpecialtyDescription'),
+                        'medical_specialty_code': auction_info.get('medicalSpecialtyCode'),
+                        'device_name': auction_info.get('deviceName'),
+                    }
+
+                    category = update_categories_from_fda(device_data)
+                    category_obj = Category.objects.get(id=category['value'])
+
+
+                    # Create the Auction object
+                    auction = Auction.objects.create(
+                        title=auction_info['title'],
+                        description=auction_info['description'],
+                        creator=request.user,
+                        category=category_obj,
+                        quantity_available=quantity_available,
+                        starting_bid=starting_bid,
+                        reserve_bid=reserve_bid,
+                        buyItNowPrice=buy_it_now_price,
+                        manufacturer=auction_info['manufacturer'],
+                        auction_type=auction_info['auction_type'],
+                        implantable=auction_info['implantable'],
+                        deviceSterile=auction_info['deviceSterile'],
+                        package_type=auction_info['package_type'],
+                        auction_duration=auction_duration,
+                        hold_for_import=True,  # Mark as held for import
+                        active=False,
+
+                    )
+
+                    # Save the auction to trigger the save method (sets auction_ending_date)
+                    auction.save()
+
+                    # Clean the reference number by removing leading zeros
+                    auction_reference_number = auction_info.get('reference_number', '').lstrip('0')
+
+                    # Parse production_date and expiration_date
+                    def parse_date(date_str, field_name):
+                        if date_str:
+                            try:
+                                return datetime.strptime(date_str, '%Y-%m-%d').date()
+                            except ValueError:
+                                raise ValueError(f"Invalid {field_name} format: {date_str}. Expected YYYY-MM-DD.")
+                        return None
+
+                    production_date_str = auction_info.get('production_date', '').strip()
+                    expiration_date_str = auction_info.get('expiration_date', '').strip()
+
+                    try:
+                        production_date = parse_date(production_date_str, 'production_date') if production_date_str else None
+                        expiration_date = parse_date(expiration_date_str, 'expiration_date') if expiration_date_str else None
+                    except ValueError as ve:
+                        return JsonResponse({
+                            'status': 'error',
+                            'message': str(ve)
+                        })
+
+                    # Create product details with parsed dates
+                    ProductDetail.objects.create(
+                        auction=auction,
+                        sku=auction_info.get('sku'),
+                        reference_number=auction_reference_number,
+                        lot_number=auction_info.get('lot_number'),
+                        production_date=production_date,       # Use parsed date
+                        expiration_date=expiration_date        # Use parsed date
+                    )
+
+                    # Check if there is an image with the matching reference number
+                    if auction_reference_number:
+                        try:
+                            # Look for a product image with the matching reference number
+                            product_image = ProductImage.objects.get(reference_number__iexact=auction_reference_number)
+                            # Create an image associated with the auction
+                            Image.objects.create(auction=auction, image=product_image.image)
+                        except ProductImage.DoesNotExist:
+                            # No matching product image found, do nothing
+                            pass
+
+                    # Handle the uploaded images
+                    for key in request.FILES:
+                        logger.debug(f"Processing file key: {key}")
+                        match = re.match(r'images_(\d+)_\d+', key)
+                        if match:
+                            row_index = int(match.group(1))
+                            current_auction_info = auction_data[row_index]
+
+                            # Save the image
+                            Image.objects.create(auction=auction, image=request.FILES[key])
+
+                # After processing all auctions, return success
+                return JsonResponse({'status': 'success'})
 
         except Exception as e:
+            # Handle exceptions
+            logger.exception("An error occurred during import_excel")
             return JsonResponse({'status': 'error', 'message': str(e)})
 
+    # If not a POST request, render the import form
     return render(request, 'import.html', {
         'categories': Category.objects.all(),
         'title': 'Create Auction',
@@ -783,6 +866,7 @@ def active_auctions_view(request, auction_id=None):
     Renders a page that displays all the currently active auction listings.
     Active auctions are paginated: 10 per page.
     """
+
     # Get request parameters
     category_name = request.GET.get('category_name')
     time_filter = request.GET.get('time_filter')
@@ -795,6 +879,7 @@ def active_auctions_view(request, auction_id=None):
     watchlist_filter = request.GET.get('watchlist')
     recent_views_filter = request.GET.get('recent_views')
     page = request.GET.get('page', 1)
+    specialty = request.GET.get('specialty')  # **New parameter**
 
     # Base QuerySet
     auctions = Auction.objects.filter(active=True)
@@ -816,8 +901,7 @@ def active_auctions_view(request, auction_id=None):
         auctions = auctions.filter(auction_type=auction_type)
 
     if recent_views_filter and request.user.is_authenticated:
-        recent_views = AuctionView.objects.filter(user=request.user).order_by('-viewed_at').values_list('auction',
-                                                                                                        flat=True)
+        recent_views = AuctionView.objects.filter(user=request.user).order_by('-viewed_at').values_list('auction', flat=True)
         auctions = auctions.filter(id__in=recent_views)
 
     if my_auctions and request.user.is_authenticated:
@@ -835,6 +919,15 @@ def active_auctions_view(request, auction_id=None):
             auctions = auctions.filter(product_details__expiration_date__lt=today)
         elif expired_filter == 'not_expired':
             auctions = auctions.filter(product_details__expiration_date__gte=today)
+
+    # **Apply specialty filter**
+    if specialty:
+        # Strip any leading/trailing whitespace
+        specialty = specialty.strip()
+        # Filter auctions where the category's medical specialty description matches the given specialty
+        auctions = auctions.filter(
+            category__medical_specialty__description__iexact=specialty
+        )
 
     # Apply time filters using a dictionary mapping
     time_deltas = {
@@ -879,12 +972,24 @@ def active_auctions_view(request, auction_id=None):
             Q(product_details__lot_number__icontains=search_query)
         )
 
+    # Annotate auctions with highest bid amount and highest bidder ID
+    highest_bid_subquery = Bid.objects.filter(
+        auction=OuterRef('pk')
+    ).order_by('-amount')
+
+    auctions = auctions.annotate(
+        highest_bid_amount=Subquery(highest_bid_subquery.values('amount')[:1]),
+        highest_bid_bidder_id=Subquery(highest_bid_subquery.values('user_id')[:1])
+    )
+
+
     # Add additional fields to auctions
     for auction in auctions:
         auction.image = auction.get_images.first()
         if request.user.is_authenticated:
             auction.is_watched = request.user in auction.watchers.all()
             auction.message_form = MessageForm(initial={'subject': f'Question about {auction.title}'})
+            auction.is_user_highest_bidder = (auction.highest_bid_bidder_id == request.user.id)
 
     # Pagination
     paginator = Paginator(auctions, 10)
@@ -917,7 +1022,8 @@ def active_auctions_view(request, auction_id=None):
         'my_auctions': my_auctions,
         'expired_filter': expired_filter,
         'auction_type': auction_type,
-
+        'specialty': specialty,  # **Add specialty to context**
+        'recent_views': recent_views_filter,
     }
 
     # Add authenticated-specific context
@@ -1039,33 +1145,6 @@ def watchlist_edit(request, auction_id, reverse_method):
         return HttpResponseRedirect(reverse('active_auctions_with_id', kwargs={'auction_id': auction_id}))
     else:
         return HttpResponseRedirect(reverse(reverse_method))
-
-
-# Should be able to remove
-# def auction_details_view(request, auction_id):
-#     """
-#     It renders a page that displays the details of a selected auction
-#     """
-#     if not request.user.is_authenticated:
-#         return HttpResponseRedirect(reverse('login'))
-#
-#     auction = Auction.objects.get(id=auction_id)
-#
-#     if request.user in auction.watchers.all():
-#         auction.is_watched = True
-#     else:
-#         auction.is_watched = False
-#
-#     return render(request, 'auction.html', {
-#         'categories': Category.objects.all(),
-#         'auction': auction,
-#         'images': auction.get_images.all(),
-#         'bid_form': BidForm(),
-#         'buy_it_now_form': AddToCartForm(),
-#         'comments': auction.get_comments.all(),
-#         'comment_form': CommentForm(),
-#         'title': 'Auction'
-#     })
 
 
 def privacy_policy(request):
@@ -1244,6 +1323,7 @@ def classify_device_view(request):
             device_data = json.loads(request.body)  # Parse the JSON body
             # print(device_data)
             category = update_categories_from_fda(device_data)
+            print(category)
             return JsonResponse({'category': category}, status=201)
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON'}, status=400)

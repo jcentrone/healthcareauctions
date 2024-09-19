@@ -167,7 +167,7 @@ function generatePreviewTable(data) {
     const headerRow = document.createElement('tr');
 
     // Add headers for the fetched fields first
-    const fetchedDataHeaders = ['Auction Title', 'Description', 'Category', 'Category ID', 'Manufacturer', 'Package Type', 'Sterile', 'Implantable'];
+    const fetchedDataHeaders = ['Title', 'Description', 'Category', 'Category ID', 'Manufacturer', 'Package Type', 'Sterile', 'Implantable', 'Medical Specialty Code', 'Medical Specialty Description', 'Device Name'];
     fetchedDataHeaders.forEach(header => {
         const th = document.createElement('th');
         th.innerText = header;
@@ -197,10 +197,11 @@ function generatePreviewTable(data) {
 
         // Fetch data for the given SKU (assumed to be in the first column)
         const sku = row[0];
+        const referNumb = row[1]
         fetchDeviceData(sku)
             .then(deviceData => {
                 if (deviceData) {
-                    const auctionTitle = deviceData.gudid.device.deviceDescription || 'No title available';
+                    const auctionTitle = deviceData.gudid.device.catalogNumber || referNumb;
                     const manufacturer = deviceData.gudid.device.companyName || 'Unknown';
                     const packageType = deviceData.gudid.device.identifiers.identifier[0].pkgType || 'Unknown';
                     const deviceSterile = deviceData.gudid.device.sterilization.deviceSterile ? 'Yes' : 'No';
@@ -231,18 +232,24 @@ function generatePreviewTable(data) {
                                 const description = classificationData.description +  '\n\n' + gmdnTerms || 'No description available';
                                 const category = classificationData.category || 'No category';
                                 const categoryId = classificationData.category_id || 'N/A';
-                                const fetchedDataValues = [auctionTitle, description, category, categoryId, manufacturer, packageType, deviceSterile, implantable];
+                                const medicalSpecialtyCode = classificationData.medical_specialty_code || '';
+                                const deviceName = classificationData.device_name || '';
+                                const medicalSpecialtyDescription = classificationData.medical_specialty_description || '';
+                                const fetchedDataValues = [auctionTitle, description, category, categoryId, manufacturer, packageType, deviceSterile, implantable, medicalSpecialtyCode, medicalSpecialtyDescription, deviceName];
 
                                 // Create the hidden div with the full data for the modal
                                 const modalContentDiv = document.createElement('div');
                                 modalContentDiv.classList.add('hover-modal-content');
-                                modalContentDiv.appendChild(createModalEL('Auction Title', auctionTitle));
+                                modalContentDiv.appendChild(createModalEL('Title', auctionTitle));
                                 modalContentDiv.appendChild(createModalEL('Description', description));
                                 modalContentDiv.appendChild(createModalEL('Category', category));
                                 modalContentDiv.appendChild(createModalEL('Manufacturer', manufacturer));
                                 modalContentDiv.appendChild(createModalEL('Package Type:', packageType));
                                 modalContentDiv.appendChild(createModalEL('Sterile', deviceSterile));
                                 modalContentDiv.appendChild(createModalEL('Implantable', implantable));
+                                modalContentDiv.appendChild(createModalEL('Medical Specialty Code', medicalSpecialtyCode));
+                                modalContentDiv.appendChild(createModalEL('Medical Specialty', medicalSpecialtyDescription));
+                                modalContentDiv.appendChild(createModalEL('Device Name', deviceName));
 
                                 // Add cells for the fetched data first
                                 fetchedDataValues.forEach((value, index) => {
@@ -572,17 +579,21 @@ document.getElementById('import-button').addEventListener('click', function (eve
             package_type: row.querySelector('td:nth-child(6)').innerText.trim(),         // Package Type
             deviceSterile: toBoolean(row.querySelector('td:nth-child(7)').innerText.trim()),        // Sterile
             implantable: toBoolean(row.querySelector('td:nth-child(8)').innerText.trim()),          // Implantable
-            sku: row.querySelector('td:nth-child(9)').innerText.trim(),                  // SKU
-            reference_number: row.querySelector('td:nth-child(10)').innerText.trim(),    // Reference Number
-            lot_number: row.querySelector('td:nth-child(11)').innerText.trim(),          // Lot Number
-            production_date: row.querySelector('td:nth-child(12)').innerText.trim(),     // Production Date
-            expiration_date: row.querySelector('td:nth-child(13)').innerText.trim(),     // Expiration Date
-            quantity_available: toNullIfEmpty(row.querySelector('td:nth-child(14)').innerText.trim()),  // Quantity Available
-            auction_type: row.querySelector('td:nth-child(15)').innerText.trim(),        // Auction Type
-            starting_bid: toNullIfEmpty(row.querySelector('td:nth-child(16)').innerText.trim()),        // Starting Bid
-            reserve_bid: toNullIfEmpty(row.querySelector('td:nth-child(17)').innerText.trim()),         // Reserve Bid
-            buyItNowPrice: toNullIfEmpty(row.querySelector('td:nth-child(18)').innerText.trim()),       // Sale Price (Buy It Now)
-            auction_duration: row.querySelector('td:nth-child(19)').innerText.trim(),    // Auction Duration
+            medicalSpecialtyCode: row.querySelector('td:nth-child(9)').innerText.trim(),
+            medicalSpecialtyDescription: row.querySelector('td:nth-child(10)').innerText.trim(),
+            deviceName: row.querySelector('td:nth-child(11)').innerText.trim(),
+
+            sku: row.querySelector('td:nth-child(12)').innerText.trim(),                  // SKU
+            reference_number: row.querySelector('td:nth-child(13)').innerText.trim(),    // Reference Number
+            lot_number: row.querySelector('td:nth-child(14)').innerText.trim(),          // Lot Number
+            production_date: row.querySelector('td:nth-child(15)').innerText.trim(),     // Production Date
+            expiration_date: row.querySelector('td:nth-child(16)').innerText.trim(),     // Expiration Date
+            quantity_available: toNullIfEmpty(row.querySelector('td:nth-child(17)').innerText.trim()),  // Quantity Available
+            auction_type: row.querySelector('td:nth-child(18)').innerText.trim(),        // Auction Type
+            starting_bid: toNullIfEmpty(row.querySelector('td:nth-child(19)').innerText.trim()),        // Starting Bid
+            reserve_bid: toNullIfEmpty(row.querySelector('td:nth-child(20)').innerText.trim()),         // Reserve Bid
+            buyItNowPrice: toNullIfEmpty(row.querySelector('td:nth-child(21)').innerText.trim()),       // Sale Price (Buy It Now)
+            auction_duration: row.querySelector('td:nth-child(22)').innerText.trim(),    // Auction Duration
         };
 
         // Log each row's data for debugging
@@ -664,6 +675,7 @@ function getCsrfToken() {
 }
 
 function fetchClassificationData(code) {
+    console.log('Code', code);
     return fetch(`https://api.fda.gov/device/classification.json?search=product_code:${code}&limit=5`)
         .then(response => response.json())
         .then(data => {
@@ -671,6 +683,7 @@ function fetchClassificationData(code) {
 
             if (data.results && data.results.length > 0) {
                 let classificationData = {
+                    medical_specialty_code: data.results[0].medical_specialty,
                     medical_specialty_description: data.results[0].medical_specialty_description,
                     device_class: data.results[0].device_class,
                     device_name: data.results[0].device_name,

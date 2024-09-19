@@ -16,15 +16,18 @@
         <section class="hero">
             {% include 'hero.html' %}
         </section>
-{#     <section class="hero">#}
-{#            {% include 'featured_auctions.html' %}#}
-{#        </section>#}
+        {#     <section class="hero">#}
+        {#            {% include 'featured_auctions.html' %}#}
+        {#        </section>#}
 
-        <section class="container desktop-only">
+
+
+        <section class="container desktop-only alert alert-info w-50">
             <div class="text-center text-muted">
                 <strong>Better On Mobile</strong>
                 <p>
-                    We see you are on our desktop site. Did you know you can use your mobile device to automatically create a listing
+                    We see you are on our desktop site. Did you know you can use your mobile device to automatically
+                    create a listing
                     with our QR/Barcode code scanner?
                 </p>
             </div>
@@ -37,193 +40,48 @@
                         <h2>
                             <a href="{% url 'active_auctions_view' %}?recent_views=1">Recently Viewed</a>
                         </h2>
-                        <div class="auction-items grid">
+                        <div class="auction-items grid pt-3">
                             {% for view in recent_views %}
-                                <div class="auction-item-container">
-                                    <a class="auction-item" href="{% url 'active_auctions_with_id' view.auction.id %}">
-                                        {% if view.auction.get_images.first %}
-                                            <img src="{{ view.auction.get_images.first.image.url }}"
-                                                 alt="{{ view.auction.title }}">
-                                        {% else %}
-                                            <img src="{% static 'images/no_image.png' %}" alt="Default Image">
-                                        {% endif %}
-                                        <h3>{{ view.auction.title|truncatechars:30 }}</h3>
-                                        <p>{{ view.auction.category }}</p>
-                                        {% if view.auction.auction_type == 'Auction' %}
-                                            <h3>
-                                                {% if view.auction.current_bid %}
-                                                    ${{ view.auction.current_bid }}
-                                                    <div class="fs-5 fw-light fst-italic">Current Bid</div>
-                                                {% else %}
-                                                    ${{ view.auction.starting_bid }}
-                                                    <div class="fs-5 fw-light fst-italic">Starting Bid</div>
-                                                {% endif %}
-                                                <div class="lead time-remaining">{{ view.auction.formatted_time_remaining }}
-                                                    Remaining
-                                                </div>
-                                            </h3>
-                                        {% else %}
-                                            <h3>
-                                                ${{ view.auction.buyItNowPrice }}
-                                                <div class="fs-5 fw-light fst-italic">Get it Now</div>
-                                            </h3>
-                                        {% endif %}
-                                    </a>
-                                    <a class='btn btn-secondary mt-auto rounded watch-button'
-                                       href="{% url 'watchlist_edit' view.auction.id 'active_auctions_with_id' %}">
-                                        {% if view.is_watched %}
-                                            <i class="fa-solid fa-eye-slash"></i>
-                                        {% else %}
-                                            <i class="fa-regular fa-eye"></i>
-                                        {% endif %}
-                                    </a>
-
-                                </div>
+                                {% include '_auction_listing_small.html' %}
                             {% endfor %}
                         </div>
                     </div>
                 {% endif %}
                 {% if watchlist %}
                     <div class="auctions-category mb-5">
-                        <h2>Your Watchlist</h2>
-                        <div class="auction-items grid">
-
-                            {% for auction in watchlist %}
-                                <div class="auction-item-container">
-                                    <a class="auction-item" href="{% url 'active_auctions_with_id' auction.id %}">
-                                        {% if auction.image %}
-                                            <img src="{{ auction.image.image.url }}" alt="{{ auction.title }}">
-                                        {% else %}
-                                            <img src="{% static 'images/no_image.png' %}" alt="Default Image">
-                                        {% endif %}
-                                        <h3>{{ auction.title|truncatechars:30 }}</h3>
-                                        <p>{{ auction.category }}</p>
-                                        {% if auction.auction_type == 'Auction' %}
-                                            <h3>
-                                                {% if view.auction.current_bid %}
-                                                    ${{ auction.current_bid }}
-                                                    <div class="fs-5 fw-light fst-italic">Current Bid</div>
-                                                {% else %}
-                                                    ${{ auction.starting_bid }}
-                                                    <div class="fs-5 fw-light fst-italic">Starting Bid</div>
-                                                {% endif %}
-                                                <div class="lead time-remaining">{{ auction.formatted_time_remaining }}
-                                                    Remaining
-                                                </div>
-                                            </h3>
-                                        {% else %}
-                                            <h3>
-                                                ${{ auction.buyItNowPrice }}
-                                                <div class="fs-5 fw-light fst-italic">Get it Now</div>
-                                            </h3>
-                                        {% endif %}
-                                    </a>
-                                    <a class='btn btn-secondary mt-auto rounded watch-button'
-                                       href="{% url 'watchlist_edit' auction.id 'index' %}">
-                                        <i class="fa-solid fa-eye-slash"></i>
-                                    </a>
-                                </div>
+                        <h2>
+                            <a href="{% url 'active_auctions_view' %}?watchlist=1">My Watchlist</a>
+                        </h2>
+                        <div class="auction-items grid pt-3">
+                            {% for view in watchlist %}
+                                {% include '_auction_listing_small_a.html' %}
                             {% endfor %}
                         </div>
                     </div>
                 {% endif %}
             {% endif %}
-
             <div class="auctions-category mb-5">
-                <h2>{{ auctions_cat1_name }}</h2>
-                <div class="auction-items grid">
-                    {% for auction in auctions_cat1 %}
-                        <div class="auction-item-container">
-                            <a class="auction-item" href="{% url 'active_auctions_with_id' auction.id %}">
-                                {% if auction.image %}
-                                    <img src="{{ auction.image.image.url }}" alt="{{ auction.title }}">
-                                {% else %}
-                                    <img src="{% static 'images/no_image.png' %}" alt="Default Image">
-                                {% endif %}
-                                <h3>{{ auction.title|truncatechars:30 }}</h3>
-                                <p>{{ auction.category }}</p>
-                                {% if auction.auction_type == 'Auction' %}
-                                    <h3>
-                                        {% if view.auction.current_bid %}
-                                            ${{ auction.current_bid }}
-                                            <div class="fs-5 fw-light fst-italic">Current Bid</div>
-                                        {% else %}
-                                            ${{ auction.starting_bid }}
-                                            <div class="fs-5 fw-light fst-italic">Starting Bid</div>
-                                        {% endif %}
-                                        <div class="lead time-remaining">{{ view.auction.formatted_time_remaining }}
-                                            Remaining
-                                        </div>
-                                    </h3>
-                                {% else %}
-                                    <h3>
-                                        ${{ auction.buyItNowPrice }}
-                                        <div class="fs-5 fw-light fst-italic">Get it Now</div>
+                <h2>
+                    <a href="{% url 'active_auctions_view' %}?category_name={{ auctions_cat1_name|urlencode }}">{{ auctions_cat1_name }}</a>
+                </h2>
 
-                                    </h3>
-                                {% endif %}
-                            </a>
-                            <a class='btn btn-secondary mt-auto rounded watch-button'
-                               href="{% url 'watchlist_edit' auction.id 'active_auctions_with_id' %}">
-                                {% if auction.is_watched %}
-                                    <i class="fa-solid fa-eye-slash"></i>
-                                {% else %}
-                                    <i class="fa-regular fa-eye"></i>
-                                {% endif %}
-                            </a>
-                        </div>
+                {#                <h2>{{ auctions_cat1_name }}</h2>#}
+                <div class="auction-items grid pt-3">
+                    {% for view in auctions_cat1 %}
+                        {% include '_auction_listing_small_a.html' %}
                     {% endfor %}
                 </div>
             </div>
             <div class="auctions-category mb-5">
-                <h2>{{ auctions_cat2_name }}</h2>
-                <div class="auction-items grid">
-                    {% for auction in auctions_cat2 %}
-                        <div class="auction-item-container">
-                            <a class="auction-item" href="{% url 'active_auctions_with_id' auction.id %}">
-                                {% if auction.image %}
-                                    <img src="{{ auction.image.image.url }}" alt="{{ auction.title }}">
-                                {% else %}
-                                    <img src="{% static 'images/no_image.png' %}" alt="Default Image">
-                                {% endif %}
-                                <h3>{{ auction.title|truncatechars:30 }}</h3>
-                                <p>{{ auction.category }}</p>
-                                {% if auction.auction_type == 'Auction' %}
-                                    <h3>
-                                        {% if view.auction.current_bid %}
-                                            ${{ auction.current_bid }}
-                                            <div class="fs-5 fw-light fst-italic">Current Bid</div>
-
-                                        {% else %}
-                                            ${{ auction.starting_bid }}
-                                            <div class="fs-5 fw-light fst-italic">Starting Bid</div>
-                                        {% endif %}
-                                        <div class="lead time-remaining">{{ view.auction.formatted_time_remaining }}
-                                            Remaining
-                                        </div>
-                                    </h3>
-                                {% else %}
-                                    <h3>
-                                        ${{ auction.buyItNowPrice }}
-                                        <div class="fs-5 fw-light fst-italic">Get it Now</div>
-                                    </h3>
-                                {% endif %}
-                            </a>
-                            <a class='btn btn-secondary mt-auto rounded watch-button'
-                               href="{% url 'watchlist_edit' auction.id 'active_auctions_with_id' %}">
-                                {% if auction.is_watched %}
-                                    <i class="fa-solid fa-eye-slash"></i>
-                                {% else %}
-                                    <i class="fa-regular fa-eye"></i>
-                                {% endif %}
-                            </a>
-                        </div>
-
-
+                <h2>
+                    <a href="{% url 'active_auctions_view' %}?category_name={{ auctions_cat2_name|urlencode }}">{{ auctions_cat2_name }}</a>
+                </h2>
+                <div class="auction-items grid pt-3">
+                    {% for view in auctions_cat2 %}
+                        {% include '_auction_listing_small_a.html' %}
                     {% endfor %}
                 </div>
             </div>
-
         </section>
 
         <div class="container p-0">

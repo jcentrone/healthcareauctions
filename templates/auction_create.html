@@ -367,13 +367,7 @@
                                                                     details. You can review and edit the information as
                                                                     needed before finalizing your auction.
                                                                 </p>
-                                                                <p>
-                                                                    <strong>Better on Mobile</strong> Our scanner
-                                                                    automatically opens when you create a listing
-                                                                    from your mobile device. Simply use your device's
-                                                                    camera to capture the barcode, and let our system
-                                                                    handle the rest for a seamless listing experience!
-                                                                </p>
+
                                                             </div>
                                                             <label for="{{ form.sku.auto_id }}"
                                                                    class="form-label">GTIN/UDI/SKU</label>
@@ -386,6 +380,36 @@
                                                             <div class="scan-control mobile-only">
                                                                 <i class="fa-solid fa-qrcode"></i>
                                                                 <i class="fa-solid fa-barcode"></i>
+                                                            </div>
+
+                                                            <div id="sku-outro" hidden>
+                                                                <div class="row my-3 mt-5 ms-3 align-items-center">
+                                                                    <div class="col-md-auto">
+                                                                        <i class="fa-solid fa-mobile-screen fs-1"></i>
+                                                                    </div>
+                                                                    <div class="col-md-10 fst-italic">
+                                                                        <strong class="">Better on Mobile</strong> <span
+                                                                            class="fw-light"> - Our scanner
+                                                                        automatically opens when you create a listing
+                                                                        from your mobile device. Simply use your
+                                                                        device's camera to capture the barcode, and let
+                                                                        our system handle the rest for a seamless
+                                                                        listing experience!</span>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="row my-3 ms-3 align-items-center">
+                                                                    <div class="col-md-auto">
+                                                                        <i class="fa-solid fa-file-excel text-success fs-1"></i>
+                                                                    </div>
+                                                                    <div class="col-md-10 fst-italic">
+                                                                        <strong class="">Fast with Excel</strong>
+                                                                        <span class="fw-light"> - Did you know that you can import multiple listings at
+                                                                    once?</span>
+                                                                        <a href="{% url 'import_excel' %}">Import
+                                                                            Excel</a>
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                         <!-- Column 2 -->

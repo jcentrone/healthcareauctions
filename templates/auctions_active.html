@@ -50,24 +50,67 @@
                             href="{% url 'active_auctions_view' %}?sort_by={{ sort_by }}">{{ sort_by|sort_by_label }}</a>
                     </li>
                 {% endif %}
-
-
+                {% if specialty %}
+                    <li class="breadcrumb-item"><a
+                            href="{% url 'active_auctions_view' %}?specialty={{ specialty }}">{{ specialty }}</a>
+                    </li>
+                {% endif %}
+                {% if recent_views %}
+                    <li class="breadcrumb-item"><a
+                            href="{% url 'active_auctions_view' %}?recent_views={{ recent_views }}">
+                        {% if recent_views %}Recently Viewed Listings{% endif %} </a>
+                    </li>
+                {% endif %}
             </ol>
         </nav>
 
         <!-- Page Heading -->
         <div class="d-flex align-items-center justify-content-between mb-2">
-            {% if search_query %}
-                <h1 class="breadcrumb-item active" aria-current="page">Search: {{ search_query|titlecase }}
-                    - {{ auctions_count }}</h1>
-            {% elif title %}
-                <h1 class="breadcrumb-item active" aria-current="page">{{ title|titlecase }} - {{ auctions_count }}</h1>
-            {% endif %}
-            {#            <h1 class='h3 m-0 text-gray-800'>{{ title|titlecase }} - {{ auctions_count }} Results</h1>#}
+            <h2 class="breadcrumb-item active" aria-current="page">
+                {% if search_query %}
+                    Search Results for "{{ search_query|titlecase }}"
+                {% elif category_name or specialty or manufacturer_filter or auction_type or time_filter or sort_by %}
+                    {% comment %} Append filters to the heading {% endcomment %}
+                    {% if category_name %}
+                        in {{ category_name|titlecase }}
+                    {% endif %}
+                    {% if specialty %}
+                        {% if category_name %} - {% endif %}
+                        Specialty: {{ specialty|titlecase }}
+                    {% endif %}
+                    {% if manufacturer_filter %}
+                        {% if category_name or specialty %} - {% endif %}
+                        Manufacturer: {{ manufacturer_filter|titlecase }}
+                    {% endif %}
+                    {% if auction_type %}
+                        {% if category_name or specialty or manufacturer_filter %} - {% endif %}
+                        Type: {{ auction_type|auction_type_label }}
+                    {% endif %}
+                    {% if time_filter %}
+                        {% if category_name or specialty or manufacturer_filter or auction_type %} - {% endif %}
+                        Time: {{ time_filter|titlecase }}
+                    {% endif %}
+                    {% if sort_by %}
+                        {% if category_name or specialty or manufacturer_filter or auction_type or time_filter %} -
+                        {% endif %}
+                        Sorted by: {{ sort_by|sort_by_label }}
+                    {% endif %}
+                {% else %}
+                    {% if title %}
+                        {{ title|titlecase }}
+                    {% else %}
+                        Listings
+                    {% endif %}
+                {% endif %}
+
+                - {{ auctions_count }} Result{% if auctions_count != 1 %}s{% endif %}
+            </h2>
+
             {% if request.user.is_authenticated %}
                 <a href="{% url 'export_listings' %}" class="btn btn-outline-primary ">Download as Excel</a>
             {% endif %}
         </div>
+
 
         <div class="active-auctions-container">
             <div class="auctions-header-container">

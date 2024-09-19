@@ -10,7 +10,7 @@ def titlecase(value):
 
 @register.filter(name='capitalize_all')
 def capitalize_all(value):
-    return value.title() if isinstance(value, str) else value
+    return value.upper() if isinstance(value, str) else value
 
 
 @register.filter

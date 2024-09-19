@@ -3,7 +3,7 @@ import os
 
 from google.oauth2 import service_account
 
-from auctions.models import Category
+from auctions.models import Category, MedicalSpecialty
 
 
 def get_or_create_category(path):
@@ -36,25 +36,43 @@ def classify_and_save_device(device_data):
 
 
 def update_categories_from_fda(fda_data):
-    specialty = fda_data.get('medical_specialty_description', None)
-    if specialty:
-        parent_category, parent_created = Category.objects.get_or_create(
-            category_name=specialty,
-            parent=None  # Top-level category
-        )
-        device_name = fda_data.get('device_name', None)
-        if device_name:
-            device_category, device_created = Category.objects.get_or_create(
-                category_name=device_name,
-                parent=parent_category
-            )
-            # Now you can return the ID of the device category
-            return {
-                "category_name": f"{parent_category.category_name} / {device_name}",
-                "value": device_category.id  # ID of the child category
-            }
+    print(fda_data)
+    medical_specialty_code = fda_data.get('medical_specialty_code', None)
+    medical_specialty_description = fda_data.get('medical_specialty_description', None)
+    device_name = fda_data.get('device_name', None)
 
-    return None
+    print(medical_specialty_code)
+    print(medical_specialty_description)
+    print(device_name)
+
+    if medical_specialty_code:
+        medical_specialty_code = medical_specialty_code.upper()  # Ensure consistency
+        medical_specialty, created = MedicalSpecialty.objects.get_or_create(
+            code=medical_specialty_code,
+            defaults={'description': medical_specialty_description}
+        )
+        if not created and medical_specialty_description:
+            # Optionally update the description if it has changed
+            if medical_specialty.description != medical_specialty_description:
+                medical_specialty.description = medical_specialty_description
+                medical_specialty.save()
+
+        category, created = Category.objects.get_or_create(
+            category_name=device_name,
+            medical_specialty=medical_specialty
+        )
+        if not created and device_name:
+            # Optionally update the description if it has changed
+            if category.category_name != device_name:
+                category.category_name = device_name
+                category.save()
+
+        # Now you can return the ID of the device category
+        return {
+            "category_name": f"{medical_specialty.description} / {category.category_name}",
+            "value": category.id  # ID of the child category
+        }
+
 
 
 

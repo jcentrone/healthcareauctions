@@ -141,12 +141,17 @@ class AuctionForm(forms.ModelForm):
         if 'expiration_date' in self.fields:
             self.fields['expiration_date'].widget.attrs['class'] += ' datepicker'
 
-        # Customize category field choices to show parent/child relationships
-        self.fields['category'].queryset = Category.objects.all()
+        # Fetch categories and order by medical specialty and category name
+        categories = Category.objects.select_related('medical_specialty').all().order_by(
+            'medical_specialty__description', 'category_name')
+
+        # Customize category field choices to group by medical specialty
         self.fields['category'].choices = [
-            (category.id,
-             f"{category.parent.category_name} / {category.category_name}" if category.parent else f"{category.category_name}")
-            for category in Category.objects.all().order_by('parent__category_name', 'category_name')
+            (
+                category.id,
+                f"{category.medical_specialty.description if category.medical_specialty else 'Uncategorized'} / {category.category_name}"
+            )
+            for category in categories
         ]
 
     def clean(self):
@@ -165,6 +170,15 @@ class AuctionForm(forms.ModelForm):
 
         return cleaned_data
 
+
+
+  # Customize category field choices to show parent/child relationships
+        # self.fields['category'].queryset = Category.objects.all()
+        # self.fields['category'].choices = [
+        #     (category.id,
+        #      f"{category.parent.category_name} / {category.category_name}" if category.parent else f"{category.category_name}")
+        #     for category in Category.objects.all().order_by('parent__category_name', 'category_name')
+        # ]
 
 class ProductDetailForm(forms.ModelForm):
     class Meta:

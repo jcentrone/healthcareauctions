@@ -1,0 +1,41 @@
+{% load static %}
+{% load custom_filters %}
+<div class="auction-item-container">
+    <a class="auction-item" href="{% url 'active_auctions_with_id' view.id %}">
+        <div class="image-container h-25">
+            {% if view.get_images.first %}
+                <img src="{{ view.get_images.first.image.url }}"
+                     alt="{{ view.title }}">
+            {% else %}
+                <img src="{% static 'images/no_image.png' %}" alt="Default Image">
+            {% endif %}
+        </div>
+        <div class="auction-item-details">
+            <h3 class="uppercase">{{ view.title|capitalize_all|truncatechars:30 }}</h3>
+            <p class="category">{{ view.category }}</p>
+            {% if view.auction_type == 'Auction' %}
+                <div class="price-info">
+                    {% if view.current_bid %}
+                        <span class="price">${{ view.current_bid }}</span>
+                        <span class="badge">Current Bid</span>
+                    {% else %}
+                        <span class="price">${{ view.starting_bid }}</span>
+                        <span class="badge">Starting Bid</span>
+                    {% endif %}
+                </div>
+                <div class="time-remaining">{{ view.formatted_time_remaining }}
+                    Remaining
+                </div>
+            {% else %}
+                <div class="price-info">
+                    <span class="price">${{ view.buyItNowPrice }}</span>
+                    <span class="badge">Get it Now</span>
+                </div>
+            {% endif %}
+        </div>
+    </a>
+    <a class="watch-button"
+       href="{% url 'watchlist_edit' view.id 'active_auctions_with_id' %}">
+        <i class="fa-solid fa-eye-slash"></i>
+    </a>
+</div>

@@ -1,13 +1,30 @@
-from .models import Category, Message, Cart
+from django.db.models import Count, Q
+
+from .models import Category, Message, Cart, MedicalSpecialty
 
 
 def header_data(request):
     context = {}
 
     # Fetch categories
-    categories_with_auctions = Category.objects.filter(auction_category__isnull=False).distinct().order_by('category_name')
+    categories_with_auctions = Category.objects.filter(auction_category__isnull=False).distinct().order_by(
+        'category_name')
 
     context['categories'] = categories_with_auctions
+
+    specialties_with_auctions = MedicalSpecialty.objects.annotate(
+        count_active_auctions=Count(
+            'categories__auction_category',
+            filter=Q(
+                categories__auction_category__active=True,
+                categories__auction_category__hold_for_import=False
+            ),
+            distinct=True
+        )
+    ).order_by('description')
+
+    context['specialties'] = specialties_with_auctions
+    print(context['specialties'].values())
 
     if request.user.is_authenticated:
 

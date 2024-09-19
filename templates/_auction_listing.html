@@ -1,4 +1,4 @@
-<!-- Auction LIsting -->
+<!-- Auction Listing -->
 <div class='col {{ auction.auction_type }}'>
     <div class='listing'>
         <a type="button" class="btn auction-card text-decoration-none"
@@ -38,7 +38,6 @@
                     </h3>
                     {% if  auction.auction_type == 'Auction' %}
                         <div class='two-grid-auto-columns'>
-
                             <div class="lead time-remaining">{{ auction.formatted_time_remaining }}
                                 Remaining
                             </div>
@@ -66,7 +65,13 @@
             <div class="p-3">
                 {% if auction.auction_type == 'Auction' %}
                     <!-- Start Bid Form -->
-                    {% include '_bid_form.html' %}
+                    {% if auction.is_user_highest_bidder %}
+                        <div class="alert alert-success text-center">
+                            You are the highest bidder!
+                        </div>
+                     {% else %}   
+                        {% include '_bid_form.html' %}
+                    {% endif %}
                     <!-- End Bid Form -->
                 {% else %}
                     <!-- Start Get It Now Form -->

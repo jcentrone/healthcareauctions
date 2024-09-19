@@ -1,4 +1,4 @@
-body{
+body {
     font-family: 'Montserrat', sans-serif;
 }
 
@@ -89,26 +89,28 @@ header .logo {
     /*font-size: 1.2em !important;*/
 }
 
-.input-group {
-    gap: 20px;
-}
+/*.input-group {*/
+/*    gap: 20px;*/
+/*}*/
 
-.input-group .form-control {
-    padding-left: 2.5rem;
+/*.input-group .form-control {*/
+/*    padding-left: 2.5rem;*/
 
-}
+/*}*/
 
 .custom-select {
-    margin-left: -21px !important;
-    padding: 0 10px;
     border: var(--bs-border-width) solid var(--bs-border-color);
-    width: auto;
     outline: none;
+    padding-left: 5px;
 }
 
-.custom-select option{
-    outline: none;
+.form-select {
+    max-width: 175px;
 }
+
+/*.custom-select option{*/
+/*    outline: none;*/
+/*}*/
 
 .watch-button {
     position: absolute;
@@ -116,8 +118,8 @@ header .logo {
     right: 21px;
 }
 
-.watch-button i{
-    color:#FFFFFF !important;
+.watch-button i {
+    color: #FFFFFF !important;
 }
 
 .input-group .fa-search {
@@ -129,7 +131,7 @@ header .logo {
     z-index: 10;
 }
 
-#discover-drop-menu{
+#discover-drop-menu {
     width: 234px;
     text-align: right;
 }
@@ -283,18 +285,18 @@ footer .social-media a:hover {
     color: white !important;
 }
 
-.nav-link{
+.nav-link {
     position: relative;
 }
 
-.cart{
+.cart {
     position: absolute;
     top: -4px;
     right: -6px;
     font-size: 8px;
 }
 
-#content{
+#content {
     min-height: 75vh;
 }
 
@@ -307,9 +309,12 @@ footer .social-media a:hover {
         gap: 10px;
     }
 
-    .input-group .form-control {
+    .input-group .form-control,
+    #auction-search,
+    .selectpicker.custom-select{
         flex: 1 1 auto;
-        padding-left: 2.5rem;
+        /*padding-left: 2.5rem;*/
+        border-radius: 8px !important;
     }
 
 
@@ -331,6 +336,14 @@ footer .social-media a:hover {
         left: 1rem;
         top: .6rem;
         transform: none;
+    }
+
+    label.input-group-text.border-right-0 {
+        display: none;
+    }
+
+    #search-button{
+        border-radius: 8px !important;
     }
 
     #lower-header-container {
@@ -359,8 +372,8 @@ footer .social-media a:hover {
         flex-direction: column;
     }
 
-    #header-nav-conatiner{
-        width:100% !important;
+    #header-nav-conatiner {
+        width: 100% !important;
     }
 
 

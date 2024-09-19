@@ -5,12 +5,12 @@
             <div class='text-capitalize'>{{ category }} - <span class="badge text-dark">{{ category.count_active_auctions }}</span></div>
             
         </a>
-        {% if category.subcategories.all %}
-            <ul>
-                {% for subcategory in category.subcategories.all %}
-                    {% include 'category_snippet.html' with category=subcategory %}
-                {% endfor %}
-            </ul>
-        {% endif %}
+{#        {% if category.subcategories.all %}#}
+{#            <ul>#}
+{#                {% for subcategory in category.subcategories.all %}#}
+{#                    {% include 'category_snippet.html' with category=subcategory %}#}
+{#                {% endfor %}#}
+{#            </ul>#}
+{#        {% endif %}#}
     </li>
 {#{% endif %}#}

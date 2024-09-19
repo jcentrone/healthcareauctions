@@ -154,21 +154,45 @@ class Address(models.Model):
         return f'{self.address_type} address for {self.user.username}'
 
 
+class MedicalSpecialty(models.Model):
+    code = models.CharField(max_length=2, null=True, blank=True, unique=True)  # Enforce unique constraint
+    description = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.code} - {self.description}"
+
+    def save(self, *args, **kwargs):
+        if self.code:
+            self.code = self.code.upper()  # Normalize to uppercase
+        super().save(*args, **kwargs)
+
+    # @property
+    # def count_active_auctions(self):
+    #     # Count active auctions across all categories linked to this medical specialty
+    #     return Auction.objects.filter(category__medical_specialty=self, active=True).count()
+
+
 class Category(models.Model):
     category_name = models.CharField(max_length=50)
-    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='subcategories')
+    medical_specialty = models.ForeignKey(
+        MedicalSpecialty,
+        on_delete=models.CASCADE,
+        related_name='categories',
+        null=True,
+        blank=True
+    )
 
     class Meta:
         verbose_name = 'Category'
         verbose_name_plural = 'Categories'
-        unique_together = ('category_name', 'parent')  # Prevent duplicate categories under the same parent
+        unique_together = ('medical_specialty', 'category_name')  # Prevent duplicate categories under the same parent
 
     def __str__(self):
         return f'{self.category_name}'
 
     @property
     def count_active_auctions(self):
-        return Auction.objects.filter(category=self).count()
+        return self.auction_category.count()
 
 
 class Auction(models.Model):
@@ -209,7 +233,7 @@ class Auction(models.Model):
     buyer = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
     watchers = models.ManyToManyField(User, related_name='watchlist', blank=True)
     active = models.BooleanField(default=True)
-    product_name = models.CharField('Product Name', max_length=256, null=False, blank=False, default='')
+    product_name = models.CharField('Brand Name', max_length=256, null=False, blank=False, default='')
     package_quantity = models.IntegerField('Package Quantity', null=True, blank=True)
     partial_quantity = models.IntegerField('Partial Quantity', null=True, blank=True)
     manufacturer = models.CharField(max_length=100, null=False, blank=False, default='')
@@ -238,9 +262,14 @@ class Auction(models.Model):
         return f'Auction #{self.id}: {self.title} ({self.creator})'
 
     def save(self, *args, **kwargs):
-        if not self.auction_ending_date:
+        # Check if the object is being created for the first time
+        if not self.pk and not self.auction_ending_date:
+            super(Auction, self).save(*args, **kwargs)  # Save to get date_created
             self.auction_ending_date = self.date_created + timezone.timedelta(days=self.auction_duration)
-        super(Auction, self).save(*args, **kwargs)
+            # Avoid infinite recursion by updating only the auction_ending_date field
+            Auction.objects.filter(pk=self.pk).update(auction_ending_date=self.auction_ending_date)
+        else:
+            super(Auction, self).save(*args, **kwargs)
 
     def auction_end_date(self):
         return self.date_created + timedelta(days=self.auction_duration)
