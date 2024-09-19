@@ -61,7 +61,7 @@ h2 a {
 /*}*/
 
 .hero {
-    /*background: url('/static/images/hospital1.jpg') no-repeat center center/cover;*/
+    /*background: url("/static/images/hospital1.c8345bed0651.jpg") no-repeat center center/cover;*/
     /*padding: 100px 20px 150px;*/
     /*text-align: center;*/
     color: var(--white);
@@ -482,7 +482,7 @@ a.btn.btn-outline-light.btn-lg.mt-3 {
 
 #footer-cta {
     /* Background Image */
-    background-image: url('../images/rm218-bb-07.jpg');
+    background-image: url("../images/rm218-bb-07.18a046f51c5e.jpg");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;

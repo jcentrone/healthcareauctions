@@ -89,17 +89,20 @@ function getAdditionalDetails(auctionId) {
             detailsContainer.innerHTML = ''; // Clear any existing details
 
             if (data.product_details.length > 0) {
-                console.log('Product Details', data.product_details);
+                // console.log('Product Details', data.product_details);
 
                 // Check if any item is expired
                 let containsExpiredItems = false;
 
                 data.product_details.forEach(function (detail, index) {
                     // Check if the item is expired
-                    let expirationDate = new Date(detail.expiration_date);
-                    let today = new Date();
-                    if (expirationDate < today) {
-                        containsExpiredItems = true;
+                    if (detail.expiration_date) {
+                        let expirationDate = new Date(detail.expiration_date);
+                        // console.log('exipration', expirationDate);
+                        let today = new Date();
+                        if (expirationDate && expirationDate < today) {
+                            containsExpiredItems = true;
+                        }
                     }
 
                     // Create table if it doesn't exist yet
@@ -142,7 +145,7 @@ function getAdditionalDetails(auctionId) {
                 if (containsExpiredItems) {
                     let warningMessage = document.createElement('div');
                     warningMessage.className = 'alert alert-warning';
-                    warningMessage.textContent = 'This listing contains an expired item(s).';
+                    warningMessage.textContent = 'This listing may contain an expired item(s).';
                     detailsContainer.append(warningMessage);
                 }
 

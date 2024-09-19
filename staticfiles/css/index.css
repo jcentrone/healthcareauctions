@@ -626,7 +626,7 @@ footer .social-media a:hover {
 }
 
 .input-group-text {
-    width: 40px;
+    /*width: 40px;*/
     justify-content: center;
 
 }
@@ -823,7 +823,7 @@ footer .social-media a:hover {
     color: inherit;
 }
 
-.image-container {
+.auction-item > .image-container {
     position: relative;
     width: 100%;
     padding-top: 75%; /* 4:3 Aspect Ratio */

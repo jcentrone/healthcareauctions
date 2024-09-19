@@ -124,11 +124,17 @@ header .logo {
 
 .input-group .fa-search {
     position: absolute;
-    left: 0.75rem;
+    left: 50%;
     top: 50%;
-    transform: translateY(-50%);
+    transform: translate(-50%, -50%);
     color: #aaa;
     z-index: 10;
+}
+
+.input-group-text {
+    height: 40px;
+    width: 40px;
+    justify-content: center;
 }
 
 #discover-drop-menu {
@@ -311,7 +317,7 @@ footer .social-media a:hover {
 
     .input-group .form-control,
     #auction-search,
-    .selectpicker.custom-select{
+    .selectpicker.custom-select {
         flex: 1 1 auto;
         /*padding-left: 2.5rem;*/
         border-radius: 8px !important;
@@ -342,7 +348,7 @@ footer .social-media a:hover {
         display: none;
     }
 
-    #search-button{
+    #search-button {
         border-radius: 8px !important;
     }
 
