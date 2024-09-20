@@ -332,6 +332,10 @@ footer .social-media a:hover {
         width: 100% !important;
     }
 
+    input.form-control.rounded {
+        width: auto !important;
+    }
+
     .custom-select {
         padding: 8px;
         flex: 1 1 auto;
