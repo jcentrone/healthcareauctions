@@ -2,7 +2,7 @@ import logging
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from django.core.mail import EmailMultiAlternatives
-from django.db import transaction
+from django.db import transaction, connection
 from django.utils import timezone
 from django.utils.html import strip_tags
 from django_apscheduler.jobstores import DjangoJobStore, register_events
@@ -17,6 +17,9 @@ logger = logging.getLogger(__name__)
 def deactivate_expired_auctions():
     with transaction.atomic():
         now = timezone.now()
+        if connection.connection is None:
+            connection.ensure_connection()
+
         expired_auctions = Auction.objects.filter(
             active=True,
             auction_type='Auction',

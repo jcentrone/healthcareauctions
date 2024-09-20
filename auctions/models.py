@@ -236,7 +236,7 @@ class Auction(models.Model):
     product_name = models.CharField('Brand Name', max_length=256, null=False, blank=False, default='')
     package_quantity = models.IntegerField('Package Quantity', null=True, blank=True)
     partial_quantity = models.IntegerField('Partial Quantity', null=True, blank=True)
-    manufacturer = models.CharField(max_length=100, null=False, blank=False, default='')
+    manufacturer = models.CharField(max_length=255, null=False, blank=False, default='')
     auction_type = models.CharField('Auction Type', null=False, blank=False, default='Auction')
     gmdnPTDefinition = models.TextField(null=True, blank=True)
     implantable = models.BooleanField(default=False)
@@ -663,3 +663,12 @@ class Parcel(models.Model):
         if not hasattr(self, 'carrier') and self.order.carriers.exists():
             self.carrier = self.order.carriers.first()
         super().save(*args, **kwargs)
+
+
+class UserManual(models.Model):
+    manual_url = models.URLField(max_length=512, null=True, blank=True)
+    manufacturer = models.CharField(max_length=255, null=False, blank=False, default='')
+
+    def __str__(self):
+        return f'User Manual for {self.manufacturer}'
+

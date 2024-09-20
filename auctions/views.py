@@ -36,7 +36,7 @@ from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, 
     PayPalForm, CashAppForm, CustomUserChangeForm, UserAddressForm, OrderNoteForm, EditAuctionForm, \
     EditProductDetailFormSet, ShippingAccountsForm, RegistrationForm, ProductDetailForm
 from .models import Bid, Category, Image, CartItem, Cart, ProductDetail, Order, Payment, \
-    OrderItem, Parcel, ProductImage, ShippingAccounts, Address, Message, User, MedicalSpecialty
+    OrderItem, Parcel, ProductImage, ShippingAccounts, Address, Message, User, MedicalSpecialty, UserManual
 from .utils.calculate_tax import get_sales_tax
 from .utils.email_manager import send_welcome_email_html, order_confirmation_message
 from .utils.get_base64_logo import get_logo_base64
@@ -986,6 +986,18 @@ def active_auctions_view(request, auction_id=None):
     # Add additional fields to auctions
     for auction in auctions:
         auction.image = auction.get_images.first()
+
+        # Split the auction manufacturer into keywords
+        keywords = auction.manufacturer.split()
+
+        # Build a Q object to match any of the keywords
+        query = Q()
+        for keyword in keywords:
+            query |= Q(manufacturer__icontains=keyword)
+
+        # Filter using the constructed Q object
+        auction.manual_url = UserManual.objects.filter(query).first()
+
         if request.user.is_authenticated:
             auction.is_watched = request.user in auction.watchers.all()
             auction.message_form = MessageForm(initial={'subject': f'Question about {auction.title}'})

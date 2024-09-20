@@ -9,15 +9,24 @@ from django.utils.translation import gettext_lazy as _
 
 from .forms import MessageForm
 from .models import Bid, User, Order, OrderItem, ShippingAddress, \
-    BillingAddress, Payment, Carrier, Parcel, ProductDetail, ShippingAccounts, Auction, Address
+    BillingAddress, Payment, Carrier, Parcel, ProductDetail, ShippingAccounts, Auction, Address, UserManual
 
 # admin.site.register(Auction)
 # admin.site.register(Image)
 admin.site.register(Bid)
 # admin.site.register(Comment)
 # admin.site.register(Category)
-# admin.site.register(User)
+# admin.site.register(UserManual)
 
+class UserManualAdmin(admin.ModelAdmin):
+    list_display = (
+        'manufacturer', 'manual_url'
+    )
+    list_filter = ('manufacturer',)  # Comma added to make it a tuple
+    search_fields = ('^manufacturer',)  # '^' added for exact match prioritization
+    fields = ('manufacturer', 'manual_url')
+
+admin.site.register(UserManual, UserManualAdmin)
 
 class AuctionInline(admin.TabularInline):
     model = Auction

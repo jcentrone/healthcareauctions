@@ -110,7 +110,13 @@
 
                     </div>
                 </div>
-                <h3 class="mt-3">Additional Details</h3>
+                <div class="d-flex align-items-end justify-content-between mt-3">
+                    <h3 class="">Additional Details</h3>
+
+                    {% if auction.manual_url.manual_url %}
+                        <a class="mb-2" href="{{ auction.manual_url.manual_url }}" target="_blank">User Manual</a>
+                    {% endif %}
+                </div>
                 <div class="additional-details" id="additional-details-{{ auction.id }}">
 
                 </div>
