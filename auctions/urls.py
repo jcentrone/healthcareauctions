@@ -38,6 +38,7 @@ urlpatterns = [
     path('auction/<int:auction_id>/product-details/', views.get_auction_product_details,
          name='get_auction_additional_details'),
     path('track-auction-view/', views.track_auction_view, name='track_auction_view'),
+
     path('inbox/', views.inbox, name='inbox'),
     path('message/<int:message_id>/', views.message_detail, name='message_detail'),
     path('send_message/<int:auction_id>/', views.send_message, name='send_message'),
@@ -74,5 +75,7 @@ urlpatterns = [
     path('password-reset-complete/',
          auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete.html'),
          name='password_reset_complete'),
+
+    path('get_synergy_data/<str:reference_number>/', views.get_synergy_data, name='get_synergy_data'),
 
 ]

@@ -23,6 +23,59 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     document.getElementById('id_product_details-0-sku').required = true;
     document.getElementById('id_category').required = true;
+
+    function debounce(func, wait) {
+        let timeout;
+        return function (...args) {
+            const context = this;
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(context, args), wait);
+        };
+    }
+
+    // const fetchSynergyData = debounce((event) => {
+    //     const inputValue = event.target.value.trim();
+    //     const resultsContainer = document.getElementById('resultsContainer');
+    //     resultsContainer.innerHTML = ''; // Clear previous results
+    //
+    //     if (!inputValue) {
+    //         // Optionally display a message or clear the results
+    //         return;
+    //     }
+    //
+    //     const url = `/get_synergy_data/${encodeURIComponent(inputValue)}/`;
+    //
+    //     fetch(url)
+    //         .then(response => {
+    //             if (!response.ok) {
+    //                 throw new Error(`HTTP error! Status: ${response.status}`);
+    //             }
+    //             return response.json();
+    //         })
+    //         .then(data => {
+    //             if (data.products) {
+    //                 data.products.forEach(product => {
+    //                     const productDiv = document.createElement('div');
+    //                     productDiv.innerHTML = `
+    //                     <h3>${product.product_name}</h3>
+    //                     <p>Status: ${product.status}</p>
+    //                     <p>Price: ${product.price}</p>
+    //                     <p>Description: ${product.description}</p>
+    //                     <p>Stock: ${product.stock}</p>
+    //                 `;
+    //                     resultsContainer.appendChild(productDiv);
+    //                 });
+    //             } else if (data.error) {
+    //                 resultsContainer.textContent = `Error: ${data.error}`;
+    //             }
+    //         })
+    //         .catch(error => {
+    //             resultsContainer.textContent = `Error: ${error.message}`;
+    //         });
+    // }, 500); // Adjust the delay as needed
+    //
+    // document.getElementById('id_product_details-0-reference_number').addEventListener('input', fetchSynergyData);
+
 });
 
 
@@ -313,83 +366,6 @@ function populateForm(data, overwrite = false) {
         console.log("No device data found");
     }
 }
-
-
-// let pdfDataUrl = ''; // Variable to hold the generated PDF data URL
-
-// Function to generate the datasheet
-// function generateDataSheet(data) {
-//     console.log('pdfData', data);
-//     const {jsPDF} = window.jspdf;
-//     const doc = new jsPDF();
-//
-//     // data = data.device;
-//
-//
-//     // Set the title
-//     doc.setFontSize(20);
-//     doc.text("Product Datasheet", 10, 10);
-//
-//     // Add device information
-//     doc.setFontSize(12);
-//     doc.text(`Brand Name: ${data.device.brandName}`, 10, 20);
-//     doc.text(`Device Description: ${data.device.deviceDescription.trim()}`, 10, 30);
-//     doc.text(`Model Number: ${data.device.versionModelNumber}`, 10, 40);
-//     doc.text(`DUNS Number: ${data.device.dunsNumber}`, 10, 50);
-//     doc.text(`Company Name: ${data.device.companyName}`, 10, 60);
-//     doc.text(`Public Version Status: ${data.device.publicVersionStatus}`, 10, 70);
-//     doc.text(`Device Status: ${data.device.deviceRecordStatus}`, 10, 80);
-//     doc.text(`Version Number: ${data.device.publicVersionNumber}`, 10, 90);
-//     doc.text(`Version Date: ${new Date(data.device.publicVersionDate).toLocaleDateString()}`, 10, 100);
-//     doc.text(`Device Publish Date: ${new Date(data.device.devicePublishDate).toLocaleDateString()}`, 10, 110);
-//     doc.text(`Commercial Distribution Status: ${data.device.deviceCommDistributionStatus}`, 10, 120);
-//
-//     // Add identifiers
-//     doc.text("Identifiers:", 10, 140);
-//     data.device.identifiers.identifier.forEach((id, index) => {
-//         const line = `Device ID: ${id.deviceId} (Type: ${id.deviceIdType}, Agency: ${id.deviceIdIssuingAgency})`;
-//         doc.text(line, 10, 150 + (index * 10));
-//     });
-//
-//     // Add GMDN Terms
-//     doc.text("GMDN Terms:", 10, 200);
-//     data.device.gmdnTerms.gmdn.forEach((term, index) => {
-//         const gmdnLine = `GMDN Code: ${term.gmdnCode} - ${term.gmdnPTName}`;
-//         doc.text(gmdnLine, 10, 210 + (index * 10));
-//         doc.text(`Definition: ${term.gmdnPTDefinition}`, 10, 220 + (index * 10));
-//     });
-//
-//     // Add Product Codes
-//     doc.text("Product Codes:", 10, 260);
-//     data.device.productCodes.fdaProductCode.forEach((code, index) => {
-//         const productLine = `FDA Product Code: ${code.productCode} - ${code.productCodeName}`;
-//         doc.text(productLine, 10, 270 + (index * 10));
-//     });
-//
-//     // Add Contact Information
-//     const contact = data.device.contacts.customerContact[0];
-//     doc.text("Contact Information:", 10, 320);
-//     doc.text(`Phone: ${contact.phone}`, 10, 330);
-//     doc.text(`Email: ${contact.email}`, 10, 340);
-//
-//     // Save the PDF as a Data URL
-//     pdfDataUrl = doc.output('datauristring'); // Store as a Data URL
-// }
-
-// Function to download the datasheet
-// function downloadDataSheet() {
-//     if (pdfDataUrl) {
-//         const link = document.createElement('a');
-//         link.href = pdfDataUrl;
-//         link.download = 'Product_Datasheet.pdf'; // Set the filename
-//         link.click(); // Trigger the download
-//     } else {
-//         alert("Datasheet is not ready yet.");
-//     }
-// }
-
-// Add event listener to the download button
-// document.getElementById("download-datasheet").addEventListener("click", downloadDataSheet);
 
 
 // Modal Actions - Workflow

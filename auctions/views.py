@@ -7,6 +7,7 @@ from datetime import timedelta, datetime
 from decimal import Decimal
 
 import openpyxl
+from bs4 import BeautifulSoup
 from django import forms
 from django.contrib import messages
 from django.contrib.auth import authenticate, logout, login
@@ -14,6 +15,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.views import PasswordChangeView
 from django.contrib.messages import get_messages
+import requests
 from django.core.exceptions import ValidationError
 from django.core.mail import EmailMessage
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -36,7 +38,7 @@ from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, 
     PayPalForm, CashAppForm, CustomUserChangeForm, UserAddressForm, OrderNoteForm, EditAuctionForm, \
     EditProductDetailFormSet, ShippingAccountsForm, RegistrationForm, ProductDetailForm
 from .models import Bid, Category, Image, CartItem, Cart, ProductDetail, Order, Payment, \
-    OrderItem, Parcel, ProductImage, ShippingAccounts, Address, Message, User, MedicalSpecialty, UserManual
+    OrderItem, Parcel, ProductImage, ShippingAccounts, Address, Message, User, UserManual
 from .utils.calculate_tax import get_sales_tax
 from .utils.email_manager import send_welcome_email_html, order_confirmation_message
 from .utils.get_base64_logo import get_logo_base64
@@ -699,7 +701,6 @@ def auction_create(request):
     })
 
 
-
 @login_required
 @csrf_exempt
 def import_excel(request):
@@ -725,7 +726,8 @@ def import_excel(request):
 
                     # Convert other numerical fields
                     try:
-                        quantity_available = int(auction_info.get('quantity_available', 1)) if auction_info.get('quantity_available') else 1
+                        quantity_available = int(auction_info.get('quantity_available', 1)) if auction_info.get(
+                            'quantity_available') else 1
                     except ValueError:
                         return JsonResponse({
                             'status': 'error',
@@ -749,7 +751,8 @@ def import_excel(request):
                         })
 
                     try:
-                        buy_it_now_price = float(auction_info['buyItNowPrice']) if auction_info.get('buyItNowPrice') else None
+                        buy_it_now_price = float(auction_info['buyItNowPrice']) if auction_info.get(
+                            'buyItNowPrice') else None
                     except ValueError:
                         return JsonResponse({
                             'status': 'error',
@@ -764,7 +767,6 @@ def import_excel(request):
 
                     category = update_categories_from_fda(device_data)
                     category_obj = Category.objects.get(id=category['value'])
-
 
                     # Create the Auction object
                     auction = Auction.objects.create(
@@ -806,8 +808,10 @@ def import_excel(request):
                     expiration_date_str = auction_info.get('expiration_date', '').strip()
 
                     try:
-                        production_date = parse_date(production_date_str, 'production_date') if production_date_str else None
-                        expiration_date = parse_date(expiration_date_str, 'expiration_date') if expiration_date_str else None
+                        production_date = parse_date(production_date_str,
+                                                     'production_date') if production_date_str else None
+                        expiration_date = parse_date(expiration_date_str,
+                                                     'expiration_date') if expiration_date_str else None
                     except ValueError as ve:
                         return JsonResponse({
                             'status': 'error',
@@ -820,8 +824,8 @@ def import_excel(request):
                         sku=auction_info.get('sku'),
                         reference_number=auction_reference_number,
                         lot_number=auction_info.get('lot_number'),
-                        production_date=production_date,       # Use parsed date
-                        expiration_date=expiration_date        # Use parsed date
+                        production_date=production_date,  # Use parsed date
+                        expiration_date=expiration_date  # Use parsed date
                     )
 
                     # Check if there is an image with the matching reference number
@@ -901,7 +905,8 @@ def active_auctions_view(request, auction_id=None):
         auctions = auctions.filter(auction_type=auction_type)
 
     if recent_views_filter and request.user.is_authenticated:
-        recent_views = AuctionView.objects.filter(user=request.user).order_by('-viewed_at').values_list('auction', flat=True)
+        recent_views = AuctionView.objects.filter(user=request.user).order_by('-viewed_at').values_list('auction',
+                                                                                                        flat=True)
         auctions = auctions.filter(id__in=recent_views)
 
     if my_auctions and request.user.is_authenticated:
@@ -981,7 +986,6 @@ def active_auctions_view(request, auction_id=None):
         highest_bid_amount=Subquery(highest_bid_subquery.values('amount')[:1]),
         highest_bid_bidder_id=Subquery(highest_bid_subquery.values('user_id')[:1])
     )
-
 
     # Add additional fields to auctions
     for auction in auctions:
@@ -2017,3 +2021,82 @@ def add_order_note(request, order_id):
 
 def how_we_work(request):
     return render(request, 'how_we_work.html')
+
+
+def get_synergy_data(request, reference_number):
+    # url = f'https://www.synergysurgical.com/search/in-date,short-dated/search/{reference_number}'
+    url = f'https://surgishop.com/product/{reference_number}'
+
+    # Set headers to mimic a browser
+    headers = {
+        'User-Agent': (
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+            '(KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+        )
+    }
+
+    try:
+        # Make the HTTP GET request
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()  # Check for HTTP errors
+
+        print(response)
+
+        # Parse the HTML content
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        # Check if the product exists
+        if soup.find('h1', class_='product_title entry-title'):
+            # Extract the product name
+            product_name = soup.find('h1', class_='product_title entry-title').get_text(strip=True)
+
+            # Extract the price
+            price_tag = soup.find('p', class_='price')
+            if price_tag:
+                # There might be multiple prices (e.g., for different variations)
+                prices = price_tag.find_all('span', class_='woocommerce-Price-amount amount')
+                price_list = [price.get_text(strip=True) for price in prices]
+                price = ' - '.join(price_list)
+            else:
+                price = 'Price not found'
+
+            # Extract the description
+            description_div = soup.find('div', class_='woocommerce-product-details__short-description')
+            description = description_div.get_text(strip=True) if description_div else 'Description not found'
+
+            # Extract the stock status
+            # The stock status seems to be in the data-product_variations attribute of the <form> tag
+            form_tag = soup.find('form', class_='variations_form cart')
+            stock_status = 'Stock info not found'
+
+            if form_tag and 'data-product_variations' in form_tag.attrs:
+                variations_json = form_tag['data-product_variations']
+                variations = json.loads(variations_json)
+                stock_status_list = []
+                for variation in variations:
+                    attributes = variation.get('attributes', {})
+                    availability_html = variation.get('availability_html', '')
+                    # Extract stock status from availability_html
+                    availability_soup = BeautifulSoup(availability_html, 'html.parser')
+                    stock_p = availability_soup.find('p', class_='stock')
+                    stock_text = stock_p.get_text(strip=True) if stock_p else 'Stock info not found'
+                    # Get variation name
+                    variation_name = attributes.get('attribute_pa_unit-of-measurement', 'Unknown variation')
+                    stock_status_list.append(f"{variation_name}: {stock_text}")
+                stock_status = '; '.join(stock_status_list)
+
+            # Build the product data dictionary
+            product_data = {
+                'product_name': product_name,
+                'price': price,
+                'description': description,
+                'stock_status': stock_status,
+            }
+
+            # Return the product data as JSON
+            return JsonResponse({'product': product_data})
+        else:
+            return JsonResponse({'error': 'Product not found'}, status=404)
+
+    except requests.exceptions.RequestException as e:
+        return JsonResponse({'error': str(e)}, status=500)
