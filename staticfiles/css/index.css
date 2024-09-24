@@ -744,7 +744,7 @@ footer .social-media a:hover {
     }
 
     .form-group.input-group.mb-3 .form-control {
-        width: auto;
+        width: 0 !important;
     }
 
     #registration-card, #login-card {
@@ -752,7 +752,12 @@ footer .social-media a:hover {
     }
 
     #registration-image, #login-image {
-        height: 300px;
+        height: 365px;
+    }
+
+    #documentation-header{
+        flex-direction: column;
+        align-items: flex-start !important;
     }
 
     #business-account-selector, #personal-account-selector {
