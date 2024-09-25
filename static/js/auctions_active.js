@@ -47,38 +47,91 @@ function getAuctionIdFromUrl() {
     return urlParts[urlParts.length - 2]; // This gets the auction ID from the URL
 }
 
+// function getAdditionalImages(auctionId) {
+//     // Fetch additional images for the modal if needed
+//     fetch('/api/get-auction-images/' + auctionId + '/')
+//         .then(response => response.json())
+//         .then(data => {
+//             const imagesContainer = document.getElementById('additional-images-' + auctionId);
+//             imagesContainer.innerHTML = ''; // Clear any existing images
+//
+//             if (data.image_urls.length > 0) {
+//                 data.image_urls.forEach(function (url) {
+//                     // Create an anchor element with the lightbox attributes
+//                     const anchor = document.createElement('a');
+//                     anchor.classList.add('thumb-img');
+//                     anchor.href = url;
+//                     anchor.setAttribute('data-lightbox', 'auction-images');
+//                     // anchor.setAttribute('data-title', 'Image Title'); // Optional, add a title for each image
+//
+//                     // Create an img element
+//                     const img = document.createElement('img');
+//                     img.src = url;
+//                     img.classList.add('img-thumbnail');
+//
+//                     // Append img to anchor, then anchor to the container
+//                     anchor.appendChild(img);
+//                     imagesContainer.appendChild(anchor);
+//                 });
+//             } else {
+//                 imagesContainer.innerHTML = '<p>No additional images available.</p>';
+//             }
+//         })
+//         .catch(error => console.error('Error fetching images:', error));
+// }
+
 function getAdditionalImages(auctionId) {
-    // Fetch additional images for the modal if needed
+    // Fetch additional images for the auction
     fetch('/api/get-auction-images/' + auctionId + '/')
         .then(response => response.json())
         .then(data => {
-            const imagesContainer = document.getElementById('additional-images-' + auctionId);
-            imagesContainer.innerHTML = ''; // Clear any existing images
+            const mainImageContainer = document.getElementById('main-image-' + auctionId);
+            const thumbnailsContainer = document.getElementById('thumbnail-images-' + auctionId);
+            mainImageContainer.innerHTML = ''; // Clear existing main image
+            thumbnailsContainer.innerHTML = ''; // Clear existing thumbnails
 
             if (data.image_urls.length > 0) {
-                data.image_urls.forEach(function (url) {
+                // Set the first image as the main image
+                const mainImageUrl = data.image_urls[0];
+
+                // Create an anchor element for the main image with lightbox attributes
+                const mainAnchor = document.createElement('a');
+                mainAnchor.href = mainImageUrl;
+                mainAnchor.setAttribute('data-lightbox', 'auction-images');
+
+                // Create the img element for the main image
+                const mainImg = document.createElement('img');
+                mainImg.src = mainImageUrl;
+                mainImg.classList.add('img-fluid', 'main-img');
+
+                // Append the img to the anchor, then anchor to the main image container
+                mainAnchor.appendChild(mainImg);
+                mainImageContainer.appendChild(mainAnchor);
+
+                // Loop through the rest of the images and add them as thumbnails (up to 4)
+                data.image_urls.slice(1, 5).forEach(function (url) {
                     // Create an anchor element with the lightbox attributes
                     const anchor = document.createElement('a');
                     anchor.classList.add('thumb-img');
                     anchor.href = url;
                     anchor.setAttribute('data-lightbox', 'auction-images');
-                    // anchor.setAttribute('data-title', 'Image Title'); // Optional, add a title for each image
 
                     // Create an img element
                     const img = document.createElement('img');
                     img.src = url;
-                    img.classList.add('img-thumbnail');
+                    img.classList.add('img-thumbnail', 'thumbnail-img');
 
-                    // Append img to anchor, then anchor to the container
+                    // Append img to anchor, then anchor to the thumbnails container
                     anchor.appendChild(img);
-                    imagesContainer.appendChild(anchor);
+                    thumbnailsContainer.appendChild(anchor);
                 });
             } else {
-                imagesContainer.innerHTML = '<p>No additional images available.</p>';
+                mainImageContainer.innerHTML = '<p>No images available.</p>';
             }
         })
         .catch(error => console.error('Error fetching images:', error));
 }
+
 
 function getAdditionalDetails(auctionId) {
     // Fetch additional product details
@@ -115,7 +168,7 @@ function getAdditionalDetails(auctionId) {
                         // Create the table header
                         let thead = document.createElement('thead');
                         let headerRow = document.createElement('tr');
-                        ['Reference Number', 'SKU', 'Lot Number', 'Expiration Date'].forEach(function (headerText) {
+                        ['Reference Number', 'Lot Number', 'Expiration Date'].forEach(function (headerText) {
                             let th = document.createElement('th');
                             th.scope = "col";
                             th.textContent = headerText;
@@ -131,7 +184,7 @@ function getAdditionalDetails(auctionId) {
 
                     // Add a new row to the table for each product detail
                     let row = document.createElement('tr');
-                    ['reference_number', 'sku', 'lot_number', 'expiration_date'].forEach(function (field) {
+                    ['reference_number', 'lot_number', 'expiration_date'].forEach(function (field) {
                         let td = document.createElement('td');
                         td.classList.add('text-uppercase')
                         td.textContent = detail[field] || 'N/A';  // Show 'N/A' if the field is empty

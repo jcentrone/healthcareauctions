@@ -47,7 +47,7 @@
     /*width: 200px;*/
 }
 
-#mfg-filter .button-text ,
+#mfg-filter .button-text,
 #splty-filter .button-text {
     flex: 1 1 auto;
     min-width: 0;
@@ -135,26 +135,26 @@
     padding-left: 25px; /* Adjust based on your design */
 }
 
-.additional-images {
-    display: grid;
-    gap: 20px;
-    grid-template-columns: repeat(auto-fit, 185px);
-}
+/*.additional-images {*/
+/*    display: grid;*/
+/*    gap: 20px;*/
+/*    grid-template-columns: repeat(auto-fit, 185px);*/
+/*}*/
 
 
-img.img-thumbnail {
-    width: 185px;
-    height: 100%;
-    object-fit: cover;
-}
+/*img.img-thumbnail {*/
+/*    width: 185px;*/
+/*    height: 100%;*/
+/*    object-fit: cover;*/
+/*}*/
 
 .additional-details {
     overflow-x: auto;
 }
 
-.thumb-img {
-    min-width: 185px;
-}
+/*.thumb-img {*/
+/*    min-width: 185px;*/
+/*}*/
 
 .active-auctions-container {
     display: grid;
@@ -353,6 +353,46 @@ img.img-thumbnail {
     position: absolute;
     bottom: 90px;
 }
+
+
+/* Container styling */
+.additional-images {
+    /*align-items: center;*/
+    /*display: flex;*/
+    /*justify-content: center;*/
+}
+
+/* Main image styling */
+.main-image {
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.main-image img {
+    padding: .25rem;
+    background-color: var(--bs-body-bg);
+    border: var(--bs-border-width) solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    max-width: 100%;
+    min-width: 430px;
+    height: auto;
+}
+
+/* Thumbnail images styling */
+.thumbnail-images {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.thumbnail-img {
+    width: 100px;
+    height: 100px;
+    margin: 5px;
+    object-fit: cover;
+}
+
+
 
 
 

@@ -1108,8 +1108,12 @@ def get_auction_product_details(request, auction_id):
     auction = get_object_or_404(Auction, id=auction_id)
     product_details = auction.product_details.all()
 
-    # Convert product details to a list of dictionaries
+    # Retrieve all fields
     product_details_list = list(product_details.values())
+
+    # Remove 'sku' from each dictionary
+    for detail in product_details_list:
+        detail.pop('sku', None)  # Remove 'sku' if it exists
 
     return JsonResponse({
         'product_details': product_details_list,

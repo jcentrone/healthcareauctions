@@ -340,6 +340,17 @@ class ProductDetail(models.Model):
     def __str__(self):
         return f'ProductDetail #{self.id} for Auction #{self.auction.id}'
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'auction_id': self.auction_id,
+            'reference_number': self.reference_number,
+            'lot_number': self.lot_number,
+            'production_date': self.production_date,
+            'expiration_date': self.expiration_date,
+            # 'sku' is intentionally excluded
+        }
+
 
 class AuctionView(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='auction_views')
