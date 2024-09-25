@@ -38,7 +38,7 @@ from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, 
     PayPalForm, CashAppForm, CustomUserChangeForm, UserAddressForm, OrderNoteForm, EditAuctionForm, \
     EditProductDetailFormSet, ShippingAccountsForm, RegistrationForm, ProductDetailForm
 from .models import Bid, Category, Image, CartItem, Cart, ProductDetail, Order, Payment, \
-    OrderItem, Parcel, ProductImage, ShippingAccounts, Address, Message, User, UserManual
+    OrderItem, Parcel, ProductImage, ShippingAccounts, Address, Message, User, UserManual, MedicalSpecialty
 from .utils.calculate_tax import get_sales_tax
 from .utils.email_manager import send_welcome_email_html, order_confirmation_message
 from .utils.get_base64_logo import get_logo_base64
@@ -883,7 +883,9 @@ def active_auctions_view(request, auction_id=None):
     watchlist_filter = request.GET.get('watchlist')
     recent_views_filter = request.GET.get('recent_views')
     page = request.GET.get('page', 1)
-    specialty = request.GET.get('specialty')  # **New parameter**
+    specialty = request.GET.get('specialty')
+
+    active_specialties = Auction.get_active_specialties()
 
     # Base QuerySet
     auctions = Auction.objects.filter(active=True)
@@ -925,14 +927,20 @@ def active_auctions_view(request, auction_id=None):
         elif expired_filter == 'not_expired':
             auctions = auctions.filter(product_details__expiration_date__gte=today)
 
+    specialty_description = ''
+
     # **Apply specialty filter**
     if specialty:
         # Strip any leading/trailing whitespace
         specialty = specialty.strip()
         # Filter auctions where the category's medical specialty description matches the given specialty
         auctions = auctions.filter(
-            category__medical_specialty__description__iexact=specialty
+            category__medical_specialty__code__icontains=specialty
         )
+        specialty_obj = MedicalSpecialty.objects.filter(code=specialty).first()
+        specialty_description = specialty_obj.description
+
+
 
     # Apply time filters using a dictionary mapping
     time_deltas = {
@@ -1038,7 +1046,9 @@ def active_auctions_view(request, auction_id=None):
         'my_auctions': my_auctions,
         'expired_filter': expired_filter,
         'auction_type': auction_type,
-        'specialty': specialty,  # **Add specialty to context**
+        'specialty': specialty,
+        'specialty_description':specialty_description,
+        'active_specialties': active_specialties,
         'recent_views': recent_views_filter,
     }
 

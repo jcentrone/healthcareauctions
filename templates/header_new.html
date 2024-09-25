@@ -229,24 +229,24 @@
                     <div>Auctions</div>
                 </div>
             </a>
-            <div class="dropdown" id="category-dropdown">
-                <button class="btn dropdown-toggle wrap-button" type="button" data-bs-toggle="dropdown"
-                        aria-expanded="false">
-                    Shop By Specialty
-                </button>
-                <ul class="dropdown-menu p-2" id="category-dropdown-content">
-                    {% for specialty in specialties %}
-                        <li>
-                            <a class='nav-link categories d-flex align-items-center'
-                               href="{% url 'active_auctions_view' %}?specialty={{ specialty.description }}">
-                                <div class='text-capitalize'>{{ specialty.description }} - <span
-                                        class="badge text-dark">{{ specialty.count_active_auctions }}</span></div>
-                            </a>
-                        </li>
-                        <div class="border-bottom pb-1 mb-1"></div>
-                    {% endfor %}
-                </ul>
-            </div>
+            {#            <div class="dropdown" id="category-dropdown">#}
+            {#                <button class="btn dropdown-toggle wrap-button" type="button" data-bs-toggle="dropdown"#}
+            {#                        aria-expanded="false">#}
+            {#                    Shop By Specialty#}
+            {#                </button>#}
+            {#                <ul class="dropdown-menu p-2" id="category-dropdown-content">#}
+            {#                    {% for specialty in specialties %}#}
+            {#                        <li>#}
+            {#                            <a class='nav-link categories d-flex align-items-center'#}
+            {#                               href="{% url 'active_auctions_view' %}?specialty={{ specialty.description }}">#}
+            {#                                <div class='text-capitalize'>{{ specialty.description }} - <span#}
+            {#                                        class="badge text-dark">{{ specialty.count_active_auctions }}</span></div>#}
+            {#                            </a>#}
+            {#                        </li>#}
+            {#                        <div class="border-bottom pb-1 mb-1"></div>#}
+            {#                    {% endfor %}#}
+            {#                </ul>#}
+            {#            </div>#}
             <form id="filter-form" method="get" class="" action="{% url 'active_auctions_view' %}">
                 <div class="input-group">
                     <!-- Search Icon -->
@@ -256,15 +256,15 @@
                     <!-- Search Input -->
                     <input type="text" class="form-control border-left-0" id="auction-search" name="search_query"
                            placeholder="Search..." aria-label="Search">
-                    <!-- Category Dropdown -->
-
-                    <select class="selectpicker custom-select" name="category_name" data-width="auto" data-size="6"
-                            data-live-search="true">
-                        <option value="">All Categories</option>
-                        {% for category in categories %}
-                            <option value="{{ category.category_name }}">{{ category.category_name }}</option>
+                    <!-- Manufacturer Dropdown -->
+                    <select class="selectpicker custom-select" name="mfg_filter" data-width="fit" data-size="6"
+                            data-live-search="true" data-dropdown-align-right="true">
+                        <option selected value="">All Manufacturers</option>
+                        {% for manufacturer in manufacturers_with_auctions %}
+                            <option style="right:0" value="{{ manufacturer }}">{{ manufacturer }}</option>
                         {% endfor %}
                     </select>
+
                     <!-- Search Button -->
                     <button class="btn btn-primary" id="search-button" type="submit">Search</button>
                 </div>
@@ -273,9 +273,7 @@
 
         </div>
     </div>
-    <div class="section m-3">
-
-    </div>
+    
 </header>
 
 <link href='{% static "css/header.css" %}' rel='stylesheet'>

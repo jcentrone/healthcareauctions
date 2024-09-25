@@ -64,9 +64,9 @@ header .logo {
 
 #lower-header-container {
     display: grid;
-    grid-template-columns: auto 100px 1fr;
+    grid-template-columns: auto auto;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     gap: 20px;
 }
 
@@ -217,6 +217,7 @@ span.badge {
 
 #auction-search {
     background: #FFFFFF !important;
+    min-width: 400px;
 }
 
 /* footer */
@@ -306,6 +307,11 @@ footer .social-media a:hover {
     min-height: 75vh;
 }
 
+.custom-select .dropdown-menu {
+    right: 0;
+    left: auto;
+}
+
 
 @media (max-width: 991.98px) {
     .input-group {
@@ -321,6 +327,7 @@ footer .social-media a:hover {
         flex: 1 1 auto;
         /*padding-left: 2.5rem;*/
         border-radius: 8px !important;
+        min-width: auto;
     }
 
 

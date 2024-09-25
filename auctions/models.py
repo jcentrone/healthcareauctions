@@ -166,11 +166,6 @@ class MedicalSpecialty(models.Model):
             self.code = self.code.upper()  # Normalize to uppercase
         super().save(*args, **kwargs)
 
-    # @property
-    # def count_active_auctions(self):
-    #     # Count active auctions across all categories linked to this medical specialty
-    #     return Auction.objects.filter(category__medical_specialty=self, active=True).count()
-
 
 class Category(models.Model):
     category_name = models.CharField(max_length=50)
@@ -315,6 +310,19 @@ class Auction(models.Model):
 
     def highest_bid(self):
         return self.bid_set.order_by('-amount').first()
+
+    @classmethod
+    def get_active_manufacturers(cls):
+        return cls.objects.filter(active=True).values_list('manufacturer', flat=True).distinct()
+
+    @classmethod
+    def get_active_specialties(cls):
+        # Filter active auctions and retrieve related medical specialties
+        specialties = MedicalSpecialty.objects.filter(
+            categories__auction_category__active=True
+        ).distinct()
+
+        return specialties
 
 
 class ProductDetail(models.Model):

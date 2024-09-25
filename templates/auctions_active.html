@@ -68,7 +68,7 @@
         <div class="d-flex align-items-center justify-content-between mb-2">
             <h2 class="breadcrumb-item active" aria-current="page">
                 {% if search_query %}
-                    Search Results for "{{ search_query|titlecase }}"
+                    Search Results for "{{ search_query|capitalize_all }}"
                 {% elif category_name or specialty or manufacturer_filter or auction_type or time_filter or sort_by %}
                     {% comment %} Append filters to the heading {% endcomment %}
                     {% if category_name %}
@@ -124,6 +124,84 @@
                     <!-- Filter Section -->
                     <div class="collapse d-md-block filters" id="filterCollapse">
                         <form id="auction-filter-form" method="get" class="form-inline">
+                            <!-- Manufacturer Filter -->
+                            <div class="form-group mb-2">
+                                <h6>Select Manufacturer</h6>
+                                <div class="dropdown">
+                                    <button class="btn border dropdown-toggle d-flex align-items-center justify-content-between"
+                                            type="button" id="mfg-filter" data-bs-toggle="dropdown" aria-haspopup="true"
+                                            aria-expanded="false">
+                                        <span class="button-text">
+                                            {% if manufacturer_filter %}
+                                                {{ manufacturer_filter }}
+                                            {% else %}
+                                                Select Manufacturer
+                                            {% endif %}
+                                        </span>
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="mfg-filter">
+                                        <a class="dropdown-item {% if mfg_filter == '' %}active{% endif %}" href="#"
+                                           data-value="">Select Manufacturer</a>
+                                        {% for manufacturer in unique_manufacturers %}
+                                            <a class="dropdown-item {% if manufacturer_filter == manufacturer %}active{% endif %}"
+                                               href="#"
+                                               data-value="{{ manufacturer }}">{{ manufacturer }}</a>
+                                        {% endfor %}
+                                        <a class="dropdown-item" href="#" data-value="">Reset</a>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="mfg_filter" id="mfg-filter-value">
+                            </div>
+                            <!-- Specialty Filter -->
+                            <div class="form-group mb-2">
+                                <h6>Select Specialty</h6>
+                                <div class="dropdown">
+                                    <button class="btn border dropdown-toggle d-flex align-items-center justify-content-between"
+                                            type="button" id="splty-filter" data-bs-toggle="dropdown"
+                                            aria-haspopup="true"
+                                            aria-expanded="false">
+                                        <span class="button-text">
+                                            {% if specialty_description %}
+                                                {{ specialty_description }}
+                                            {% else %}
+                                                Select Specialty
+                                            {% endif %}
+                                        </span>
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="splty-filter">
+                                        <a class="dropdown-item {% if specialty == '' %}active{% endif %}" href="#"
+                                           data-value="">Select Specialty</a>
+                                        {% for active_specialty in active_specialties %}
+                                            <a class="dropdown-item {% if active_specialty == specialty %}active{% endif %}"
+                                               href="#"
+                                               data-value="{{ active_specialty.code }}">{{ active_specialty.description }}</a>
+                                        {% endfor %}
+                                        <a class="dropdown-item" href="#" data-value="">Reset</a>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="specialty" id="splty-filter-value">
+                            </div>
+
+                            <!-- Filter By Expired Items -->
+                            <div class="form-group mb-2">
+                                <h6>Expiration: {{ expired_filter|expired_filter_label }}</h6>
+                                <div class="dropdown">
+                                    <button class="btn border dropdown-toggle d-flex align-items-center justify-content-between"
+                                            type="button" id="expired-filter"
+                                            data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        {{ expired_filter|expired_filter_label }}
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="expired-filter">
+                                        <a class="dropdown-item {% if expired_filter == '' %}active{% endif %}" href="#"
+                                           data-value="">All Items</a>
+                                        <a class="dropdown-item {% if expired_filter == 'expired' %}active{% endif %}"
+                                           href="#" data-value="expired">Expired Items</a>
+                                        <a class="dropdown-item {% if expired_filter == 'not_expired' %}active{% endif %}"
+                                           href="#" data-value="not_expired">In Date Items</a>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="expired_filter" id="expired-filter-value">
+                            </div>
                             <!-- Filter By Time -->
                             <div class="form-group mb-2">
                                 <h6 class="text-capitalize">Filter By:
@@ -176,35 +254,6 @@
                                 </div>
                                 <input type="hidden" name="sort_by" id="sort-by-value">
                             </div>
-
-
-                            <!-- Manufacturer Filter -->
-                            <div class="form-group mb-2">
-                                <h6>Select Manufacturer</h6>
-                                <div class="dropdown">
-                                    <button class="btn border dropdown-toggle d-flex align-items-center justify-content-between"
-                                            type="button" id="mfg-filter"
-                                            data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        {% if manufacturer_filter %}
-                                            {{ manufacturer_filter }}
-                                        {% else %}
-                                            Select Manufacturer
-                                        {% endif %}
-                                    </button>
-                                    <div class="dropdown-menu" aria-labelledby="mfg-filter">
-                                        <a class="dropdown-item {% if mfg_filter == '' %}active{% endif %}" href="#"
-                                           data-value="">Select Manufacturer</a>
-                                        {% for manufacturer in unique_manufacturers %}
-                                            <a class="dropdown-item {% if manufacturer_filter == manufacturer %}active{% endif %}"
-                                               href="#"
-                                               data-value="{{ manufacturer }}">{{ manufacturer }}</a>
-                                        {% endfor %}
-                                        <a class="dropdown-item" href="#" data-value="">Reset</a>
-                                    </div>
-                                </div>
-                                <input type="hidden" name="mfg_filter" id="mfg-filter-value">
-                            </div>
-
                             <!-- Auction Type Filter -->
                             <div class="form-group mb-2">
                                 <h6>Listing Type: {{ auction_type|auction_type_label }}</h6>
@@ -226,26 +275,6 @@
                                 <input type="hidden" name="auction_type" id="auction-type-value">
                             </div>
 
-                            <!-- Filter By Expired Items -->
-                            <div class="form-group mb-2">
-                                <h6>Expiration: {{ expired_filter|expired_filter_label }}</h6>
-                                <div class="dropdown">
-                                    <button class="btn border dropdown-toggle d-flex align-items-center justify-content-between"
-                                            type="button" id="expired-filter"
-                                            data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        {{ expired_filter|expired_filter_label }}
-                                    </button>
-                                    <div class="dropdown-menu" aria-labelledby="expired-filter">
-                                        <a class="dropdown-item {% if expired_filter == '' %}active{% endif %}" href="#"
-                                           data-value="">All Items</a>
-                                        <a class="dropdown-item {% if expired_filter == 'expired' %}active{% endif %}"
-                                           href="#" data-value="expired">Expired Items</a>
-                                        <a class="dropdown-item {% if expired_filter == 'not_expired' %}active{% endif %}"
-                                           href="#" data-value="not_expired">In Date Items</a>
-                                    </div>
-                                </div>
-                                <input type="hidden" name="expired_filter" id="expired-filter-value">
-                            </div>
 
                             <!-- My Listings Checkbox -->
                             {% if user.is_authenticated and has_active_auctions %}
