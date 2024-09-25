@@ -50,5 +50,13 @@ Disallow: /get_surgishop_data
 Disallow: /static/
 Disallow: /media/
 
-# Allow crawling of public auction and category pages
 Allow: /
+Allow: /auction/active
+Allow: /auction/active/
+Allow: /auction/active/*
+Allow: /auction/active/id/*
+Allow: /auction/
+Allow: /auction/*
+
+# Sitemap
+Sitemap: https://www.healthcareauctions.com/sitemap.xml

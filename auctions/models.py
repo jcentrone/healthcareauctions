@@ -7,6 +7,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Q
+from django.urls import reverse
 from django.utils import timezone
 
 from config.storage_backends import ProfileImageStorage, CompanyLogoStorage, W9Storage, ResellerCertificateStorage, \
@@ -323,6 +324,9 @@ class Auction(models.Model):
         ).distinct()
 
         return specialties
+
+    def get_absolute_url(self):
+        return reverse('active_auctions_with_id', args=[self.id])
 
 
 class ProductDetail(models.Model):

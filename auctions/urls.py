@@ -1,12 +1,22 @@
 from django.contrib.auth import views as auth_views
+from django.contrib.sitemaps.views import sitemap
+from django.contrib.staticfiles.storage import staticfiles_storage
 from django.urls import path, include
+from django.views.generic import RedirectView
 
 from . import views
+from .sitemaps import AuctionSitemap, CategorySitemap, StaticViewSitemap
+
+sitemaps = {
+    'auctions': AuctionSitemap,
+    'categories': CategorySitemap,
+    'static': StaticViewSitemap,
+}
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('dashboard', views.dashboard, name='dashboard'),
-
     path('login', views.login_view, name='login'),
     path('logout', views.logout_view, name='logout'),
     path('register', views.register, name='register'),
@@ -18,7 +28,6 @@ urlpatterns = [
     path('auction/active/id/<int:auction_id>/', views.active_auctions_view, name='active_auctions_with_id'),
     path('auction/watchlist', views.watchlist_view, name='watchlist_view'),
     path('auction/watchlist/<int:auction_id>/edit/<str:reverse_method>', views.watchlist_edit, name='watchlist_edit'),
-    # path('auction/<str:auction_id>', views.auction_details_view, name='auction_details_view'),
     path('auction/<str:auction_id>/bid', views.auction_bid, name='auction_bid'),
     path('auction/<str:auction_id>/close', views.auction_close, name='auction_close'),
     path('auction/<str:auction_id>/comment', views.auction_comment, name='auction_comment'),
@@ -38,7 +47,6 @@ urlpatterns = [
     path('auction/<int:auction_id>/product-details/', views.get_auction_product_details,
          name='get_auction_additional_details'),
     path('track-auction-view/', views.track_auction_view, name='track_auction_view'),
-
     path('inbox/', views.inbox, name='inbox'),
     path('message/<int:message_id>/', views.message_detail, name='message_detail'),
     path('send_message/<int:auction_id>/', views.send_message, name='send_message'),
@@ -77,5 +85,6 @@ urlpatterns = [
          name='password_reset_complete'),
 
     path('get_synergy_data/<str:reference_number>/', views.get_synergy_data, name='get_synergy_data'),
+    path('robots.txt', RedirectView.as_view(url=staticfiles_storage.url('robots.txt'))),
 
 ]

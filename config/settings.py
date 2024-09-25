@@ -52,13 +52,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sitemaps',
     'django_apscheduler',
 
     # other apps
     'storages',
 ]
-
-
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -196,7 +195,6 @@ UPS_PASSWORD = os.environ.get('UPS_PASSWORD')
 
 # Zip Tax Credentials
 ZIP_TAX_API_KEY = os.environ.get('ZIP_TAX_API_KEY')
-
 
 # Mailjet API configuration
 MAILJET_API_KEY = os.environ.get('MAILJET_API_KEY')
