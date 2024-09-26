@@ -198,12 +198,12 @@ function initializeUI() {
         zoomInBtn.addEventListener('click', (e) => {
             e.preventDefault();
             console.log('Zoom In button clicked.');
-            adjustZoom(0.1);
+            adjustZoom(0.2);
         });
         zoomOutBtn.addEventListener('click', (e) => {
             e.preventDefault();
             console.log('Zoom Out button clicked.');
-            adjustZoom(-0.1);
+            adjustZoom(-0.2);
         });
         console.log('Zoom buttons event listeners attached.');
     } else {
@@ -323,6 +323,9 @@ function processDetectedBarcode(result) {
         let parsedResult = parseGS1Barcode(code);
         displayDetectedBarcode(code, parsedResult);
         triggerHapticFeedback();
+        setTimeout(function () {
+            window.scrollTo(0, document.body.scrollHeight);
+        }, 1000);
 
     });
 }
