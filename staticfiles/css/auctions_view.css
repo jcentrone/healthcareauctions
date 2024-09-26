@@ -113,20 +113,12 @@
 }
 
 .form-group.with-symbol,
-.form-group.with-symbol-modal{
+.form-group.with-symbol-modal {
     position: relative;
 }
 
-.form-group.with-symbol::before {
-    content: "$";
-    position: absolute;
-    left: 10px; /* Adjust based on your design */
-    top: 50px;
-    transform: translateY(-50%);
-    font-size: 16px; /* Adjust based on your design */
-    color: #555; /* Adjust based on your design */
-}
 
+.form-group.with-symbol::before,
 .form-group.with-symbol-modal::before {
     content: "$";
     position: absolute;
@@ -144,7 +136,7 @@
 
 
 .form-group.with-symbol input,
-.form-group.with-symbol-modal input{
+.form-group.with-symbol-modal input {
     padding-left: 25px; /* Adjust based on your design */
 }
 
@@ -165,11 +157,11 @@
     overflow-x: auto;
 }
 
-.auction-price{
-        color: #8DC848;
+.auction-price {
+    color: #8DC848;
 }
 
-.auction-price div{
+.auction-price div {
     color: #0A78B8;
 }
 
@@ -314,6 +306,10 @@
         grid-template-columns: 1fr;
     }
 
+    input[name="quantity"] {
+        padding: 17px 10px;
+    }
+
 }
 
 @media (min-width: 576px) {
@@ -427,6 +423,11 @@
     .image-gallery {
         flex-direction: column;
         align-items: center;
+        margin-top: 20px;
+    }
+
+    .col-md-6.col-sm-6.col-xs-3.pe-4 {
+        padding: 20px;
     }
 
     .thumbnail-column {

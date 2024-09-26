@@ -8,7 +8,11 @@
               action="{% url 'add_to_cart' auction.id %}">
             {% csrf_token %}
             {{ add_to_cart_form.quantity.label_tag }}
-            {{ add_to_cart_form.quantity }}
+            <input type="number" 
+                   name="quantity" 
+                   class="form-control mb-4"
+                   min="1"
+                   required id="id_quantity" value="1">
             <input type="text"
                    name="{{ add_to_cart_form.price_each.html_name }}"
                    id="{{ add_to_cart_form.price_each.auto_id }}"
