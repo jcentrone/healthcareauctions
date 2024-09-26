@@ -597,8 +597,14 @@ document.addEventListener('DOMContentLoaded', function () {
 // Is mobile Device
 // Function to check if the device is mobile
 function isMobileDevice() {
+    if (navigator.userAgentData) {
+        const mobile = navigator.userAgentData.mobile;
+        console.log('Is mobile:', mobile);
+    }
     return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
 }
+
 
 // DOMContentLoaded event listener
 document.addEventListener("DOMContentLoaded", function () {

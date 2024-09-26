@@ -85,130 +85,181 @@ function getAdditionalImages(auctionId) {
     fetch('/api/get-auction-images/' + auctionId + '/')
         .then(response => response.json())
         .then(data => {
-            const mainImageContainer = document.getElementById('main-image-' + auctionId);
-            const thumbnailsContainer = document.getElementById('thumbnail-images-' + auctionId);
-            mainImageContainer.innerHTML = ''; // Clear existing main image
-            thumbnailsContainer.innerHTML = ''; // Clear existing thumbnails
+            const galleryContainer = document.getElementById('image-gallery-' + auctionId);
+            const thumbnailColumn = document.getElementById('thumbnail-column-' + auctionId);
+            const mainImageDisplay = document.getElementById('main-image-display-' + auctionId);
+
+            thumbnailColumn.innerHTML = ''; // Clear existing thumbnails
+            mainImageDisplay.innerHTML = ''; // Clear existing main image
 
             if (data.image_urls.length > 0) {
-                // Set the first image as the main image
+                // Display the first image as the main image by default
                 const mainImageUrl = data.image_urls[0];
-
-                // Create an anchor element for the main image with lightbox attributes
-                const mainAnchor = document.createElement('a');
-                mainAnchor.href = mainImageUrl;
-                mainAnchor.setAttribute('data-lightbox', 'auction-images');
-
-                // Create the img element for the main image
                 const mainImg = document.createElement('img');
                 mainImg.src = mainImageUrl;
-                mainImg.classList.add('img-fluid', 'main-img');
+                mainImg.alt = 'Main Image';
+                mainImageDisplay.appendChild(mainImg);
 
-                // Append the img to the anchor, then anchor to the main image container
-                mainAnchor.appendChild(mainImg);
-                mainImageContainer.appendChild(mainAnchor);
+                // Load all images as thumbnails
+                data.image_urls.forEach(function (url, index) {
+                    const thumbnailDiv = document.createElement('div');
+                    thumbnailDiv.classList.add('thumbnail');
 
-                // Loop through the rest of the images and add them as thumbnails (up to 4)
-                data.image_urls.slice(1, 5).forEach(function (url) {
-                    // Create an anchor element with the lightbox attributes
-                    const anchor = document.createElement('a');
-                    anchor.classList.add('thumb-img');
-                    anchor.href = url;
-                    anchor.setAttribute('data-lightbox', 'auction-images');
+                    const thumbImg = document.createElement('img');
+                    thumbImg.src = url;
+                    thumbImg.alt = 'Thumbnail ' + (index + 1);
+                    thumbImg.dataset.index = index; // Store the index for reference
 
-                    // Create an img element
-                    const img = document.createElement('img');
-                    img.src = url;
-                    img.classList.add('img-thumbnail', 'thumbnail-img');
+                    // Add click event to update the main image
+                    thumbImg.addEventListener('click', function () {
+                        mainImg.src = url;
+                    });
 
-                    // Append img to anchor, then anchor to the thumbnails container
-                    anchor.appendChild(img);
-                    thumbnailsContainer.appendChild(anchor);
+                    thumbnailDiv.appendChild(thumbImg);
+                    thumbnailColumn.appendChild(thumbnailDiv);
                 });
             } else {
-                mainImageContainer.innerHTML = '<p>No images available.</p>';
+                mainImageDisplay.innerHTML = '<p>No images available.</p>';
             }
         })
         .catch(error => console.error('Error fetching images:', error));
 }
 
 
+// function getAdditionalDetails(auctionId) {
+//     // Fetch additional product details
+//     fetch(`/auction/${auctionId}/product-details/`)
+//         .then(response => response.json())
+//         .then(data => {
+//             let detailsContainer = document.getElementById(`additional-details-${auctionId}`);
+//             detailsContainer.innerHTML = ''; // Clear any existing details
+//
+//
+//
+//
+//             if (data.product_details.length > 0) {
+//                 // console.log('Product Details', data.product_details);
+//
+//                 // Check if any item is expired
+//                 let containsExpiredItems = false;
+//
+//                 data.product_details.forEach(function (detail, index) {
+//                     // Check if the item is expired
+//                     if (detail.expiration_date) {
+//                         let expirationDate = new Date(detail.expiration_date);
+//                         // console.log('exipration', expirationDate);
+//                         let today = new Date();
+//                         if (expirationDate && expirationDate < today) {
+//                             containsExpiredItems = true;
+//                         }
+//                     }
+//
+//                     // Create table if it doesn't exist yet
+//                     let table = detailsContainer.querySelector('table');
+//                     if (!table) {
+//                         table = document.createElement('table');
+//                         table.classList.add('table', 'table-striped', 'table-bordered');
+//                         detailsContainer.appendChild(table);
+//
+//                         // Create the table header
+//                         let thead = document.createElement('thead');
+//                         let headerRow = document.createElement('tr');
+//                         ['Reference Number', 'Lot Number', 'Expiration Date'].forEach(function (headerText) {
+//                             let th = document.createElement('th');
+//                             th.scope = "col";
+//                             th.textContent = headerText;
+//                             headerRow.appendChild(th);
+//                         });
+//                         thead.appendChild(headerRow);
+//                         table.appendChild(thead);
+//
+//                         // Create the table body
+//                         let tbody = document.createElement('tbody');
+//                         table.appendChild(tbody);
+//                     }
+//
+//                     // Add a new row to the table for each product detail
+//                     let row = document.createElement('tr');
+//                     ['reference_number', 'lot_number', 'expiration_date'].forEach(function (field) {
+//                         let td = document.createElement('td');
+//                         td.classList.add('text-uppercase')
+//                         td.textContent = detail[field] || 'N/A';  // Show 'N/A' if the field is empty
+//                         row.appendChild(td);
+//                     });
+//
+//                     table.querySelector('tbody').appendChild(row);
+//                 });
+//
+//                 // If any item is expired, show the warning message
+//                 if (containsExpiredItems) {
+//                     let warningMessage = document.createElement('div');
+//                     warningMessage.className = 'alert alert-warning';
+//                     warningMessage.textContent = 'This listing may contain an expired item(s).';
+//                     detailsContainer.append(warningMessage);
+//                 }
+//
+//             } else {
+//                 detailsContainer.innerHTML = '<p>No additional product details available.</p>';
+//             }
+//         });
+// }
+
 function getAdditionalDetails(auctionId) {
     // Fetch additional product details
     fetch(`/auction/${auctionId}/product-details/`)
         .then(response => response.json())
         .then(data => {
-            let detailsContainer = document.getElementById(`additional-details-${auctionId}`);
-            detailsContainer.innerHTML = ''; // Clear any existing details
+            // Get references to the span elements
+            const refNumSpan = document.getElementById(`ref-numb-${auctionId}`);
+            const lotNumSpan = document.getElementById(`lot-numb-${auctionId}`);
+            const expDateSpan = document.getElementById(`exp-date-${auctionId}`);
+
+            // Clear any existing content
+            refNumSpan.innerHTML = '';
+            lotNumSpan.innerHTML = '';
+            expDateSpan.innerHTML = '';
 
             if (data.product_details.length > 0) {
-                // console.log('Product Details', data.product_details);
+                // Assuming we use the first product detail
+                const detail = data.product_details[0];
 
-                // Check if any item is expired
-                let containsExpiredItems = false;
+                // Populate the spans with data, or 'N/A' if not available
+                refNumSpan.textContent = detail.reference_number || 'N/A';
+                lotNumSpan.textContent = detail.lot_number || 'N/A';
 
-                data.product_details.forEach(function (detail, index) {
-                    // Check if the item is expired
-                    if (detail.expiration_date) {
-                        let expirationDate = new Date(detail.expiration_date);
-                        // console.log('exipration', expirationDate);
-                        let today = new Date();
-                        if (expirationDate && expirationDate < today) {
-                            containsExpiredItems = true;
-                        }
+                // Handle expiration date and check if expired
+                if (detail.expiration_date) {
+                    const expirationDate = new Date(detail.expiration_date);
+                    const today = new Date();
+
+                    // Format the expiration date (optional)
+                    const options = {year: 'numeric', month: 'long', day: 'numeric'};
+                    const formattedDate = expirationDate.toLocaleDateString(undefined, options);
+                    expDateSpan.textContent = formattedDate;
+
+                    // Check if expired
+                    if (expirationDate < today) {
+                        // Add a subtle warning next to the expiration date
+                        const warningSpan = document.createElement('span');
+                        warningSpan.className = 'text-warning ms-2'; // Bootstrap classes for styling
+                        warningSpan.textContent = '(Expired)';
+                        expDateSpan.appendChild(warningSpan);
                     }
-
-                    // Create table if it doesn't exist yet
-                    let table = detailsContainer.querySelector('table');
-                    if (!table) {
-                        table = document.createElement('table');
-                        table.classList.add('table', 'table-striped', 'table-bordered');
-                        detailsContainer.appendChild(table);
-
-                        // Create the table header
-                        let thead = document.createElement('thead');
-                        let headerRow = document.createElement('tr');
-                        ['Reference Number', 'Lot Number', 'Expiration Date'].forEach(function (headerText) {
-                            let th = document.createElement('th');
-                            th.scope = "col";
-                            th.textContent = headerText;
-                            headerRow.appendChild(th);
-                        });
-                        thead.appendChild(headerRow);
-                        table.appendChild(thead);
-
-                        // Create the table body
-                        let tbody = document.createElement('tbody');
-                        table.appendChild(tbody);
-                    }
-
-                    // Add a new row to the table for each product detail
-                    let row = document.createElement('tr');
-                    ['reference_number', 'lot_number', 'expiration_date'].forEach(function (field) {
-                        let td = document.createElement('td');
-                        td.classList.add('text-uppercase')
-                        td.textContent = detail[field] || 'N/A';  // Show 'N/A' if the field is empty
-                        row.appendChild(td);
-                    });
-
-                    table.querySelector('tbody').appendChild(row);
-                });
-
-                // If any item is expired, show the warning message
-                if (containsExpiredItems) {
-                    let warningMessage = document.createElement('div');
-                    warningMessage.className = 'alert alert-warning';
-                    warningMessage.textContent = 'This listing may contain an expired item(s).';
-                    detailsContainer.append(warningMessage);
+                } else {
+                    expDateSpan.textContent = 'N/A';
                 }
-
             } else {
-                detailsContainer.innerHTML = '<p>No additional product details available.</p>';
+                // If no product details are available
+                refNumSpan.textContent = 'N/A';
+                lotNumSpan.textContent = 'N/A';
+                expDateSpan.textContent = 'N/A';
             }
-        });
+        })
+        .catch(error => console.error('Error fetching product details:', error));
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+
+document.addEventListener('DOMContentLoaded', function () {
     const cardHeader = document.querySelector('.card-header');
     const card = document.querySelector('.card');
 
@@ -219,7 +270,7 @@ document.addEventListener('DOMContentLoaded', function() {
         card.classList.remove('collapsed');  // Ensure card is expanded on desktop by default
     }
 
-    cardHeader.addEventListener('click', function() {
+    cardHeader.addEventListener('click', function () {
         card.classList.toggle('collapsed');
     });
 });
