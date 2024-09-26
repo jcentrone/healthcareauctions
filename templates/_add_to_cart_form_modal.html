@@ -1,0 +1,21 @@
+<div class='form-group'>
+    <form class="d-flex flex-row align-items-center justify-content-start"
+          method="POST"
+          action="{% url 'add_to_cart' auction.id %}">
+        {% csrf_token %}
+        <div class="pe-3"><span><strong>Get it Now:</strong> ${{ auction.buyItNowPrice }}</span></div>
+
+        <input type="number" name="quantity" class="form-control rounded-0 rounded-start"
+               style="width: 120px !important;" min="1"
+               required id="id_quantity" value="1">
+        {#        {{ add_to_cart_form.quantity }}#}
+        <input type="text"
+               name="{{ add_to_cart_form.price_each.html_name }}"
+               id="{{ add_to_cart_form.price_each.auto_id }}"
+               value="{{ auction.buyItNowPrice|default_if_none:'' }}"
+               class="form-control" hidden>
+        <button type="submit" class="btn btn-primary rounded-0 rounded-end border-1">Add to
+            Cart
+        </button>
+    </form>
+</div>
