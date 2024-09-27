@@ -21,11 +21,16 @@
                             <p><strong>Category:</strong> {{ auction.category }}</p>
 
 
-                            <p><strong>Quantity Available:</strong> {{ auction.quantity_available }}</p>
+{#                            <p><strong>Quantity Available:</strong>#}
+{##}
+{##}
+{#                                {{ auction.quantity_available }}</p>#}
 
                             {#                            </div>#}
                             <div class="col">
                                 {% if auction.auction_type == 'Auction' %}
+                                    <p><strong>Quantity:</strong> {{ auction.auction_quantity_available }}</p>
+
                                     <p>
                                         {% if auction.current_bid %}
                                             <strong>Current Bid:</strong>${{ auction.current_bid }}
@@ -43,8 +48,7 @@
                                     </p>
 
                                 {% else %}
-                                    {#                                    <p>#}
-                                    {#                                        <span><strong>Get it Now:</strong> ${{ auction.buyItNowPrice }}</span></p>#}
+                                    <p><strong>Quantity Available:</strong>{{ auction.quantity_available }}</p>
                                 {% endif %}
 
 
@@ -72,7 +76,7 @@
                                     {% endif %}
                                 </div>
                             {% else %}
-                                <form class="card" action="{% url 'login' %}" method='POST'>
+                                <form class="card p-0 w-75" action="{% url 'login' %}" method='POST'>
                                     <div class="card-header">Login To Buy</div>
                                     {% csrf_token %}
                                     <div class="card-body">

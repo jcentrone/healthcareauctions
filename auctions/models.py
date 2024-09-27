@@ -197,6 +197,8 @@ class Auction(models.Model):
     creator = models.ForeignKey(User, on_delete=models.PROTECT, related_name='auction_creator')
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='auction_category')
     quantity_available = models.IntegerField('Listing Quantity', null=True, blank=True, default=1)
+    auction_quantity_available = models.IntegerField('Listing Quantity', null=True, blank=True, default=1)
+
     starting_bid = models.DecimalField(
         max_digits=7,
         decimal_places=2,
@@ -695,3 +697,15 @@ class UserManual(models.Model):
     def __str__(self):
         return f'User Manual for {self.manufacturer}'
 
+
+class ComparativeSalesData(models.Model):
+    sale_date = models.DateField(db_index=True, null=True, blank=True)
+    ref_id = models.CharField(max_length=50, db_index=True)
+    quantity = models.PositiveIntegerField()
+    unit_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    line_total_cost = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    line_total_price = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.ref_id} on {self.sale_date}"

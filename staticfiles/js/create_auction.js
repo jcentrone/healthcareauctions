@@ -641,15 +641,23 @@ document.addEventListener('DOMContentLoaded', function () {
             listingTypeContainer.setAttribute('data-auctiontype', 'Auction');
             document.getElementById('id_auction_type').value = 'Auction';
             document.getElementById('id_starting_bid').required = true;
+            document.getElementById('auction-qty-container').required = true;
             document.getElementById('id_buyItNowPrice').required = false;
+
+
             document.getElementById('listing-duration').classList.remove('hidden-field');
+            document.getElementById('auction-qty-container').classList.remove('hidden-field');
 
         } else {
             listingTypeContainer.setAttribute('data-auctiontype', 'Sale');
             document.getElementById('id_auction_type').value = 'Sale';
             document.getElementById('id_starting_bid').required = false;
+            document.getElementById('auction-qty-container').required = false;
+
             document.getElementById('id_buyItNowPrice').required = true;
             document.getElementById('listing-duration').classList.add('hidden-field');
+            document.getElementById('auction-qty-container').classList.add('hidden-field');
+
 
         }
     };
@@ -1064,6 +1072,60 @@ document.getElementById('id_product_details-0-reference_number').addEventListene
 
 
     if (referenceNumber.length > 0) {
+        // Fetch Suggested Price
+        fetch(`/api/suggest_price/${encodeURIComponent(referenceNumber)}/`)
+            .then(response => {
+                if (response.ok) {
+                    return response.json(); // Properly parse JSON
+                } else {
+                    throw new Error('No suggested price available.');
+                }
+            })
+            .then(data => {
+                // Format the suggested price with comma separators
+                const formattedSuggestedPrice = data.suggested_price.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                console.log('Suggested Price:', formattedSuggestedPrice);
+
+                // Use SweetAlert2 to ask the user if they want to apply the suggested price
+                Swal.fire({
+                    title: 'Suggested Price Found',
+                    text: `We found a suggested price of $${formattedSuggestedPrice}. Would you like to apply?`,
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, apply it',
+                    cancelButtonText: 'No, thanks',
+                    buttonsStyling: false,
+                    customClass: {
+                        confirmButton: 'btn btn-primary me-2',
+                        cancelButton: 'btn btn-secondary ms-2'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Update the UI with the suggested price
+                        document.getElementById('id_starting_bid').value = data.suggested_price;
+                        document.getElementById('id_buyItNowPrice').value = data.suggested_price;
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error getting suggested price:', error);
+                // Optionally, display an error message to the user
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Unable to retrieve suggested price. Please try again later.',
+                    confirmButtonText: 'OK',
+                    buttonsStyling: false,
+                    customClass: {
+                        confirmButton: 'btn btn-primary'
+                    }
+                });
+            });
+
+
         fetch(`/get_default_image_blob/?reference_number=${referenceNumber}`)
             .then(response => {
                 if (response.ok) {

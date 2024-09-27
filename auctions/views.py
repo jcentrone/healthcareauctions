@@ -7,6 +7,7 @@ from datetime import timedelta, datetime
 from decimal import Decimal
 
 import openpyxl
+import requests
 from bs4 import BeautifulSoup
 from django import forms
 from django.contrib import messages
@@ -15,7 +16,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.views import PasswordChangeView
 from django.contrib.messages import get_messages
-import requests
 from django.core.exceptions import ValidationError
 from django.core.mail import EmailMessage
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -39,6 +39,7 @@ from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, 
     EditProductDetailFormSet, ShippingAccountsForm, RegistrationForm, ProductDetailForm
 from .models import Bid, Category, Image, CartItem, Cart, ProductDetail, Order, Payment, \
     OrderItem, Parcel, ProductImage, ShippingAccounts, Address, Message, User, UserManual, MedicalSpecialty
+from .utils.calc_fair_price import calculate_fair_price
 from .utils.calculate_tax import get_sales_tax
 from .utils.email_manager import send_welcome_email_html, order_confirmation_message
 from .utils.get_base64_logo import get_logo_base64
@@ -940,8 +941,6 @@ def active_auctions_view(request, auction_id=None):
         specialty_obj = MedicalSpecialty.objects.filter(code=specialty).first()
         specialty_description = specialty_obj.description
 
-
-
     # Apply time filters using a dictionary mapping
     time_deltas = {
         'today': timedelta(days=1),
@@ -1047,7 +1046,7 @@ def active_auctions_view(request, auction_id=None):
         'expired_filter': expired_filter,
         'auction_type': auction_type,
         'specialty': specialty,
-        'specialty_description':specialty_description,
+        'specialty_description': specialty_description,
         'active_specialties': active_specialties,
         'recent_views': recent_views_filter,
     }
@@ -1119,6 +1118,25 @@ def get_auction_product_details(request, auction_id):
         'product_details': product_details_list,
         'contains_expired_items': auction.contains_expired_items(),
     })
+
+
+@login_required
+def get_fair_price(request, ref_id):
+    """
+    API endpoint to suggest a fair price for a product based on historical sales data.
+    """
+    print(ref_id)  # For debugging purposes
+
+    if not ref_id:
+        return JsonResponse({"error": "Missing 'ref_id' parameter."}, status=400)
+
+    # Calculate fair price with a static 35% discount
+    fair_price_data = calculate_fair_price(ref_id, discount_factor=0.35)
+
+    if "error" in fair_price_data:
+        return JsonResponse(fair_price_data, status=404)
+
+    return JsonResponse(fair_price_data, status=200)
 
 
 @login_required

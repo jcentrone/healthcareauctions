@@ -226,30 +226,32 @@
                                                              id="auctionTabContent">
                                                             <div class="tab-pane border-0 fade show active" id="auction"
                                                                  role="tabpanel" aria-labelledby="auction-tab">
-                                                                <div class="">
-                                                                    <div class="mb-2 fw-light fst-italic">The Listing
-                                                                        Type
-                                                                        Will Be Auction
-                                                                    </div>
-                                                                    <div class="bid-row">
-                                                                        <div class="form-group with-symbol">
-                                                                            {{ auction_form.starting_bid.label_tag }}
-                                                                            <i class="fa fa-info-circle"
-                                                                               aria-hidden="true" id="">
-                                                                                <span class="tooltip">Enter the minimum bid amount to start the auction.</span>
-                                                                            </i>
-                                                                            {{ auction_form.starting_bid }}
-                                                                        </div>
-                                                                        <div class="form-group with-symbol">
-                                                                            {{ auction_form.reserve_bid.label_tag }}
-                                                                            <i class="fa fa-info-circle"
-                                                                               aria-hidden="true" id="">
-                                                                                <span class="tooltip">The reserve price is the minimum amount required for the item to be sold.</span>
-                                                                            </i>
-                                                                            {{ auction_form.reserve_bid }}
-                                                                        </div>
-                                                                    </div>
+
+                                                                <div class="mb-2 fw-light fst-italic">The Listing
+                                                                    Type
+                                                                    Will Be Auction
                                                                 </div>
+                                                                <div class="bid-row">
+                                                                    <div class="form-group with-symbol">
+                                                                        {{ auction_form.starting_bid.label_tag }}
+                                                                        <i class="fa fa-info-circle"
+                                                                           aria-hidden="true" id="">
+                                                                            <span class="tooltip">Enter the minimum bid amount to start the auction.</span>
+                                                                        </i>
+                                                                        {{ auction_form.starting_bid }}
+                                                                    </div>
+                                                                    <div class="form-group with-symbol">
+                                                                        {{ auction_form.reserve_bid.label_tag }}
+                                                                        <i class="fa fa-info-circle"
+                                                                           aria-hidden="true" id="">
+                                                                            <span class="tooltip">The reserve price is the minimum amount required for the item to be sold.</span>
+                                                                        </i>
+                                                                        {{ auction_form.reserve_bid }}
+                                                                    </div>
+
+
+                                                                </div>
+
 
                                                             </div>
                                                             <div class="tab-pane border-0 fade" id="buyItNow"
@@ -269,6 +271,7 @@
                                                                         </i>
                                                                         {{ auction_form.buyItNowPrice }}
                                                                     </div>
+
                                                                 </div>
                                                             </div>
                                                             <div class="bid-row px-3">
@@ -282,7 +285,15 @@
                                                                     </div>
                                                                     {{ auction_form.quantity_available }}
                                                                 </div>
-                                                                <div id="listing-duration">
+                                                                <div class="form-group position-relative" id="auction-qty-container">
+                                                                    {{ auction_form.auction_quantity_available.label_tag }}
+                                                                    <i class="fa fa-info-circle"
+                                                                       aria-hidden="true" id="">
+                                                                        <span class="tooltip">The total quantity of items sold in this auction.</span>
+                                                                    </i>
+                                                                    {{ auction_form.auction_quantity_available }}
+                                                                </div>
+                                                                <div id="listing-duration" class="position-relative">
                                                                     {{ auction_form.auction_duration.label_tag }}
                                                                     <i class="fa fa-info-circle"
                                                                        aria-hidden="true" id="">
