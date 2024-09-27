@@ -1072,6 +1072,44 @@ document.getElementById('id_product_details-0-reference_number').addEventListene
 
 
     if (referenceNumber.length > 0) {
+        fetch(`/get_default_image_blob/?reference_number=${referenceNumber}`)
+            .then(response => {
+                if (response.ok) {
+                    return response.blob(); // Get the image as a blob
+                } else {
+                    throw new Error('Image not found');
+                }
+            })
+            .then(blob => {
+                const imgURL = URL.createObjectURL(blob);
+                document.getElementById('thumbnail-preview-0').src = imgURL;
+                document.getElementById('thumbnail-preview-0').style.display = 'block';
+                document.getElementById('upload-icon-0').style.display = 'none';
+
+                // Set the blob to the file input
+                const fileInput = document.getElementById('id_images-0-image');
+                const file = new File([blob], 'default_image.jpg', {type: blob.type});
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                fileInput.files = dataTransfer.files;
+            })
+            .catch(error => {
+                console.error('Error fetching the image as blob:', error);
+                document.getElementById('thumbnail-preview-0').style.display = 'none';
+                document.getElementById('upload-icon-0').style.display = 'block';
+            });
+    } else {
+        document.getElementById('thumbnail-preview-0').style.display = 'none';
+        document.getElementById('upload-icon-0').style.display = 'block';
+    }
+});
+
+document.getElementById('id_product_details-0-reference_number').addEventListener('blur', function () {
+    const referenceNumber = this.value.toUpperCase();
+    let titleInput = document.getElementById('id_title'); // Get the input field
+    titleInput.value = referenceNumber;
+
+    if (referenceNumber.length > 0) {
         // Fetch Suggested Price
         fetch(`/api/suggest_price/${encodeURIComponent(referenceNumber)}/`)
             .then(response => {
@@ -1111,54 +1149,21 @@ document.getElementById('id_product_details-0-reference_number').addEventListene
                 });
             })
             .catch(error => {
-                console.error('Error getting suggested price:', error);
-                // Optionally, display an error message to the user
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Unable to retrieve suggested price. Please try again later.',
-                    confirmButtonText: 'OK',
-                    buttonsStyling: false,
-                    customClass: {
-                        confirmButton: 'btn btn-primary'
-                    }
-                });
+                // console.error('Error getting suggested price:', error);
+                // // Optionally, display an error message to the user
+                // Swal.fire({
+                //     icon: 'error',
+                //     title: 'Error',
+                //     text: 'Unable to retrieve suggested price. Please try again later.',
+                //     confirmButtonText: 'OK',
+                //     buttonsStyling: false,
+                //     customClass: {
+                //         confirmButton: 'btn btn-primary'
+                //     }
+                // });
             });
-
-
-        fetch(`/get_default_image_blob/?reference_number=${referenceNumber}`)
-            .then(response => {
-                if (response.ok) {
-                    return response.blob(); // Get the image as a blob
-                } else {
-                    throw new Error('Image not found');
-                }
-            })
-            .then(blob => {
-                const imgURL = URL.createObjectURL(blob);
-                document.getElementById('thumbnail-preview-0').src = imgURL;
-                document.getElementById('thumbnail-preview-0').style.display = 'block';
-                document.getElementById('upload-icon-0').style.display = 'none';
-
-                // Set the blob to the file input
-                const fileInput = document.getElementById('id_images-0-image');
-                const file = new File([blob], 'default_image.jpg', {type: blob.type});
-                const dataTransfer = new DataTransfer();
-                dataTransfer.items.add(file);
-                fileInput.files = dataTransfer.files;
-            })
-            .catch(error => {
-                console.error('Error fetching the image as blob:', error);
-                document.getElementById('thumbnail-preview-0').style.display = 'none';
-                document.getElementById('upload-icon-0').style.display = 'block';
-            });
-    } else {
-        document.getElementById('thumbnail-preview-0').style.display = 'none';
-        document.getElementById('upload-icon-0').style.display = 'block';
     }
 });
-
-
 
 
 

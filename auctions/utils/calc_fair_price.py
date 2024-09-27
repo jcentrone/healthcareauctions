@@ -14,8 +14,11 @@ def calculate_fair_price(ref_id, discount_factor=0.35):
     """
 
     try:
+        # Normalize ref_id to ensure consistent querying (e.g., uppercase)
+        ref_id = ref_id.upper()
+
         # Fetch all sales data for the given ref_id
-        sales_qs = ComparativeSalesData.objects.filter(ref_id__icontains=ref_id).order_by('sale_date')
+        sales_qs = ComparativeSalesData.objects.filter(ref_id__iexact=ref_id).order_by('sale_date')
 
         if not sales_qs.exists():
             return {"error": "No sales data found for the given REF#."}
