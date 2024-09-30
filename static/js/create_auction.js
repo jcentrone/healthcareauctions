@@ -32,50 +32,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
             timeout = setTimeout(() => func.apply(context, args), wait);
         };
     }
-
-    // const fetchSynergyData = debounce((event) => {
-    //     const inputValue = event.target.value.trim();
-    //     const resultsContainer = document.getElementById('resultsContainer');
-    //     resultsContainer.innerHTML = ''; // Clear previous results
-    //
-    //     if (!inputValue) {
-    //         // Optionally display a message or clear the results
-    //         return;
-    //     }
-    //
-    //     const url = `/get_synergy_data/${encodeURIComponent(inputValue)}/`;
-    //
-    //     fetch(url)
-    //         .then(response => {
-    //             if (!response.ok) {
-    //                 throw new Error(`HTTP error! Status: ${response.status}`);
-    //             }
-    //             return response.json();
-    //         })
-    //         .then(data => {
-    //             if (data.products) {
-    //                 data.products.forEach(product => {
-    //                     const productDiv = document.createElement('div');
-    //                     productDiv.innerHTML = `
-    //                     <h3>${product.product_name}</h3>
-    //                     <p>Status: ${product.status}</p>
-    //                     <p>Price: ${product.price}</p>
-    //                     <p>Description: ${product.description}</p>
-    //                     <p>Stock: ${product.stock}</p>
-    //                 `;
-    //                     resultsContainer.appendChild(productDiv);
-    //                 });
-    //             } else if (data.error) {
-    //                 resultsContainer.textContent = `Error: ${data.error}`;
-    //             }
-    //         })
-    //         .catch(error => {
-    //             resultsContainer.textContent = `Error: ${error.message}`;
-    //         });
-    // }, 500); // Adjust the delay as needed
-    //
-    // document.getElementById('id_product_details-0-reference_number').addEventListener('input', fetchSynergyData);
-
 });
 
 
@@ -227,6 +183,7 @@ function fetchDeviceData(code) {
 }
 
 function fetchClassificationData(code) {
+    // console.log(code);
     fetch(`https://api.fda.gov/device/classification.json?search=product_code:${code}&limit=5`)
         .then(response => response.json())
         .then(data => {

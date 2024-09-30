@@ -56,34 +56,46 @@
                     </div>
                 </div>
 
-                <!-- Results Table -->
-                <textarea id="results"
-                          style="display: none; width: 100%; min-height: 10vh; font-size: 3vmin; overflow: auto"
-                          disabled></textarea>
             </div>
 
+            <div class="mt-3">
+                <h4>Results</h4>
+                <p>Please verify the results are correct and add your quantity.</p>
+            </div>
+            <div id="barcode-results" class="my-3">
+                <div class="mapping-header" style="border-bottom: 1px solid #777">
+                    <h5>Name</h5>
+                    <div></div>
+                    <h5>Code</h5>
+                </div>
+                <div class="mapping-row">
+                    <div class="mapping-cell" style="padding-left:14px;">Product Name</div>
+                    <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                    <input type="text" class="form-control" id="product-name">
+                </div>
 
-            <div id="barcode-results">
-                <h4>Results Map</h4>
-                <p>Scanned barcodes will appear below. Please verify that they are correct.</p>
-                <div class="mapping-table" id="mapping-table">
-                    <div class="mapping-header" style="border-bottom: 1px solid #777">
-                        <h5>Name</h5>
-                        <div></div>
-                        <h5>Code</h5>
-                    </div>
+                <div id="results-container">
 
+                </div>
+                <div class="mapping-row">
+                    <div class="mapping-cell" style="padding-left:14px;">Quantity</div>
+                    <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                    <input type="number" class="form-control" step="1" min="1">
                 </div>
 
             </div>
 
 
         </div>
-
-        <button id="closeScanModal" class="btn btn-secondary">Save & Close</button>
+        <div class="btn-container">
+            <button id="scanNextBtn" class="btn btn-lg btn-primary">Scan Next</button>
+            <button id="exportBtn" class="btn btn-lg btn-secondary">Export</button>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/dynamsoft-barcode-reader-bundle@10.2.1000/dist/dbr.bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script src="{% static 'js/scan_to_excel.js' %}"></script>
     <link href='{% static "css/scan_to_excel.css" %}' rel='stylesheet'>
 

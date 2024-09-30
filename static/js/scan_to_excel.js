@@ -8,6 +8,7 @@ let scannerInitialized = false;
 let currentZoomLevel = 1; // Initialize zoom level
 let minZoom = 1; // Default values
 let maxZoom = 5; // Default values
+let scannedItems = [];
 
 // Fullscreen Helper Functions
 function requestFullscreen(element) {
@@ -55,7 +56,7 @@ async function initScanner() {
         const dceSelCamera = cameraView.getUIElement('dce-sel-camera');
 
         // console.log(dceSelCamera);
-        dceSelCamera.classList.add('dropdown'); // Corrected 'dropdowm' to 'dropdown'
+        // dceSelCamera.classList.add('dropdown'); // Corrected 'dropdowm' to 'dropdown'
 
         cvRouter.addResultReceiver({
             onDecodedBarcodesReceived: (result) => {
@@ -173,6 +174,23 @@ function toggleFullscreen() {
     }
 }
 
+async function startScanning() {
+    if (!cvRouter) {
+        console.error('Scanner is not initialized.');
+        return;
+    }
+    await cvRouter.startCapturing("ReadBarcodes_Balance");
+}
+
+async function stopScanning() {
+    if (!cvRouter) {
+        console.error('Scanner is not initialized.');
+        return;
+    }
+    await cvRouter.stopCapturing();
+}
+
+
 document.addEventListener('fullscreenchange', () => {
     console.log('Fullscreen state changed.');
     const fullscreenBtnIcon = document.querySelector('#fullscreen-btn i');
@@ -254,14 +272,14 @@ function processDetectedBarcode(result) {
         let parsedResult = parseGS1Barcode(code);
         displayDetectedBarcode(code, parsedResult);
         triggerHapticFeedback();
-        const element = document.getElementById('results');
+        // const element = document.getElementById('results');
 
-        // Scroll to the element
-        element.scrollIntoView({
-            behavior: 'smooth', // Options: 'auto' or 'smooth'. Smooth adds a nice scrolling animation
-            block: 'start',     // Options: 'start', 'center', 'end', or 'nearest'
-            inline: 'nearest'   // Similar options for inline scrolling ('start', 'center', 'end', 'nearest')
-        });
+        // // Scroll to the element
+        // element.scrollIntoView({
+        //     behavior: 'smooth', // Options: 'auto' or 'smooth'. Smooth adds a nice scrolling animation
+        //     block: 'start',     // Options: 'start', 'center', 'end', or 'nearest'
+        //     inline: 'nearest'   // Similar options for inline scrolling ('start', 'center', 'end', 'nearest')
+        // });
     });
 }
 
@@ -276,7 +294,7 @@ const aiOptions = [
 ];
 
 function displayDetectedBarcode(code, parsedResult) {
-    const barcodeResults = document.getElementById('barcode-results');
+    const barcodeResults = document.getElementById('results-container');
     const existingSelections = new Set();
     console.log(parsedResult);
     // Collect existing selections to avoid duplicates
@@ -287,7 +305,7 @@ function displayDetectedBarcode(code, parsedResult) {
     });
 
     const resultDiv = document.createElement('div');
-    resultDiv.id = 'mapping-table';
+    resultDiv.classList.add('mapping-table');
 
     // Create a mapping from lowercased labels to options for easier matching
     const aiOptionsMap = {};
@@ -346,7 +364,6 @@ function displayDetectedBarcode(code, parsedResult) {
     barcodeResults.appendChild(resultDiv);
 }
 
-
 function parseGS1Barcode(code) {
     console.log(code);
     code = code.replace('{GS}', '').replace(/\u001d/g, '');
@@ -358,6 +375,7 @@ function parseGS1Barcode(code) {
         '11': 'Production Date',
         '17': 'Expiration Date',
         '21': 'Serial Number',
+        '240': 'Additional Product Identification', // Reference Number
         '310': 'Net Weight (kg)',
         '320': 'Net Weight (lb)',
         '30': 'Count of Trade Items / Variable Measure Quantity'
@@ -372,35 +390,40 @@ function parseGS1Barcode(code) {
 
     let index = 0;
     const parsedResult = {};
+
     while (index < code.length) {
-        let ai = code.substring(index, index + 2);
+        let aiLength = 2;
+        let ai = code.substring(index, index + aiLength);
         let aiInfo = aiMap[ai];
 
         if (!aiInfo) {
-            ai = code.substring(index, index + 3);
+            aiLength = 3;
+            ai = code.substring(index, index + aiLength);
             aiInfo = aiMap[ai];
         }
 
         if (aiInfo) {
-            index += ai.length;
+            index += aiLength;
             let value;
+
             if (fixedLengths[ai]) {
                 value = code.substring(index, index + fixedLengths[ai]);
                 index += fixedLengths[ai];
             } else {
-                let endIndex = code.indexOf(',', index);
+                // Variable length, terminated by FNC1 or end of string
+                let endIndex = code.indexOf('\u001d', index);
                 if (endIndex === -1) endIndex = code.length;
                 value = code.substring(index, endIndex);
-                index = endIndex + 1;
+                index = endIndex;
             }
-            parsedResult[aiInfo] = value.replace(/[^0-9A-Za-z]/g, "");
+
+            value = value.replace(/[^0-9A-Za-z]/g, "");
+            parsedResult[aiInfo] = value;
         } else {
-            let endIndex = code.indexOf(',', index);
-            if (endIndex === -1) endIndex = code.length;
-            const unknownValue = code.substring(index, endIndex);
-            parsedResult['Not Needed'] = unknownValue.replace(/[^0-9A-Za-z]/g, "");
-            index = endIndex + 1;
+            // If AI not found, skip to next character
+            index++;
         }
+        fetchDeviceData(code);
     }
 
     console.log(parsedResult);
@@ -415,7 +438,131 @@ function convertDate(dateString) {
     return `${year}-${month}-${day}`;
 }
 
+function fetchDeviceData(code) {
+    let prefix = '';
+    let fullCode = prefix + code;
+    console.log('Code', code);
+    fetch(`https://accessgudid.nlm.nih.gov/api/v3/devices/lookup.json?udi=${code}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            // Return the parsed JSON data
+            return response.json();
+        })
+        .then(data => {
+            console.log("Device data from AccessGUDID:", data);
+            document.getElementById('product-name').value = data.productCodes[0].deviceName;
+
+        })
+        .catch(error => {
+            console.error('Error fetching device data:', error);
+        });
+}
 
 initScanner().catch(err => {
     console.error('Failed to initialize scanner:', err);
 });
+
+document.getElementById('scanNextBtn').addEventListener('click', function () {
+    // Check if "Reference Number" is present
+    const mappingRows = document.querySelectorAll('.mapping-row');
+    let referenceNumberPresent = false;
+
+    mappingRows.forEach(row => {
+        const select = row.querySelector('select');
+        if (select && select.value === 'ref') {
+            referenceNumberPresent = true;
+        }
+    });
+
+    if (!referenceNumberPresent) {
+        // Show SweetAlert2 modal to ask the user to add a Reference Number
+        Swal.fire({
+            title: 'Reference Number Missing',
+            text: 'Would you like to add a reference number?',
+            input: 'text',
+            inputPlaceholder: 'Enter Reference Number',
+            showCancelButton: true,
+            confirmButtonText: 'Add',
+            cancelButtonText: 'Cancel',
+            customClass: {
+                confirmButton: 'btn btn-primary',
+                cancelButton: 'btn btn-secondary'
+            },
+            preConfirm: (referenceNumber) => {
+                if (!referenceNumber) {
+                    Swal.showValidationMessage('Reference Number is required');
+                    return false;
+                }
+                return referenceNumber;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const referenceNumber = result.value;
+
+                // Add a new mapping row with the Reference Number
+                addReferenceNumberRow(referenceNumber);
+
+                // Proceed with the rest of the scan next functionality
+                // proceedToScanNext();
+            } else {
+                // User cancelled, do not proceed
+                // Optionally, inform the user that the scan cannot proceed without a Reference Number
+                // Swal.fire({
+                //     icon: 'warning',
+                //     title: 'Action Required',
+                //     text: 'Would you like to add a reference number?',
+                //     confirmButtonText: 'Yes',
+                //     cancelButtonText: 'No',
+                //     customClass: {
+                //         confirmButton: 'btn btn-primary',
+                //         cancelButton: 'btn btn-secondary'
+                //     }
+                // });
+            }
+        });
+    } else {
+        // Reference Number is present, proceed with scan next
+        // proceedToScanNext();
+    }
+});
+
+function addReferenceNumberRow(referenceNumber) {
+    const mappingTable = document.querySelector('.mapping-table');
+
+    const row = document.createElement('div');
+    row.classList.add('mapping-row');
+
+    const leftCell = document.createElement('div');
+    leftCell.classList.add('mapping-cell');
+    const select = document.createElement('select');
+    select.classList.add('form-control');
+
+    // Populate the select options
+    aiOptions.forEach(option => {
+        const opt = document.createElement('option');
+        opt.value = option.value;
+        opt.innerText = option.label;
+        if (option.value === 'ref') {
+            opt.selected = true;
+        }
+        select.appendChild(opt);
+    });
+
+    leftCell.appendChild(select);
+
+    const arrowCell = document.createElement('div');
+    arrowCell.classList.add('arrow');
+    arrowCell.innerHTML = '<i class="fa-solid fa-arrow-right"></i>';
+
+    const rightCell = document.createElement('div');
+    rightCell.classList.add('mapping-cell');
+    rightCell.textContent = referenceNumber;
+
+    row.appendChild(leftCell);
+    row.appendChild(arrowCell);
+    row.appendChild(rightCell);
+
+    mappingTable.appendChild(row);
+}
