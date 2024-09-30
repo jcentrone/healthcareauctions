@@ -66,6 +66,7 @@ urlpatterns = [
     path('get_default_image/', views.get_default_image, name='get_default_image'),
     path('get_default_image_blob/', views.get_default_image_blob, name='get_default_image_blob'),
     path('how_we_work/', views.how_we_work, name='how_we_work'),
+    path('scan_to_excel/', views.scan_to_excel, name='scan_to_excel'),
     # Password reset links (ref: https://docs.djangoproject.com/en/3.2/topics/auth/default/#module-django.contrib.auth.views)
     path('password-reset/',
          auth_views.PasswordResetView.as_view(

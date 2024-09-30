@@ -709,3 +709,16 @@ class ComparativeSalesData(models.Model):
 
     def __str__(self):
         return f"{self.ref_id} on {self.sale_date}"
+
+
+class ScanToExcel(models.Model):
+    sku = models.CharField(max_length=100, null=True, blank=True, default='(01)')
+    quantity = models.IntegerField(null=True, blank=True, default=1)
+    reference_number = models.CharField(max_length=100, null=True, blank=True)
+    lot_number = models.CharField(max_length=100, null=True, blank=True)
+    production_date = models.DateField(null=True, blank=True)
+    expiration_date = models.DateField(null=True, blank=True)
+    scan_group = models.IntegerField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.reference_number}-{self.quantity}"

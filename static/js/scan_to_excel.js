@@ -54,7 +54,7 @@ async function initScanner() {
 
         const dceSelCamera = cameraView.getUIElement('dce-sel-camera');
 
-        console.log(dceSelCamera);
+        // console.log(dceSelCamera);
         dceSelCamera.classList.add('dropdown'); // Corrected 'dropdowm' to 'dropdown'
 
         cvRouter.addResultReceiver({
@@ -238,9 +238,14 @@ function updateZoomDisplay() {
     zoomDisplay.textContent = `Zoom: ${currentZoomLevel.toFixed(1)}x`;
 }
 
-// // Initialize the scanner when the page loads
-// window.addEventListener('DOMContentLoaded', initScanner);
 
+function triggerHapticFeedback() {
+    if (navigator.vibrate) {
+        navigator.vibrate(200); // Vibrate for 200 milliseconds
+    } else {
+        console.log("Vibration API not supported.");
+    }
+}
 
 function processDetectedBarcode(result) {
     console.log(result);
@@ -258,14 +263,6 @@ function processDetectedBarcode(result) {
             inline: 'nearest'   // Similar options for inline scrolling ('start', 'center', 'end', 'nearest')
         });
     });
-}
-
-function triggerHapticFeedback() {
-    if (navigator.vibrate) {
-        navigator.vibrate(200); // Vibrate for 200 milliseconds
-    } else {
-        console.log("Vibration API not supported.");
-    }
 }
 
 const aiOptions = [
@@ -350,7 +347,6 @@ function displayDetectedBarcode(code, parsedResult) {
 }
 
 
-
 function parseGS1Barcode(code) {
     console.log(code);
     code = code.replace('{GS}', '').replace(/\u001d/g, '');
@@ -420,3 +416,6 @@ function convertDate(dateString) {
 }
 
 
+initScanner().catch(err => {
+    console.error('Failed to initialize scanner:', err);
+});

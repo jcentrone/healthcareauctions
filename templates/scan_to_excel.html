@@ -1,0 +1,90 @@
+{% extends 'new_base.html' %}
+{% load static %}
+
+{% block body %}
+    <!-- Scan QR Code Modal -->
+    <div class="container">
+        <h2>Inventory Scanner</h2>
+        <p>
+            Scan your inventory and export to excel.
+        </p>
+
+        <div id="camera-preview" class="camera-preview">
+            <div style="position: relative; grid-row: span 2">
+                <!-- Scanner Wrapper -->
+                <div id="scanner-wrapper" style="position: relative; width: 100%; height: 23vh;">
+                    <!-- Camera View Container -->
+                    <div id="camera-view-container" style="width: 100%; height: 100%;">
+                        <div class="dce-video-container"
+                             style="position:absolute; width:100%; height:100%;"></div>
+                        <div id="dce-mask" hidden
+                             style="width:100%; height:100%; position:absolute; top:0; left:0; padding:10px;">
+                            <div class="dce-corner"
+                                 style="position:absolute; width:50px; height:50px; top:0; left:0; border-left:3px solid #fe8e14; border-top:3px solid #fe8e14;"></div>
+                            <div class="dce-corner"
+                                 style="position:absolute; width:50px; height:50px; top:0; right:0; border-right:3px solid #fe8e14; border-top:3px solid #fe8e14;"></div>
+                            <div class="dce-corner"
+                                 style="position:absolute; width:50px; height:50px; left:0; bottom:0; border-left:3px solid #fe8e14; border-bottom:3px solid #fe8e14;"></div>
+                            <div class="dce-corner"
+                                 style="position:absolute; width:50px; height:50px; bottom:0; right:0; border-right:3px solid #fe8e14; border-bottom:3px solid #fe8e14;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Fullscreen Button -->
+                    <button id="fullscreen-btn"
+                            style="position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.5); border: none; color: white; padding: 10px; border-radius: 5px; cursor: pointer; z-index: 1000;">
+                        <i class="fas fa-expand"></i>
+                    </button>
+
+                    <!-- Zoom Controls -->
+                    <div id="zoom-controls"
+                         style="position: absolute; bottom: 10px; right: 10px; display: flex; gap: 10px; z-index: 1000;">
+                        <button id="zoom-in"
+                                style="background: rgba(0,0,0,0.5); border: none; color: white; padding: 10px; border-radius: 5px; cursor: pointer;">
+                            <i class="fas fa-search-plus"></i>
+                        </button>
+                        <button id="zoom-out"
+                                style="background: rgba(0,0,0,0.5); border: none; color: white; padding: 10px; border-radius: 5px; cursor: pointer;">
+                            <i class="fas fa-search-minus"></i>
+                        </button>
+                    </div>
+
+                    <!-- Zoom Level Display (Optional) -->
+                    <div id="zoom-level"
+                         style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.5); color: white; padding: 5px 10px; border-radius: 5px; font-size: 14px; z-index: 1000;">
+                        Zoom: 1.0x
+                    </div>
+                </div>
+
+                <!-- Results Table -->
+                <textarea id="results"
+                          style="display: none; width: 100%; min-height: 10vh; font-size: 3vmin; overflow: auto"
+                          disabled></textarea>
+            </div>
+
+
+            <div id="barcode-results">
+                <h4>Results Map</h4>
+                <p>Scanned barcodes will appear below. Please verify that they are correct.</p>
+                <div class="mapping-table" id="mapping-table">
+                    <div class="mapping-header" style="border-bottom: 1px solid #777">
+                        <h5>Name</h5>
+                        <div></div>
+                        <h5>Code</h5>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+        <button id="closeScanModal" class="btn btn-secondary">Save & Close</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/dynamsoft-barcode-reader-bundle@10.2.1000/dist/dbr.bundle.js"></script>
+    <script src="{% static 'js/scan_to_excel.js' %}"></script>
+    <link href='{% static "css/scan_to_excel.css" %}' rel='stylesheet'>
+
+{% endblock %}

@@ -2132,3 +2132,7 @@ def get_synergy_data(request, reference_number):
 
     except requests.exceptions.RequestException as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+def scan_to_excel(request):
+    return render(request, 'scan_to_excel.html',{})
