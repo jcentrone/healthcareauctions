@@ -2,9 +2,9 @@
 {% load custom_filters %}
 
 <header class="border-bottom pb-3 mb-5">
-    <div class="beta-notice">
-        <div>You are currently viewing our beta site. We will be live soon.</div>
-    </div>
+{#    <div class="beta-notice">#}
+{#        <div>You are currently viewing our beta site. We will be live soon.</div>#}
+{#    </div>#}
     <div class="section border-bottom">
         <div class="container" id="header_container">
             {% if user.is_authenticated %}
@@ -177,17 +177,17 @@
                             {% endif %}
                         </a>
                     </div>
-                    <!-- Nav Item - Alerts -->
-                    {% if unread_message_count %}
-                        <div class='nav-item mx-1'>
-                            <a class='nav-link' id="alert-container" href='{% url 'inbox' %}'>
-                                <i class="fa-regular fa-message"></i>
+{#                    <!-- Nav Item - Alerts -->#}
+{#                    {% if unread_message_count %}#}
+{#                        <div class='nav-item mx-1'>#}
+{#                            <a class='nav-link' id="alert-container" href='{% url 'inbox' %}'>#}
+{#                                <i class="fa-regular fa-message"></i>#}
                                 {#                                <i class='fa-regular fa-bell fa-lg'></i>#}
-                                <!-- Counter - Alerts -->
-                                <span class='badge rounded-pill bg-danger badge-counter light'>{{ unread_message_count }} </span>
-                            </a>
-                        </div>
-                    {% endif %}
+{#                                <!-- Counter - Alerts -->#}
+{#                                <span class='badge rounded-pill bg-danger badge-counter light'>{{ unread_message_count }} </span>#}
+{#                            </a>#}
+{#                        </div>#}
+{#                    {% endif %}#}
                 </div>
             {% else %}
                 <div class="dropdown" id="logged-in-dropdown">
