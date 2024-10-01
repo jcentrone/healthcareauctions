@@ -18,7 +18,7 @@ SECRET_KEY = os.environ.get(
 SITE_URL = 'https://www.healthcareauctions.com'
 
 # DEBUG = config('DEBUG', default=False, cast=bool)
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     'localhost',
@@ -43,7 +43,7 @@ ALLOWED_HOSTS = [
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
-SECURE_SSL_REDIRECT = False
+SECURE_SSL_REDIRECT = True
 
 CSRF_TRUSTED_ORIGINS = [
     'https://healthcareauctions.com',
