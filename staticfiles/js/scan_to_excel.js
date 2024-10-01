@@ -10,6 +10,18 @@ let minZoom = 1; // Default values
 let maxZoom = 5; // Default values
 let scannedItems = [];
 
+const requiredFields = [
+    'Product Name',
+    'GTIN/UDI',
+    'Lot Number',
+    'Production Date',
+    'Expiration Date',
+    'Reference Number',
+    'Package Qty',
+    'Suggested Price',
+    'Quantity'
+];
+
 // Fullscreen Helper Functions
 function requestFullscreen(element) {
     if (element.requestFullscreen) {
@@ -283,52 +295,6 @@ function processDetectedBarcode(result) {
     });
 }
 
-function addSuggestedPriceRow(suggestedPrice) {
-    const mappingTable = document.querySelector('.mapping-table');
-
-    const row = document.createElement('div');
-    row.classList.add('mapping-row');
-
-    const leftCell = document.createElement('div');
-    leftCell.classList.add('mapping-cell');
-    const select = document.createElement('select');
-    select.classList.add('form-control');
-
-    // Populate the select options
-    aiOptions.forEach(option => {
-        const opt = document.createElement('option');
-        opt.value = option.value;
-        opt.innerText = option.label;
-        if (option.value === 'suggested_price') {
-            opt.selected = true;
-        }
-        select.appendChild(opt);
-    });
-
-    leftCell.appendChild(select);
-
-    const arrowCell = document.createElement('div');
-    arrowCell.classList.add('arrow');
-    arrowCell.innerHTML = '<i class="fa-solid fa-arrow-right"></i>';
-
-    const rightCell = document.createElement('div');
-    rightCell.classList.add('mapping-cell');
-    rightCell.textContent = suggestedPrice;
-
-    row.appendChild(leftCell);
-    row.appendChild(arrowCell);
-    row.appendChild(rightCell);
-
-    // Insert the new row before the quantity row if you have one
-    const quantityRow = document.querySelector('.mapping-row input[type="number"]');
-    if (quantityRow) {
-        mappingTable.insertBefore(row, quantityRow.parentElement);
-    } else {
-        mappingTable.appendChild(row);
-    }
-}
-
-
 const aiOptions = [
     {label: 'GTIN/UDI', value: '01'},
     {label: 'Lot Number', value: '10'},
@@ -344,7 +310,7 @@ const aiOptions = [
 function displayDetectedBarcode(code, parsedResult) {
     const barcodeResults = document.getElementById('results-container');
     const existingSelections = new Set();
-    console.log(parsedResult);
+
     // Collect existing selections to avoid duplicates
     const existingRows = barcodeResults.querySelectorAll('.mapping-row');
     existingRows.forEach(row => {
@@ -354,6 +320,7 @@ function displayDetectedBarcode(code, parsedResult) {
 
     const resultDiv = document.createElement('div');
     resultDiv.classList.add('mapping-table');
+    resultDiv.id = 'mapping-table';
 
     // Create a mapping from lowercased labels to options for easier matching
     const aiOptionsMap = {};
@@ -369,38 +336,11 @@ function displayDetectedBarcode(code, parsedResult) {
         const matchingOption = aiOptionsMap[normalizedKey];
 
         if (matchingOption && !existingSelections.has(matchingOption.value)) {
-            const row = document.createElement('div');
-            row.classList.add('mapping-row');
+            const displayValue = (normalizedKey === 'production date' || normalizedKey === 'expiration date') ? convertDate(value) : value;
 
-            const leftCell = document.createElement('div');
-            leftCell.classList.add('mapping-cell');
-            const select = document.createElement('select');
-            select.classList.add('form-control');
+            const row = createMappingRow(matchingOption.value, displayValue);
 
-            aiOptions.forEach(option => {
-                const opt = document.createElement('option');
-                opt.value = option.value;
-                opt.innerText = option.label;
-                if (option.value === matchingOption.value) {
-                    opt.selected = true;
-                    existingSelections.add(option.value); // Add to the set of selected values
-                }
-                select.appendChild(opt);
-            });
-
-            leftCell.appendChild(select);
-
-            const arrowCell = document.createElement('div');
-            arrowCell.classList.add('arrow');
-            arrowCell.innerHTML = `<i class="fa-solid fa-arrow-right"></i>`;
-
-            const rightCell = document.createElement('div');
-            rightCell.classList.add('mapping-cell');
-            rightCell.innerText = (normalizedKey === 'production date' || normalizedKey === 'expiration date') ? convertDate(value) : value;
-
-            row.appendChild(leftCell);
-            row.appendChild(arrowCell);
-            row.appendChild(rightCell);
+            existingSelections.add(matchingOption.value); // Add to the set of selected values
 
             resultDiv.appendChild(row);
         } else {
@@ -410,6 +350,68 @@ function displayDetectedBarcode(code, parsedResult) {
     }
 
     barcodeResults.appendChild(resultDiv);
+}
+
+function addSuggestedPriceRow(suggestedPrice) {
+    const mappingTable = document.querySelector('.mapping-table');
+
+    const row = createMappingRow('suggested_price', suggestedPrice);
+
+    // Append the row to the mapping table
+    mappingTable.appendChild(row);
+}
+
+function addReferenceNumberRow(referenceNumber) {
+    const mappingTable = document.querySelector('.mapping-table');
+
+    // Use the helper function to create the mapping row
+    const row = createMappingRow('ref', referenceNumber);
+
+    // Insert the new row before the quantity row if you have one
+    const quantityRow = mappingTable.querySelector('.mapping-row input[type="number"]');
+    if (quantityRow) {
+        mappingTable.insertBefore(row, quantityRow.parentElement);
+    } else {
+        mappingTable.appendChild(row);
+    }
+}
+
+function createMappingRow(selectedValue, displayValue) {
+    const row = document.createElement('div');
+    row.classList.add('mapping-row');
+
+    const leftCell = document.createElement('div');
+    leftCell.classList.add('mapping-cell');
+
+    const select = document.createElement('select');
+    select.classList.add('form-control');
+
+    // Populate the select options
+    aiOptions.forEach(option => {
+        const opt = document.createElement('option');
+        opt.value = option.value;
+        opt.innerText = option.label;
+        if (option.value === selectedValue) {
+            opt.selected = true;
+        }
+        select.appendChild(opt);
+    });
+
+    leftCell.appendChild(select);
+
+    const arrowCell = document.createElement('div');
+    arrowCell.classList.add('arrow');
+    arrowCell.innerHTML = '<i class="fa-solid fa-arrow-right"></i>';
+
+    const rightCell = document.createElement('div');
+    rightCell.classList.add('mapping-cell');
+    rightCell.textContent = displayValue;
+
+    row.appendChild(leftCell);
+    row.appendChild(arrowCell);
+    row.appendChild(rightCell);
+
+    return row;
 }
 
 function parseGS1Barcode(code) {
@@ -508,7 +510,6 @@ function fetchDeviceData(code) {
         });
 }
 
-
 function fetchSuggestedPrice(referenceNumber) {
     return fetch(`/api/suggest_price/${encodeURIComponent(referenceNumber)}/`)
         .then(response => {
@@ -528,7 +529,6 @@ function fetchSuggestedPrice(referenceNumber) {
             return formattedSuggestedPrice;
         });
 }
-
 
 initScanner().catch(err => {
     console.error('Failed to initialize scanner:', err);
@@ -609,41 +609,92 @@ document.getElementById('scanNextBtn').addEventListener('click', function () {
     }
 });
 
-function addReferenceNumberRow(referenceNumber) {
-    const mappingTable = document.querySelector('.mapping-table');
 
-    const row = document.createElement('div');
-    row.classList.add('mapping-row');
 
-    const leftCell = document.createElement('div');
-    leftCell.classList.add('mapping-cell');
-    const select = document.createElement('select');
-    select.classList.add('form-control');
-
-    // Populate the select options
-    aiOptions.forEach(option => {
-        const opt = document.createElement('option');
-        opt.value = option.value;
-        opt.innerText = option.label;
-        if (option.value === 'ref') {
-            opt.selected = true;
-        }
-        select.appendChild(opt);
+function proceedToScanNext() {
+    // Initialize currentData with all required fields set to null
+    const currentData = {};
+    requiredFields.forEach(field => {
+        currentData[field] = null; // or use '' for empty string
     });
 
-    leftCell.appendChild(select);
+    // Get product name
+    const productNameElement = document.getElementById('product-name');
+    const productName = productNameElement.value || productNameElement.innerText || 'Unknown Product';
+    currentData['Product Name'] = productName;
 
-    const arrowCell = document.createElement('div');
-    arrowCell.classList.add('arrow');
-    arrowCell.innerHTML = '<i class="fa-solid fa-arrow-right"></i>';
+    // Get mapping rows within the results-container
+    const mappingRows = document.querySelectorAll('#results-container .mapping-row');
 
-    const rightCell = document.createElement('div');
-    rightCell.classList.add('mapping-cell');
-    rightCell.textContent = referenceNumber;
+    mappingRows.forEach(row => {
+        const select = row.querySelector('select');
+        const valueCell = row.querySelector('.mapping-cell:last-child');
 
-    row.appendChild(leftCell);
-    row.appendChild(arrowCell);
-    row.appendChild(rightCell);
+        if (select && valueCell) {
+            const key = select.options[select.selectedIndex].text; // Get the label from the selected option
+            const value = valueCell.tagName === 'INPUT' ? valueCell.value : valueCell.textContent.trim();
+            currentData[key] = value;
+        }
+    });
 
-    mappingTable.appendChild(row);
+    // Get quantity
+    const quantityInput = document.querySelector('.mapping-row input[type="number"]');
+    const quantity = quantityInput ? quantityInput.value : '1';
+    currentData['Quantity'] = quantity;
+
+    // Store the data
+    scannedItems.push(currentData);
+
+    console.log('Current Scanned Items:', scannedItems);
+    // Clear the fields for the next scan
+    clearFields();
 }
+
+
+function clearFields() {
+    // Clear product name
+    const productNameElement = document.getElementById('product-name');
+    if (productNameElement.tagName === 'INPUT') {
+        productNameElement.value = '';
+    } else {
+        productNameElement.innerText = '';
+    }
+
+    // Remove all mapping rows from the results-container
+    const resultsContainer = document.getElementById('results-container');
+    resultsContainer.innerHTML = '';
+
+    // Clear quantity input
+    const quantityInput = document.querySelector('.mapping-row input[type="number"]');
+    if (quantityInput) {
+        quantityInput.value = '1';
+    }
+}
+
+document.getElementById('exportBtn').addEventListener('click', function () {
+    if (scannedItems.length === 0) {
+        alert('No scanned items to export.');
+        return;
+    }
+
+    // Prepare data for SheetJS
+    const worksheetData = scannedItems.map((item, index) => {
+        const rowData = {
+            'No.': index + 1
+        };
+
+        requiredFields.forEach(field => {
+            rowData[field] = item[field] !== undefined && item[field] !== null ? item[field] : ''; // Use empty string if value is null
+        });
+
+        return rowData;
+    });
+
+    // Create and export the Excel file
+    const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Scanned Items');
+    XLSX.writeFile(workbook, 'Scanned_Items.xlsx');
+});
+
+

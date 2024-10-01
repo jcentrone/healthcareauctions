@@ -1925,10 +1925,13 @@ def send_message(request, auction_id):
         form = MessageForm(request.POST)
         if form.is_valid():
             auction = Auction.objects.get(id=auction_id)
-            auction_creator = auction.creator
+            # Use auction creator to send to the creator
+            # auction_creator = auction.creator
+            # Use customer service user to send to customer service
+            customer_service_user = User.objects.get(username='CustomerService')  # Replace with actual username or ID
             message = form.save(commit=False)
             message.sender = request.user
-            message.recipient = auction_creator
+            message.recipient = customer_service_user
             message.listing_id = auction_id
             message.message_type = 'question'
             message.save()
