@@ -257,10 +257,19 @@ function populateForm(data, overwrite = false) {
         document.getElementById('id_product_name').value = device.brandName || '';
         document.getElementById('id_manufacturer').value = toProperCase(device.companyName) || '';
 
+
         if (udi) {
             const lotNumberField = document.getElementById('id_product_details-0-lot_number');
             const expirationDateField = document.getElementById('id_product_details-0-expiration_date');
             const productionDateField = document.getElementById('id_product_details-0-production_date');
+            const refNumbField = document.getElementById('id_product_details-0-reference_number');
+
+
+            refNumbField.value = device.catalogNumber || device.versionModelNumber;
+            if (refNumbField.value){
+                    getSuggestedPrice(refNumbField.value.toUpperCase());
+            }
+
 
             // Check if the field is empty before assigning a new value
             if (!lotNumberField.value) {
@@ -1062,7 +1071,11 @@ document.getElementById('id_product_details-0-reference_number').addEventListene
 });
 
 document.getElementById('id_product_details-0-reference_number').addEventListener('blur', function () {
-    const referenceNumber = this.value.toUpperCase();
+    getSuggestedPrice(this.value.toUpperCase());
+});
+
+function getSuggestedPrice(referenceNumber){
+    // const referenceNumber = this.value.toUpperCase();
     let titleInput = document.getElementById('id_title'); // Get the input field
     titleInput.value = referenceNumber;
 
@@ -1078,16 +1091,24 @@ document.getElementById('id_product_details-0-reference_number').addEventListene
             })
             .then(data => {
                 // Format the suggested price with comma separators
-                const formattedSuggestedPrice = data.suggested_price.toLocaleString(undefined, {
+                const formattedWholesaleSuggestedPrice = data.suggested_price.toLocaleString(undefined, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
                 });
-                console.log('Suggested Price:', formattedSuggestedPrice);
+
+                // const retailPrice = data.suggested_price * 1.35;
+                const retailPrice = Math.round(((data.suggested_price * 1.35) + Number.EPSILON) * 100) / 100;
+                const formattedRetailSuggestedPrice = retailPrice.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+
 
                 // Use SweetAlert2 to ask the user if they want to apply the suggested price
                 Swal.fire({
-                    title: 'Suggested Price Found',
-                    text: `We found a suggested price of $${formattedSuggestedPrice}. Would you like to apply?`,
+                    title: 'SurePrice Found',
+                    text: `For this item we suggest Auction price of 
+                    $${formattedWholesaleSuggestedPrice} and a Get It Now of $${formattedRetailSuggestedPrice}. Would you like to apply this pricing?`,
                     icon: 'info',
                     showCancelButton: true,
                     confirmButtonText: 'Yes, apply it',
@@ -1101,26 +1122,15 @@ document.getElementById('id_product_details-0-reference_number').addEventListene
                     if (result.isConfirmed) {
                         // Update the UI with the suggested price
                         document.getElementById('id_starting_bid').value = data.suggested_price;
-                        document.getElementById('id_buyItNowPrice').value = data.suggested_price;
+                        document.getElementById('id_buyItNowPrice').value = retailPrice;
                     }
                 });
             })
             .catch(error => {
-                // console.error('Error getting suggested price:', error);
-                // // Optionally, display an error message to the user
-                // Swal.fire({
-                //     icon: 'error',
-                //     title: 'Error',
-                //     text: 'Unable to retrieve suggested price. Please try again later.',
-                //     confirmButtonText: 'OK',
-                //     buttonsStyling: false,
-                //     customClass: {
-                //         confirmButton: 'btn btn-primary'
-                //     }
-                // });
+                console.error('Error getting suggested price:', error);
             });
     }
-});
+}
 
 
 

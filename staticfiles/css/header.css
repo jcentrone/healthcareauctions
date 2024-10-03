@@ -3,14 +3,14 @@ body {
 }
 
 .beta-notice {
-    background-color: #ffeb3b; /* Light yellow background for attention */
+    background-color: #C70039; /* Light yellow background for attention */
     color: #333; /* Dark text for readability */
     text-align: center; /* Center the text */
     padding: 10px 20px; /* Add some padding for spacing */
     font-weight: bold; /* Make the text bold */
     font-size: 1.2rem; /* Slightly larger text */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
-    border-bottom: 2px solid #ffc107; /* Add a border at the bottom */
+    border-bottom: 2px solid #1E90FF; /* Add a border at the bottom */
 }
 
 @media (max-width: 767px) {

@@ -73,15 +73,63 @@
                     <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
                     <input type="text" class="form-control" id="product-name">
                 </div>
+                <div class="mapping-row">
+                    <div class="mapping-cell" style="padding-left:14px;">Manufacturer</div>
+                    <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                    <input type="text" class="form-control" id="manufacturer">
+                </div>
+                <div class="mapping-row">
+                    <div class="mapping-cell" style="padding-left:14px;">Ref. Number</div>
+                    <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                    <input type="text" class="form-control" id="reference-number">
+                </div>
+                <div class="mapping-row">
+                    <div class="mapping-cell" style="padding-left:14px;">UOM</div>
+                    <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                    <select name="package_type" class="form-control" id="id_package_type">
+                        <option value="" selected="">---------</option>
+                        <option value="BAG">Bag</option>
+                        <option value="BOT">Bottle</option>
+                        <option value="BOX">Box</option>
+                        <option value="CAR">Cartridge</option>
+                        <option value="CA">Case</option>
+                        <option value="CTN">Carton</option>
+                        <option value="DRM">Drum</option>
+                        <option value="EA">Each</option>
+                        <option value="JAR">Jar</option>
+                        <option value="PKG">Package</option>
+                        <option value="PKT">Packet</option>
+                        <option value="ROL">Roll</option>
+                        <option value="SAK">Sack</option>
+                        <option value="SET">Set</option>
+                        <option value="TRY">Tray</option>
+                        <option value="TUB">Tub</option>
+                        <option value="VIAL">Vial</option>
+                        <option value="OTHER">Other</option>
+
+                    </select>
+                </div>
+                <div class="mapping-row">
+                    <div class="mapping-cell" style="padding-left:14px;">Package Qty.</div>
+                    <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                    <input type="number" class="form-control" id="package-qty" step="1" min="1">
+                </div>
+                <div class="mapping-row">
+                    <div class="mapping-cell" style="padding-left:14px;">Suggested Value</div>
+                    <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                    <input type="number" class="form-control" id="suggested-price" step=".01" min=".01">
+                </div>
+
+                <div class="mapping-row">
+                    <div class="mapping-cell" style="padding-left:14px;">Quantity</div>
+                    <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                    <input type="number" class="form-control" id="quantity" step="1" min="1" value="1">
+                </div>
 
                 <div id="results-container">
 
                 </div>
-                <div class="mapping-row">
-                    <div class="mapping-cell" style="padding-left:14px;">Quantity</div>
-                    <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
-                    <input type="number" class="form-control" step="1" min="1" value="1">
-                </div>
+
 
             </div>
 

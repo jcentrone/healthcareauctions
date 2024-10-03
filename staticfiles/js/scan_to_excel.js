@@ -10,17 +10,6 @@ let minZoom = 1; // Default values
 let maxZoom = 5; // Default values
 let scannedItems = [];
 
-const requiredFields = [
-    'Product Name',
-    'GTIN/UDI',
-    'Lot Number',
-    'Production Date',
-    'Expiration Date',
-    'Reference Number',
-    'Package Qty',
-    'Suggested Price',
-    'Quantity'
-];
 
 // Fullscreen Helper Functions
 function requestFullscreen(element) {
@@ -362,18 +351,7 @@ function addSuggestedPriceRow(suggestedPrice) {
 }
 
 function addReferenceNumberRow(referenceNumber) {
-    const mappingTable = document.querySelector('.mapping-table');
-
-    // Use the helper function to create the mapping row
-    const row = createMappingRow('ref', referenceNumber);
-
-    // Insert the new row before the quantity row if you have one
-    const quantityRow = mappingTable.querySelector('.mapping-row input[type="number"]');
-    if (quantityRow) {
-        mappingTable.insertBefore(row, quantityRow.parentElement);
-    } else {
-        mappingTable.appendChild(row);
-    }
+    document.getElementById('reference-number').value = referenceNumber;
 }
 
 function createMappingRow(selectedValue, displayValue) {
@@ -503,7 +481,21 @@ function fetchDeviceData(code) {
         .then(data => {
             console.log("Device data from AccessGUDID:", data);
             document.getElementById('product-name').value = data.productCodes[0].deviceName;
+            document.getElementById('reference-number').value = data.gudid.device.catalogNumber || data.gudid.device.versionModelNumber;
+            document.getElementById('manufacturer').value = toProperCase(data.gudid.device.companyName);
+            document.getElementById('package-qty').value = data.gudid.device.identifiers.identifier[0].pkgQuantity;
+            document.getElementById('id_package_type').value = data.gudid.device.identifiers.identifier[0].pkgType;
 
+            // Corrected usage of fetchSuggestedPrice
+            fetchSuggestedPrice(data.gudid.device.catalogNumber || data.gudid.device.versionModelNumber)
+                .then(formattedSuggestedPrice => {
+                    document.getElementById('suggested-price').value = formattedSuggestedPrice;
+                })
+                .catch(error => {
+                    console.error('Error fetching suggested price:', error);
+                    // Optionally, display an error message or set a default value
+                    document.getElementById('suggested-price').value = 'N/A';
+                });
         })
         .catch(error => {
             console.error('Error fetching device data:', error);
@@ -540,18 +532,20 @@ document.getElementById('scanNextBtn').addEventListener('click', function () {
     let referenceNumberPresent = false;
     let referenceNumberValue = '';
 
-    mappingRows.forEach(row => {
-        const select = row.querySelector('select');
-        if (select && select.value === 'ref') {
-            referenceNumberPresent = true;
-            const valueCell = row.querySelector('.mapping-cell:last-child');
-            if (valueCell) {
-                referenceNumberValue = valueCell.textContent.trim();
-            }
-        }
-    });
+    // mappingRows.forEach(row => {
+    //     const select = row.querySelector('select');
+    //     if (select && select.value === 'ref') {
+    //         referenceNumberPresent = true;
+    //         const valueCell = row.querySelector('.mapping-cell:last-child');
+    //         if (valueCell) {
+    //             referenceNumberValue = valueCell.textContent.trim();
+    //         }
+    //     }
+    // });
 
-    if (!referenceNumberPresent) {
+    referenceNumberValue = document.getElementById('reference-number').value;
+
+    if (!referenceNumberValue) {
         // Show SweetAlert2 modal to ask the user to add a Reference Number
         Swal.fire({
             title: 'Reference Number Missing',
@@ -609,43 +603,29 @@ document.getElementById('scanNextBtn').addEventListener('click', function () {
     }
 });
 
+const requiredFields = [
+    'Product Name',
+    'Manufacturer',
+    'Reference Number',
+    'UOM',
+    'Package Qty',
+    'Quantity',
+    'Suggested Price',
+    'GTIN/UDI',
+    'Lot Number',
+    'Production Date',
+    'Expiration Date',
 
+];
 
 function proceedToScanNext() {
-    // Initialize currentData with all required fields set to null
-    const currentData = {};
-    requiredFields.forEach(field => {
-        currentData[field] = null; // or use '' for empty string
-    });
-
-    // Get product name
-    const productNameElement = document.getElementById('product-name');
-    const productName = productNameElement.value || productNameElement.innerText || 'Unknown Product';
-    currentData['Product Name'] = productName;
-
-    // Get mapping rows within the results-container
-    const mappingRows = document.querySelectorAll('#results-container .mapping-row');
-
-    mappingRows.forEach(row => {
-        const select = row.querySelector('select');
-        const valueCell = row.querySelector('.mapping-cell:last-child');
-
-        if (select && valueCell) {
-            const key = select.options[select.selectedIndex].text; // Get the label from the selected option
-            const value = valueCell.tagName === 'INPUT' ? valueCell.value : valueCell.textContent.trim();
-            currentData[key] = value;
-        }
-    });
-
-    // Get quantity
-    const quantityInput = document.querySelector('.mapping-row input[type="number"]');
-    const quantity = quantityInput ? quantityInput.value : '1';
-    currentData['Quantity'] = quantity;
+    const currentData = getCurrentData();
 
     // Store the data
     scannedItems.push(currentData);
 
     console.log('Current Scanned Items:', scannedItems);
+
     // Clear the fields for the next scan
     clearFields();
 }
@@ -653,32 +633,43 @@ function proceedToScanNext() {
 
 function clearFields() {
     // Clear product name
-    const productNameElement = document.getElementById('product-name');
-    if (productNameElement.tagName === 'INPUT') {
-        productNameElement.value = '';
-    } else {
-        productNameElement.innerText = '';
-    }
+    document.getElementById('product-name').value = '';
+    document.getElementById('manufacturer').value = '';
+    document.getElementById('reference-number').value = '';
+    document.getElementById('id_package_type').value = '---------';
+    document.getElementById('quantity').value = '';
+    document.getElementById('package-qty').value = '';
+    document.getElementById('suggested-price').value = '';
 
     // Remove all mapping rows from the results-container
     const resultsContainer = document.getElementById('results-container');
     resultsContainer.innerHTML = '';
-
-    // Clear quantity input
-    const quantityInput = document.querySelector('.mapping-row input[type="number"]');
-    if (quantityInput) {
-        quantityInput.value = '1';
-    }
 }
 
 document.getElementById('exportBtn').addEventListener('click', function () {
-    if (scannedItems.length === 0) {
+    // Collect current data from the form
+    const currentData = getCurrentData();
+
+    // Check if the form is filled (i.e., at least one required field is not empty)
+    const isFormFilled = requiredFields.some(field => {
+        return currentData[field] && currentData[field].trim() !== '';
+    });
+
+    // Create a copy of scannedItems to include in the export
+    const itemsToExport = scannedItems.slice(); // Use slice to create a shallow copy
+
+    if (isFormFilled) {
+        // Include the current data in the export
+        itemsToExport.push(currentData);
+    }
+
+    if (itemsToExport.length === 0) {
         alert('No scanned items to export.');
         return;
     }
 
     // Prepare data for SheetJS
-    const worksheetData = scannedItems.map((item, index) => {
+    const worksheetData = itemsToExport.map((item, index) => {
         const rowData = {
             'No.': index + 1
         };
@@ -695,6 +686,65 @@ document.getElementById('exportBtn').addEventListener('click', function () {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Scanned Items');
     XLSX.writeFile(workbook, 'Scanned_Items.xlsx');
+
+    clearFields();
 });
+
+
+
+function toProperCase(str) {
+    return str.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
+}
+
+
+function getCurrentData() {
+    const currentData = {};
+    requiredFields.forEach(field => {
+        currentData[field] = null; // Initialize all required fields
+    });
+
+    // Get product name
+    const productNameElement = document.getElementById('product-name');
+    currentData['Product Name'] = productNameElement.value || productNameElement.innerText || '';
+
+    // Get manufacturer
+    const mfgNameElement = document.getElementById('manufacturer');
+    currentData['Manufacturer'] = mfgNameElement.value || mfgNameElement.innerText || '';
+
+    // Get reference number
+    const refNumbElement = document.getElementById('reference-number');
+    currentData['Reference Number'] = refNumbElement.value || refNumbElement.innerText || '';
+
+    // Get UOM
+    const uomElement = document.getElementById('id_package_type');
+    currentData['UOM'] = uomElement.value || uomElement.innerText || '';
+
+    // Get package quantity
+    const pkgQuantityInput = document.getElementById('package-qty');
+    currentData['Package Qty'] = pkgQuantityInput ? pkgQuantityInput.value : '1';
+
+    // Get quantity
+    const quantityInput = document.getElementById('quantity');
+    currentData['Quantity'] = quantityInput ? quantityInput.value : '1';
+
+    // Get suggested price
+    const suggestedPriceElement = document.getElementById('suggested-price');
+    currentData['Suggested Price'] = suggestedPriceElement.value || suggestedPriceElement.innerText || '';
+
+    // Get mapping rows within the results-container
+    const mappingRows = document.querySelectorAll('#results-container .mapping-row');
+
+    mappingRows.forEach(row => {
+        const select = row.querySelector('select');
+        const valueCell = row.querySelector('.mapping-cell:last-child');
+
+        if (select && valueCell) {
+            const key = select.options[select.selectedIndex].text; // Get the label from the selected option
+            currentData[key] = valueCell.tagName === 'INPUT' ? valueCell.value : valueCell.textContent.trim();
+        }
+    });
+
+    return currentData;
+}
 
 
