@@ -2,6 +2,19 @@
 <!DOCTYPE html>
 <html lang='en'>
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YN7WFZZ3DG"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+
+        gtag('js', new Date());
+
+        gtag('config', 'G-YN7WFZZ3DG');
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Healthcare Auctions</title>
@@ -22,22 +35,14 @@
             src="https://code.jquery.com/jquery-3.7.1.js"
             integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
             crossorigin="anonymous"></script>
-    
+
     <!-- Bootstrap Datepicker JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
 
     {% block links %}
     {% endblock %}
 </head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-YN7WFZZ3DG"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
 
-  gtag('config', 'G-YN7WFZZ3DG');
-</script>
 
 <body id='page-top'>
 
@@ -75,7 +80,8 @@
                     <span><i class="fa-solid fa-diamond" style="font-size: 10px;"></i></span>
                     <span><a class="text-decoration-none text-dark" id="privacy-link" href="{% url 'privacy_policy' %}">Privacy Policy</a></span>
                     <span><i class="fa-solid fa-diamond" style="font-size: 10px;"></i></span>
-                    <span><a class="text-decoration-none text-dark" id="terms-link" href="{% url 'terms_and_conditions' %}">Terms & Conditions</a></span>
+                    <span><a class="text-decoration-none text-dark" id="terms-link"
+                             href="{% url 'terms_and_conditions' %}">Terms & Conditions</a></span>
                 </div>
             </div>
         </footer>
@@ -92,8 +98,8 @@
     <i class='fas fa-angle-up'></i>
 </a>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
-            crossorigin="anonymous"></script>
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
 {% block script %}
 
 
