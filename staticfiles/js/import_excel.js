@@ -9,6 +9,7 @@ function handleFileSelect(event) {
             const sheet = workbook.Sheets[sheetName];
             const json = XLSX.utils.sheet_to_json(sheet, {header: 1, raw: true});
 
+
             generatePreviewTable(json);
             generateMappingTable(json);
 
@@ -60,7 +61,7 @@ function closeImportModal(validateImg = true) {
         //     return; // Do not close the modal if validation fails
         // }
 
-        const importModal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
+        // const importModal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
         importModal.hide();
 
         const step3 = document.getElementById('step3');
@@ -74,7 +75,7 @@ function closeImportModal(validateImg = true) {
         step3.querySelector('p').innerText = 'Each listings has at least 1 Image.';
         step3.querySelector('button').innerText = 'Edit Images';
     } else {
-        const importModal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
+        // const importModal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
         importModal.hide();
 
         // Indicate that Step 2 is complete
@@ -152,12 +153,13 @@ document.getElementById('addImgBtn').addEventListener('click', function (event) 
     document.getElementById('mappingModal').style.display = 'none';
     document.getElementById('import-button').disabled = false;
     document.getElementById('importModalLabel').innerText = 'Step 3: Add Images';
-    let importModal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
+    // let importModal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
     importModal.show();
 
 })
 
 function generatePreviewTable(data) {
+    console.log(data);
     const previewTableHead = document.getElementById('previewTableHead');
     const previewTableBody = document.getElementById('previewTableBody');
     previewTableHead.innerHTML = '';
@@ -189,7 +191,7 @@ function generatePreviewTable(data) {
     previewTableHead.appendChild(headerRow);
 
     // Create table body
-    data.slice(1, 6).forEach((row, rowIndex) => {
+    data.slice(1, 200).forEach((row, rowIndex) => {
         const tr = document.createElement('tr');
 
         // Initialize a variable to keep track of the first td

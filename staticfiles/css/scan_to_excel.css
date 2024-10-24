@@ -36,3 +36,18 @@ input {
     border: none;
     border-bottom: 1px solid #ccc;
 }
+
+header{
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+#lower-header-container{
+    display: none;
+}
+.logo-container{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}

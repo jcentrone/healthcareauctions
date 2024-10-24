@@ -402,6 +402,7 @@ function parseGS1Barcode(code) {
         '10': 'Lot Number',
         '11': 'Production Date',
         '17': 'Expiration Date',
+        '20': 'Product Variant',
         '21': 'Serial Number',
         '240': 'Additional Product Identification', // Reference Number
         '310': 'Net Weight (kg)',

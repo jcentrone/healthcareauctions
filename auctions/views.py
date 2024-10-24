@@ -90,6 +90,17 @@ def index(request):
     auctions_cat1 = Auction.objects.filter(category=random_category1, active=True)[:8]
     auctions_cat2 = Auction.objects.filter(category=random_category2, active=True)[:8]
 
+    # 20 Random Active Auctions
+    active_listing_ids = Auction.objects.filter(active=True).values_list('id', flat=True)
+
+    # Randomly sample 20 IDs
+    random_ids = random.sample(list(active_listing_ids), min(len(active_listing_ids), 20))
+
+    # Retrieve the listings with those IDs
+    random_listings = Auction.objects.filter(id__in=random_ids)
+
+
+
     recent_views = Auction.objects.none()
 
     def add_images_to_auctions(auctions):
@@ -122,6 +133,14 @@ def index(request):
             )
         )
 
+        random_listings = random_listings.annotate(
+            is_watched=Case(
+                When(id__in=watchlist_ids, then=True),
+                default=False,
+                output_field=BooleanField()
+            )
+        )
+
         recent_views = recent_views.annotate(
             is_watched=Case(
                 When(auction__id__in=watchlist_ids, then=True),
@@ -132,9 +151,11 @@ def index(request):
 
         auctions_cat1 = add_images_to_auctions(auctions_cat1)
         auctions_cat2 = add_images_to_auctions(auctions_cat2)
+        random_listings = add_images_to_auctions(random_listings)
     else:
         auctions_cat1 = add_images_to_auctions(auctions_cat1)
         auctions_cat2 = add_images_to_auctions(auctions_cat2)
+        random_listings = add_images_to_auctions(random_listings)
         categories_with_auctions = categories_with_auctions
         print(categories_with_auctions)
 
@@ -147,6 +168,7 @@ def index(request):
         'title': 'Home',
         'watchlist': watchlist,
         'recent_views': recent_views,
+        'random_listings': random_listings,
     })
 
 
@@ -717,7 +739,8 @@ def import_excel(request):
 
                     # Convert auction_duration from string to integer
                     try:
-                        auction_duration = int(auction_info['auction_duration'])
+                        auction_duration = int(auction_info['auction_duration']) if auction_info[
+                            'auction_duration'] else 7
                         logger.debug(f"Auction duration for auction {index + 1}: {auction_duration} days")
                     except ValueError:
                         return JsonResponse({
@@ -832,6 +855,7 @@ def import_excel(request):
                     # Check if there is an image with the matching reference number
                     if auction_reference_number:
                         try:
+                            print(auction_reference_number)
                             # Look for a product image with the matching reference number
                             product_image = ProductImage.objects.get(reference_number__iexact=auction_reference_number)
                             # Create an image associated with the auction

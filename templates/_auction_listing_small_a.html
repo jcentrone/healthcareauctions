@@ -4,10 +4,10 @@
     <a class="auction-item" href="{% url 'active_auctions_with_id' view.id %}">
         <div class="image-container h-25">
             {% if view.get_images.first %}
-                <img src="{{ view.get_images.first.image.url }}"
+                <img class="preview-img" src="{{ view.get_images.first.image.url }}"
                      alt="{{ view.title }}">
             {% else %}
-                <img src="{% static 'images/no_image.png' %}" alt="Default Image">
+                <img class="preview-img" src="{% static 'images/no_image.png' %}" alt="Default Image">
             {% endif %}
         </div>
         <div class="auction-item-details">

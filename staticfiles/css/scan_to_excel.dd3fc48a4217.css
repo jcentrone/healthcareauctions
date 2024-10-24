@@ -1,0 +1,53 @@
+/*.scanner-wrapper{*/
+/*    position: relative;*/
+/*    width: 100%;*/
+/*    height: 23vh;*/
+/*    max-width: 385px;*/
+/*    display: flex;*/
+/*    justify-content: center;*/
+/*}*/
+
+/*.mapping-table {*/
+/*    min-height: 200px;*/
+/*}*/
+
+/*.mapping-header,*/
+/*.mapping-row {*/
+/*    display: grid;*/
+/*    grid-template-columns: 1fr 25px 1fr;*/
+/*    gap: 20px;*/
+/*    margin: 16px 0;*/
+/*    align-items: center;*/
+/*    justify-content: center;*/
+/*}*/
+
+/*.arrow {*/
+/*    display: flex;*/
+/*    justify-content: center;*/
+/*}*/
+
+/*.btn-container {*/
+/*    display: grid;*/
+/*    grid-template-columns: 1fr 1fr;*/
+/*    gap: 20px;*/
+/*}*/
+
+/*input {*/
+/*    border: none;*/
+/*    border-bottom: 1px solid #ccc;*/
+/*}*/
+
+/*header{*/
+/*    margin-bottom: 0 !important;*/
+/*    padding-bottom: 0 !important;*/
+/*}*/
+
+/*#lower-header-container{*/
+/*    display: none;*/
+/*}*/
+/*.logo-container{*/
+/*    display: flex;*/
+/*    align-items: center;*/
+/*    justify-content: space-between;*/
+/*    gap: 20px;*/
+/*}*/

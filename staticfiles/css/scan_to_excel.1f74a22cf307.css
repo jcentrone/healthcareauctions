@@ -38,16 +38,9 @@ input {
 }
 
 header{
-    margin-bottom: 0 !important;
-    padding-bottom: 0 !important;
+    border-bottom: 0;
 }
 
 #lower-header-container{
     display: none;
-}
-.logo-container{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
 }

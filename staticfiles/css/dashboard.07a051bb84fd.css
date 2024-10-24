@@ -116,9 +116,6 @@ textarea.form-control {
     height: auto;
 }
 
-#dropdownMenuButton {
-    max-width: 300px;
-}
 
 /* Media query for mobile devices */
 @media (max-width: 767px) {
@@ -174,10 +171,6 @@ textarea.form-control {
         align-items: center;
     }
 
-    #dropdownMenuButton {
-        max-width: initial;
-    }
-
     /*.card-header.d-flex.justify-content-between.align-items-center{*/
     /*    flex-direction: column;*/
     /*}*/
@@ -191,8 +184,7 @@ textarea.form-control {
     .input-group.me-md-2.mb-2.mb-md-0 {
         flex-direction: row;
     }
-
-    .filter-container {
+    .filter-container{
         display: flex;
         flex-direction: column;
         justify-content: end;

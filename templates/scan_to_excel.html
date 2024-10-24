@@ -4,10 +4,19 @@
 {% block body %}
     <!-- Scan QR Code Modal -->
     <div class="container">
-        <h2>Inventory Scanner</h2>
-        <p>
-            Scan your inventory and export to excel.
-        </p>
+{#        <div class="logo-container mb-3">#}
+{##}
+{#            <a class="logo" id="logo-container" href="/">#}
+{#                <img src="/static/images/logo.68bba74638f3.png" alt="Healthcare Auctions Logo">#}
+{#            </a>#}
+{#            <div class="d-flex flex-column align-items-start">#}
+{#                <h2>Inventory Scanner</h2>#}
+{#                <div>#}
+{#                    Scan your inventory and export to excel.#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+
 
         <div id="camera-preview" class="camera-preview">
             <div class="d-flex justify-content-center" style="position: relative;">
@@ -58,7 +67,11 @@
 
             </div>
 
-            <div class="mt-3">
+
+
+
+        </div>
+        <div class="mt-3">
                 <h4>Results</h4>
                 <p>Please verify the results are correct and add your quantity.</p>
             </div>
@@ -132,9 +145,6 @@
 
 
             </div>
-
-
-        </div>
         <div class="btn-container">
             <button id="scanNextBtn" class="btn btn-lg btn-primary">Scan Next</button>
             <button id="exportBtn" class="btn btn-lg btn-secondary">Export</button>
@@ -149,5 +159,21 @@
 
     <script src="{% static 'js/scan_to_excel.js' %}"></script>
     <link href='{% static "css/scan_to_excel.css" %}' rel='stylesheet'>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('The DOM has been fully loaded and parsed.');
+            let header = document.querySelector('header');
+
+            // Make sure the header element is found before proceeding
+            if (header) {
+                header.style.setProperty('border-bottom', '0', 'important');
+                header.style.setProperty('padding-bottom', '0', 'important');
+                header.style.setProperty('margin-bottom', '0', 'important');
+            } else {
+                console.log('No header element found.');
+            }
+        });
+
+    </script>
 
 {% endblock %}
