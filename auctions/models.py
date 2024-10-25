@@ -255,6 +255,7 @@ class Auction(models.Model):
     auction_end_reason = models.TextField(choices=AUCTION_CLOSED_REASONS, null=True, blank=True)
     date_created = models.DateTimeField(auto_now_add=True)
     auction_ending_date = models.DateTimeField(blank=True, null=True)
+    featured_listing = models.BooleanField(default=False)
 
     def __str__(self):
         return f'Auction #{self.id}: {self.title} ({self.creator})'

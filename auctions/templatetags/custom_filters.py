@@ -14,6 +14,11 @@ def capitalize_all(value):
 
 
 @register.filter
+def sort_list(value):
+    return sorted(value)
+
+
+@register.filter
 def get_item(dictionary, key):
     if isinstance(dictionary, dict):
         return dictionary.get(key)

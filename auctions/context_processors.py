@@ -16,7 +16,6 @@ def header_data(request):
     context['categories'] = categories_with_auctions
     context['manufacturers_with_auctions'] = manufacturers_with_auctions
 
-
     specialties_with_auctions = MedicalSpecialty.objects.annotate(
         count_active_auctions=Count(
             'categories__auction_category',

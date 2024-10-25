@@ -248,7 +248,7 @@
             {#                </ul>#}
             {#            </div>#}
             <form id="filter-form" method="get" class="" action="{% url 'active_auctions_view' %}">
-                <div class="input-group">
+                <div class="input-group flex-nowrap">
                     <!-- Search Icon -->
                     <label class="input-group-text border-right-0 position-relative">
                         <i class="fas fa-search"></i>
@@ -260,8 +260,8 @@
                     <select class="selectpicker custom-select" name="mfg_filter" data-width="fit" data-size="6"
                             data-live-search="true" data-dropdown-align-right="true">
                         <option selected value="">All Manufacturers</option>
-                        {% for manufacturer in manufacturers_with_auctions %}
-                            <option style="right:0" value="{{ manufacturer }}">{{ manufacturer }}</option>
+                        {% for manufacturer in manufacturers_with_auctions|sort_list %}
+                            <option style="right:0" value="{{ manufacturer }}">{{ manufacturer|titlecase }}</option>
                         {% endfor %}
                     </select>
 

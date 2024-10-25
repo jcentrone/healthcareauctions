@@ -99,7 +99,11 @@ def index(request):
     # Retrieve the listings with those IDs
     random_listings = Auction.objects.filter(id__in=random_ids)
 
+    # Get featured listings from active listings
+    featured_active_listing_ids = Auction.objects.filter(active=True, featured_listing=True).values_list('id', flat=True)
 
+    featured_listing_ids = random.sample(list(featured_active_listing_ids), min(len(featured_active_listing_ids), 4))
+    featured_listings = Auction.objects.filter(id__in=featured_listing_ids)
 
     recent_views = Auction.objects.none()
 
@@ -152,10 +156,12 @@ def index(request):
         auctions_cat1 = add_images_to_auctions(auctions_cat1)
         auctions_cat2 = add_images_to_auctions(auctions_cat2)
         random_listings = add_images_to_auctions(random_listings)
+        featured_listings = add_images_to_auctions(featured_listings)
     else:
         auctions_cat1 = add_images_to_auctions(auctions_cat1)
         auctions_cat2 = add_images_to_auctions(auctions_cat2)
         random_listings = add_images_to_auctions(random_listings)
+        featured_listings = add_images_to_auctions(featured_listings)
         categories_with_auctions = categories_with_auctions
         print(categories_with_auctions)
 
@@ -169,6 +175,7 @@ def index(request):
         'watchlist': watchlist,
         'recent_views': recent_views,
         'random_listings': random_listings,
+        'featured_listings': featured_listings,
     })
 
 

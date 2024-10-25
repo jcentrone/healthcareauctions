@@ -504,6 +504,7 @@ a.btn.btn-outline-light.btn-lg.mt-3 {
 .call-to-action p {
     font-size: 20px;
     margin-bottom: 20px;
+    color: #FFFFFF;
 }
 
 .call-to-action .button {
@@ -756,7 +757,7 @@ footer .social-media a:hover {
         height: 365px;
     }
 
-    #documentation-header{
+    #documentation-header {
         flex-direction: column;
         align-items: flex-start !important;
     }
@@ -910,7 +911,171 @@ footer .social-media a:hover {
 }
 
 
-.preview-img{
+.preview-img {
     object-fit: contain !important;
 }
 
+.featured-auctions {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 30px 30px 0 30px;
+}
+
+.featured-item {
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    height: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.main-featured {
+    height: 470px;
+}
+
+.sub-featured, .sub-featured-horizontal {
+    height: 215px;
+}
+
+.sub-featured-horizontal {
+    height: 240px;
+}
+
+.sub-featured-content {
+    height: 240px;
+}
+
+.sub-featured-price-info {
+    display: grid;
+}
+
+.featured-item:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.2);
+}
+
+.featured-link {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: .75fr 1fr;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: white;
+    /*background: rgba(0, 0, 0, 0.4);*/
+    opacity: 1;
+
+}
+
+.featured-link .image-container img {
+    position: relative;
+}
+
+.featured-link .content {
+    text-align: left;
+}
+
+.featured-link h3, .featured-link h4, .featured-link h5 {
+    margin: 0;
+    padding: 10px 10px 10px 0;
+    font-weight: bold;
+    border-bottom: 2px dashed #5d6d7e;
+}
+
+.featured-link p {
+    margin-top: 10px;
+    padding-bottom: 10px;
+    border-bottom: 2px dashed #5d6d7e;
+
+}
+
+.main-price {
+    font-size: 2em;
+    color: black;
+}
+
+.prerandom_listings0-img {
+    object-fit: cover;
+    width: 101%;
+    height: 101%;
+}
+
+.prerandom_listings-img-small {
+    width: 113px !important;
+}
+
+.prerandom_listings-img3 {
+    height: 240px !important;
+
+}
+
+.sub-featured .featured-link {
+    grid-template-columns: 113px 1fr;
+    width: auto;
+}
+
+.sub-featured p.category {
+    font-size: small;
+}
+
+.sub-featured-price-info {
+    display: grid;
+}
+
+/* Custom Colors for the Featured Auctions */
+.main-content {
+    background-color: #75a4eb;
+}
+
+.sub-featured-content {
+    background-color: #20b764;
+}
+
+.sub-featured-horizontal {
+    background-color: #17a2b8;
+}
+
+.content {
+    color: black;
+}
+
+.content .time-remaining {
+    color: white;
+    font-size: 1em;
+}
+
+
+.sub-featured-content .price-info {
+    display: block;
+}
+
+.sub-featured-content .price-info .main-price {
+    font-size: 1.5em;
+}
+
+@media (max-width: 991.98px) {
+    #featured-small1, #featured-small2 {
+        padding: 0 !important;
+    }
+
+    #featured-main {
+        padding: 0 !important;
+    }
+
+    .main-featured {
+        margin: 0 !important;
+        display: none;
+    }
+
+    .sub-featured-horizontal .featured-link {
+
+        grid-template-columns: 113px 1fr;
+        width: auto;
+    }
+}
