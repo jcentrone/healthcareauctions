@@ -21,6 +21,7 @@ from django.core.mail import EmailMessage
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import IntegrityError, transaction
 from django.db.models import Q, Case, When, BooleanField, DecimalField, Max, F, OuterRef, Subquery
+from django.db.models.functions import Upper
 from django.forms import model_to_dict
 from django.http import FileResponse, HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
@@ -38,7 +39,8 @@ from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, 
     PayPalForm, CashAppForm, CustomUserChangeForm, UserAddressForm, OrderNoteForm, EditAuctionForm, \
     EditProductDetailFormSet, ShippingAccountsForm, RegistrationForm, ProductDetailForm
 from .models import Bid, Category, Image, CartItem, Cart, ProductDetail, Order, Payment, \
-    OrderItem, Parcel, ProductImage, ShippingAccounts, Address, Message, User, UserManual, MedicalSpecialty
+    OrderItem, Parcel, ProductImage, ShippingAccounts, Address, Message, User, UserManual, MedicalSpecialty, \
+    ProductCodeClassification
 from .utils.calc_fair_price import calculate_fair_price
 from .utils.calculate_tax import get_sales_tax
 from .utils.email_manager import send_welcome_email_html, order_confirmation_message
@@ -730,6 +732,36 @@ def auction_create(request):
         'title': 'Create Listing',
     })
 
+@login_required
+@csrf_exempt
+def get_classification_data(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            product_code = data.get('product_code')
+
+            if not product_code:
+                return JsonResponse({'error': 'Product code is required'}, status=400)
+
+            try:
+                classification = ProductCodeClassification.objects.get(product_code=product_code)
+                classification_data = {
+                    'medical_specialty_code': classification.medical_specialty,
+                    'medical_specialty_description': classification.review_panel,
+                    'device_class': classification.device_class,
+                    'device_name': classification.device_name,
+                    'definition': classification.definition,
+                    # Add any other fields you need
+                }
+                return JsonResponse({'classification_data': classification_data}, status=200)
+            except ProductCodeClassification.DoesNotExist:
+                return JsonResponse({'error': 'Classification data not found for product code'}, status=404)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
 
 @login_required
 @csrf_exempt
@@ -750,6 +782,7 @@ def import_excel(request):
                             'auction_duration'] else 7
                         logger.debug(f"Auction duration for auction {index + 1}: {auction_duration} days")
                     except ValueError:
+                        transaction.set_rollback(True)
                         return JsonResponse({
                             'status': 'error',
                             'message': f"Invalid auction_duration value: {auction_info['auction_duration']}"
@@ -760,6 +793,7 @@ def import_excel(request):
                         quantity_available = int(auction_info.get('quantity_available', 1)) if auction_info.get(
                             'quantity_available') else 1
                     except ValueError:
+                        transaction.set_rollback(True)
                         return JsonResponse({
                             'status': 'error',
                             'message': f"Invalid quantity_available value: {auction_info.get('quantity_available')}"
@@ -768,6 +802,7 @@ def import_excel(request):
                     try:
                         starting_bid = float(auction_info['starting_bid']) if auction_info.get('starting_bid') else None
                     except ValueError:
+                        transaction.set_rollback(True)
                         return JsonResponse({
                             'status': 'error',
                             'message': f"Invalid starting_bid value: {auction_info.get('starting_bid')}"
@@ -776,6 +811,7 @@ def import_excel(request):
                     try:
                         reserve_bid = float(auction_info['reserve_bid']) if auction_info.get('reserve_bid') else None
                     except ValueError:
+                        transaction.set_rollback(True)
                         return JsonResponse({
                             'status': 'error',
                             'message': f"Invalid reserve_bid value: {auction_info.get('reserve_bid')}"
@@ -785,6 +821,7 @@ def import_excel(request):
                         buy_it_now_price = float(auction_info['buyItNowPrice']) if auction_info.get(
                             'buyItNowPrice') else None
                     except ValueError:
+                        transaction.set_rollback(True)
                         return JsonResponse({
                             'status': 'error',
                             'message': f"Invalid buyItNowPrice value: {auction_info.get('buyItNowPrice')}"
@@ -823,8 +860,8 @@ def import_excel(request):
                     # Save the auction to trigger the save method (sets auction_ending_date)
                     auction.save()
 
-                    # Clean the reference number by removing leading zeros
-                    auction_reference_number = auction_info.get('reference_number', '').lstrip('0')
+                    # Clean the reference number by removing leading zeros and whitespace, and converting to uppercase
+                    auction_reference_number = auction_info.get('reference_number', '').strip().lstrip('0').upper()
 
                     # Parse production_date and expiration_date
                     def parse_date(date_str, field_name):
@@ -832,6 +869,7 @@ def import_excel(request):
                             try:
                                 return datetime.strptime(date_str, '%Y-%m-%d').date()
                             except ValueError:
+                                transaction.set_rollback(True)
                                 raise ValueError(f"Invalid {field_name} format: {date_str}. Expected YYYY-MM-DD.")
                         return None
 
@@ -844,6 +882,7 @@ def import_excel(request):
                         expiration_date = parse_date(expiration_date_str,
                                                      'expiration_date') if expiration_date_str else None
                     except ValueError as ve:
+                        transaction.set_rollback(True)
                         return JsonResponse({
                             'status': 'error',
                             'message': str(ve)
@@ -861,15 +900,26 @@ def import_excel(request):
 
                     # Check if there is an image with the matching reference number
                     if auction_reference_number:
-                        try:
-                            print(auction_reference_number)
-                            # Look for a product image with the matching reference number
-                            product_image = ProductImage.objects.get(reference_number__iexact=auction_reference_number)
-                            # Create an image associated with the auction
+                        product_image = ProductImage.objects.annotate(
+                            normalized_ref=Upper('reference_number')
+                        ).filter(normalized_ref=auction_reference_number).first()
+                        if product_image:
                             Image.objects.create(auction=auction, image=product_image.image)
-                        except ProductImage.DoesNotExist:
-                            # No matching product image found, do nothing
-                            pass
+                        else:
+                            # Assign default image
+                            default_image = get_default_image()  # Define this function to return the default image
+                            if default_image:
+                                Image.objects.create(auction=auction, image=default_image)
+                    # if auction_reference_number:
+                    #     try:
+                    #         print(auction_reference_number)
+                    #         # Look for a product image with the matching reference number
+                    #         product_image = ProductImage.objects.get(reference_number__iexact=auction_reference_number)
+                    #         # Create an image associated with the auction
+                    #         Image.objects.create(auction=auction, image=product_image.image)
+                    #     except ProductImage.DoesNotExist:
+                    #         # No matching product image found, do nothing
+                    #         pass
 
                     # Handle the uploaded images
                     for key in request.FILES:

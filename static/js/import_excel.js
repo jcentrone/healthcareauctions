@@ -9,9 +9,9 @@ function handleFileSelect(event) {
             const sheet = workbook.Sheets[sheetName];
             const json = XLSX.utils.sheet_to_json(sheet, {header: 1, raw: true});
 
-
-            generatePreviewTable(json);
-            generateMappingTable(json);
+            processExcelFile(json);
+            // generatePreviewTable(json);
+            // generateMappingTable(json);
 
             const step1 = document.getElementById('step1');
             const step1Icon = document.getElementById('step1-icon');
@@ -34,6 +34,31 @@ function handleFileSelect(event) {
         reader.readAsArrayBuffer(file);
     }
 }
+
+function processExcelFile(json) {
+    Swal.fire({
+      title: 'Processing the Excel file',
+      html: 'Please wait...',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      didOpen: () => {
+        Swal.showLoading();
+
+        setTimeout(() => {
+          try {
+            generatePreviewTable(json);
+            generateMappingTable(json);
+          } catch (error) {
+            Swal.fire('Error', 'An error occurred while processing the Excel file.', 'error');
+            console.error(error);
+            return;
+          }
+
+          Swal.close();
+        }, 100);
+      }
+    });
+  }
 
 const importModal = new bootstrap.Modal(document.getElementById('importModal'));
 
@@ -228,43 +253,108 @@ function generatePreviewTable(data) {
                         return rowEL;
                     }
 
-                    fetchClassificationData(deviceData.gudid.device.productCodes.fdaProductCode[0].productCode)
-                        .then(classificationData => {
-                            if (classificationData) {
-                                const description = classificationData.description +  '\n\n' + gmdnTerms || 'No description available';
-                                const category = classificationData.category || 'No category';
-                                const categoryId = classificationData.category_id || 'N/A';
-                                const medicalSpecialtyCode = classificationData.medical_specialty_code || '';
-                                const deviceName = classificationData.device_name || '';
-                                const medicalSpecialtyDescription = classificationData.medical_specialty_description || '';
-                                const fetchedDataValues = [auctionTitle, description, category, categoryId, manufacturer, packageType, deviceSterile, implantable, medicalSpecialtyCode, medicalSpecialtyDescription, deviceName];
+                    if(deviceData.gudid.device.productCodes.fdaProductCode[0].productCode) {
+                        fetchClassificationData(deviceData.gudid.device.productCodes.fdaProductCode[0].productCode)
+                            .then(classificationData => {
+                                if (classificationData) {
+                                    const description = classificationData.description + '\n\n' + gmdnTerms || 'No description available';
+                                    const category = classificationData.category || 'No category';
+                                    const categoryId = classificationData.category_id || 'N/A';
+                                    const medicalSpecialtyCode = classificationData.medical_specialty_code || '';
+                                    const deviceName = classificationData.device_name || '';
+                                    const medicalSpecialtyDescription = classificationData.medical_specialty_description || '';
+                                    const fetchedDataValues = [auctionTitle, description, category, categoryId, manufacturer, packageType, deviceSterile, implantable, medicalSpecialtyCode, medicalSpecialtyDescription, deviceName];
 
-                                // Create the hidden div with the full data for the modal
-                                const modalContentDiv = document.createElement('div');
-                                modalContentDiv.classList.add('hover-modal-content');
-                                modalContentDiv.appendChild(createModalEL('Title', auctionTitle));
-                                modalContentDiv.appendChild(createModalEL('Description', description));
-                                modalContentDiv.appendChild(createModalEL('Category', category));
-                                modalContentDiv.appendChild(createModalEL('Manufacturer', manufacturer));
-                                modalContentDiv.appendChild(createModalEL('Package Type:', packageType));
-                                modalContentDiv.appendChild(createModalEL('Sterile', deviceSterile));
-                                modalContentDiv.appendChild(createModalEL('Implantable', implantable));
-                                modalContentDiv.appendChild(createModalEL('Medical Specialty Code', medicalSpecialtyCode));
-                                modalContentDiv.appendChild(createModalEL('Medical Specialty', medicalSpecialtyDescription));
-                                modalContentDiv.appendChild(createModalEL('Device Name', deviceName));
+                                    // Create the hidden div with the full data for the modal
+                                    const modalContentDiv = document.createElement('div');
+                                    modalContentDiv.classList.add('hover-modal-content');
+                                    modalContentDiv.appendChild(createModalEL('Title', auctionTitle));
+                                    modalContentDiv.appendChild(createModalEL('Description', description));
+                                    modalContentDiv.appendChild(createModalEL('Category', category));
+                                    modalContentDiv.appendChild(createModalEL('Manufacturer', manufacturer));
+                                    modalContentDiv.appendChild(createModalEL('Package Type:', packageType));
+                                    modalContentDiv.appendChild(createModalEL('Sterile', deviceSterile));
+                                    modalContentDiv.appendChild(createModalEL('Implantable', implantable));
+                                    modalContentDiv.appendChild(createModalEL('Medical Specialty Code', medicalSpecialtyCode));
+                                    modalContentDiv.appendChild(createModalEL('Medical Specialty', medicalSpecialtyDescription));
+                                    modalContentDiv.appendChild(createModalEL('Device Name', deviceName));
 
-                                // Add cells for the fetched data first
-                                fetchedDataValues.forEach((value, index) => {
+                                    // Add cells for the fetched data first
+                                    fetchedDataValues.forEach((value, index) => {
+                                        const td = document.createElement('td');
+                                        td.innerText = value;
+                                        tr.appendChild(td);
+
+                                        if (index === 0) {
+                                            // This is the first td, so store a reference to it
+                                            firstTd = td;
+                                        }
+
+
+                                    });
+
+                                    // Add cells for the user's file data
+                                    data[0].forEach((header, colIndex) => {
+                                        const td = document.createElement('td');
+                                        let cellValue = row[colIndex];
+
+                                        // Check if the cell value is a date and format it if necessary
+                                        if (typeof cellValue === 'number' && isExcelDate(cellValue)) {
+                                            cellValue = formatDate(cellValue);
+                                        }
+
+                                        td.innerText = cellValue !== undefined ? cellValue : '';  // Handle null or undefined values
+                                        tr.appendChild(td);
+                                        modalContentDiv.appendChild(createModalEL(header, cellValue));
+                                    });
+                                    // Add modal control for image upload fields
+                                    const td = document.createElement('td');
+
+                                    for (let i = 1; i <= 5; i++) {
+                                        const input = document.createElement('input');
+                                        input.type = 'file';
+                                        input.classList.add('form-control');
+                                        input.classList.add('mb-1');
+                                        input.name = `images_${rowIndex}_${i}`;
+
+                                        // Optionally, add the input element to a parent container
+                                        td.appendChild(input);
+                                        tr.appendChild(td);
+
+                                        // If we want to check in real time
+                                        // input.addEventListener('input', function () {
+                                        //     validateImages();
+                                        // })
+                                    }
+
+                                    // Add event listeners to show/hide the modal on hover
+                                    firstTd.addEventListener('mouseenter', function (e) {
+                                        modalContentDiv.style.display = 'block';
+                                        modalContentDiv.style.top = `${e.clientY + 20}px`; // Adjust vertical offset if necessary
+                                        modalContentDiv.style.left = `${e.clientX + 20}px`; // Adjust horizontal offset if necessary
+                                    });
+
+                                    firstTd.addEventListener('mousemove', function (e) {
+                                        modalContentDiv.style.top = `${e.clientY + 20}px`;
+                                        modalContentDiv.style.left = `${e.clientX + 20}px`;
+                                    });
+
+                                    firstTd.addEventListener('mouseleave', function () {
+                                        modalContentDiv.style.display = 'none';
+                                    });
+
+
+                                    previewTableBody.appendChild(tr);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error fetching classification data:', error);
+                                // Handle the error and show something in the row
+                                const errorValues = ['Error', 'Error', 'Error', 'Error', 'Error', 'Error', 'Error', 'Error'];
+                                errorValues.forEach(value => {
                                     const td = document.createElement('td');
                                     td.innerText = value;
                                     tr.appendChild(td);
-
-                                    if (index === 0) {
-                                        // This is the first td, so store a reference to it
-                                        firstTd = td;
-                                    }
-
-
                                 });
 
                                 // Add cells for the user's file data
@@ -279,8 +369,8 @@ function generatePreviewTable(data) {
 
                                     td.innerText = cellValue !== undefined ? cellValue : '';  // Handle null or undefined values
                                     tr.appendChild(td);
-                                    modalContentDiv.appendChild(createModalEL(header, cellValue));
                                 });
+
                                 // Add modal control for image upload fields
                                 const td = document.createElement('td');
 
@@ -294,72 +384,9 @@ function generatePreviewTable(data) {
                                     // Optionally, add the input element to a parent container
                                     td.appendChild(input);
                                     tr.appendChild(td);
-
-                                    // If we want to check in real time
-                                    // input.addEventListener('input', function () {
-                                    //     validateImages();
-                                    // })
                                 }
-
-                                // Add event listeners to show/hide the modal on hover
-                                firstTd.addEventListener('mouseenter', function (e) {
-                                    modalContentDiv.style.display = 'block';
-                                    modalContentDiv.style.top = `${e.clientY + 20}px`; // Adjust vertical offset if necessary
-                                    modalContentDiv.style.left = `${e.clientX + 20}px`; // Adjust horizontal offset if necessary
-                                });
-
-                                firstTd.addEventListener('mousemove', function (e) {
-                                    modalContentDiv.style.top = `${e.clientY + 20}px`;
-                                    modalContentDiv.style.left = `${e.clientX + 20}px`;
-                                });
-
-                                firstTd.addEventListener('mouseleave', function () {
-                                    modalContentDiv.style.display = 'none';
-                                });
-
-
-                                previewTableBody.appendChild(tr);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error fetching classification data:', error);
-                            // Handle the error and show something in the row
-                            const errorValues = ['Error', 'Error', 'Error', 'Error', 'Error', 'Error', 'Error', 'Error'];
-                            errorValues.forEach(value => {
-                                const td = document.createElement('td');
-                                td.innerText = value;
-                                tr.appendChild(td);
                             });
-
-                            // Add cells for the user's file data
-                            data[0].forEach((header, colIndex) => {
-                                const td = document.createElement('td');
-                                let cellValue = row[colIndex];
-
-                                // Check if the cell value is a date and format it if necessary
-                                if (typeof cellValue === 'number' && isExcelDate(cellValue)) {
-                                    cellValue = formatDate(cellValue);
-                                }
-
-                                td.innerText = cellValue !== undefined ? cellValue : '';  // Handle null or undefined values
-                                tr.appendChild(td);
-                            });
-
-                            // Add modal control for image upload fields
-                            const td = document.createElement('td');
-
-                            for (let i = 1; i <= 5; i++) {
-                                const input = document.createElement('input');
-                                input.type = 'file';
-                                input.classList.add('form-control');
-                                input.classList.add('mb-1');
-                                input.name = `images_${rowIndex}_${i}`;
-
-                                // Optionally, add the input element to a parent container
-                                td.appendChild(input);
-                                tr.appendChild(td);
-                            }
-                        });
+                    }
 
 
                 }

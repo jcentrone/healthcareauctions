@@ -169,7 +169,7 @@ class MedicalSpecialty(models.Model):
 
 
 class Category(models.Model):
-    category_name = models.CharField(max_length=50)
+    category_name = models.CharField(max_length=500)
     medical_specialty = models.ForeignKey(
         MedicalSpecialty,
         on_delete=models.CASCADE,
@@ -723,3 +723,36 @@ class ScanToExcel(models.Model):
 
     def __str__(self):
         return f"{self.reference_number}-{self.quantity}"
+
+
+class ProductCodeClassification(models.Model):
+    DEVICE_CLASS_CHOICES = [
+        ('I', 'Class I'),
+        ('II', 'Class II'),
+        ('III', 'Class III'),
+        ('Unclassified', 'Unclassified'),
+        ('Not Classified', 'Not Classified'),
+    ]
+
+    review_panel = models.CharField(max_length=100)
+    medical_specialty = models.CharField(max_length=100)
+    product_code = models.CharField(max_length=10)
+    device_name = models.CharField(max_length=200)
+    device_class = models.CharField(max_length=50, choices=DEVICE_CLASS_CHOICES)
+    unclassified_reason = models.CharField(max_length=200, null=True, blank=True)
+    gmp_exempt_flag = models.BooleanField(default=False)
+    third_party_flag = models.BooleanField(default=False)
+    review_code = models.CharField(max_length=100)
+    regulation_number = models.CharField(max_length=50)
+    submission_type_id = models.CharField(max_length=100, null=True, blank=True)
+    definition = models.TextField()
+    physical_state = models.TextField()
+    technical_method = models.TextField()
+    target_area = models.TextField()
+    implant_flag = models.BooleanField(default=False)
+    life_sustain_support_flag = models.BooleanField(default=False)
+    summary_malfunction_reporting = models.CharField(max_length=200, null=True, blank=True)
+
+    def __str__(self):
+        return self.product_code
+

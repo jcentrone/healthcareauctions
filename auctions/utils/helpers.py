@@ -36,14 +36,14 @@ def classify_and_save_device(device_data):
 
 
 def update_categories_from_fda(fda_data):
-    print(fda_data)
+
     medical_specialty_code = fda_data.get('medical_specialty_code', None)
     medical_specialty_description = fda_data.get('medical_specialty_description', None)
     device_name = fda_data.get('device_name', None)
 
-    print(medical_specialty_code)
-    print(medical_specialty_description)
-    print(device_name)
+    # print(medical_specialty_code)
+    # print(medical_specialty_description)
+    # print(device_name)
 
     if medical_specialty_code:
         medical_specialty_code = medical_specialty_code.upper()  # Ensure consistency

@@ -85,6 +85,7 @@ urlpatterns = [
          auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete.html'),
          name='password_reset_complete'),
     path('api/suggest_price/<str:ref_id>/', views.get_fair_price, name='suggest_price'),
+    path('api/get-classification-data/', views.get_classification_data, name='get_classification_data'),
 
     path('get_synergy_data/<str:reference_number>/', views.get_synergy_data, name='get_synergy_data'),
     path('robots.txt', RedirectView.as_view(url=staticfiles_storage.url('robots.txt'))),
