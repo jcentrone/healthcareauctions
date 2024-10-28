@@ -18,7 +18,6 @@ const packageTypeOptions = {
     'VIAL': 'Vial',
     'OTHER': 'Other',
 };
-
 const medicalSpecialtyOptions = {
     'AN': 'Anesthesiology',
     'CV': 'Cardiovascular',
@@ -41,7 +40,8 @@ const medicalSpecialtyOptions = {
     'SU': 'General, Plastic Surgery',
     'TX': 'Clinical Toxicology',
 };
-
+let goodRecords = [];
+let badRecords = [];
 
 document.getElementById('fileInput').addEventListener('change', handleFileSelect);
 
@@ -51,10 +51,10 @@ async function handleFileSelect(event) {
         const reader = new FileReader();
         reader.onload = async (e) => {
             const data = e.target.result;
-            const workbook = XLSX.read(data, {type: 'binary'});
+            const workbook = XLSX.read(data, { type: 'binary' });
             const sheetName = workbook.SheetNames[0];
             const sheet = workbook.Sheets[sheetName];
-            const json = XLSX.utils.sheet_to_json(sheet, {header: true, raw: true});
+            const json = XLSX.utils.sheet_to_json(sheet, { header: true, raw: true });
 
             // Convert date fields
             json.forEach(record => {
@@ -66,22 +66,65 @@ async function handleFileSelect(event) {
                 }
             });
 
-            let {goodRecords, badRecords} = await processRecords(json);
+            ({ goodRecords, badRecords } = await processRecords(json));
             // Display goodRecords and badRecords
             console.log('Good Records', goodRecords);
             console.log('Bad Records', badRecords);
-            displayBadRecords(badRecords);
+
+            // Display good records
             displayGoodRecords(goodRecords);
+
+            if (badRecords.length > 0) {
+                Swal.fire({
+                    title: 'Processing Complete',
+                    text: `Processing complete. Found ${badRecords.length} bad record(s). Would you like to fix them now?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Fix Now',
+                    cancelButtonText: 'Fix Later'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Show bad records table in a modal
+                        displayBadRecordsModal(badRecords);
+                    } else {
+                        // Offer to download bad records as CSV
+                        downloadBadRecords(badRecords);
+                    }
+                });
+            } else {
+                Swal.fire({
+                    title: 'Processing Complete',
+                    text: 'All records processed successfully.',
+                    icon: 'success'
+                });
+            }
         };
         reader.readAsBinaryString(file);
     }
 }
 
+
 async function processRecords(records) {
-    const recordPromises = records.map(async (record) => {
-        let mergedRecord = {...record}; // Start with the original user data
+    let goodRecords = [];
+    let badRecords = [];
+    const totalRecords = records.length;
+
+    Swal.fire({
+        title: 'Processing Records',
+        html: 'Processing record <b>0</b> of ' + totalRecords,
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    for (let i = 0; i < totalRecords; i++) {
+        let record = records[i];
+        let mergedRecord = { ...record }; // Start with the original user data
 
         try {
+            // Existing code to process each record
             // Fetch deviceData
             const sku = record.SKU || record['SKU'];
             const refNumb = record['Reference Number'];
@@ -112,87 +155,58 @@ async function processRecords(records) {
                 implantable,
             };
 
-            // Attempt to fetch classificationData
-            try {
-                const productCode = deviceData.gudid.device.productCodes?.fdaProductCode?.[0]?.productCode;
-                if (!productCode) {
-                    throw new Error(`Product code not found for SKU: ${sku}`);
-                }
-
-                const classificationData = await fetchClassificationData(productCode);
-                if (!classificationData) {
-                    throw new Error(`Classification data not found for product code: ${productCode}`);
-                }
-
-                // Extract classificationData fields
-                const description = `${classificationData.description}\n\n${gmdnTerms}` || 'No description available';
-                const category = classificationData.category || 'No category';
-                const categoryId = classificationData.category_id || 'N/A';
-                const medicalSpecialtyCode = classificationData.medical_specialty_code || '';
-                const deviceName = classificationData.device_name || '';
-                const medicalSpecialtyDescription = classificationData.medical_specialty_description || '';
-
-                // Merge classificationData into the record
-                mergedRecord = {
-                    ...mergedRecord,
-                    description,
-                    category,
-                    categoryId,
-                    medicalSpecialtyCode,
-                    deviceName,
-                    medicalSpecialtyDescription,
-                };
-
-                // All data fetched successfully, classify as good record
-                return {status: 'good', data: mergedRecord};
-
-            } catch (classificationError) {
-                // Classification data fetch failed
-                // Include error message and classify as bad record
-                mergedRecord = {
-                    ...mergedRecord,
-                    description: null,
-                    category: null,
-                    categoryId: null,
-                    medicalSpecialtyCode: null,
-                    deviceName: null,
-                    medicalSpecialtyDescription: null,
-                    error: classificationError.message,
-                };
-
-                return {status: 'bad', data: mergedRecord};
+            // Fetch classificationData
+            const productCode = deviceData.gudid.device.productCodes?.fdaProductCode?.[0]?.productCode;
+            if (!productCode) {
+                throw new Error(`Product code not found for SKU: ${sku}`);
             }
 
-        } catch (deviceError) {
-            // Device data fetch failed
-            // Include error message and classify as bad record
+            const classificationData = await fetchClassificationData(productCode);
+            if (!classificationData) {
+                throw new Error(`Classification data not found for product code: ${productCode}`);
+            }
+
+            // Extract classificationData fields
+            const description = `${classificationData.description}\n\n${gmdnTerms}` || 'No description available';
+            const category = classificationData.category || 'No category';
+            const categoryId = classificationData.category_id || 'N/A';
+            const medicalSpecialtyCode = classificationData.medical_specialty_code || '';
+            const deviceName = classificationData.device_name || '';
+            const medicalSpecialtyDescription = classificationData.medical_specialty_description || '';
+
+            // Merge classificationData into the record
             mergedRecord = {
                 ...mergedRecord,
-                listing_title: null,
-                manufacturer: null,
-                packageType: null,
-                deviceSterile: null,
-                implantable: null,
-                description: null,
-                category: null,
-                categoryId: null,
-                medicalSpecialtyCode: null,
-                deviceName: null,
-                medicalSpecialtyDescription: null,
-                error: deviceError.message,
+                description,
+                category,
+                categoryId,
+                medicalSpecialtyCode,
+                deviceName,
+                medicalSpecialtyDescription,
             };
 
-            return {status: 'bad', data: mergedRecord};
+            // All data fetched successfully, classify as good record
+            goodRecords.push(mergedRecord);
+
+        } catch (error) {
+            // Handle errors and classify record as bad
+            mergedRecord.error = error.message;
+            badRecords.push(mergedRecord);
         }
-    });
 
-    const results = await Promise.all(recordPromises);
+        // Update the SweetAlert modal with progress
+        Swal.update({
+            html: 'Processing record <b>' + (i + 1) + '</b> of ' + totalRecords
+        });
+    }
 
-    const goodRecords = results.filter(result => result.status === 'good').map(result => result.data);
-    const badRecords = results.filter(result => result.status === 'bad').map(result => result.data);
+    // Close the SweetAlert modal when done
+    Swal.close();
 
-    return {goodRecords, badRecords};
+    return { goodRecords, badRecords };
 }
+
+
 
 
 function parseExcelDate(value) {
@@ -288,6 +302,21 @@ function getCsrfToken() {
     return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 }
 
+function downloadBadRecords(badRecords) {
+    // Create a temporary Tabulator table (not displayed) to use its download function
+    const table = new Tabulator("#temp-table", {
+        data: badRecords,
+        columns: columns,
+    });
+
+    // Download data as CSV
+    table.download("csv", "bad_records.csv");
+
+    // Clean up the temporary table
+    table.destroy();
+}
+
+
 async function fetchDeviceData(rawCode, refNumb) {
     const code = rawCode;
     const referenceNumber = refNumb;
@@ -362,7 +391,7 @@ async function fetchDeviceDataByCode(code) {
 }
 
 async function fetchDeviceDataByCatalogNumber(referenceNumber) {
-    const openFdaUrl = `https://api.fda.gov/device/udi.json?search=catalog_number:${encodeURIComponent(referenceNumber)}&limit=1`;
+    const openFdaUrl = `https://api.fda.gov/device/udi.json?search=catalog_number.exact:${encodeURIComponent(referenceNumber)}&limit=1`;
     console.log('Fetching device data via catalog number:', openFdaUrl);
 
     const response = await fetch(openFdaUrl);
@@ -380,7 +409,7 @@ async function fetchDeviceDataByCatalogNumber(referenceNumber) {
 }
 
 async function fetchDeviceDataByVersionModelNumber(referenceNumber) {
-    const openFdaUrl = `https://api.fda.gov/device/udi.json?search=version_or_model_number:${encodeURIComponent(referenceNumber)}&limit=1`;
+    const openFdaUrl = `https://api.fda.gov/device/udi.json?search=version_or_model_number.exact:${encodeURIComponent(referenceNumber)}&limit=1`;
     console.log('Fetching device data via version or model number:', openFdaUrl);
 
     const response = await fetch(openFdaUrl);
@@ -551,7 +580,7 @@ const columns = [
     },
     {title: "Device Name", field: "deviceName", editor: "input"},
     {title: "Manufacturer", field: "manufacturer", editor: "input"},
-    {title: "Description", field: "description", editor: "textarea",  width:200},
+    {title: "Description", field: "description", editor: "textarea", width: 200},
     {
         title: "Medical Specialty Description",
         field: "medicalSpecialtyDescription",
@@ -581,8 +610,8 @@ const columns = [
     {title: "Error", field: "error", editor: false}, // Read-only
 ];
 
-function displayBadRecords(badRecords) {
-    const table = new Tabulator("#bad-records-table", {
+function displayBadRecords(badRecords, tableSelector = "#bad-records-table") {
+    const table = new Tabulator(tableSelector, {
         data: badRecords,
         theme: "bootstrap5",
         renderHorizontal: "virtual",
@@ -613,6 +642,53 @@ function displayBadRecords(badRecords) {
     // Store the table instance globally if needed
     window.badRecordsTable = table;
 }
+
+function displayBadRecordsModal(badRecords) {
+    // Initialize the table in the modal
+    displayBadRecords(badRecords, '#bad-records-table-modal');
+
+    // Show the modal
+    var badRecordsModal = new bootstrap.Modal(document.getElementById('badRecordsModal'), {
+        backdrop: 'static',
+        keyboard: false
+    });
+    badRecordsModal.show();
+
+    // Handle Save Changes button click
+    document.getElementById('saveBadRecordsBtn').addEventListener('click', async () => {
+        const updatedBadRecords = window.badRecordsTable.getData();
+        const { goodRecords: newGoodRecords, badRecords: remainingBadRecords } = await revalidateRecords(updatedBadRecords);
+
+        // Merge new good records
+        goodRecords = goodRecords.concat(newGoodRecords);
+
+        if (remainingBadRecords.length > 0) {
+            // Still some bad records
+            Swal.fire({
+                title: 'Validation Result',
+                text: `${remainingBadRecords.length} record(s) still have errors.`,
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
+            // Update the table with remaining bad records
+            window.badRecordsTable.replaceData(remainingBadRecords);
+        } else {
+            Swal.fire({
+                title: 'All Records Validated',
+                text: 'All records have been fixed and moved to good records.',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                // Close the modal
+                badRecordsModal.hide();
+                // Refresh good records table
+                displayGoodRecords(goodRecords);
+            });
+        }
+    });
+}
+
+
 
 function displayGoodRecords(goodRecords) {
     const table = new Tabulator("#good-records-table", {

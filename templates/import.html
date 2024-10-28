@@ -68,8 +68,30 @@
             </div>
 
             <!-- Container for Tabulator -->
-            <div id="bad-records-table" class="table-striped table-bordered"></div>
+            <!-- Bad Records Modal -->
+            <div class="modal fade" id="badRecordsModal" tabindex="-1" aria-labelledby="badRecordsModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog modal-dialog-scrollable modal-xl"> <!-- Use modal-xl for a large modal -->
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="badRecordsModalLabel">Fix Bad Records</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- The table will be rendered here -->
+                            <div id="bad-records-table-modal"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" id="saveBadRecordsBtn">Save Changes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div id="good-records-table" class="table-striped table-bordered"></div>
+            <div id="temp-table" style="display: none;"></div>
+
 
             <!-- Import Modal -->
             <div class="modal modal-xl fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel"
