@@ -582,10 +582,9 @@ const columns = [
 ];
 
 function displayBadRecords(badRecords) {
-
-
     const table = new Tabulator("#bad-records-table", {
         data: badRecords,
+        theme: "bootstrap5",
         renderHorizontal: "virtual",
         layout: "fitData",
         columns: columns,
@@ -616,10 +615,9 @@ function displayBadRecords(badRecords) {
 }
 
 function displayGoodRecords(goodRecords) {
-
-
     const table = new Tabulator("#good-records-table", {
         data: goodRecords,
+        theme: "bootstrap5",
         renderHorizontal: "virtual",
         layout: "fitData",
         columns: columns,
