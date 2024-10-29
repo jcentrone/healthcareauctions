@@ -78,20 +78,31 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <!-- The table will be rendered here -->
+                            <!-- Add Bad Records Here-->
                             <div id="bad-records-table-modal"></div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-primary" id="saveBadRecordsBtn">Save Changes</button>
+                            {#                            <button type="button" class="btn btn-primary" id="saveBadRecordsBtn">Save Changes</button>#}
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div id="good-records-table" class="table-striped table-bordered"></div>
-            <div id="temp-table" style="display: none;"></div>
+            <!-- The tables will be rendered here -->
+            <div class="records-container" id="records-container">
+                <div class="record-container" id="bad-records-container">
+                    <h2>Bad Records</h2>
+                    <div id="bad-records-table" class="table-striped table-bordered"></div>
+                    <button type="button" class="btn btn-primary" id="saveBadRecordsBtn">Save Changes</button>
 
+                </div>
+                <div class="record-container" id="good-records-container">
+                    <h2>Good Records</h2>
+                    <div id="good-records-table" class="table-striped table-bordered"></div>
+                </div>
+                <div id="temp-table" style="display: none;"></div>
+            </div>
 
             <!-- Import Modal -->
             <div class="modal modal-xl fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel"

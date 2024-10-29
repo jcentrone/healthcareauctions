@@ -243,3 +243,9 @@ tr:hover .hover-modal-content {
         font-size: 0.85em;
     }
 }
+
+
+/* New CSS Below */
+.records-container{
+    display: none;
+}
