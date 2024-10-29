@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token }}">
 
     <div class="container">
-        <div class="sub-container">
+        <div class="sub-container" id="upload-sheet-container">
             <h2 id="import-header">Effortless Bulk Listings, Simplified for You</h2>
             <p class="mt-5">
 
@@ -34,165 +34,48 @@
                 just right. Happy selling!</p>
 
             <div class="import-container my-5">
-                <div class="infographic card">
+                <div class="infographic">
                     <div class="step border-bottom border-end border-white" id="step1">
                         <i id="step1-icon" class="fa fa-file-excel" aria-hidden="true"></i>
                         <h5>Step 1: Select Your File</h5>
-                        <p>Choose your Excel file with the auction data.</p>
+                        <p>Choose your Excel file with the listing data.</p>
                         <div id="file-input">
                             <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="form-control" required>
-                        </div>
-                    </div>
-                    <div class="step border-bottom border-white" id="step2">
-                        <i id="step2-icon" class="fa fa-arrows-alt" aria-hidden="true"></i>
-                        <h5>Step 2: Map Your Columns</h5>
-                        <p>Match your Excel columns to the auction fields.</p>
-                        <button type="button" class="btn btn-primary" id="mapColumnsBtn" disabled>Map Columns</button>
-                    </div>
-                    <div class="step border-end border-white" id="step3">
-                        <i id="step3-icon" class="fa fa-image" aria-hidden="true"></i>
-                        <h5>Step 3: Add Images</h5>
-                        <p>Upload images to showcase your listings.</p>
-                        <button type="button" class="btn btn-primary" id="addImgBtn" disabled>Add Images</button>
-                    </div>
-                    <div class="step" id="step4">
-                        <i id="step4-icon" class="fa fa-check" aria-hidden="true"></i>
-                        <h5 id="step4-title">Step 4: Import!</h5>
-                        <p id="step4-description">Review and submit to get your auctions live!</p>
-                        <button type="submit" class="btn btn-primary mx-auto" id="import-button" disabled>Import
-                        </button>
-                        <a id="dashboard-btn" class="btn btn-primary" style="display: none"
-                           href="{% url 'dashboard' %}?active_tab=listings&hold_for_import=True">Review and Post</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Container for Tabulator -->
-            <!-- Bad Records Modal -->
-            <div class="modal fade" id="badRecordsModal" tabindex="-1" aria-labelledby="badRecordsModalLabel"
-                 aria-hidden="true">
-                <div class="modal-dialog modal-dialog-scrollable modal-xl"> <!-- Use modal-xl for a large modal -->
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="badRecordsModalLabel">Fix Bad Records</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <!-- Add Bad Records Here-->
-                            <div id="bad-records-table-modal"></div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            {#                            <button type="button" class="btn btn-primary" id="saveBadRecordsBtn">Save Changes</button>#}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- The tables will be rendered here -->
-            <div class="records-container" id="records-container">
-                <div class="record-container" id="bad-records-container">
-                    <h2>Bad Records</h2>
-                    <div id="bad-records-table" class="table-striped table-bordered"></div>
-                    <button type="button" class="btn btn-primary" id="saveBadRecordsBtn">Save Changes</button>
-
-                </div>
-                <div class="record-container" id="good-records-container">
-                    <h2>Good Records</h2>
-                    <div id="good-records-table" class="table-striped table-bordered"></div>
-                </div>
-                <div id="temp-table" style="display: none;"></div>
-            </div>
-
-            <!-- Import Modal -->
-            <div class="modal modal-xl fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel"
-                 aria-hidden="true">
-                <div class="modal-dialog  w-75 ">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h3 class="modal-title" id="importModalLabel"></h3>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div id="modalMessages" class="alert alert-dismissible fade" role="alert"
-                                 style="display: none;">
-                                <div id="modalMessage"></div>
-                                {#                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">#}
-                                {#                                    <span aria-hidden="true">&times;</span>#}
-                                {#                                    &times;#}
-                                {#                                </button>#}
-                            </div>
-                            <form id="importForm" method="post" enctype="multipart/form-data">
-
-                                <div id="mappingModal">
-                                    <div id="mappingContainer" style="display:none;">
-
-                                        <p>Almost there! Just match each of your spreadsheet's columns on the left with
-                                            the corresponding auction field on the right to ensure everything lands in
-                                            the right place. We'll add pictures next.</p>
-
-                                        <table class="table mt-4">
-                                            <thead>
-                                            <tr>
-                                                <th>File Header</th>
-                                                <th></th>
-                                                <th>Auction Field</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody id="mappingTable">
-                                            <!-- Dynamic Rows -->
-                                            </tbody>
-                                        </table>
-                                        <div id="closeMappingModal" class="btn btn-primary">Okay</div>
-                                    </div>
-                                </div>
-
-                                <div id="import-mapping">
-                                    <div id="previewContainer" style="display:none;">
-                                        <p>You may add up to 5 images per listing, just click 'Upload Images,' select
-                                            your files, and you're all set. Including images with your listings can
-                                            greatly enhance their appeal to potential buyers, though this optional. We
-                                            have a vast library of default images, and if we can match one to your
-                                            product we will add this for you.
-                                        </p>
-                                        <div id="table-container">
-                                            <table class="table mt-4" id="previewTable">
-                                                <thead id="previewTableHead">
-                                                <!-- Dynamic Headers -->
-                                                </thead>
-                                                <tbody id="previewTableBody">
-                                                <!-- Dynamic Rows -->
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        <button type="button" class="btn btn-primary" id="closeAddImgBtn">Done</button>
-
-                                    </div>
-
-                                </div>
-
-                            </form>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Modal for Image Uploads -->
-    <div id="imageUploadModal" class="modal modal-md">
-        <div class="modal-content" id="image-modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="add-images-header">Add Images</h5>
-                <button type="button" id="closeImageModal" class="btn-close" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-
-            </div>
-            <div class="p-5 pt-2">
-                <div id="imageUploadContainer">
-                    <!-- Dynamic Image Inputs -->
+        <!-- The tables will be rendered here -->
+        <div class="records-container" id="records-container">
+            <div class="record-container" id="bad-records-container">
+                <h2>Listings Needing Attention</h2>
+                <p>Below are the listings that need a bit more information before they can be imported. We’ve
+                    highlighted the issues for your convenience. If we’re unable to automatically find product details,
+                    you may need to add them manually. We'll let you know if this is the case.</p>
+                <div id="bad-records-table" class="table-striped"></div>
+                <div class="d-flex justify-content-between">
+                    <div class="d-flex justify-content-start w-auto gap-3">
+                        <button type="button" class="btn btn-danger mt-2" id="startOverBtn">Start Over</button>
+                        <button type="button" class="btn btn-secondary mt-2" id="fixLaterBtn">Fix Later / Next</button>
+                    </div>
+                    <button type="button" class="btn btn-primary mt-2" id="saveBadRecordsBtn">Save Changes</button>
                 </div>
             </div>
+            <div class="record-container mt-3" id="good-records-container">
+                <h2>Ready For Import</h2>
+                <p>These listings are ready to go. If you like you can add a picture to the listing now, or after
+                    import. Also, when we have a stock photo we will automatically add it to the listing on import
+                    here.</p>
+                <div id="good-records-table" class="table-striped"></div>
+
+                <button type="submit" class="btn btn-primary mx-auto" id="import-button" disabled>Import
+                </button>
+                <a id="dashboard-btn" class="btn btn-primary" style="display: none"
+                   href="{% url 'dashboard' %}?active_tab=listings&hold_for_import=True">Review and Post</a>
+
+            </div>
+            <div id="temp-table" style="display: none;"></div>
         </div>
     </div>
 
@@ -200,6 +83,8 @@
     <link href="https://unpkg.com/tabulator-tables@6.3.0/dist/css/tabulator.min.css" rel="stylesheet">
     <link href="https://unpkg.com/tabulator-tables@5.4.4/dist/css/tabulator_bootstrap5.min.css" rel="stylesheet">
     <script type="text/javascript" src="https://unpkg.com/tabulator-tables@6.3.0/dist/js/tabulator.min.js"></script>
+    <script lang="javascript" src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>

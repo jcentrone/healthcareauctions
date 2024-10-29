@@ -4,15 +4,7 @@
     gap: 20px;
     align-items: center;
 }
-.infographic {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    justify-content: space-between;
-    align-items: center;
-    text-align: center;
-    grid-column: span 2;
-    max-width: 800px;
-}
+
 
 .infographic .step {
     flex: 1;
@@ -246,6 +238,17 @@ tr:hover .hover-modal-content {
 
 
 /* New CSS Below */
+.infographic {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: center;
+    text-align: center;
+}
+
 .records-container{
+    display: none;
+}
+#bad-records-container,
+#good-records-container{
     display: none;
 }

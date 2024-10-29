@@ -61,13 +61,13 @@ const columns = [
     {
         title: "SKU",
         field: "SKU",
-        editor: "input",
+        editor: reprocessEditor,
         formatter: validateCell,
     },
     {
-        title: "Listing Title",
+        title: "Reference Number",
         field: "listing_title",
-        editor: "input",
+        editor: reprocessEditor,
         formatter: validateCell,
     },
     {
@@ -107,25 +107,32 @@ const columns = [
     {
         title: "Starting Bid",
         field: "Starting Bid",
-        editor: "input",
-        formatter: validateCellConditional,
+        editor: currencyEditor,
+        formatter: currencyFormatterWithConditional,
+        formatterParams: {precision: 2},
     },
     {
         title: "Reserve Bid",
         field: "Reserve Bid",
-        editor: "input",
+        editor: currencyEditor,
+        formatter: currencyFormatterWithConditional,
+        formatterParams: {precision: 2},
     },
     {
         title: "Sale Price",
         field: "Sale Price",
-        editor: "input",
-        formatter: validateCellConditional,
+        editor: currencyEditor,
+        formatter: currencyFormatterWithConditional,
+        formatterParams: {precision: 2},
     },
     {
         title: "Auction Duration",
         field: "Auction Duration",
-        editor: "input",
-        formatter: validateCellConditional,
+        editor: "list",
+        editorParams: {
+            values: ["1", "3", "5", "7", "10"],
+        },
+        formatter: auctionDurationFormatter,
     },
     {
         title: "Package Type",
@@ -277,6 +284,141 @@ function dateFormatter(cell, formatterParams, onRendered) {
     }
 }
 
+function reprocessEditor(cell, onRendered, success, cancel) {
+    const cellValue = cell.getValue();
+    const input = document.createElement("input");
+
+    input.type = "text";
+    input.value = cellValue;
+
+    onRendered(() => {
+        input.focus();
+        input.select();
+    });
+
+    input.addEventListener("blur", async () => {
+        const newValue = input.value;
+
+        // Update cell with new value
+        cell.setValue(newValue);
+
+        // Reprocess the row using the shared function
+        const row = cell.getRow().getData();
+        const {record, isValid} = await processSingleRecord(row);
+
+        if (isValid) {
+            cell.getRow().update(record); // Update row with new values
+        } else {
+            console.error(`Error processing record: ${record.error}`);
+            // Optionally update the row to reflect an error state
+        }
+
+        success(newValue);
+    });
+
+    return input;
+}
+
+function currencyEditor(cell, onRendered, success, cancel) {
+    // Create an input element
+    const input = document.createElement("input");
+    input.type = "number";
+    input.value = cell.getValue() || 0;
+
+    // Style the input for better user experience
+    input.style.width = "100%";
+    input.style.padding = "5px";
+    input.style.boxSizing = "border-box";
+
+    // Focus on the input when it’s rendered
+    onRendered(() => {
+        input.focus();
+        input.select();
+    });
+
+    // Handle saving the value when editing ends
+    function handleSave() {
+        success(parseFloat(input.value) || 0); // Save as float or 0 if empty
+    }
+
+    input.addEventListener("blur", handleSave);
+    input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            handleSave();
+        } else if (e.key === "Escape") {
+            cancel();
+        }
+    });
+
+    return input;
+}
+
+function currencyFormatterWithConditional(cell) {
+    const value = cell.getValue();
+    const rowData = cell.getRow().getData();
+    const listingType = rowData['Listing Type']?.trim().toLowerCase();
+    let shouldHighlight = false;
+
+    // Conditional Formatting Logic
+    if (cell.getField() === 'Starting Bid' || cell.getField() === 'Auction Duration') {
+        if (listingType === 'auction') {
+            if (!value || value === 'Unknown' || value === 'N/A') {
+                shouldHighlight = true;
+            }
+        }
+    } else if (cell.getField() === 'Sale Price') {
+        if (listingType === 'sale') {
+            if (!value || value === 'Unknown' || value === 'N/A') {
+                shouldHighlight = true;
+            }
+        }
+    }
+
+    // Apply Conditional Highlighting Styles
+    const cellElement = cell.getElement();
+    if (shouldHighlight) {
+        cellElement.style.backgroundColor = '#f8d7da'; // Light red background
+        cellElement.style.color = '#721c24'; // Dark red text
+    } else {
+        cellElement.style.backgroundColor = ''; // Reset to default
+        cellElement.style.color = ''; // Reset to default
+    }
+
+    // Currency Formatting Logic
+    if (value != null) {
+        return new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD'}).format(value);
+    }
+    return value;
+}
+
+function auctionDurationFormatter(cell) {
+    const value = cell.getValue();
+    const rowData = cell.getRow().getData();
+    const listingType = rowData['Listing Type']?.trim().toLowerCase();
+    let shouldHighlight = false;
+
+    // Conditional Formatting Logic for Auction Duration
+    if (listingType === 'auction') {
+        if (![1, 3, 5, 7, 10].includes(value)) {
+            shouldHighlight = true;
+        }
+    }
+
+    // Apply Conditional Highlighting Styles
+    const cellElement = cell.getElement();
+    if (shouldHighlight) {
+        cellElement.style.backgroundColor = '#f8d7da'; // Light red background
+        cellElement.style.color = '#721c24'; // Dark red text
+    } else {
+        cellElement.style.backgroundColor = ''; // Reset to default
+        cellElement.style.color = ''; // Reset to default
+    }
+
+    return value;
+}
+
+
+
 function cleanCode(code) {
     return code.replace(/\s+/g, '').trim();
 }
@@ -333,20 +475,6 @@ function transformOpenFdaData(result) {
     };
 }
 
-function downloadBadRecords(badRecords) {
-    // Create a temporary Tabulator table (not displayed) to use its download function
-    const table = new Tabulator("#temp-table", {
-        data: badRecords,
-        columns: columns,
-    });
-
-    // Download data as CSV
-    table.download("csv", "bad_records.csv");
-
-    // Clean up the temporary table
-    table.destroy();
-}
-
 function validateCell(cell) {
     const value = cell.getValue();
     if (value === null || value === undefined || value === '' || value === 'Unknown' || value === 'N/A') {
@@ -360,38 +488,6 @@ function validateCell(cell) {
     }
     return value;
 }
-
-function validateCellConditional(cell) {
-    const value = cell.getValue();
-    const rowData = cell.getRow().getData();
-    const listingType = rowData['Listing Type']?.trim().toLowerCase();
-
-    let shouldHighlight = false;
-
-    if (cell.getField() === 'Starting Bid' || cell.getField() === 'Auction Duration') {
-        if (listingType === 'auction') {
-            if (!value || value === 'Unknown' || value === 'N/A') {
-                shouldHighlight = true;
-            }
-        }
-    } else if (cell.getField() === 'Sale Price') {
-        if (listingType === 'sale') {
-            if (!value || value === 'Unknown' || value === 'N/A') {
-                shouldHighlight = true;
-            }
-        }
-    }
-
-    if (shouldHighlight) {
-        cell.getElement().style.backgroundColor = '#f8d7da';
-        cell.getElement().style.color = '#721c24';
-    } else {
-        cell.getElement().style.backgroundColor = '';
-        cell.getElement().style.color = '';
-    }
-    return value;
-}
-
 
 // Records Processing
 document.getElementById('fileInput').addEventListener('change', handleFileSelect);
@@ -436,10 +532,8 @@ async function handleFileSelect(event) {
                     }
                 });
                 ({goodRecords, badRecords} = await processRecords(dataObjects));
-                displayRecords(badRecords, '#bad-records-table');
+                await processingComplete(goodRecords, badRecords);
 
-                // Display good records
-                displayGoodRecords(goodRecords);
             }
         };
         reader.readAsBinaryString(file);
@@ -565,13 +659,7 @@ async function promptHeaderMapping(extractedHeaders, dataObjects) {
                 // Proceed to process records with mapped headers
                 ({goodRecords, badRecords} = await processRecords(mappedDataObjects));
 
-                // Display good records
-                displayGoodRecords(goodRecords);
-
-                // Display bad records if any
-                if (badRecords.length > 0) {
-                    displayRecords(badRecords, '#bad-records-table');
-                }
+                await processingComplete(goodRecords, badRecords);
             }
         }).then((result) => {
             if (result.isConfirmed) {
@@ -589,13 +677,19 @@ async function processRecords(records) {
     let badRecords = [];
     const totalRecords = records.length;
 
-    // Initialize the SweetAlert modal with placeholders for counts
+    // Initialize the SweetAlert modal with enhanced styling
     Swal.fire({
-        title: 'Processing Records',
+        title: '<h2>Processing Records</h2>',
         html: `
-            <p>Processing record <b>0</b> of ${totalRecords}</p>
-            <p>Good Records: <b>0</b></p>
-            <p>Bad Records: <b>0</b></p>
+            <div style="width: 100%; background: #e9ecef; margin-bottom: 20px; border-radius: 10px;">
+                <div id="progress-bar" style="width: 0; height: 15px; background: #0A54C1; border-radius: 10px;"></div>
+            </div>
+            <div style="font-size: 1.1em; margin-bottom: 20px;">
+                <p>Processing record <b>0</b> of ${totalRecords}</p>
+                <p>Ready for Import: <b style="color: #1d8348;">0</b></p>
+                <p>Not Ready for Import: <b style="color: #CD5C5C;">0</b></p>
+            </div>
+            
         `,
         allowOutsideClick: false,
         showConfirmButton: false,
@@ -605,120 +699,29 @@ async function processRecords(records) {
     });
 
     for (let i = 0; i < totalRecords; i++) {
-        let record = records[i];
-        let mergedRecord = {...record}; // Start with the original user data
-
-        try {
-            // Fetch deviceData
-            const sku = record.SKU || record['SKU'];
-            const refNumb = record['Reference Number'];
-            if (!sku) {
-                throw new Error('SKU is missing');
-            }
-
-            const deviceData = await fetchDeviceData(sku, refNumb);
-            if (!deviceData || !deviceData.gudid) {
-                throw new Error(`Device data not found for SKU: ${sku}`);
-            }
-
-            // Extract deviceData fields
-            const listing_title = deviceData.gudid.device.catalogNumber || deviceData.gudid.device.versionModelNumber;
-            const manufacturer = deviceData.gudid.device.companyName;
-            const packageType = deviceData.gudid.device.identifiers?.identifier?.[0]?.pkgType || 'Unknown';
-            const deviceSterile = deviceData.gudid.device.sterilization?.deviceSterile;
-            const implantable = deviceData.gudid.device.gmdnTerms?.gmdn?.[0]?.implantable;
-            const gmdnTerms = deviceData.gudid.device.gmdnTerms?.gmdn?.[0]?.gmdnPTDefinition || '';
-
-            // Merge deviceData into the record
-            mergedRecord = {
-                ...mergedRecord,
-                listing_title,
-                manufacturer,
-                packageType,
-                deviceSterile,
-                implantable,
-            };
-
-            // Fetch classificationData
-            const productCode = deviceData.gudid.device.productCodes?.fdaProductCode?.[0]?.productCode;
-            if (!productCode) {
-                throw new Error(`Product code not found for SKU: ${sku}`);
-            }
-
-            const classificationData = await fetchClassificationData(productCode);
-            if (!classificationData) {
-                throw new Error(`Classification data not found for product code: ${productCode}`);
-            }
-
-            // Extract classificationData fields
-            const description = `${classificationData.description}\n\n${gmdnTerms}` || 'No description available';
-            const category = classificationData.category || 'No category';
-            const categoryId = classificationData.category_id || 'N/A';
-            const medicalSpecialtyCode = classificationData.medical_specialty_code || '';
-            const deviceName = classificationData.device_name || '';
-            const medicalSpecialtyDescription = classificationData.medical_specialty_description || '';
-
-            // Merge classificationData into the record
-            mergedRecord = {
-                ...mergedRecord,
-                description,
-                category,
-                categoryId,
-                medicalSpecialtyCode,
-                deviceName,
-                medicalSpecialtyDescription,
-            };
-
-            // **Validation Logic Starts Here**
-
-            // Rule 1: Quantity Available > 0
-            const quantityAvailable = parseInt(mergedRecord['Quantity Available'], 10);
-            if (!quantityAvailable || quantityAvailable <= 0) {
-                throw new Error('Quantity Available must be greater than 0');
-            }
-
-            // Rule 2 & 4: Listing Type validation
-            const listingType = mergedRecord['Listing Type']?.trim().toLowerCase();
-            if (!listingType) {
-                throw new Error('Listing Type is missing');
-            }
-
-            if (listingType === 'auction') {
-                // Rule 2: Auction validation
-                const startingBid = parseFloat(mergedRecord['Starting Bid']);
-                if (!startingBid || startingBid <= 0) {
-                    throw new Error('Starting Bid must be greater than 0 for Auction listings');
-                }
-
-                const auctionDuration = parseInt(mergedRecord['Auction Duration'], 10);
-                if (![1, 3, 5, 7, 10].includes(auctionDuration)) {
-                    throw new Error('Auction Duration must be one of 1, 3, 5, 7, or 10 for Auction listings');
-                }
-            } else if (listingType === 'sale') {
-                // Rule 4: Sale validation
-                const salePrice = parseFloat(mergedRecord['Sale Price']);
-                if (!salePrice || salePrice <= 0) {
-                    throw new Error('Sale Price must be greater than 0 for Sale listings');
-                }
-            } else {
-                throw new Error('Invalid Listing Type. Must be "Auction" or "Sale"');
-            }
-
-            // All validations passed, classify as good record
-            goodRecords.push(mergedRecord);
-
-        } catch (error) {
-            // Handle errors and classify record as bad
-            mergedRecord.error = error.message;
-            badRecords.push(mergedRecord);
+        const {record, isValid} = await processSingleRecord(records[i]);
+        if (isValid) {
+            goodRecords.push(record);
+        } else {
+            badRecords.push(record);
         }
+
+
+        // Calculate progress percentage
+        const progressPercent = Math.round(((i + 1) / totalRecords) * 100);
 
         // Update the SweetAlert modal with progress and counts
         Swal.update({
             html: `
-                <p>Processing record <b>${i + 1}</b> of ${totalRecords}</p>
-                <p>Good Records: <b>${goodRecords.length}</b></p>
-                <p>Bad Records: <b>${badRecords.length}</b></p>
+                <div style="width: 100%; background: #e9ecef; margin-bottom: 20px; border-radius: 10px;">
+                    <div id="progress-bar" style="width: ${progressPercent}%; height: 15px; background: #0A54C1; border-radius: 10px;"></div>
+                </div>
+                <div style="font-size: 1.1em; margin-bottom: 20px;">
+                    <p>Processing record <b>${i + 1}</b> of ${totalRecords}</p>
+                    <p>Ready for Import: <b style="color: #1d8348;">${goodRecords.length}</b></p>
+                    <p>Not Ready for Import: <b style="color: #CD5C5C;">${badRecords.length}</b></p>
+                </div>
+                
             `
         });
     }
@@ -729,6 +732,151 @@ async function processRecords(records) {
     return {goodRecords, badRecords};
 }
 
+async function processSingleRecord(record) {
+    let mergedRecord = {...record}; // Start with the original user data
+
+    try {
+        // Fetch deviceData
+        const sku = record.SKU || record['SKU'];
+        const refNumb = record['Reference Number'];
+        if (!sku) {
+            throw new Error('SKU is missing');
+        }
+
+        const deviceData = await fetchDeviceData(sku, refNumb);
+        if (!deviceData || !deviceData.gudid) {
+            throw new Error(`Device data not found for SKU: ${sku}`);
+        }
+
+        // Extract deviceData fields
+        const listing_title = deviceData.gudid.device.catalogNumber || deviceData.gudid.device.versionModelNumber;
+        const manufacturer = deviceData.gudid.device.companyName;
+        const packageType = deviceData.gudid.device.identifiers?.identifier?.[0]?.pkgType || 'Unknown';
+        const deviceSterile = deviceData.gudid.device.sterilization?.deviceSterile;
+        const implantable = deviceData.gudid.device.gmdnTerms?.gmdn?.[0]?.implantable;
+        const gmdnTerms = deviceData.gudid.device.gmdnTerms?.gmdn?.[0]?.gmdnPTDefinition || '';
+
+        // Merge deviceData into the record
+        mergedRecord = {
+            ...mergedRecord,
+            listing_title,
+            manufacturer,
+            packageType,
+            deviceSterile,
+            implantable,
+        };
+
+        // Fetch classificationData
+        const productCode = deviceData.gudid.device.productCodes?.fdaProductCode?.[0]?.productCode;
+        if (!productCode) {
+            throw new Error(`Product code not found for SKU: ${sku}`);
+        }
+
+        const classificationData = await fetchClassificationData(productCode);
+        if (!classificationData) {
+            throw new Error(`Classification data not found for product code: ${productCode}`);
+        }
+
+        // Extract classificationData fields
+        const description = `${classificationData.description}\n\n${gmdnTerms}` || 'No description available';
+        const category = classificationData.category || 'No category';
+        const categoryId = classificationData.category_id || 'N/A';
+        const medicalSpecialtyCode = classificationData.medical_specialty_code || '';
+        const deviceName = classificationData.device_name || '';
+        const medicalSpecialtyDescription = classificationData.medical_specialty_description || '';
+
+        // Merge classificationData into the record
+        mergedRecord = {
+            ...mergedRecord,
+            description,
+            category,
+            categoryId,
+            medicalSpecialtyCode,
+            deviceName,
+            medicalSpecialtyDescription,
+        };
+
+        // Validation Logic
+        const quantityAvailable = parseInt(mergedRecord['Quantity Available'], 10);
+        if (!quantityAvailable || quantityAvailable <= 0) {
+            throw new Error('Quantity Available must be greater than 0');
+        }
+
+        const listingType = mergedRecord['Listing Type']?.trim().toLowerCase();
+        if (!listingType) {
+            throw new Error('Listing Type is missing');
+        }
+
+        if (listingType === 'auction') {
+            const startingBid = parseFloat(mergedRecord['Starting Bid']);
+            if (!startingBid || startingBid <= 0) {
+                throw new Error('Starting Bid must be greater than 0 for Auction listings');
+            }
+
+            const auctionDuration = parseInt(mergedRecord['Auction Duration'], 10);
+            if (![1, 3, 5, 7, 10].includes(auctionDuration)) {
+                throw new Error('Auction Duration must be one of 1, 3, 5, 7, or 10 for Auction listings');
+            }
+        } else if (listingType === 'sale') {
+            const salePrice = parseFloat(mergedRecord['Sale Price']);
+            if (!salePrice || salePrice <= 0) {
+                throw new Error('Sale Price must be greater than 0 for Sale listings');
+            }
+        } else {
+            throw new Error('Invalid Listing Type. Must be "Auction" or "Sale"');
+        }
+
+        return {record: mergedRecord, isValid: true};
+    } catch (error) {
+        mergedRecord.error = error.message;
+        return {record: mergedRecord, isValid: false};
+    }
+}
+
+
+async function processingComplete(goodRecords, badRecords) {
+    // Store the table instance globally
+    window.goodRecordsTable = goodRecords;
+    window.badRecordsTable = badRecords;
+
+    if (badRecords.length > 0) {
+        Swal.fire({
+            title: 'Processing Complete',
+            text: `Processing complete. Found ${badRecords.length} bad record(s). Would you like to fix them now?  Fixing later downloads the results as an Excel sheet.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Fix Now',
+            cancelButtonText: 'Fix Later',
+            customClass: {
+                confirmButton: 'btn btn-primary',
+                cancelButton: 'btn btn-secondary',
+            },
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show the bad records
+                displayBadRecords(badRecords, '#bad-records-table');
+                // Display good records
+                // displayGoodRecords(goodRecords);
+            } else {
+                // Download xlsx
+                const table = window.badRecordsTable;
+                table.download("xlsx", "bad_records.xlsx");
+                // Display good records
+
+                displayGoodRecords(goodRecords);
+
+            }
+            document.getElementById('upload-sheet-container').style.display = 'none';
+
+        });
+    } else {
+        Swal.fire({
+            title: 'Processing Complete',
+            text: 'All records processed successfully.',
+            icon: 'success'
+        });
+    }
+}
 
 async function fetchDeviceData(rawCode, refNumb) {
     const code = rawCode;
@@ -769,7 +917,7 @@ async function fetchDeviceData(rawCode, refNumb) {
                 deviceDataCache[code] = data;
                 return data;
             } else {
-                throw new Error('Device not found via version or model number');
+                throw new Error('Device not found via GTIN/SKU or Reference Number. Try changing either or both to resolve. We cannot import until this error is resolved.');
             }
         } catch (error) {
             console.error('Error fetching device data via version or model number:', error);
@@ -826,7 +974,7 @@ async function fetchDeviceDataByVersionModelNumber(referenceNumber) {
 
     const response = await fetch(openFdaUrl);
     if (!response.ok) {
-        throw new Error('Device not found via version or model number');
+        throw new Error('Device not found via GTIN/SKU or Reference Number. Try changing either or both to resolve. We cannot import until this error is resolved.');
     }
     const data = await response.json();
     console.log("Device data from OpenFDA UDI API:", data);
@@ -922,9 +1070,20 @@ async function fetchClassificationDataFromLocalDB(code) {
 }
 
 //Display Records
-function displayRecords(records, tableSelector = "#bad-records-table") {
+function displayBadRecords(records, tableSelector = "#bad-records-table") {
     const recordsContainer = document.getElementById('records-container');
     recordsContainer.style.display = 'block';
+    const badRecordsContainer = document.getElementById('bad-records-container');
+    badRecordsContainer.style.display = 'block';
+
+    let pxHeight;
+    if (records.length > 9) {
+        pxHeight = `${(11 * 48) + 90}px`;
+    } else {
+        pxHeight = `${((records.length + 1) * 48) + 80}px`;
+    }
+
+    const errorMessage = 'Device not found via GTIN/SKU or Reference Number. Try changing either or both to resolve. We cannot import until this error is resolved.';
 
     const table = new Tabulator(tableSelector, {
         data: records,
@@ -932,89 +1091,139 @@ function displayRecords(records, tableSelector = "#bad-records-table") {
         renderHorizontal: "virtual",
         layout: "fitData",
         columns: columns, // Use the global columns variable
-        height: "400px",
+        height: pxHeight,
         pagination: "local",
         paginationSize: 10,
         rowFormatter: function (row) {
             const rowData = row.getData();
+
+            // Set the tooltip if there's an error
             if (rowData.error) {
                 row.getElement().setAttribute('title', rowData.error);
             } else {
                 row.getElement().removeAttribute('title');
             }
+
+            // Apply custom styling to specific cells if the error matches
+            if (rowData.error === errorMessage) {
+                // Get the SKU cell and style it
+                const skuCell = row.getCell("SKU");
+                if (skuCell) {
+                    skuCell.getElement().style.backgroundColor = "#f8d7da"; // Light red background
+                    skuCell.getElement().style.color = "#721c24"; // Dark red text
+                }
+
+                // Get the Reference Number cell and style it
+                const referenceCell = row.getCell("Reference Number");
+                if (referenceCell) {
+                    referenceCell.getElement().style.backgroundColor = "#f8d7da"; // Light red background
+                    referenceCell.getElement().style.color = "#721c24"; // Dark red text
+                }
+            }
         }
     });
 
     table.on("cellEdited", function (cell) {
-        const field = cell.getField();
-        const row = cell.getRow();
-        const rowData = row.getData();
-
-        // Re-apply the formatter to update cell highlighting
-        const formatter = cell.getColumn().getDefinition().formatter;
-        if (formatter) {
-            formatter(cell);
-        }
-
-        if (field === 'Listing Type') {
-            // When 'Listing Type' changes, re-validate related fields
-            ['Starting Bid', 'Auction Duration', 'Sale Price'].forEach(f => {
-                const relatedCell = row.getCell(f);
-                if (relatedCell) {
-                    const relatedFormatter = relatedCell.getColumn().getDefinition().formatter;
-                    if (relatedFormatter) {
-                        relatedFormatter(relatedCell);
-                    }
-                }
-            });
-        }
-
-        if (field === 'medicalSpecialtyCode') {
-            // Update the description based on the code
-            const code = cell.getValue();
-            const description = medicalSpecialtyOptions[code] || '';
-            row.update({ medicalSpecialtyDescription: description });
-        } else if (field === 'medicalSpecialtyDescription') {
-            // Update the code based on the description
-            const description = cell.getValue();
-            const code = Object.keys(medicalSpecialtyOptions).find(key => medicalSpecialtyOptions[key] === description) || '';
-            row.update({ medicalSpecialtyCode: code });
-        }
-
-        // Update tooltip
-        if (rowData.error) {
-            row.getElement().setAttribute('title', rowData.error);
-        } else {
-            row.getElement().removeAttribute('title');
-        }
+        cellEditor(cell);
     });
 
-    // Store the table instance globally if needed
-    if (tableSelector === '#bad-records-table') {
-        window.badRecordsTable = table;
-    } else if (tableSelector === '#good-records-table') {
-        window.goodRecordsTable = table;
+    // Store the table instance globally
+    window.badRecordsTable = table;
+
+}
+
+function displayGoodRecords(goodRecords = window.goodRecordsTable) {
+    const recordsContainer = document.getElementById('records-container');
+    recordsContainer.style.display = 'block';
+    const goodRecordsContainer = document.getElementById('good-records-container');
+    goodRecordsContainer.style.display = 'block';
+
+    let pxHeight;
+    if (goodRecords.length > 9) {
+        pxHeight = `${(11 * 48) + 90}px`;
+    } else {
+        pxHeight = `${((goodRecords.length + 1) * 48) + 80}px`;
+    }
+
+
+    const table = new Tabulator("#good-records-table", {
+        data: goodRecords,
+        theme: "bootstrap5",
+        renderHorizontal: "virtual",
+        layout: "fitData",
+        columns: columns,
+        height: pxHeight,
+        pagination: "local",
+        paginationSize: 10,
+    });
+
+    table.on("cellEdited", function (cell) {
+        cellEditor(cell);
+    })
+
+
+}
+
+function cellEditor(cell) {
+    const field = cell.getField();
+    const row = cell.getRow();
+    const rowData = row.getData();
+
+    // Re-apply the formatter to update cell highlighting
+    const formatter = cell.getColumn().getDefinition().formatter;
+    if (formatter) {
+        formatter(cell);
+    }
+
+    if (field === 'Listing Type') {
+        // When 'Listing Type' changes, re-validate related fields
+        ['Starting Bid', 'Auction Duration', 'Sale Price'].forEach(f => {
+            const relatedCell = row.getCell(f);
+            if (relatedCell) {
+                const relatedFormatter = relatedCell.getColumn().getDefinition().formatter;
+                if (relatedFormatter) {
+                    relatedFormatter(relatedCell);
+                }
+            }
+        });
+    }
+
+    if (field === 'medicalSpecialtyCode') {
+        // Update the description based on the code
+        const code = cell.getValue();
+        const description = medicalSpecialtyOptions[code] || '';
+        row.update({medicalSpecialtyDescription: description});
+    } else if (field === 'medicalSpecialtyDescription') {
+        // Update the code based on the description
+        const description = cell.getValue();
+        const code = Object.keys(medicalSpecialtyOptions).find(key => medicalSpecialtyOptions[key] === description) || '';
+        row.update({medicalSpecialtyCode: code});
+    }
+
+    // Update tooltip
+    if (rowData.error) {
+        row.getElement().setAttribute('title', rowData.error);
+    } else {
+        row.getElement().removeAttribute('title');
     }
 }
 
-function displayBadRecordsModal(badRecords) {
-    // Initialize the table in the modal
-    displayRecords(badRecords, '#bad-records-table-modal');
-
-    // Show the modal
-    var badRecordsModal = new bootstrap.Modal(document.getElementById('badRecordsModal'), {
-        backdrop: 'static',
-        keyboard: false
-    });
-    badRecordsModal.show();
-
-
-}
-
-
 // Handle Save Changes button click
 document.getElementById('saveBadRecordsBtn').addEventListener('click', async () => {
-    const updatedBadRecords = window.badRecordsTable.getData();
+    let updatedBadRecords = window.badRecordsTable.getData();
+    console.log('Updated Bad Records', updatedBadRecords);
+
+    // Parse date fields before revalidation
+    updatedBadRecords.forEach(record => {
+        if (record['Production Date']) {
+            record['Production Date'] = parseExcelDate(record['Production Date']);
+        }
+        if (record['Expiration Date']) {
+            record['Expiration Date'] = parseExcelDate(record['Expiration Date']);
+        }
+    });
+
+    // Revalidate records
     const {goodRecords: newGoodRecords, badRecords: remainingBadRecords} = await revalidateRecords(updatedBadRecords);
 
     // Merge new good records
@@ -1028,8 +1237,20 @@ document.getElementById('saveBadRecordsBtn').addEventListener('click', async () 
             icon: 'warning',
             confirmButtonText: 'OK'
         });
-        // Update the table with remaining bad records
+        // Update the bad records table with remaining bad records
         window.badRecordsTable.replaceData(remainingBadRecords);
+        // Optionally, refresh the table to re-apply formatters
+        window.badRecordsTable.redraw(true);
+
+        // Update the good records table with remaining bad records
+        window.goodRecordsTable.replaceData(goodRecords);
+        // Optionally, refresh the table to re-apply formatters
+        window.goodRecordsTable.redraw(true);
+
+        // Optionally, refresh the good records table
+        if (newGoodRecords.length > 0) {
+            displayGoodRecords(goodRecords);
+        }
     } else {
         Swal.fire({
             title: 'All Records Validated',
@@ -1045,39 +1266,23 @@ document.getElementById('saveBadRecordsBtn').addEventListener('click', async () 
     }
 });
 
+document.getElementById('startOverBtn').addEventListener('click', async () => {
+    location.reload();
+});
 
-function displayGoodRecords(goodRecords) {
-    const table = new Tabulator("#good-records-table", {
-        data: goodRecords,
-        theme: "bootstrap5",
-        renderHorizontal: "virtual",
-        layout: "fitData",
-        columns: columns,
-        height: "400px",
-        pagination: "local",
-        paginationSize: 10,
-    });
+document.getElementById('fixLaterBtn').addEventListener('click', async () => {
+    // Download xlsx
+    const table = window.badRecordsTable;
+    table.download("xlsx", "bad_records.xlsx");
 
-    table.on("cellEdited", function (cell) {
-        const field = cell.getField();
-        const row = cell.getRow();
+    const badRecords = document.getElementById('bad-records-container');
+    badRecords.style.display = 'none';
 
-        if (field === 'medicalSpecialtyCode') {
-            // Update the description based on the code
-            const code = cell.getValue(); // Get the new code value
-            const description = medicalSpecialtyOptions[code] || '';
-            row.update({medicalSpecialtyDescription: description});
-        } else if (field === 'medicalSpecialtyDescription') {
-            // Update the code based on the description
-            const description = cell.getValue(); // Get the new description value
-            const code = Object.keys(medicalSpecialtyOptions).find(key => medicalSpecialtyOptions[key] === description) || '';
-            row.update({medicalSpecialtyCode: code});
-        }
-    })
+    const goodRecords = document.getElementById('good-records-container');
+    goodRecords.style.display = 'block';
 
-    // Store the table instance globally if needed
-    window.badRecordsTable = table;
-}
+    displayGoodRecords(window.goodRecordsTable);
+});
 
 
 async function revalidateRecords(records) {
@@ -1104,6 +1309,41 @@ async function revalidateRecords(records) {
                 }
             }
 
+            // **Validation Logic Starts Here**
+
+            // Rule 1: Quantity Available > 0
+            const quantityAvailable = parseInt(record['Quantity Available'], 10);
+            if (!quantityAvailable || quantityAvailable <= 0) {
+                throw new Error('Quantity Available must be greater than 0');
+            }
+
+            // Rule 2 & 4: Listing Type validation
+            const listingType = record['Listing Type']?.trim().toLowerCase();
+            if (!listingType) {
+                throw new Error('Listing Type is missing');
+            }
+
+            if (listingType === 'auction') {
+                // Rule 2: Auction validation
+                const startingBid = parseFloat(record['Starting Bid']);
+                if (!startingBid || startingBid <= 0) {
+                    throw new Error('Starting Bid must be greater than 0 for Auction listings');
+                }
+
+                const auctionDuration = parseInt(record['Auction Duration'], 10);
+                if (![1, 3, 5, 7, 10].includes(auctionDuration)) {
+                    throw new Error('Auction Duration must be one of 1, 3, 5, 7, or 10 for Auction listings');
+                }
+            } else if (listingType === 'sale') {
+                // Rule 4: Sale validation
+                const salePrice = parseFloat(record['Sale Price']);
+                if (!salePrice || salePrice <= 0) {
+                    throw new Error('Sale Price must be greater than 0 for Sale listings');
+                }
+            } else {
+                throw new Error('Invalid Listing Type. Must be "Auction" or "Sale"');
+            }
+
             // If all validations pass
             return {status: 'good', data: record};
         } catch (error) {
@@ -1119,6 +1359,7 @@ async function revalidateRecords(records) {
 
     return {goodRecords, badRecords};
 }
+
 
 
 
