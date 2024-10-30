@@ -1,254 +1,42 @@
-.import-container{
+.import-container {
     display: flex;
     justify-content: center;
     gap: 20px;
     align-items: center;
 }
 
-
-.infographic .step {
-    flex: 1;
-    padding: 30px;
-    height: 100%;
+.step-icon {
+    color: #FFFFFF;
+    font-size: 48px;
 }
 
-#step1{
-    background-color: #AEDFF7;
+.step-text {
+    color: #FFFFFF;
 }
-
-
-#step2{
-    background-color: #C2E3A2;
-}
-
-
-#step3{
-    background-color: #FFD7A3;
-}
-
-
-#step4{
-    background-color: #D7B3FF;
-}
-
-.infographic .step i {
-    font-size: 2em;
-    color: #00B2FF; /* Accent color from your brand */
-    margin-bottom: 10px;
-}
-
-.infographic .step h5 {
-    margin-top: 10px;
-    margin-bottom: 5px;
-    font-size: 1.2em;
-    color: #131C31; /* Primary color from your brand */
-}
-
-.infographic .step p {
-    font-size: 0.9em;
-    color: #131C31; /* Primary color from your brand */
-}
-
-.sample-file-container {
-    background-color: #f8f9fa;
-    padding: 20px;
-    border-radius: 10px;
-    /*box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);*/
-}
-
-.sample-file-container p {
-    font-size: 1em;
-    color: #131C31; /* Primary color from your brand */
-    margin-bottom: 15px;
-}
-
-.sample-file-container .btn {
-    /*background-color: #00B2FF; !* Accent color from your brand *!*/
-    color: white;
-    font-size: 1.1em;
-    padding: 10px 20px;
-    border-radius: 5px;
-    text-decoration: none;
-}
-
-.sample-file-container .btn i {
-    margin-right: 8px;
-}
-
-.sample-file-container .btn:hover {
-    /*background-color: #008ecf; !* Slightly darker shade for hover effect *!*/
-}
-
-#import-mapping{
-    overflow-x: auto;
-}
-
-#imageUploadModal{
-    background-color: rgba(0, 0, 0, .3);
-}
-
-#image-modal-content{
-    width: 50%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-
-#previewTable th:nth-child(3),
-#previewTable td:nth-child(3),
-#previewTable th:nth-child(4),
-#previewTable td:nth-child(4),
-#previewTable th:nth-child(5),
-#previewTable td:nth-child(5),
-#previewTable th:nth-child(6),
-#previewTable td:nth-child(6),
-#previewTable th:nth-child(7),
-#previewTable td:nth-child(7),
-#previewTable th:nth-child(8),
-#previewTable td:nth-child(8),
-
-#previewTable th:nth-child(9),
-#previewTable td:nth-child(9),
-#previewTable th:nth-child(10),
-#previewTable td:nth-child(10),
-#previewTable th:nth-child(11),
-#previewTable td:nth-child(11),
-
-#previewTable th:nth-child(12),
-#previewTable td:nth-child(12),
-#previewTable th:nth-child(13),
-#previewTable td:nth-child(13),
-
-#previewTable th:nth-child(14),
-#previewTable td:nth-child(14),
-#previewTable th:nth-child(15),
-#previewTable td:nth-child(15),
-
-#previewTable th:nth-child(16),
-#previewTable td:nth-child(16),
-#previewTable th:nth-child(17),
-#previewTable td:nth-child(17),
-#previewTable th:nth-child(18),
-#previewTable td:nth-child(18),
-#previewTable th:nth-child(19),
-#previewTable td:nth-child(19),
-#previewTable th:nth-child(20),
-#previewTable td:nth-child(20),
-#previewTable th:nth-child(21),
-#previewTable td:nth-child(21),
-#previewTable th:nth-child(22),
-#previewTable td:nth-child(22){
-    display: none;
-}
-
-#previewTable th:nth-child(22),
-#previewTable td:nth-child(22){
-    min-width: 300px;
-}
-
-
-#table-container{
-    max-height: 550px;
-    overflow-y: auto;
-    /*padding-right: 20px;*/
-}
-
-/* Customize scrollbar for WebKit browsers (Chrome, Safari) */
-#table-container::-webkit-scrollbar {
-    height: 12px; /* Height for horizontal scrollbar */
-
-}
-
-#table-container::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px; /* Ensure the track is rounded */
-}
-
-#table-container::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 10px; /* Ensure the thumb is rounded */
-}
-
-#table-container::-webkit-scrollbar-thumb:hover {
-    background: #555;
-    border-radius: 10px;
-}
-
-/* Customize scrollbar for Firefox */
-#table-container {
-    scrollbar-width: thin;
-    scrollbar-color: #888 #f1f1f1;
-    border-radius: 10px;
-}
-
-/* Customize scrollbar for IE and Edge */
-#table-container {
-    -ms-overflow-style: -ms-autohiding-scrollbar;
-}
-
-
-.input-group-append.ml-2 {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.hover-modal-content {
-    display: none;
-    position: absolute;
-    background-color: white;
-    border: 1px solid #ddd;
-    padding: 10px;
-    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2); /* More defined shadow */
-    z-index: 1000;
-    width: 500px; /* Adjust width as needed */
-}
-
-tr:hover .hover-modal-content {
-    display: block;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-}
-
-
 
 /* Responsive design for small screens */
 @media (max-width: 768px) {
-    .infographic {
-        flex-direction: column;
+    #import-column {
+        padding: 20px;
     }
 
-    .infographic .step {
-        padding: 15px;
-    }
-
-    .infographic .step i {
-        font-size: 1.8em;
-    }
-
-    .infographic .step h5 {
-        font-size: 1.1em;
-    }
-
-    .infographic .step p {
-        font-size: 0.85em;
-    }
 }
 
-
-/* New CSS Below */
-.infographic {
-    display: grid;
-    grid-template-columns: 1fr;
+#import-column {
+    background: #1989d3;
     align-items: center;
-    text-align: center;
+    justify-content: center;
+    display: flex;
+    padding: 20px 20px 5%;
+    border-radius: 8px;
 }
 
-.records-container{
+
+.records-container {
     display: none;
 }
+
 #bad-records-container,
-#good-records-container{
+#good-records-container {
     display: none;
 }

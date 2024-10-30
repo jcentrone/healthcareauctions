@@ -59,6 +59,25 @@ const requiredHeaders = [
 ];
 const columns = [
     {
+        title: "Images",
+        field: "images",
+        formatter: function (cell, formatterParams, onRendered) {
+            const rowData = cell.getRow().getData();
+            console.log('Formatter rowData.images:', rowData.images); // For debugging
+            const images = rowData.images || [];
+            const imagesCount = images.filter(image => image !== undefined && image !== null).length;
+            if (imagesCount > 0) {
+                return `<button class="btn btn-sm btn-success">Edit Images</button>`;
+            } else {
+                return '<button class="btn btn-sm btn-primary">Add Images</button>';
+            }
+        },
+        cellClick: function (e, cell) {
+            const rowData = cell.getRow().getData();
+            openImageUploadModal(cell.getRow(), rowData);
+        }
+    },
+    {
         title: "SKU",
         field: "SKU",
         editor: reprocessEditor,
@@ -226,6 +245,7 @@ const columns = [
         formatter: "tickCross",
         visible: false,
     },
+
 ];
 
 let goodRecords = [];
@@ -506,6 +526,224 @@ function validateCell(cell) {
     return value;
 }
 
+function openImageUploadModal(row, rowData) {
+    // Create a container for the modal content
+    const modalContent = document.createElement('div');
+
+    // Create a container for image slots
+    const slotsContainer = document.createElement('div');
+    slotsContainer.style.display = 'flex';
+    slotsContainer.style.flexWrap = 'wrap';
+    slotsContainer.style.justifyContent = 'center';
+    slotsContainer.style.marginTop = '10px';
+
+    // Initialize images array in rowData if not present
+    if (!rowData.images) {
+        rowData.images = [];
+    }
+
+    // Function to create an image slot
+    function createImageSlot(index) {
+        const slot = document.createElement('div');
+        slot.style.width = '100px';
+        slot.style.height = '100px';
+        slot.style.border = '2px dashed #ccc';
+        slot.style.borderRadius = '8px';
+        slot.style.display = 'flex';
+        slot.style.alignItems = 'center';
+        slot.style.justifyContent = 'center';
+        slot.style.marginBottom = '10px';
+        slot.style.position = 'relative';
+        slot.style.cursor = 'pointer';
+        slot.style.marginRight = '10px';
+        slot.style.background = '#F5F5F5'
+
+        // Drag-and-Drop Styling
+        slot.style.transition = 'background-color 0.2s ease';
+
+        // Check if an image exists in this slot
+        if (rowData.images[index]) {
+            // Display the image
+            const img = document.createElement('img');
+            img.src = rowData.images[index].data;
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'cover';
+            slot.appendChild(img);
+
+            // Add remove icon
+            const removeIcon = document.createElement('span');
+            removeIcon.innerHTML = '&times;';
+            removeIcon.style.position = 'absolute';
+            removeIcon.style.top = '5px';
+            removeIcon.style.right = '5px';
+            removeIcon.style.color = '#fff';
+            removeIcon.style.backgroundColor = 'rgba(0,0,0,0.5)';
+            removeIcon.style.borderRadius = '50%';
+            removeIcon.style.width = '20px';
+            removeIcon.style.height = '20px';
+            removeIcon.style.display = 'flex';
+            removeIcon.style.alignItems = 'center';
+            removeIcon.style.justifyContent = 'center';
+            removeIcon.style.cursor = 'pointer';
+
+            removeIcon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Remove image from rowData without shifting indices
+                rowData.images[index] = undefined;
+                console.log('Image removed. Updated images array:', rowData.images);
+                // Re-render slots
+                renderImageSlots();
+                // Update the table
+                row.update({images: rowData.images});
+                // Re-render the cell to update the formatter
+                row.getCell('images').render();
+            });
+
+
+            slot.appendChild(removeIcon);
+        } else {
+            // Display upload icon
+            const uploadIcon = document.createElement('i');
+            uploadIcon.className = 'fa-solid fa-cloud-arrow-up';
+            uploadIcon.style.fontSize = '48px';
+            uploadIcon.style.color = '#aaa';
+            slot.appendChild(uploadIcon);
+        }
+
+        // Add click event to upload or replace image
+        slot.addEventListener('click', () => {
+            // Create a file input dynamically
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*'; // Accept images only
+
+            fileInput.addEventListener('change', function () {
+                const file = fileInput.files[0];
+                if (file) {
+                    handleFileUpload(file, index);
+                }
+            });
+
+            // Trigger the file input click
+            fileInput.click();
+        });
+
+        // Drag-and-Drop Event Handlers
+        slot.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            slot.style.backgroundColor = '#f0f0f0';
+        });
+
+        slot.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            slot.style.backgroundColor = '';
+        });
+
+        slot.addEventListener('drop', (e) => {
+            e.preventDefault();
+            slot.style.backgroundColor = '';
+            const files = e.dataTransfer.files;
+            if (files && files.length > 0) {
+                const file = files[0];
+                if (file.type.startsWith('image/')) {
+                    handleFileUpload(file, index);
+                } else {
+                    Swal.fire({
+                        title: 'Invalid File Type',
+                        text: 'Please upload an image file.',
+                        icon: 'error',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            }
+        });
+
+        return slot;
+    }
+
+
+    // Function to render the image slots
+    function renderImageSlots() {
+        slotsContainer.innerHTML = ''; // Clear previous slots
+
+        for (let i = 0; i < 5; i++) {
+            const slot = createImageSlot(i);
+            slotsContainer.appendChild(slot);
+        }
+    }
+
+    function handleFileUpload(file, index) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            // Store the image data in rowData at the correct index
+            rowData.images[index] = {
+                name: file.name,
+                data: e.target.result
+            };
+            console.log('Updated images array:', rowData.images);
+            // Re-render slots
+            renderImageSlots();
+            // Update the table
+            row.update({images: rowData.images});
+            // Re-render the cell to update the formatter
+            row.getCell('images').render();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // Initial rendering of image slots
+    renderImageSlots();
+
+    // Append elements to the modal content
+    modalContent.appendChild(slotsContainer);
+
+    // Show the modal using SweetAlert2
+    Swal.fire({
+        title: 'Upload Images',
+        html: modalContent,
+        showCancelButton: true,
+        confirmButtonText: 'Done',
+        cancelButtonText: 'Cancel',
+        width: '650px',
+        customClass: {
+            confirmButton: 'btn btn-primary me-2',
+            cancelButton: 'btn btn-secondary ms-2',
+        },
+        buttonsStyling: false,
+        preConfirm: () => {
+            // Filter out undefined entries
+            const imagesCount = rowData.images.filter(image => image !== undefined && image !== null).length;
+            if (imagesCount > 5) {
+                Swal.showValidationMessage('You can upload up to 5 images per listing.');
+                return false;
+            }
+            return true;
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Images are already updated in rowData; nothing else to do here
+            Swal.fire({
+                title: 'Images Updated',
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }
+    });
+}
+
+
+function dataURLtoFile(dataurl, filename) {
+    let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, {type: mime});
+}
+
 // Records Processing
 document.getElementById('fileInput').addEventListener('change', handleFileSelect);
 
@@ -695,18 +933,8 @@ async function processRecords(records) {
 
     // Initialize the SweetAlert modal with enhanced styling
     Swal.fire({
-        title: '<h2>Processing Records</h2>',
-        html: `
-            <div style="width: 100%; background: #e9ecef; margin-bottom: 20px; border-radius: 10px;">
-                <div id="progress-bar" style="width: 0; height: 15px; background: #0A54C1; border-radius: 10px;"></div>
-            </div>
-            <div style="font-size: 1.1em; margin-bottom: 20px;">
-                <p>Processing record <b>0</b> of ${totalRecords}</p>
-                <p>Ready for Import: <b style="color: #1d8348;">0</b></p>
-                <p>Not Ready for Import: <b style="color: #CD5C5C;">0</b></p>
-            </div>
-            
-        `,
+        title: 'Getting Ready...',
+        text: 'Gathering data and preparing for processing. Please hold on a moment!',
         allowOutsideClick: false,
         showConfirmButton: false,
         didOpen: () => {
@@ -728,6 +956,7 @@ async function processRecords(records) {
 
         // Update the SweetAlert modal with progress and counts
         Swal.update({
+            title: 'Processing Listings',
             html: `
                 <div style="width: 100%; background: #e9ecef; margin-bottom: 20px; border-radius: 10px;">
                     <div id="progress-bar" style="width: ${progressPercent}%; height: 15px; background: #0A54C1; border-radius: 10px;"></div>
@@ -892,7 +1121,7 @@ async function processingComplete(goodRecords, badRecords) {
             } else {
                 // Download xlsx
                 const table = window.badRecordsTable;
-                table.download("xlsx", "bad_records.xlsx");
+                table.download("xlsx", "error_records.xlsx");
                 // Display good records
 
                 displayGoodRecords(goodRecords);
@@ -905,8 +1134,15 @@ async function processingComplete(goodRecords, badRecords) {
         Swal.fire({
             title: 'Processing Complete',
             text: 'All records processed successfully.',
-            icon: 'success'
+            icon: 'success',
+            customClass: {
+                confirmButton: 'btn btn-primary',
+            },
         });
+        // Hide the bad records and show the good records tables
+        document.getElementById('upload-sheet-container').style.display = 'none';
+        document.getElementById('bad-records-container').style.display = 'none';
+        displayGoodRecords(goodRecords);
     }
 }
 
@@ -1126,12 +1362,21 @@ function displayBadRecords(records, tableSelector = "#bad-records-table") {
         pxHeight = `${((records.length + 1) * 48) + 80}px`;
     }
 
+    // Make a copy of the columns to modify for the bad records table
+    const modifiedColumns = columns.map(col => {
+        if (col.field === 'images') {
+            // Hide the 'images' column in the bad records table
+            return {...col, visible: false};
+        }
+        return col;
+    });
+
     const table = new Tabulator(tableSelector, {
         data: records,
         theme: "bootstrap5",
         renderHorizontal: "virtual",
         layout: "fitData",
-        columns: columns, // Use the global columns variable
+        columns: modifiedColumns, // Use the modified columns variable (hides images)
         height: pxHeight,
         pagination: "local",
         paginationSize: 10,
@@ -1186,13 +1431,6 @@ function displayBadRecords(records, tableSelector = "#bad-records-table") {
             } else {
                 row.getElement().removeAttribute('title');
             }
-
-
-            // Apply custom styling to specific cells if the error matches
-            // if (rowData.error === errorMessage) {
-            //     // Set the background of the row
-            //
-            // }
         }
     });
 
@@ -1202,7 +1440,6 @@ function displayBadRecords(records, tableSelector = "#bad-records-table") {
 
     // Store the table instance globally
     window.badRecordsTable = table;
-
 }
 
 function displayGoodRecords(goodRecords = window.goodRecordsTable) {
@@ -1302,40 +1539,45 @@ document.getElementById('saveBadRecordsBtn').addEventListener('click', async () 
     // Check if all remaining bad records have a fatal error
     const allFatalErrors = remainingBadRecords.length > 0 && remainingBadRecords.every(record => record.fatalError === true);
 
-    if (allFatalErrors) {
-        // All remaining bad records have fatal errors
-        Swal.fire({
-            title: 'Some Records Still Need Attention',
-            html: `
-                <p>We successfully validated and moved <strong>${newGoodRecords.length}</strong> record(s) to the good records.</p>
+    // Merge new good records and display them
+    goodRecords = goodRecords.concat(newGoodRecords);
+
+    if (remainingBadRecords.length > 0) {
+        if (allFatalErrors) {
+            // All remaining bad records have fatal errors
+            Swal.fire({
+                title: 'Some Records Still Need Attention',
+                html: `
+                <p>We successfully validated and moved <strong>${newGoodRecords.length}</strong> record(s) to ready to import.</p>
                 <p>However, <strong>${remainingBadRecords.length}</strong> record(s) still contain errors that prevent them from being imported.</p>
                 <p>Please download the bad records to review them, then proceed with importing the valid records.</p>
             `,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: '<i class="fas fa-download"></i> Download Bad Records',
-            cancelButtonText: 'Cancel',
-            customClass: {
-                confirmButton: 'btn btn-warning', // Bootstrap warning button style for confirm
-                cancelButton: 'btn btn-secondary', // Bootstrap secondary button style for cancel
-            },
-            buttonsStyling: false // Disable default SweetAlert2 button styling to use Bootstrap
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Download the remaining bad records as an Excel file
-                const table = window.badRecordsTable;
-                table.download("xlsx", "bad_records.xlsx");
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-download"></i> Download and Proceed',
+                cancelButtonText: 'Cancel',
+                customClass: {
+                    confirmButton: 'btn btn-warning me-2', // Bootstrap warning button style for confirm
+                    cancelButton: 'btn btn-secondary ms-2', // Bootstrap secondary button style for cancel
+                },
+                buttonsStyling: false // Disable default SweetAlert2 button styling to use Bootstrap
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Update the bad records table with remaining bad records
+                    window.badRecordsTable.replaceData(remainingBadRecords);
+                    // Optionally, refresh the table to re-apply formatters
+                    window.badRecordsTable.redraw(true);
 
-                // Merge new good records and display them
-                goodRecords = goodRecords.concat(newGoodRecords);
-                displayGoodRecords(goodRecords);
-            }
-        });
-    } else {
-        // Merge new good records
-        goodRecords = goodRecords.concat(newGoodRecords);
+                    // Download the remaining bad records as an Excel file
+                    const table = window.badRecordsTable;
+                    table.download("xlsx", "error_records.xlsx");
 
-        if (remainingBadRecords.length > 0) {
+                    // Hide the bad records and show the good records tables
+                    document.getElementById('bad-records-container').style.display = 'none';
+                    displayGoodRecords(goodRecords);
+                }
+            });
+        } else {
             // Still some bad records without fatal errors
             Swal.fire({
                 title: 'Validation Result',
@@ -1343,31 +1585,27 @@ document.getElementById('saveBadRecordsBtn').addEventListener('click', async () 
                 icon: 'warning',
                 confirmButtonText: 'OK'
             });
-
             // Update the bad records table with remaining bad records
             window.badRecordsTable.replaceData(remainingBadRecords);
             // Optionally, refresh the table to re-apply formatters
             window.badRecordsTable.redraw(true);
 
-            // Update the good records table with merged good records
-            window.goodRecordsTable.replaceData(goodRecords);
-            // Optionally, refresh the table to re-apply formatters
-            window.goodRecordsTable.redraw(true);
-        } else {
-            // All records are valid
-            Swal.fire({
-                title: 'All Records Validated',
-                text: 'All records have been fixed and moved to good records.',
-                icon: 'success',
-                confirmButtonText: 'OK'
-            }).then(() => {
-                // Close the modal
-                badRecordsModal.hide();
-                // Refresh good records table
-                displayGoodRecords(goodRecords);
-            });
+
         }
+    } else {
+        // All records are valid
+        Swal.fire({
+            title: 'All Records Validated',
+            text: 'All records have been fixed and moved to good records.',
+            icon: 'success',
+            confirmButtonText: 'OK'
+        }).then(() => {
+            // Hide the bad records and show the good records tables
+            document.getElementById('bad-records-container').style.display = 'none';
+            displayGoodRecords(goodRecords);
+        });
     }
+
 });
 
 document.getElementById('startOverBtn').addEventListener('click', async () => {
@@ -1377,7 +1615,7 @@ document.getElementById('startOverBtn').addEventListener('click', async () => {
 document.getElementById('fixLaterBtn').addEventListener('click', async () => {
     // Download xlsx
     const table = window.badRecordsTable;
-    table.download("xlsx", "bad_records.xlsx");
+    table.download("xlsx", "error_records.xlsx");
 
     const badRecords = document.getElementById('bad-records-container');
     badRecords.style.display = 'none';
