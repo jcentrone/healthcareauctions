@@ -141,18 +141,21 @@ const columns = [
         editorParams: {
             values: packageTypeOptions,
         },
+        visible: false,
     },
     {
         title: "Device Name",
         field: "deviceName",
         editor: "input",
         formatter: validateCell,
+        visible: false,
     },
     {
         title: "Manufacturer",
         field: "manufacturer",
         editor: "input",
         formatter: validateCell,
+        visible: false,
     },
     {
         title: "Description",
@@ -160,6 +163,7 @@ const columns = [
         editor: "textarea",
         width: 200,
         formatter: validateCell,
+        visible: false,
     },
     {
         title: "Medical Specialty Description",
@@ -169,6 +173,7 @@ const columns = [
             values: Object.values(medicalSpecialtyOptions),
         },
         formatter: validateCell,
+        visible: false, // Hide the column but keep the data
     },
     {
         title: "Medical Specialty Code",
@@ -178,36 +183,48 @@ const columns = [
             values: medicalSpecialtyOptions,
         },
         formatter: validateCell,
+        visible: false, // Hide the column but keep the data
     },
     {
         title: "Category",
         field: "category",
         editor: false,
         formatter: validateCell,
+        visible: false, // Hide the column but keep the data
     },
     {
         title: "Category ID",
         field: "categoryId",
         editor: false,
         formatter: validateCell,
+        visible: false, // Hide the column but keep the data
     },
     {
         title: "Device Sterile",
         field: "deviceSterile",
         editor: "tickCross",
         formatter: "tickCross",
+        visible: false, // Hide the column but keep the data
     },
     {
         title: "Implantable",
         field: "implantable",
         editor: "tickCross",
         formatter: "tickCross",
+        visible: false, // Hide the column but keep the data
     },
     {
         title: "Error",
         field: "error",
         editor: false,
         visible: false, // Hide the column but keep the data
+    },
+    {
+        title: "fatalError",
+        field: "fatalError",
+        editor: "tickCross",
+        formatter: "tickCross",
+        visible: false,
     },
 ];
 
@@ -399,25 +416,25 @@ function auctionDurationFormatter(cell) {
 
     // Conditional Formatting Logic for Auction Duration
     if (listingType === 'auction') {
-        if (![1, 3, 5, 7, 10].includes(value)) {
+        // Highlight if value is not in allowed set
+        if (![1, 3, 5, 7, 10].includes(parseInt(value, 10))) {
             shouldHighlight = true;
         }
     }
 
-    // Apply Conditional Highlighting Styles
+    // Apply or Reset Conditional Highlighting Styles
     const cellElement = cell.getElement();
     if (shouldHighlight) {
         cellElement.style.backgroundColor = '#f8d7da'; // Light red background
         cellElement.style.color = '#721c24'; // Dark red text
     } else {
-        cellElement.style.backgroundColor = ''; // Reset to default
-        cellElement.style.color = ''; // Reset to default
+        // Explicitly reset styles to default
+        cellElement.style.backgroundColor = '';
+        cellElement.style.color = '';
     }
 
-    return value;
+    return value; // Return the original value to display it properly
 }
-
-
 
 function cleanCode(code) {
     return code.replace(/\s+/g, '').trim();
@@ -671,7 +688,6 @@ async function promptHeaderMapping(extractedHeaders, dataObjects) {
     });
 }
 
-
 async function processRecords(records) {
     let goodRecords = [];
     let badRecords = [];
@@ -734,18 +750,31 @@ async function processRecords(records) {
 
 async function processSingleRecord(record) {
     let mergedRecord = {...record}; // Start with the original user data
-
+    let fatalError = false;
     try {
         // Fetch deviceData
         const sku = record.SKU || record['SKU'];
         const refNumb = record['Reference Number'];
+        if (!sku && !refNumb) {
+            fatalError = true;
+            mergedRecord = {
+                ...mergedRecord,
+                fatalError,
+            }
+        }
         if (!sku) {
             throw new Error('SKU is missing');
         }
 
         const deviceData = await fetchDeviceData(sku, refNumb);
         if (!deviceData || !deviceData.gudid) {
-            throw new Error(`Device data not found for SKU: ${sku}`);
+            fatalError = true;
+            mergedRecord = {
+                ...mergedRecord,
+                fatalError,
+            }
+
+            throw new Error('Device not found via GTIN/SKU or Reference Number. Try changing either or both to resolve. We cannot import this listing until it error is resolved.');
         }
 
         // Extract deviceData fields
@@ -785,6 +814,7 @@ async function processSingleRecord(record) {
         const deviceName = classificationData.device_name || '';
         const medicalSpecialtyDescription = classificationData.medical_specialty_description || '';
 
+
         // Merge classificationData into the record
         mergedRecord = {
             ...mergedRecord,
@@ -795,6 +825,8 @@ async function processSingleRecord(record) {
             deviceName,
             medicalSpecialtyDescription,
         };
+
+        console.log('Merged Record', mergedRecord);
 
         // Validation Logic
         const quantityAvailable = parseInt(mergedRecord['Quantity Available'], 10);
@@ -826,13 +858,13 @@ async function processSingleRecord(record) {
             throw new Error('Invalid Listing Type. Must be "Auction" or "Sale"');
         }
 
+
         return {record: mergedRecord, isValid: true};
     } catch (error) {
         mergedRecord.error = error.message;
         return {record: mergedRecord, isValid: false};
     }
 }
-
 
 async function processingComplete(goodRecords, badRecords) {
     // Store the table instance globally
@@ -881,8 +913,10 @@ async function processingComplete(goodRecords, badRecords) {
 async function fetchDeviceData(rawCode, refNumb) {
     const code = rawCode;
     const referenceNumber = refNumb;
+
+    // Check if data is cached
     if (deviceDataCache[code]) {
-        return Promise.resolve(deviceDataCache[code]);
+        return deviceDataCache[code];
     }
 
     let data = null;
@@ -891,41 +925,39 @@ async function fetchDeviceData(rawCode, refNumb) {
     try {
         data = await fetchDeviceDataByCode(code);
         if (data) {
-            deviceDataCache[code] = data;
-            return data;
+            deviceDataCache[code] = data; // Cache the result
+            return data; // Return data if found
         }
     } catch (error) {
         console.error('Error fetching device data by code:', error);
     }
 
-    // If DI/UDI fetch failed or code is not DI/UDI, try fetching via catalog number
+    // If DI/UDI fetch failed, attempt to fetch via catalog number
     if (referenceNumber) {
         try {
             data = await fetchDeviceDataByCatalogNumber(referenceNumber);
             if (data) {
-                deviceDataCache[code] = data;
-                return data;
+                deviceDataCache[code] = data; // Cache the result
+                return data; // Return data if found
             }
         } catch (error) {
             console.error('Error fetching device data via catalog number:', error);
         }
 
-        // If fetching via catalog number failed, try fetching via version or model number
+        // Attempt to fetch via version or model number if catalog number fails
         try {
             data = await fetchDeviceDataByVersionModelNumber(referenceNumber);
             if (data) {
-                deviceDataCache[code] = data;
-                return data;
-            } else {
-                throw new Error('Device not found via GTIN/SKU or Reference Number. Try changing either or both to resolve. We cannot import until this error is resolved.');
+                deviceDataCache[code] = data; // Cache the result
+                return data; // Return data if found
             }
         } catch (error) {
             console.error('Error fetching device data via version or model number:', error);
-            throw error; // Propagate the error
         }
-    } else {
-        throw new Error('No valid code or reference number provided');
     }
+
+    // If all fetch attempts fail, return null
+    return null;
 }
 
 async function fetchDeviceDataByCode(code) {
@@ -952,19 +984,23 @@ async function fetchDeviceDataByCode(code) {
 
 async function fetchDeviceDataByCatalogNumber(referenceNumber) {
     const openFdaUrl = `https://api.fda.gov/device/udi.json?search=catalog_number.exact:${encodeURIComponent(referenceNumber)}&limit=1`;
-    console.log('Fetching device data via catalog number:', openFdaUrl);
+    try {
+        const response = await fetch(openFdaUrl);
+        if (!response.ok) {
+            console.warn('Device not found via catalog number:', referenceNumber);
+            return null; // Return null if the response is not OK
+        }
+        const data = await response.json();
 
-    const response = await fetch(openFdaUrl);
-    if (!response.ok) {
-        throw new Error('Device not found via catalog number');
-    }
-    const data = await response.json();
-    console.log("Device data from OpenFDA UDI API:", data);
-
-    if (data.results && data.results.length > 0) {
-        return transformOpenFdaData(data.results[0]);
-    } else {
-        throw new Error('No results found in OpenFDA data');
+        if (data.results && data.results.length > 0) {
+            return transformOpenFdaData(data.results[0]);
+        } else {
+            console.warn('No results found in OpenFDA data for catalog number:', referenceNumber);
+            return null; // Return null if no results are found
+        }
+    } catch (error) {
+        console.error('Error fetching device data by catalog number:', error);
+        return null; // Return null on error
     }
 }
 
@@ -972,17 +1008,24 @@ async function fetchDeviceDataByVersionModelNumber(referenceNumber) {
     const openFdaUrl = `https://api.fda.gov/device/udi.json?search=version_or_model_number.exact:${encodeURIComponent(referenceNumber)}&limit=1`;
     console.log('Fetching device data via version or model number:', openFdaUrl);
 
-    const response = await fetch(openFdaUrl);
-    if (!response.ok) {
-        throw new Error('Device not found via GTIN/SKU or Reference Number. Try changing either or both to resolve. We cannot import until this error is resolved.');
-    }
-    const data = await response.json();
-    console.log("Device data from OpenFDA UDI API:", data);
+    try {
+        const response = await fetch(openFdaUrl);
+        if (!response.ok) {
+            console.warn('Device not found via version or model number:', referenceNumber);
+            return null; // Return null if the response is not OK
+        }
+        const data = await response.json();
+        console.log("Device data from OpenFDA UDI API:", data);
 
-    if (data.results && data.results.length > 0) {
-        return transformOpenFdaData(data.results[0]);
-    } else {
-        throw new Error('No results found in OpenFDA data');
+        if (data.results && data.results.length > 0) {
+            return transformOpenFdaData(data.results[0]);
+        } else {
+            console.warn('No results found in OpenFDA data for version or model number:', referenceNumber);
+            return null; // Return null if no results are found
+        }
+    } catch (error) {
+        console.error('Error fetching device data via version or model number:', error);
+        return null; // Return null on error
     }
 }
 
@@ -1083,8 +1126,6 @@ function displayBadRecords(records, tableSelector = "#bad-records-table") {
         pxHeight = `${((records.length + 1) * 48) + 80}px`;
     }
 
-    const errorMessage = 'Device not found via GTIN/SKU or Reference Number. Try changing either or both to resolve. We cannot import until this error is resolved.';
-
     const table = new Tabulator(tableSelector, {
         data: records,
         theme: "bootstrap5",
@@ -1100,26 +1141,58 @@ function displayBadRecords(records, tableSelector = "#bad-records-table") {
             // Set the tooltip if there's an error
             if (rowData.error) {
                 row.getElement().setAttribute('title', rowData.error);
+                // Check if the error is fatal
+                const fatalErrorCell = row.getCell("fatalError");
+                if (fatalErrorCell) {
+                    const fatalErrorValue = fatalErrorCell.getValue();
+                    if (fatalErrorValue) {
+                        const errorMessage = 'Device not found via GTIN/SKU or Reference Number. Try changing either or both to resolve. We cannot import this listing until it error is resolved.';
+                        row.getElement().setAttribute('title', errorMessage);
+                        const rowElement = row.getElement();
+                        rowElement.style.backgroundColor = "#FFF3CD";
+
+                        // Get the SKU cell and style it
+                        const skuCell = row.getCell("SKU");
+                        if (skuCell) {
+                            skuCell.getElement().style.backgroundColor = "#f8d7da"; // Light red background
+                            skuCell.getElement().style.color = "#721c24"; // Dark red text
+                        }
+
+                        // Get the Reference Number cell and style it
+                        const referenceCell = row.getCell("Reference Number");
+                        if (referenceCell) {
+                            referenceCell.getElement().style.backgroundColor = "#f8d7da"; // Light red background
+                            referenceCell.getElement().style.color = "#721c24"; // Dark red text
+                        }
+                    }
+                } else {
+                    const rowElement = row.getElement();
+                    rowElement.style.backgroundColor = "";
+
+                    // Get the SKU cell and style it
+                    const skuCell = row.getCell("SKU");
+                    if (skuCell) {
+                        skuCell.getElement().style.backgroundColor = ""; // Light red background
+                        skuCell.getElement().style.color = ""; // Dark red text
+                    }
+
+                    // Get the Reference Number cell and style it
+                    const referenceCell = row.getCell("Reference Number");
+                    if (referenceCell) {
+                        referenceCell.getElement().style.backgroundColor = ""; // Light red background
+                        referenceCell.getElement().style.color = ""; // Dark red text
+                    }
+                }
             } else {
                 row.getElement().removeAttribute('title');
             }
 
-            // Apply custom styling to specific cells if the error matches
-            if (rowData.error === errorMessage) {
-                // Get the SKU cell and style it
-                const skuCell = row.getCell("SKU");
-                if (skuCell) {
-                    skuCell.getElement().style.backgroundColor = "#f8d7da"; // Light red background
-                    skuCell.getElement().style.color = "#721c24"; // Dark red text
-                }
 
-                // Get the Reference Number cell and style it
-                const referenceCell = row.getCell("Reference Number");
-                if (referenceCell) {
-                    referenceCell.getElement().style.backgroundColor = "#f8d7da"; // Light red background
-                    referenceCell.getElement().style.color = "#721c24"; // Dark red text
-                }
-            }
+            // Apply custom styling to specific cells if the error matches
+            // if (rowData.error === errorMessage) {
+            //     // Set the background of the row
+            //
+            // }
         }
     });
 
@@ -1226,43 +1299,74 @@ document.getElementById('saveBadRecordsBtn').addEventListener('click', async () 
     // Revalidate records
     const {goodRecords: newGoodRecords, badRecords: remainingBadRecords} = await revalidateRecords(updatedBadRecords);
 
-    // Merge new good records
-    goodRecords = goodRecords.concat(newGoodRecords);
+    // Check if all remaining bad records have a fatal error
+    const allFatalErrors = remainingBadRecords.length > 0 && remainingBadRecords.every(record => record.fatalError === true);
 
-    if (remainingBadRecords.length > 0) {
-        // Still some bad records
+    if (allFatalErrors) {
+        // All remaining bad records have fatal errors
         Swal.fire({
-            title: 'Validation Result',
-            text: `${remainingBadRecords.length} record(s) still have errors.`,
+            title: 'Some Records Still Need Attention',
+            html: `
+                <p>We successfully validated and moved <strong>${newGoodRecords.length}</strong> record(s) to the good records.</p>
+                <p>However, <strong>${remainingBadRecords.length}</strong> record(s) still contain errors that prevent them from being imported.</p>
+                <p>Please download the bad records to review them, then proceed with importing the valid records.</p>
+            `,
             icon: 'warning',
-            confirmButtonText: 'OK'
+            showCancelButton: true,
+            confirmButtonText: '<i class="fas fa-download"></i> Download Bad Records',
+            cancelButtonText: 'Cancel',
+            customClass: {
+                confirmButton: 'btn btn-warning', // Bootstrap warning button style for confirm
+                cancelButton: 'btn btn-secondary', // Bootstrap secondary button style for cancel
+            },
+            buttonsStyling: false // Disable default SweetAlert2 button styling to use Bootstrap
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Download the remaining bad records as an Excel file
+                const table = window.badRecordsTable;
+                table.download("xlsx", "bad_records.xlsx");
+
+                // Merge new good records and display them
+                goodRecords = goodRecords.concat(newGoodRecords);
+                displayGoodRecords(goodRecords);
+            }
         });
-        // Update the bad records table with remaining bad records
-        window.badRecordsTable.replaceData(remainingBadRecords);
-        // Optionally, refresh the table to re-apply formatters
-        window.badRecordsTable.redraw(true);
-
-        // Update the good records table with remaining bad records
-        window.goodRecordsTable.replaceData(goodRecords);
-        // Optionally, refresh the table to re-apply formatters
-        window.goodRecordsTable.redraw(true);
-
-        // Optionally, refresh the good records table
-        if (newGoodRecords.length > 0) {
-            displayGoodRecords(goodRecords);
-        }
     } else {
-        Swal.fire({
-            title: 'All Records Validated',
-            text: 'All records have been fixed and moved to good records.',
-            icon: 'success',
-            confirmButtonText: 'OK'
-        }).then(() => {
-            // Close the modal
-            badRecordsModal.hide();
-            // Refresh good records table
-            displayGoodRecords(goodRecords);
-        });
+        // Merge new good records
+        goodRecords = goodRecords.concat(newGoodRecords);
+
+        if (remainingBadRecords.length > 0) {
+            // Still some bad records without fatal errors
+            Swal.fire({
+                title: 'Validation Result',
+                text: `${remainingBadRecords.length} record(s) still have errors.`,
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
+
+            // Update the bad records table with remaining bad records
+            window.badRecordsTable.replaceData(remainingBadRecords);
+            // Optionally, refresh the table to re-apply formatters
+            window.badRecordsTable.redraw(true);
+
+            // Update the good records table with merged good records
+            window.goodRecordsTable.replaceData(goodRecords);
+            // Optionally, refresh the table to re-apply formatters
+            window.goodRecordsTable.redraw(true);
+        } else {
+            // All records are valid
+            Swal.fire({
+                title: 'All Records Validated',
+                text: 'All records have been fixed and moved to good records.',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                // Close the modal
+                badRecordsModal.hide();
+                // Refresh good records table
+                displayGoodRecords(goodRecords);
+            });
+        }
     }
 });
 
