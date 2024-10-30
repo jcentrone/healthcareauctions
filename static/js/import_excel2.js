@@ -67,9 +67,9 @@ const columns = [
             const images = rowData.images || [];
             const imagesCount = images.filter(image => image !== undefined && image !== null).length;
             if (imagesCount > 0) {
-                return `<button class="btn btn-sm btn-success">Edit Images</button>`;
+                return `<button class="btn btn-sm btn-success"><i class="fa-regular fa-image me-2"></i>Edit</button>`;
             } else {
-                return '<button class="btn btn-sm btn-primary">Add Images</button>';
+                return '<button class="btn btn-sm btn-primary"><i class="fa-regular fa-image me-2"></i>Add</button>';
             }
         },
         cellClick: function (e, cell) {
@@ -734,16 +734,6 @@ function openImageUploadModal(row, rowData) {
     });
 }
 
-
-function dataURLtoFile(dataurl, filename) {
-    let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
-        bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-    while (n--) {
-        u8arr[n] = bstr.charCodeAt(n);
-    }
-    return new File([u8arr], filename, {type: mime});
-}
-
 // Records Processing
 document.getElementById('fileInput').addEventListener('change', handleFileSelect);
 
@@ -963,8 +953,14 @@ async function processRecords(records) {
                 </div>
                 <div style="font-size: 1.1em; margin-bottom: 20px;">
                     <p>Processing record <b>${i + 1}</b> of ${totalRecords}</p>
-                    <p>Ready for Import: <b style="color: #1d8348;">${goodRecords.length}</b></p>
-                    <p>Not Ready for Import: <b style="color: #CD5C5C;">${badRecords.length}</b></p>
+                    <div style="display: flex; gap: 20px; justify-content: center; font-size: 1.1em; margin-bottom: 20px;">
+                        <div style="margin-right: 15px;">
+                            Ready: <b style="color: #1d8348;">${goodRecords.length}</b>
+                        </div>
+                        <div>
+                            Not Ready: <b style="color: #CD5C5C;">${badRecords.length}</b>
+                        </div>
+                    </div>
                 </div>
                 
             `
@@ -978,18 +974,17 @@ async function processRecords(records) {
 }
 
 async function processSingleRecord(record) {
-    let mergedRecord = {...record}; // Start with the original user data
-    let fatalError = false;
+    let mergedRecord = {
+        ...record,
+        fatalError: false,
+    }; // Start with the original user data
+
     try {
         // Fetch deviceData
         const sku = record.SKU || record['SKU'];
         const refNumb = record['Reference Number'];
         if (!sku && !refNumb) {
-            fatalError = true;
-            mergedRecord = {
-                ...mergedRecord,
-                fatalError,
-            }
+            mergedRecord.fatalError = true;
         }
         if (!sku) {
             throw new Error('SKU is missing');
@@ -997,11 +992,7 @@ async function processSingleRecord(record) {
 
         const deviceData = await fetchDeviceData(sku, refNumb);
         if (!deviceData || !deviceData.gudid) {
-            fatalError = true;
-            mergedRecord = {
-                ...mergedRecord,
-                fatalError,
-            }
+            mergedRecord.fatalError = true;
 
             throw new Error('Device not found via GTIN/SKU or Reference Number. Try changing either or both to resolve. We cannot import this listing until it error is resolved.');
         }
@@ -1037,12 +1028,17 @@ async function processSingleRecord(record) {
 
         // Extract classificationData fields
         const description = `${classificationData.description}\n\n${gmdnTerms}` || 'No description available';
-        const category = classificationData.category || 'No category';
-        const categoryId = classificationData.category_id || 'N/A';
+        const category = classificationData.category || '';
+        const categoryId = classificationData.category_id || '';
         const medicalSpecialtyCode = classificationData.medical_specialty_code || '';
         const deviceName = classificationData.device_name || '';
         const medicalSpecialtyDescription = classificationData.medical_specialty_description || '';
 
+        if (!categoryId && !medicalSpecialtyCode) {
+            mergedRecord.fatalError = true;
+            throw new Error('Device not found via GTIN/SKU or Reference Number. Try changing either or both to resolve. We cannot import this listing until it error is resolved.');
+
+        }
 
         // Merge classificationData into the record
         mergedRecord = {
@@ -1348,6 +1344,81 @@ async function fetchClassificationDataFromLocalDB(code) {
     }
 }
 
+async function revalidateRecords(records) {
+    const recordPromises = records.map(async (record) => {
+        try {
+            // Validate required fields
+            const requiredFields = ['listing_title', 'manufacturer', 'description', 'category'];
+            for (const field of requiredFields) {
+                if (!record[field] || record[field].toString().trim() === '') {
+                    throw new Error(`Field ${field} is missing or empty`);
+                }
+            }
+
+            // Validate date fields
+            const dateFields = ['Production Date', 'Expiration Date'];
+            for (const field of dateFields) {
+                const dateValue = record[field];
+                if (dateValue) {
+                    // Check if the date is in yyyy-mm-dd format
+                    const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+                    if (!datePattern.test(dateValue)) {
+                        throw new Error(`Field ${field} must be in yyyy-mm-dd format`);
+                    }
+                }
+            }
+
+            // **Validation Logic Starts Here**
+
+            // Rule 1: Quantity Available > 0
+            const quantityAvailable = parseInt(record['Quantity Available'], 10);
+            if (!quantityAvailable || quantityAvailable <= 0) {
+                throw new Error('Quantity Available must be greater than 0');
+            }
+
+            // Rule 2 & 4: Listing Type validation
+            const listingType = record['Listing Type']?.trim().toLowerCase();
+            if (!listingType) {
+                throw new Error('Listing Type is missing');
+            }
+
+            if (listingType === 'auction') {
+                // Rule 2: Auction validation
+                const startingBid = parseFloat(record['Starting Bid']);
+                if (!startingBid || startingBid <= 0) {
+                    throw new Error('Starting Bid must be greater than 0 for Auction listings');
+                }
+
+                const auctionDuration = parseInt(record['Auction Duration'], 10);
+                if (![1, 3, 5, 7, 10].includes(auctionDuration)) {
+                    throw new Error('Auction Duration must be one of 1, 3, 5, 7, or 10 for Auction listings');
+                }
+            } else if (listingType === 'sale') {
+                // Rule 4: Sale validation
+                const salePrice = parseFloat(record['Sale Price']);
+                if (!salePrice || salePrice <= 0) {
+                    throw new Error('Sale Price must be greater than 0 for Sale listings');
+                }
+            } else {
+                throw new Error('Invalid Listing Type. Must be "Auction" or "Sale"');
+            }
+
+            // If all validations pass
+            return {status: 'good', data: record};
+        } catch (error) {
+            // Add error details to the record
+            return {status: 'bad', data: {...record, error: error.message}};
+        }
+    });
+
+    const results = await Promise.all(recordPromises);
+
+    const goodRecords = results.filter(result => result.status === 'good').map(result => result.data);
+    const badRecords = results.filter(result => result.status === 'bad').map(result => result.data);
+
+    return {goodRecords, badRecords};
+}
+
 //Display Records
 function displayBadRecords(records, tableSelector = "#bad-records-table") {
     const recordsContainer = document.getElementById('records-container');
@@ -1608,8 +1679,10 @@ document.getElementById('saveBadRecordsBtn').addEventListener('click', async () 
 
 });
 
-document.getElementById('startOverBtn').addEventListener('click', async () => {
-    location.reload();
+document.querySelectorAll('.startOverBtn').forEach(button => {
+    button.addEventListener('click', function () {
+        location.reload(); // This will reload the page
+    });
 });
 
 document.getElementById('fixLaterBtn').addEventListener('click', async () => {
@@ -1626,80 +1699,161 @@ document.getElementById('fixLaterBtn').addEventListener('click', async () => {
     displayGoodRecords(window.goodRecordsTable);
 });
 
+// Import the listings
+document.getElementById('import-button').addEventListener('click', function (event) {
+    event.preventDefault(); // Prevent the default form submission
 
-async function revalidateRecords(records) {
-    const recordPromises = records.map(async (record) => {
-        try {
-            // Validate required fields
-            const requiredFields = ['listing_title', 'manufacturer', 'description', 'category'];
-            for (const field of requiredFields) {
-                if (!record[field] || record[field].toString().trim() === '') {
-                    throw new Error(`Field ${field} is missing or empty`);
-                }
-            }
+    // Call the function to handle the import
+    handleImport();
+});
 
-            // Validate date fields
-            const dateFields = ['Production Date', 'Expiration Date'];
-            for (const field of dateFields) {
-                const dateValue = record[field];
-                if (dateValue) {
-                    // Check if the date is in yyyy-mm-dd format
-                    const datePattern = /^\d{4}-\d{2}-\d{2}$/;
-                    if (!datePattern.test(dateValue)) {
-                        throw new Error(`Field ${field} must be in yyyy-mm-dd format`);
-                    }
-                }
-            }
+function handleImport() {
+    const auction_data = prepareAuctionData();
+    console.log('Auction Data', auction_data);
+    const formData = new FormData();
 
-            // **Validation Logic Starts Here**
+    // Append auction_data as a JSON string
+    formData.append('auction_data', JSON.stringify(auction_data));
 
-            // Rule 1: Quantity Available > 0
-            const quantityAvailable = parseInt(record['Quantity Available'], 10);
-            if (!quantityAvailable || quantityAvailable <= 0) {
-                throw new Error('Quantity Available must be greater than 0');
-            }
+    // Iterate over auction_data to append images
+    auction_data.forEach((auctionInfo, rowIndex) => {
+        if (auctionInfo.images && auctionInfo.images.length > 0) {
+            auctionInfo.images.forEach((image, imgIndex) => {
+                const file = dataURLtoFile(image.data, image.name);
+                // Create a unique key for each image
+                const imageKey = `images_${rowIndex}_${imgIndex}`;
+                formData.append(imageKey, file);
+            });
+        }
+        // Remove images from auctionInfo to avoid sending base64 data in the JSON
+        delete auctionInfo.images;
+    });
 
-            // Rule 2 & 4: Listing Type validation
-            const listingType = record['Listing Type']?.trim().toLowerCase();
-            if (!listingType) {
-                throw new Error('Listing Type is missing');
-            }
+    // Now that images are removed from auctionInfo, update the auction_data in FormData
+    formData.set('auction_data', JSON.stringify(auction_data));
 
-            if (listingType === 'auction') {
-                // Rule 2: Auction validation
-                const startingBid = parseFloat(record['Starting Bid']);
-                if (!startingBid || startingBid <= 0) {
-                    throw new Error('Starting Bid must be greater than 0 for Auction listings');
-                }
+    // Send the data to the server
+    sendDataToServer(formData);
+}
 
-                const auctionDuration = parseInt(record['Auction Duration'], 10);
-                if (![1, 3, 5, 7, 10].includes(auctionDuration)) {
-                    throw new Error('Auction Duration must be one of 1, 3, 5, 7, or 10 for Auction listings');
-                }
-            } else if (listingType === 'sale') {
-                // Rule 4: Sale validation
-                const salePrice = parseFloat(record['Sale Price']);
-                if (!salePrice || salePrice <= 0) {
-                    throw new Error('Sale Price must be greater than 0 for Sale listings');
-                }
-            } else {
-                throw new Error('Invalid Listing Type. Must be "Auction" or "Sale"');
-            }
 
-            // If all validations pass
-            return {status: 'good', data: record};
-        } catch (error) {
-            // Add error details to the record
-            return {status: 'bad', data: {...record, error: error.message}};
+// Function to convert empty strings to null
+function toNullIfEmpty(value) {
+    if (value === undefined || value === null) return null;
+    return value === "" ? null : value;
+}
+
+function toBoolean(value) {
+    if (typeof value !== 'string') return null;
+    if (value.toLowerCase() === "yes") return true;
+    if (value.toLowerCase() === "no") return false;
+    return null;
+}
+
+function formatDate(dateValue) {
+    if (!dateValue) return null;
+    const date = new Date(dateValue);
+    if (isNaN(date.getTime())) return null;
+    return date.toISOString().split('T')[0];
+}
+
+function prepareAuctionData() {
+    const listingsData = window.goodRecordsTable;
+    const auction_data = [];
+
+    console.log('Listing Data', listingsData);
+
+    listingsData.forEach((record, index) => {
+        let auctionInfo = {
+            title: record['Reference Number'] ? record['Reference Number'].trim() : '',
+            description: record['description'] ? record['description'].trim() : '',
+            category_id: record['categoryId'] || null,
+            manufacturer: record['manufacturer'] ? record['manufacturer'].trim() : '',
+            package_type: record['packageType'] ? record['packageType'].trim() : '',
+            deviceSterile: record['deviceSterile'],
+            implantable: record['implantable'],
+            medicalSpecialtyCode: record['medicalSpecialtyCode'] || '',
+            medicalSpecialtyDescription: record['medicalSpecialtyDescription'] || '',
+            deviceName: record['deviceName'] || '',
+
+            sku: record['SKU'] ? record['SKU'].trim() : null,
+            reference_number: record['Reference Number'] ? record['Reference Number'].trim() : null,
+            lot_number: record['Lot Number'] ? record['Lot Number'].trim() : null,
+            production_date: formatDate(record['Production Date']),
+            expiration_date: formatDate(record['Expiration Date']),
+            quantity_available: toNullIfEmpty(record['Quantity Available']),
+            auction_type: record['Listing Type'] ? record['Listing Type'].trim() : '',
+            starting_bid: toNullIfEmpty(record['Starting Bid']),
+            reserve_bid: toNullIfEmpty(record['Reserve Bid']),
+            buyItNowPrice: toNullIfEmpty(record['Sale Price']),
+            auction_duration: record['Auction Duration'] ? record['Auction Duration'].toString().trim() : null,
+            images: record.images || [], // Include images array
+        };
+
+        auction_data.push(auctionInfo);
+    });
+
+
+    return auction_data;
+}
+
+function sendDataToServer(formData) {
+    // Show a loading message using SweetAlert2
+    Swal.fire({
+        title: 'Importing Listings',
+        text: 'Please wait while we import your listings...',
+        icon: 'info',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            Swal.showLoading();
         }
     });
 
-    const results = await Promise.all(recordPromises);
+    fetch('/import_excel/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': getCsrfToken(), // Ensure CSRF token is included
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                Swal.fire({
+                    title: 'Import Complete',
+                    text: 'Your listings have been successfully imported.',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.goodRecordsTable.clearData();
+                });
+            } else {
+                Swal.fire({
+                    title: 'Import Failed',
+                    text: `An error occurred: ${data.message}`,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        })
+        .catch((error) => {
+            Swal.fire({
+                title: 'Import Failed',
+                text: `An error occurred: ${error.message}`,
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        });
+}
 
-    const goodRecords = results.filter(result => result.status === 'good').map(result => result.data);
-    const badRecords = results.filter(result => result.status === 'bad').map(result => result.data);
-
-    return {goodRecords, badRecords};
+function dataURLtoFile(dataurl, filename) {
+    let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, {type: mime});
 }
 
 

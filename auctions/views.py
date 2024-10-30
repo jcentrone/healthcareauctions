@@ -873,8 +873,8 @@ def import_excel(request):
                                 raise ValueError(f"Invalid {field_name} format: {date_str}. Expected YYYY-MM-DD.")
                         return None
 
-                    production_date_str = auction_info.get('production_date', '').strip()
-                    expiration_date_str = auction_info.get('expiration_date', '').strip()
+                    production_date_str = auction_info.get('production_date', '')
+                    expiration_date_str = auction_info.get('expiration_date', '')
 
                     try:
                         production_date = parse_date(production_date_str,
@@ -905,11 +905,11 @@ def import_excel(request):
                         ).filter(normalized_ref=auction_reference_number).first()
                         if product_image:
                             Image.objects.create(auction=auction, image=product_image.image)
-                        else:
-                            # Assign default image
-                            default_image = get_default_image()  # Define this function to return the default image
-                            if default_image:
-                                Image.objects.create(auction=auction, image=default_image)
+                        # else:
+                        #     # Assign default image
+                        #     default_image = get_default_image(request)  # Define this function to return the default image
+                        #     if default_image:
+                        #         Image.objects.create(auction=auction, image=default_image)
                     # if auction_reference_number:
                     #     try:
                     #         print(auction_reference_number)
