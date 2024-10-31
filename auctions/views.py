@@ -102,7 +102,8 @@ def index(request):
     random_listings = Auction.objects.filter(id__in=random_ids)
 
     # Get featured listings from active listings
-    featured_active_listing_ids = Auction.objects.filter(active=True, featured_listing=True).values_list('id', flat=True)
+    featured_active_listing_ids = Auction.objects.filter(active=True, featured_listing=True).values_list('id',
+                                                                                                         flat=True)
 
     featured_listing_ids = random.sample(list(featured_active_listing_ids), min(len(featured_active_listing_ids), 4))
     featured_listings = Auction.objects.filter(id__in=featured_listing_ids)
@@ -732,6 +733,7 @@ def auction_create(request):
         'title': 'Create Listing',
     })
 
+
 @login_required
 @csrf_exempt
 def get_classification_data(request):
@@ -903,23 +905,16 @@ def import_excel(request):
                         product_image = ProductImage.objects.annotate(
                             normalized_ref=Upper('reference_number')
                         ).filter(normalized_ref=auction_reference_number).first()
+
                         if product_image:
                             Image.objects.create(auction=auction, image=product_image.image)
-                        # else:
-                        #     # Assign default image
-                        #     default_image = get_default_image(request)  # Define this function to return the default image
-                        #     if default_image:
-                        #         Image.objects.create(auction=auction, image=default_image)
-                    # if auction_reference_number:
-                    #     try:
-                    #         print(auction_reference_number)
-                    #         # Look for a product image with the matching reference number
-                    #         product_image = ProductImage.objects.get(reference_number__iexact=auction_reference_number)
-                    #         # Create an image associated with the auction
-                    #         Image.objects.create(auction=auction, image=product_image.image)
-                    #     except ProductImage.DoesNotExist:
-                    #         # No matching product image found, do nothing
-                    #         pass
+                        else:
+                            # Use the updated function to get only the image URL
+                            default_image_url = get_default_image_url(request, auction_reference_number)
+
+                            if default_image_url:
+                                # If there is a default image URL, use it to create the Image object
+                                Image.objects.create(auction=auction, image=default_image_url)
 
                     # Handle the uploaded images
                     for key in request.FILES:
@@ -933,7 +928,7 @@ def import_excel(request):
                             Image.objects.create(auction=auction, image=request.FILES[key])
 
                 # After processing all auctions, return success
-                return JsonResponse({'status': 'success'})
+                return JsonResponse({'status': 'success',})
 
         except Exception as e:
             # Handle exceptions
@@ -1144,6 +1139,17 @@ def get_auction_images(request, auction_id):
     images = auction.get_images.all()
     image_urls = [image.image.url for image in images]
     return JsonResponse({'image_urls': image_urls})
+
+
+@login_required
+def get_default_image_url(request, reference_number):
+    try:
+        # Look for a product image with the matching reference number
+        product_image = ProductImage.objects.get(reference_number__iexact=reference_number)
+        return product_image.image.url  # Get the URL of the image
+    except ProductImage.DoesNotExist:
+        # No matching product image found
+        return None
 
 
 @login_required
@@ -2219,4 +2225,4 @@ def get_synergy_data(request, reference_number):
 
 
 def scan_to_excel(request):
-    return render(request, 'scan_to_excel.html',{})
+    return render(request, 'scan_to_excel.html', {})

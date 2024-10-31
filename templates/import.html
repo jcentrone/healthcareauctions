@@ -66,36 +66,81 @@
                     highlighted the issues in red for your convenience. If we’re unable to automatically find product
                     details for a listing, you will need to add them manually. We'll let you know if this is the
                     case.</p>
-                <div id="bad-records-table" class="table-striped"></div>
-                <div class="d-flex justify-content-between">
-                    <div class="d-flex justify-content-start w-auto gap-3">
-                        <button type="button" class="btn btn-danger mt-2 startOverBtn" id="startOverBtn">Start Over
+
+                <div id="bad-records-table" class="table-striped mt-5"></div>
+
+                <div class="w-100 d-flex justify-content-end">
+                    <div class="btn-group mt-3" role="group" aria-label="Second group">
+                        <!-- Start Over Button with Icon -->
+                        <button type="button" class="btn btn-danger startOverBtn" id="startOverBtn">
+                            <i class="fas fa-undo-alt"></i> Start Over
                         </button>
-                        <button type="button" class="btn btn-secondary mt-2" id="fixLaterBtn">Fix Later / Next</button>
+                        <!-- Fix Later Button with Icon -->
+                        <button type="button" class="btn btn-warning" id="fixLaterBtn">
+                            <i class="fas fa-download"></i> Download & Fix Later
+                        </button>
+
+                        <!-- Save Changes Button with Icon -->
+                        <button type="button" class="btn btn-primary" id="saveBadRecordsBtn">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                        <!-- Import Good Records Button with Icon -->
+                        <button type="button" class="btn btn-secondary" id="importGoodRecordsBtn">
+                            <i class="fas fa-upload"></i> Good Listings
+                        </button>
                     </div>
-                    <button type="button" class="btn btn-primary mt-2" id="saveBadRecordsBtn">Save Changes</button>
                 </div>
             </div>
-            <div class="record-container mt-3" id="good-records-container">
+            <div class="record-container" id="good-records-container">
                 <h2>Ready For Import</h2>
                 <p>These listings are ready to go. If you like you can add a picture to the listing now, or after
                     import. Also, when we have a stock photo in library we will automatically add it to the listing.</p>
-                <div id="good-records-table" class="table-striped"></div>
-                <div class="d-flex justify-content-between">
-                    <div class="d-flex justify-content-start w-auto gap-3 mt-2">
-                        <button type="button" class="btn btn-danger startOverBtn" id="startOverBtn">Start Over</button>
-                        <button type="button" class="btn btn-secondary" id="fixNowBtn">Fix Listings</button>
-                    </div>
-                    <div class="d-flex justify-content-end w-auto gap-3 mt-2">
-                        <button type="submit" class="btn btn-primary" id="import-button">Import
+                <div id="good-records-table" class="table-striped mt-5"></div>
+
+
+                <div class="w-100 d-flex justify-content-end">
+                    <div class="btn-group mt-3" role="group" aria-label="Second group">
+                        <!-- Start Over Button with Icon -->
+                        <button type="button" class="btn btn-danger startOverBtn" id="startOverBtn">
+                            <i class="fas fa-undo-alt"></i> Start Over
                         </button>
-                        {#                    <a id="dashboard-btn" class="btn btn-primary" style="display: none"#}
-                        {#                       href="{% url 'dashboard' %}?active_tab=listings&hold_for_import=True">Review and Post</a>#}
+                        <!-- Fix Bad Records Now Button with Icon -->
+                        <button type="button" class="btn btn-secondary" id="fixNowBtn">
+                            <i class="fa-solid fa-screwdriver-wrench"></i> Fix Listings
+                        </button>
+                         <!-- Import Good Records Button with Icon -->
+                        <button type="submit" class="btn btn-primary" id="import-button">
+                             <i class="fas fa-upload"></i> Import
+                        </button>
                     </div>
                 </div>
+
+
+                {#                <div class="d-flex justify-content-between">#}
+                {#                    <div class="d-flex justify-content-start w-auto gap-3 mt-2">#}
+                {#                        <button type="button" class="btn btn-danger startOverBtn" id="startOverBtn">Start Over</button>#}
+                {#                        <button type="button" class="btn btn-secondary" id="fixNowBtn">Fix Listings</button>#}
+                {#                    </div>#}
+                {#                    <div class="d-flex justify-content-end w-auto gap-3 mt-2">#}
+                {#                        <button type="submit" class="btn btn-primary" id="import-button">Import#}
+                {#                        </button>#}
+                {#                    </div>#}
+                {#                </div>#}
             </div>
             <div id="temp-table" style="display: none;"></div>
         </div>
+
+        <div class="d-none" id="next-steps-container">
+            <h4>Import Successful!</h4>
+            <p>Your listings have been successfully added and are ready for review. To ensure each listing meets your
+                expectations, we recommend reviewing and editing them if needed.</p>
+            <p>Once you're ready, you can post your listings directly from your dashboard. Simply click the button below
+                to review and publish:</p>
+            <a id="dashboard-btn" class="btn btn-success"
+               href="{% url 'dashboard' %}?active_tab=listings&hold_for_import=True">Review and Post</a>
+
+        </div>
+
     </div>
 
     <!-- Include Tabulator CSS -->

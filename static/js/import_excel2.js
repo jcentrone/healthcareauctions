@@ -59,6 +59,13 @@ const requiredHeaders = [
 ];
 const columns = [
     {
+        title: "#",
+        formatter: "rownum",
+        hozAlign: "center",
+        headerSort: false,
+        width: 50
+    },
+    {
         title: "Images",
         field: "images",
         formatter: function (cell, formatterParams, onRendered) {
@@ -72,6 +79,7 @@ const columns = [
                 return '<button class="btn btn-sm btn-primary"><i class="fa-regular fa-image me-2"></i>Add</button>';
             }
         },
+        visible: true,
         cellClick: function (e, cell) {
             const rowData = cell.getRow().getData();
             openImageUploadModal(cell.getRow(), rowData);
@@ -1092,39 +1100,38 @@ async function processSingleRecord(record) {
 }
 
 async function processingComplete(goodRecords, badRecords) {
-    // Store the table instance globally
-    window.goodRecordsTable = goodRecords;
-    window.badRecordsTable = badRecords;
+
+    // Create and save tables for global use
+    window.goodRecordsTable = await createTabulatorTable(goodRecords, '#good-records-table');
+    window.badRecordsTable = await createTabulatorTable(badRecords, '#bad-records-table');
+
+    console.log('Good Records', window.goodRecordsTable.getData());
+    console.log('Bad Records', window.badRecordsTable.getData());
 
     if (badRecords.length > 0) {
         Swal.fire({
             title: 'Processing Complete',
-            text: `Processing complete. Found ${badRecords.length} bad record(s). Would you like to fix them now?  Fixing later downloads the results as an Excel sheet.`,
+            text: `Processing complete. Found ${badRecords.length} record(s) that are not ready for import. Let's get them fixed.`,
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Fix Now',
-            cancelButtonText: 'Fix Later',
+            confirmButtonText: 'Fix',
+            cancelButtonText: 'Download and Fix Later',
             customClass: {
                 confirmButton: 'btn btn-primary',
-                cancelButton: 'btn btn-secondary',
+                cancelButton: 'btn btn-warning'
             },
         }).then((result) => {
             if (result.isConfirmed) {
-                // Show the bad records
-                displayBadRecords(badRecords, '#bad-records-table');
-                // Display good records
-                // displayGoodRecords(goodRecords);
+                // Show the bad records in the main table
+                displayBadRecords();
             } else {
                 // Download xlsx
-                const table = window.badRecordsTable;
-                table.download("xlsx", "error_records.xlsx");
+                window.badRecordsTable.download("xlsx", "error_records.xlsx");
+
                 // Display good records
-
-                displayGoodRecords(goodRecords);
-
+                displayGoodRecords();
             }
             document.getElementById('upload-sheet-container').style.display = 'none';
-
         });
     } else {
         Swal.fire({
@@ -1135,11 +1142,128 @@ async function processingComplete(goodRecords, badRecords) {
                 confirmButton: 'btn btn-primary',
             },
         });
-        // Hide the bad records and show the good records tables
         document.getElementById('upload-sheet-container').style.display = 'none';
-        document.getElementById('bad-records-container').style.display = 'none';
-        displayGoodRecords(goodRecords);
+        displayGoodRecords();
     }
+}
+
+//Display Records
+function displayBadRecords() {
+    const recordsContainer = document.getElementById('records-container');
+    recordsContainer.style.display = 'block';
+    const badRecordsContainer = document.getElementById('bad-records-container');
+    badRecordsContainer.style.display = 'block';
+    const goodRecordsContainer = document.getElementById('good-records-container');
+    goodRecordsContainer.style.display = 'none';
+}
+
+function displayGoodRecords() {
+    const recordsContainer = document.getElementById('records-container');
+    recordsContainer.style.display = 'block';
+    const goodRecordsContainer = document.getElementById('good-records-container');
+    goodRecordsContainer.style.display = 'block';
+    const badRecordsContainer = document.getElementById('bad-records-container');
+    badRecordsContainer.style.display = 'none';
+}
+
+async function createTabulatorTable(records, selector) {
+    let pxHeight;
+    if (records.length > 9) {
+        pxHeight = `${(11 * 48) + 90}px`;
+    } else {
+        pxHeight = `${((records.length + 1) * 48) + 90}px`;
+    }
+
+    let modifiedColumns;
+
+    // Make a copy of the columns to modify for the bad records table
+    if (selector === '#bad-records-table') {
+        modifiedColumns = columns.map(col => {
+            if (col.field === 'images') {
+                // Hide the 'images' column in the bad records table
+                return {...col, visible: false};
+            }
+            return col;
+        });
+    } else {
+        modifiedColumns = columns;
+    }
+    console.log('Records', records);
+
+    try {
+        const table = new Tabulator(selector, {
+            data: records,
+            theme: "bootstrap5",
+            layout: "fitData",
+            columns: modifiedColumns,
+            height: pxHeight,
+            pagination: "local",
+            paginationSize: 10,
+            rowFormatter: function (row) {
+                const rowData = row.getData();
+
+                // Set the tooltip if there's an error
+                if (rowData.error) {
+                    row.getElement().setAttribute('title', rowData.error);
+                    // Check if the error is fatal
+                    const fatalErrorCell = row.getCell("fatalError");
+                    if (fatalErrorCell) {
+                        const fatalErrorValue = fatalErrorCell.getValue();
+                        if (fatalErrorValue) {
+                            const errorMessage = 'Device not found via GTIN/SKU or Reference Number. Try changing either or both to resolve. We cannot import this listing until it error is resolved.';
+                            row.getElement().setAttribute('title', errorMessage);
+                            const rowElement = row.getElement();
+                            rowElement.style.backgroundColor = "#FFF3CD";
+
+                            // Get the SKU cell and style it
+                            const skuCell = row.getCell("SKU");
+                            if (skuCell) {
+                                skuCell.getElement().style.backgroundColor = "#f8d7da"; // Light red background
+                                skuCell.getElement().style.color = "#721c24"; // Dark red text
+                            }
+
+                            // Get the Reference Number cell and style it
+                            const referenceCell = row.getCell("Reference Number");
+                            if (referenceCell) {
+                                referenceCell.getElement().style.backgroundColor = "#f8d7da"; // Light red background
+                                referenceCell.getElement().style.color = "#721c24"; // Dark red text
+                            }
+                        }
+                    } else {
+                        const rowElement = row.getElement();
+                        rowElement.style.backgroundColor = "";
+
+                        // Get the SKU cell and style it
+                        const skuCell = row.getCell("SKU");
+                        if (skuCell) {
+                            skuCell.getElement().style.backgroundColor = ""; // Light red background
+                            skuCell.getElement().style.color = ""; // Dark red text
+                        }
+
+                        // Get the Reference Number cell and style it
+                        const referenceCell = row.getCell("Reference Number");
+                        if (referenceCell) {
+                            referenceCell.getElement().style.backgroundColor = ""; // Light red background
+                            referenceCell.getElement().style.color = ""; // Dark red text
+                        }
+                    }
+                } else {
+                    row.getElement().removeAttribute('title');
+                }
+            }
+        });
+
+        console.log('Table', table.getData());
+
+        table.on("cellEdited", function (cell) {
+            cellEditor(cell);
+        })
+        return table;
+
+    } catch (error) {
+        console.error('Error creating table:', error);
+    }
+    return null;
 }
 
 async function fetchDeviceData(rawCode, refNumb) {
@@ -1419,131 +1543,6 @@ async function revalidateRecords(records) {
     return {goodRecords, badRecords};
 }
 
-//Display Records
-function displayBadRecords(records, tableSelector = "#bad-records-table") {
-    const recordsContainer = document.getElementById('records-container');
-    recordsContainer.style.display = 'block';
-    const badRecordsContainer = document.getElementById('bad-records-container');
-    badRecordsContainer.style.display = 'block';
-
-    let pxHeight;
-    if (records.length > 9) {
-        pxHeight = `${(11 * 48) + 90}px`;
-    } else {
-        pxHeight = `${((records.length + 1) * 48) + 80}px`;
-    }
-
-    // Make a copy of the columns to modify for the bad records table
-    const modifiedColumns = columns.map(col => {
-        if (col.field === 'images') {
-            // Hide the 'images' column in the bad records table
-            return {...col, visible: false};
-        }
-        return col;
-    });
-
-    const table = new Tabulator(tableSelector, {
-        data: records,
-        theme: "bootstrap5",
-        renderHorizontal: "virtual",
-        layout: "fitData",
-        columns: modifiedColumns, // Use the modified columns variable (hides images)
-        height: pxHeight,
-        pagination: "local",
-        paginationSize: 10,
-        rowFormatter: function (row) {
-            const rowData = row.getData();
-
-            // Set the tooltip if there's an error
-            if (rowData.error) {
-                row.getElement().setAttribute('title', rowData.error);
-                // Check if the error is fatal
-                const fatalErrorCell = row.getCell("fatalError");
-                if (fatalErrorCell) {
-                    const fatalErrorValue = fatalErrorCell.getValue();
-                    if (fatalErrorValue) {
-                        const errorMessage = 'Device not found via GTIN/SKU or Reference Number. Try changing either or both to resolve. We cannot import this listing until it error is resolved.';
-                        row.getElement().setAttribute('title', errorMessage);
-                        const rowElement = row.getElement();
-                        rowElement.style.backgroundColor = "#FFF3CD";
-
-                        // Get the SKU cell and style it
-                        const skuCell = row.getCell("SKU");
-                        if (skuCell) {
-                            skuCell.getElement().style.backgroundColor = "#f8d7da"; // Light red background
-                            skuCell.getElement().style.color = "#721c24"; // Dark red text
-                        }
-
-                        // Get the Reference Number cell and style it
-                        const referenceCell = row.getCell("Reference Number");
-                        if (referenceCell) {
-                            referenceCell.getElement().style.backgroundColor = "#f8d7da"; // Light red background
-                            referenceCell.getElement().style.color = "#721c24"; // Dark red text
-                        }
-                    }
-                } else {
-                    const rowElement = row.getElement();
-                    rowElement.style.backgroundColor = "";
-
-                    // Get the SKU cell and style it
-                    const skuCell = row.getCell("SKU");
-                    if (skuCell) {
-                        skuCell.getElement().style.backgroundColor = ""; // Light red background
-                        skuCell.getElement().style.color = ""; // Dark red text
-                    }
-
-                    // Get the Reference Number cell and style it
-                    const referenceCell = row.getCell("Reference Number");
-                    if (referenceCell) {
-                        referenceCell.getElement().style.backgroundColor = ""; // Light red background
-                        referenceCell.getElement().style.color = ""; // Dark red text
-                    }
-                }
-            } else {
-                row.getElement().removeAttribute('title');
-            }
-        }
-    });
-
-    table.on("cellEdited", function (cell) {
-        cellEditor(cell);
-    });
-
-    // Store the table instance globally
-    window.badRecordsTable = table;
-}
-
-function displayGoodRecords(goodRecords = window.goodRecordsTable) {
-    const recordsContainer = document.getElementById('records-container');
-    recordsContainer.style.display = 'block';
-    const goodRecordsContainer = document.getElementById('good-records-container');
-    goodRecordsContainer.style.display = 'block';
-
-    let pxHeight;
-    if (goodRecords.length > 9) {
-        pxHeight = `${(11 * 48) + 90}px`;
-    } else {
-        pxHeight = `${((goodRecords.length + 1) * 48) + 80}px`;
-    }
-
-
-    const table = new Tabulator("#good-records-table", {
-        data: goodRecords,
-        theme: "bootstrap5",
-        renderHorizontal: "virtual",
-        layout: "fitData",
-        columns: columns,
-        height: pxHeight,
-        pagination: "local",
-        paginationSize: 10,
-    });
-
-    table.on("cellEdited", function (cell) {
-        cellEditor(cell);
-    })
-
-
-}
 
 function cellEditor(cell) {
     const field = cell.getField();
@@ -1611,7 +1610,9 @@ document.getElementById('saveBadRecordsBtn').addEventListener('click', async () 
     const allFatalErrors = remainingBadRecords.length > 0 && remainingBadRecords.every(record => record.fatalError === true);
 
     // Merge new good records and display them
-    goodRecords = goodRecords.concat(newGoodRecords);
+    // goodRecords = goodRecords.concat(newGoodRecords);
+    window.goodRecordsTable.addData(newGoodRecords);
+    window.goodRecordsTable.redraw(true);
 
     if (remainingBadRecords.length > 0) {
         if (allFatalErrors) {
@@ -1644,8 +1645,7 @@ document.getElementById('saveBadRecordsBtn').addEventListener('click', async () 
                     table.download("xlsx", "error_records.xlsx");
 
                     // Hide the bad records and show the good records tables
-                    document.getElementById('bad-records-container').style.display = 'none';
-                    displayGoodRecords(goodRecords);
+                    displayGoodRecords();
                 }
             });
         } else {
@@ -1672,8 +1672,7 @@ document.getElementById('saveBadRecordsBtn').addEventListener('click', async () 
             confirmButtonText: 'OK'
         }).then(() => {
             // Hide the bad records and show the good records tables
-            document.getElementById('bad-records-container').style.display = 'none';
-            displayGoodRecords(goodRecords);
+            displayGoodRecords();
         });
     }
 
@@ -1690,19 +1689,20 @@ document.getElementById('fixLaterBtn').addEventListener('click', async () => {
     const table = window.badRecordsTable;
     table.download("xlsx", "error_records.xlsx");
 
-    const badRecords = document.getElementById('bad-records-container');
-    badRecords.style.display = 'none';
-
-    const goodRecords = document.getElementById('good-records-container');
-    goodRecords.style.display = 'block';
-
-    displayGoodRecords(window.goodRecordsTable);
+    displayGoodRecords();
 });
 
 // Import the listings
+document.getElementById('fixNowBtn').addEventListener('click', function (event) {
+    displayBadRecords();
+});
+
+document.getElementById('importGoodRecordsBtn').addEventListener('click', function (event) {
+    displayGoodRecords();
+});
+
 document.getElementById('import-button').addEventListener('click', function (event) {
     event.preventDefault(); // Prevent the default form submission
-
     // Call the function to handle the import
     handleImport();
 });
@@ -1733,7 +1733,9 @@ function handleImport() {
     formData.set('auction_data', JSON.stringify(auction_data));
 
     // Send the data to the server
-    sendDataToServer(formData);
+    sendDataToServer(formData, auction_data.length);
+
+
 }
 
 
@@ -1741,13 +1743,6 @@ function handleImport() {
 function toNullIfEmpty(value) {
     if (value === undefined || value === null) return null;
     return value === "" ? null : value;
-}
-
-function toBoolean(value) {
-    if (typeof value !== 'string') return null;
-    if (value.toLowerCase() === "yes") return true;
-    if (value.toLowerCase() === "no") return false;
-    return null;
 }
 
 function formatDate(dateValue) {
@@ -1758,7 +1753,10 @@ function formatDate(dateValue) {
 }
 
 function prepareAuctionData() {
-    const listingsData = window.goodRecordsTable;
+    console.log('Type of goodRecordsTable:', typeof window.goodRecordsTable);
+    console.log('goodRecordsTable:', window.goodRecordsTable);
+
+    const listingsData = window.goodRecordsTable.getData();
     const auction_data = [];
 
     console.log('Listing Data', listingsData);
@@ -1797,7 +1795,7 @@ function prepareAuctionData() {
     return auction_data;
 }
 
-function sendDataToServer(formData) {
+function sendDataToServer(formData, recordCount) {
     // Show a loading message using SweetAlert2
     Swal.fire({
         title: 'Importing Listings',
@@ -1822,11 +1820,16 @@ function sendDataToServer(formData) {
             if (data.status === 'success') {
                 Swal.fire({
                     title: 'Import Complete',
-                    text: 'Your listings have been successfully imported.',
+                    text: `${recordCount} listing(s) have been successfully imported.`,
                     icon: 'success',
-                    confirmButtonText: 'OK'
+                    confirmButtonText: 'OK',
+                    customClass: {
+                        confirmButton: 'btn btn-primary',
+                    }
                 }).then(() => {
                     window.goodRecordsTable.clearData();
+                    document.getElementById('next-steps-container').classList.remove('d-none');
+                    document.getElementById('records-container').style.display = 'none';
                 });
             } else {
                 Swal.fire({
