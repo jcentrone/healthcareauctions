@@ -775,6 +775,9 @@ def import_excel(request):
                 auction_data_raw = request.POST.get('auction_data', '[]')
                 auction_data = json.loads(auction_data_raw)
 
+                # Create a dictionary to map row_index to auction
+                auctions = {}
+
                 for index, auction_info in enumerate(auction_data):
                     logger.debug(f"Processing auction {index + 1}: {auction_info}")
 
@@ -862,6 +865,9 @@ def import_excel(request):
                     # Save the auction to trigger the save method (sets auction_ending_date)
                     auction.save()
 
+                    # Store the auction in the dictionary with its index
+                    auctions[index] = auction
+
                     # Clean the reference number by removing leading zeros and whitespace, and converting to uppercase
                     auction_reference_number = auction_info.get('reference_number', '').strip().lstrip('0').upper()
 
@@ -916,19 +922,21 @@ def import_excel(request):
                                 # If there is a default image URL, use it to create the Image object
                                 Image.objects.create(auction=auction, image=default_image_url)
 
-                    # Handle the uploaded images
-                    for key in request.FILES:
-                        logger.debug(f"Processing file key: {key}")
-                        match = re.match(r'images_(\d+)_\d+', key)
-                        if match:
-                            row_index = int(match.group(1))
-                            current_auction_info = auction_data[row_index]
+                # Handle the uploaded images
+                for key in request.FILES:
+                    logger.debug(f"Processing file key: {key}")
+                    match = re.match(r'images_(\d+)_\d+', key)
+                    if match:
+                        row_index = int(match.group(1))
+                        auction = auctions.get(row_index)  # Get the corresponding auction
 
-                            # Save the image
+                        if auction:
+                            # Save the image to the correct auction
                             Image.objects.create(auction=auction, image=request.FILES[key])
 
                 # After processing all auctions, return success
-                return JsonResponse({'status': 'success',})
+                return JsonResponse({'status': 'success'})
+
 
         except Exception as e:
             # Handle exceptions
