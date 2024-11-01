@@ -1,0 +1,25 @@
+<div id="image-formset-{{ auction_id }}">
+    {{ image_formset.management_form }}
+    {% for form in image_formset.forms %}
+        <div class="formset-form border p-3 mb-2">
+            {{ form.as_p }}
+            {% if form.instance.pk %}
+                <div class="form-check">
+                    {{ form.DELETE }} <label class="form-check-label">Delete</label>
+                </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+    <button type="button" class="btn btn-secondary add-image-btn" data-auction-id="{{ auction_id }}">Add Image</button>
+
+    <!-- Empty Form Template -->
+    <div id="empty-form-template-{{ auction_id }}" class="d-none">
+        <div class="formset-form border p-3 mb-2">
+            {{ image_formset.empty_form.as_p }}
+            <div class="form-check">
+                <input type="checkbox" name="images-{{ auction_id }}-__prefix__-DELETE" class="form-check-input">
+                <label class="form-check-label">Delete</label>
+            </div>
+        </div>
+    </div>
+</div>

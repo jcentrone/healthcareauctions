@@ -661,68 +661,76 @@
                                             <ul class='pagination'>
 
                                                 <!-- Previous Page Link -->
-                                                {% if orders.has_previous %}
-                                                    <li class='page-item'>
-                                                        <a class='page-link'
-                                                           href='?order_page={{ orders.previous_page_number }}&active_tab=orders&order_status={{ order_status }}&order_date={{ order_date }}'>
-                                                            &laquo;
-                                                        </a>
-                                                    </li>
-                                                {% else %}
-                                                    <li class='page-item disabled'>
-                                                        <a class='page-link' href='#'>&laquo;</a>
-                                                    </li>
+                                                {% if orders.has_other_pages %}
+                                                    <div class='d-flex justify-content-center'>
+                                                        <ul class='pagination flex-wrap justify-content-center'>
+
+                                                            <!-- Previous Page Link -->
+                                                            {% if orders.has_previous %}
+                                                                <li class='page-item'>
+                                                                    <a class='page-link'
+                                                                       href='?order_page={{ orders.previous_page_number }}&active_tab=orders{% if order_status %}&order_status={{ order_status }}{% endif %}{% if order_date %}&order_date={{ order_date }}{% endif %}'>&laquo;</a>
+                                                                </li>
+                                                            {% else %}
+                                                                <li class='page-item disabled'>
+                                                                    <a class='page-link' href='#'>&laquo;</a>
+                                                                </li>
+                                                            {% endif %}
+
+                                                            <!-- First Page Link and Ellipsis -->
+                                                            {% if orders.number > 3 %}
+                                                                <li class='page-item'>
+                                                                    <a class='page-link'
+                                                                       href='?order_page=1&active_tab=orders{% if order_status %}&order_status={{ order_status }}{% endif %}{% if order_date %}&order_date={{ order_date }}{% endif %}'>1</a>
+                                                                </li>
+                                                                <li class='page-item disabled'>
+                                                                    <a class='page-link' href='#'>...</a>
+                                                                </li>
+                                                            {% endif %}
+
+                                                            <!-- Page Range Around Current Page -->
+                                                            {% for i in orders.paginator.page_range %}
+                                                                {% if i >= orders.number|add:'-2' and i <= orders.number|add:'2' %}
+                                                                    {% if orders.number == i %}
+                                                                        <li class='page-item active'>
+                                                                            <a class='page-link' href='#'>{{ i }}</a>
+                                                                        </li>
+                                                                    {% else %}
+                                                                        <li class='page-item'>
+                                                                            <a class='page-link'
+                                                                               href='?order_page={{ i }}&active_tab=orders{% if order_status %}&order_status={{ order_status }}{% endif %}{% if order_date %}&order_date={{ order_date }}{% endif %}'>{{ i }}</a>
+                                                                        </li>
+                                                                    {% endif %}
+                                                                {% endif %}
+                                                            {% endfor %}
+
+                                                            <!-- Last Page Link and Ellipsis -->
+                                                            {% if orders.number < orders.paginator.num_pages|add:'-2' %}
+                                                                <li class='page-item disabled'>
+                                                                    <a class='page-link' href='#'>...</a>
+                                                                </li>
+                                                                <li class='page-item'>
+                                                                    <a class='page-link'
+                                                                       href='?order_page={{ orders.paginator.num_pages }}&active_tab=orders{% if order_status %}&order_status={{ order_status }}{% endif %}{% if order_date %}&order_date={{ order_date }}{% endif %}'>{{ orders.paginator.num_pages }}</a>
+                                                                </li>
+                                                            {% endif %}
+
+                                                            <!-- Next Page Link -->
+                                                            {% if orders.has_next %}
+                                                                <li class='page-item'>
+                                                                    <a class='page-link'
+                                                                       href='?order_page={{ orders.next_page_number }}&active_tab=orders{% if order_status %}&order_status={{ order_status }}{% endif %}{% if order_date %}&order_date={{ order_date }}{% endif %}'>&raquo;</a>
+                                                                </li>
+                                                            {% else %}
+                                                                <li class='page-item disabled'>
+                                                                    <a class='page-link' href='#'>&raquo;</a>
+                                                                </li>
+                                                            {% endif %}
+
+                                                        </ul>
+                                                    </div>
                                                 {% endif %}
 
-                                                <!-- First Page Link -->
-                                                {% if orders.number > 3 %}
-                                                    <li class='page-item'>
-                                                        <a class='page-link'
-                                                           href='?order_page=1&active_tab=orders&order_status={{ order_status }}&order_date={{ order_date }}'>1</a>
-                                                    </li>
-                                                    <li class='page-item disabled'>
-                                                        <a class='page-link' href='#'>...</a>
-                                                    </li>
-                                                {% endif %}
-
-                                                <!-- Page Range Around Current Page -->
-                                                {% for i in orders.paginator.page_range %}
-                                                    {% if i >= orders.number|add:'-2' and i <= orders.number|add:'2' %}
-                                                        {% if orders.number == i %}
-                                                            <li class='page-item active'>
-                                                                <a class='page-link' href='#'>{{ i }}</a>
-                                                            </li>
-                                                        {% else %}
-                                                            <li class='page-item'>
-                                                                <a class='page-link'
-                                                                   href='?order_page={{ i }}&active_tab=orders&order_status={{ order_status }}&order_date={{ order_date }}'>{{ i }}</a>
-                                                            </li>
-                                                        {% endif %}
-                                                    {% endif %}
-                                                {% endfor %}
-
-                                                <!-- Last Page Link -->
-                                                {% if orders.number < orders.paginator.num_pages|add:'-2' %}
-                                                    <li class='page-item disabled'>
-                                                        <a class='page-link' href='#'>...</a>
-                                                    </li>
-                                                    <li class='page-item'>
-                                                        <a class='page-link'
-                                                           href='?order_page={{ orders.paginator.num_pages }}&active_tab=orders&order_status={{ order_status }}&order_date={{ order_date }}'>{{ orders.paginator.num_pages }}</a>
-                                                    </li>
-                                                {% endif %}
-
-                                                <!-- Next Page Link -->
-                                                {% if orders.has_next %}
-                                                    <li class='page-item'>
-                                                        <a class='page-link'
-                                                           href='?order_page={{ orders.next_page_number }}&active_tab=orders&order_status={{ order_status }}&order_date={{ order_date }}'>&raquo;</a>
-                                                    </li>
-                                                {% else %}
-                                                    <li class='page-item disabled'>
-                                                        <a class='page-link' href='#'>&raquo;</a>
-                                                    </li>
-                                                {% endif %}
 
                                             </ul>
                                         </div>
@@ -1074,9 +1082,7 @@
                                                 {% if sales.has_previous %}
                                                     <li class='page-item'>
                                                         <a class='page-link'
-                                                           href='?sale_page={{ sales.previous_page_number }}&active_tab=sales&sales_status={{ sales_status }}&sales_date={{ sales_date }}'>
-                                                            &laquo;
-                                                        </a>
+                                                           href='?sale_page={{ sales.previous_page_number }}&active_tab=sales{% if sales_status %}&sales_status={{ sales_status }}{% endif %}{% if sales_date %}&sales_date={{ sales_date }}{% endif %}'>&laquo;</a>
                                                     </li>
                                                 {% else %}
                                                     <li class='page-item disabled'>
@@ -1088,7 +1094,7 @@
                                                 {% if sales.number > 3 %}
                                                     <li class='page-item'>
                                                         <a class='page-link'
-                                                           href='?sale_page=1&active_tab=sales&sales_status={{ sales_status }}&sales_date={{ sales_date }}'>1</a>
+                                                           href='?sale_page=1&active_tab=sales{% if sales_status %}&sales_status={{ sales_status }}{% endif %}{% if sales_date %}&sales_date={{ sales_date }}{% endif %}'>1</a>
                                                     </li>
                                                     <li class='page-item disabled'>
                                                         <a class='page-link' href='#'>...</a>
@@ -1105,7 +1111,7 @@
                                                         {% else %}
                                                             <li class='page-item'>
                                                                 <a class='page-link'
-                                                                   href='?sale_page={{ i }}&active_tab=sales&sales_status={{ sales_status }}&sales_date={{ sales_date }}'>{{ i }}</a>
+                                                                   href='?sale_page={{ i }}&active_tab=sales{% if sales_status %}&sales_status={{ sales_status }}{% endif %}{% if sales_date %}&sales_date={{ sales_date }}{% endif %}'>{{ i }}</a>
                                                             </li>
                                                         {% endif %}
                                                     {% endif %}
@@ -1118,7 +1124,7 @@
                                                     </li>
                                                     <li class='page-item'>
                                                         <a class='page-link'
-                                                           href='?sale_page={{ sales.paginator.num_pages }}&active_tab=sales&sales_status={{ sales_status }}&sales_date={{ sales_date }}'>{{ sales.paginator.num_pages }}</a>
+                                                           href='?sale_page={{ sales.paginator.num_pages }}&active_tab=sales{% if sales_status %}&sales_status={{ sales_status }}{% endif %}{% if sales_date %}&sales_date={{ sales_date }}{% endif %}'>{{ sales.paginator.num_pages }}</a>
                                                     </li>
                                                 {% endif %}
 
@@ -1126,7 +1132,7 @@
                                                 {% if sales.has_next %}
                                                     <li class='page-item'>
                                                         <a class='page-link'
-                                                           href='?sale_page={{ sales.next_page_number }}&active_tab=sales&sales_status={{ sales_status }}&sales_date={{ sales_date }}'>&raquo;</a>
+                                                           href='?sale_page={{ sales.next_page_number }}&active_tab=sales{% if sales_status %}&sales_status={{ sales_status }}{% endif %}{% if sales_date %}&sales_date={{ sales_date }}{% endif %}'>&raquo;</a>
                                                     </li>
                                                 {% else %}
                                                     <li class='page-item disabled'>
@@ -1137,7 +1143,6 @@
                                             </ul>
                                         </div>
                                     {% endif %}
-
                                 </div>
                             </div>
                         </div>
@@ -1235,7 +1240,7 @@
                                                 {% if auctions.has_previous %}
                                                     <li class='page-item'>
                                                         <a class='page-link'
-                                                           href='?auction_page={{ auctions.previous_page_number }}'>&laquo;</a>
+                                                           href='?auction_page={{ auctions.previous_page_number }}&active_tab=activeBids{% if bid_status %}&bid_status={{ bid_status }}{% endif %}'>&laquo;</a>
                                                     </li>
                                                 {% else %}
                                                     <li class='page-item disabled'>
@@ -1246,7 +1251,8 @@
                                                 <!-- First Page Link and Ellipsis -->
                                                 {% if auctions.number > 3 %}
                                                     <li class='page-item'>
-                                                        <a class='page-link' href='?auction_page=1'>1</a>
+                                                        <a class='page-link'
+                                                           href='?auction_page=1&active_tab=activeBids{% if bid_status %}&bid_status={{ bid_status }}{% endif %}'>1</a>
                                                     </li>
                                                     <li class='page-item disabled'>
                                                         <a class='page-link' href='#'>...</a>
@@ -1263,7 +1269,7 @@
                                                         {% else %}
                                                             <li class='page-item'>
                                                                 <a class='page-link'
-                                                                   href='?auction_page={{ i }}'>{{ i }}</a>
+                                                                   href='?auction_page={{ i }}&active_tab=activeBids{% if bid_status %}&bid_status={{ bid_status }}{% endif %}'>{{ i }}</a>
                                                             </li>
                                                         {% endif %}
                                                     {% endif %}
@@ -1276,7 +1282,7 @@
                                                     </li>
                                                     <li class='page-item'>
                                                         <a class='page-link'
-                                                           href='?auction_page={{ auctions.paginator.num_pages }}'>{{ auctions.paginator.num_pages }}</a>
+                                                           href='?auction_page={{ auctions.paginator.num_pages }}&active_tab=activeBids{% if bid_status %}&bid_status={{ bid_status }}{% endif %}'>{{ auctions.paginator.num_pages }}</a>
                                                     </li>
                                                 {% endif %}
 
@@ -1284,7 +1290,7 @@
                                                 {% if auctions.has_next %}
                                                     <li class='page-item'>
                                                         <a class='page-link'
-                                                           href='?auction_page={{ auctions.next_page_number }}'>&raquo;</a>
+                                                           href='?auction_page={{ auctions.next_page_number }}&active_tab=activeBids{% if bid_status %}&bid_status={{ bid_status }}{% endif %}'>&raquo;</a>
                                                     </li>
                                                 {% else %}
                                                     <li class='page-item disabled'>
@@ -1295,6 +1301,7 @@
                                             </ul>
                                         </div>
                                     {% endif %}
+
 
                                 </div>
                             </div>
@@ -1314,8 +1321,8 @@
                                         {% else %}
                                             All Listings
                                         {% endif %}
-                                        
-                                        
+
+
                                         <button type="button" id="post-selected-listings" class="btn btn-warning ms-3"
                                                 style="display: none;">Post All Listings
                                         </button>
@@ -1467,12 +1474,16 @@
                                                     {% endif %}
 
                                                     {% if listing.hold_for_import %}
-
                                                         <button type="button" class="btn btn-warning btn-sm w-100"
                                                                 onclick="confirmListing({{ listing.id }}, '{{ listing.auction_type }}, {{ active_tab }}, {{ listing_status }}, {{ listing_type }}, {{ listing_date }}, {{ hold_for_import }}')">
                                                             List {% if listing.auction_type == 'Auction' %}For
                                                             Auction{% else %}For Sale{% endif %}
                                                         </button>
+                                                        <button type="button" class="btn btn-danger btn-sm w-100 mt-2"
+                                                                id="delete-auction-btn"
+                                                                data-auction-id="{{ listing.id }}">Delete Listing
+                                                        </button>
+
                                                     {% endif %}
                                                 </div>
                                             </div>
@@ -1482,6 +1493,7 @@
                                                  tabindex="-1"
                                                  aria-labelledby="listingModalLabel{{ listing.id }}" aria-hidden="true">
                                                 <form id="editAuctionForm{{ listing.id }}" method="post"
+                                                      enctype="multipart/form-data"
                                                       action="{% url 'edit_auction' listing.id %}">
                                                     {% csrf_token %}
                                                     <!-- Hidden Inputs -->
@@ -1584,7 +1596,6 @@
                                                                     </div>
 
                                                                     <div class="row">
-
                                                                         <div class="col">
 
 
@@ -1824,10 +1835,53 @@
                                                                     </div>
 
                                                                     <h3 class="mt-3">Images</h3>
-                                                                    <div class="additional-images"
+                                                                    <div class="additional-images d-none"
                                                                          id="additional-images-{{ listing.id }}">
                                                                         <!-- Images will be loaded here via AJAX -->
+
+
                                                                     </div>
+                                                                    <!-- Image FormSet -->
+                                                                    <fieldset class="mb-3">
+                                                                        {{ listing.edit_form.images.management_form }}
+                                                                        <div class="image-formset d-flex">
+                                                                            {% for form in listing.edit_form.images.forms %}
+                                                                                <div class="image-slot position-relative m-2">
+                                                                                    {% if form.instance.pk and form.instance.image %}
+                                                                                        <!-- Display existing image -->
+                                                                                        <img src="{{ form.instance.image.url }}"
+                                                                                             alt="Image"
+                                                                                             class="img-thumbnail image-clickable"
+                                                                                             style="width: 150px; height: 150px; object-fit: cover; cursor: pointer;">
+
+                                                                                        <!-- Hidden file input -->
+                                                                                        {{ form.image }}
+
+                                                                                        <!-- Hidden delete field -->
+                                                                                        {{ form.DELETE }}
+
+                                                                                        <!-- "X" icon for deletion -->
+                                                                                        <button type="button"
+                                                                                                class="btn btn-dark btn-sm delete-image-btn position-absolute top-0 end-0 m-2 delete-image-btn"
+                                                                                                title="Delete Image">
+                                                                                            <i class="fa-solid fa-xmark"></i>
+                                                                                        </button>
+                                                                                    {% else %}
+                                                                                        <!-- Display placeholder icon -->
+                                                                                        <div class="image-placeholder image-clickable d-flex align-items-center justify-content-center border d-none"
+                                                                                             style="width: 150px; height: 150px; cursor: pointer;">
+                                                                                            <i class="fa-solid fa-cloud-arrow-up"
+                                                                                               style="font-size: 48px; color: #aaa"></i>
+                                                                                        </div>
+
+                                                                                        <!-- Hidden file input -->
+                                                                                        {{ form.image }}
+                                                                                    {% endif %}
+                                                                                </div>
+                                                                            {% endfor %}
+                                                                        </div>
+                                                                    </fieldset>
+
 
                                                                 </div>
                                                             </div>
@@ -1877,9 +1931,7 @@
                                                 {% if listings.has_previous %}
                                                     <li class='page-item'>
                                                         <a class='page-link'
-                                                           href='?listings_page={{ listings.previous_page_number }}&active_tab=listings&listing_status={{ listing_status }}&listing_type={{ listing_type }}&listing_date={{ listing_date }}&hold_for_import={{ hold_for_import }}'>
-                                                            &laquo;
-                                                        </a>
+                                                           href='?listings_page={{ listings.previous_page_number }}&active_tab=listings{% if listing_status %}&listing_status={{ listing_status }}{% endif %}{% if listing_type %}&listing_type={{ listing_type }}{% endif %}{% if listing_date %}&listing_date={{ listing_date }}{% endif %}{% if hold_for_import %}&hold_for_import={{ hold_for_import }}{% endif %}'>&laquo;</a>
                                                     </li>
                                                 {% else %}
                                                     <li class='page-item disabled'>
@@ -1891,7 +1943,7 @@
                                                 {% if listings.number > 3 %}
                                                     <li class='page-item'>
                                                         <a class='page-link'
-                                                           href='?listings_page=1&active_tab=listings&listing_status={{ listing_status }}&listing_type={{ listing_type }}&listing_date={{ listing_date }}&hold_for_import={{ hold_for_import }}'>1</a>
+                                                           href='?listings_page=1&active_tab=listings{% if listing_status %}&listing_status={{ listing_status }}{% endif %}{% if listing_type %}&listing_type={{ listing_type }}{% endif %}{% if listing_date %}&listing_date={{ listing_date }}{% endif %}{% if hold_for_import %}&hold_for_import={{ hold_for_import }}{% endif %}'>1</a>
                                                     </li>
                                                     <li class='page-item disabled'>
                                                         <a class='page-link' href='#'>...</a>
@@ -1908,7 +1960,7 @@
                                                         {% else %}
                                                             <li class='page-item'>
                                                                 <a class='page-link'
-                                                                   href='?listings_page={{ i }}&active_tab=listings&listing_status={{ listing_status }}&listing_type={{ listing_type }}&listing_date={{ listing_date }}&hold_for_import={{ hold_for_import }}'>{{ i }}</a>
+                                                                   href='?listings_page={{ i }}&active_tab=listings{% if listing_status %}&listing_status={{ listing_status }}{% endif %}{% if listing_type %}&listing_type={{ listing_type }}{% endif %}{% if listing_date %}&listing_date={{ listing_date }}{% endif %}{% if hold_for_import %}&hold_for_import={{ hold_for_import }}{% endif %}'>{{ i }}</a>
                                                             </li>
                                                         {% endif %}
                                                     {% endif %}
@@ -1921,7 +1973,7 @@
                                                     </li>
                                                     <li class='page-item'>
                                                         <a class='page-link'
-                                                           href='?listings_page={{ listings.paginator.num_pages }}&active_tab=listings&listing_status={{ listing_status }}&listing_type={{ listing_type }}&listing_date={{ listing_date }}&hold_for_import={{ hold_for_import }}'>{{ listings.paginator.num_pages }}</a>
+                                                           href='?listings_page={{ listings.paginator.num_pages }}&active_tab=listings{% if listing_status %}&listing_status={{ listing_status }}{% endif %}{% if listing_type %}&listing_type={{ listing_type }}{% endif %}{% if listing_date %}&listing_date={{ listing_date }}{% endif %}{% if hold_for_import %}&hold_for_import={{ hold_for_import }}{% endif %}'>{{ listings.paginator.num_pages }}</a>
                                                     </li>
                                                 {% endif %}
 
@@ -1929,7 +1981,7 @@
                                                 {% if listings.has_next %}
                                                     <li class='page-item'>
                                                         <a class='page-link'
-                                                           href='?listings_page={{ listings.next_page_number }}&active_tab=listings&listing_status={{ listing_status }}&listing_type={{ listing_type }}&listing_date={{ listing_date }}&hold_for_import={{ hold_for_import }}'>&raquo;</a>
+                                                           href='?listings_page={{ listings.next_page_number }}&active_tab=listings{% if listing_status %}&listing_status={{ listing_status }}{% endif %}{% if listing_type %}&listing_type={{ listing_type }}{% endif %}{% if listing_date %}&listing_date={{ listing_date }}{% endif %}{% if hold_for_import %}&hold_for_import={{ hold_for_import }}{% endif %}'>&raquo;</a>
                                                     </li>
                                                 {% else %}
                                                     <li class='page-item disabled'>

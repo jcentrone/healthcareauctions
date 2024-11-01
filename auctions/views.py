@@ -23,21 +23,21 @@ from django.db import IntegrityError, transaction
 from django.db.models import Q, Case, When, BooleanField, DecimalField, Max, F, OuterRef, Subquery
 from django.db.models.functions import Upper
 from django.forms import model_to_dict
-from django.http import FileResponse, HttpResponse, JsonResponse, HttpResponseRedirect
+from django.http import FileResponse, HttpResponse, JsonResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy, reverse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
 from xhtml2pdf import pisa
 
 from config.storage_backends import W9Storage, ResellerCertificateStorage
 from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, MessageForm, \
     ShippingMethodForm, ShippingAddressForm, BillingAddressForm, CreditCardForm, ACHForm, ZelleForm, VenmoForm, \
     PayPalForm, CashAppForm, CustomUserChangeForm, UserAddressForm, OrderNoteForm, EditAuctionForm, \
-    EditProductDetailFormSet, ShippingAccountsForm, RegistrationForm, ProductDetailForm
+    EditProductDetailFormSet, ShippingAccountsForm, RegistrationForm, ProductDetailForm, EditImageFormSet
 from .models import Bid, Category, Image, CartItem, Cart, ProductDetail, Order, Payment, \
     OrderItem, Parcel, ProductImage, ShippingAccounts, Address, Message, User, UserManual, MedicalSpecialty, \
     ProductCodeClassification
@@ -284,6 +284,8 @@ def dashboard(request):
     if hold_for_import:
         listing_filters &= Q(hold_for_import=True)
 
+    print(listing_filters)
+
     # Apply the filters in one query
     listings = Auction.objects.filter(listing_filters).order_by('-date_created')
 
@@ -291,6 +293,7 @@ def dashboard(request):
     for listing in listings:
         listing.edit_form = EditAuctionForm(instance=listing)
         listing.edit_form.product_detail = EditProductDetailFormSet(instance=listing)
+        listing.edit_form.images = EditImageFormSet(instance=listing)
 
     # Listing Count
     listing_count = listings.count()
@@ -420,7 +423,7 @@ def dashboard(request):
         'categories': Category.objects.all(),
         'listings': listings,
         'listings_count': listing_count,
-        'listing_status': listing_type_filter,
+        'listing_status': listing_status_filter,
         'listing_type': listing_type_filter,
         'listing_date_filter': listing_date_filter,
         'auctions': auctions_with_user_bids,
@@ -449,26 +452,72 @@ def dashboard(request):
     })
 
 
+# @login_required
+# def edit_auction(request, auction_id):
+#     auction = get_object_or_404(Auction, id=auction_id)
+#     errors, formset_errors = None, None
+#
+#     if request.method == 'POST':
+#         form = EditAuctionForm(request.POST, instance=auction)
+#         product_detail_formset = EditProductDetailFormSet(request.POST or None, instance=auction)
+#
+#         if form.is_valid() and product_detail_formset.is_valid():
+#             form.save()
+#             product_detail_formset.save()
+#             messages.success(request, 'Auction and product details updated successfully.')
+#             success = True
+#         else:
+#             errors = form.errors.as_json()  # Convert form errors to JSON
+#             formset_errors = product_detail_formset.errors  # Get formset errors
+#             messages.error(request, 'Please correct the errors below.')
+#             messages.error(request, errors)
+#             messages.error(request, formset_errors)
+#             success = False
+#
+#         # Collect Django messages to include in the JSON response
+#         storage = get_messages(request)
+#         response_messages = []
+#         for message in storage:
+#             response_messages.append({
+#                 'message': message.message,
+#                 'level': message.level,
+#                 'tags': message.tags,
+#             })
+#
+#         return JsonResponse({
+#             'success': success,
+#             'messages': response_messages,
+#             'form_errors': errors if not success else None,
+#             'formset_errors': formset_errors if not success else None,
+#         })
+#
+#     return JsonResponse({'success': False, 'message': 'Invalid request method.'})
+
+
 @login_required
 def edit_auction(request, auction_id):
     auction = get_object_or_404(Auction, id=auction_id)
     errors, formset_errors = None, None
 
     if request.method == 'POST':
+        # Instantiate forms and formsets with POST data and files
         form = EditAuctionForm(request.POST, instance=auction)
-        product_detail_formset = EditProductDetailFormSet(request.POST or None, instance=auction)
+        product_detail_formset = EditProductDetailFormSet(request.POST, instance=auction)
+        image_formset = EditImageFormSet(request.POST, request.FILES, instance=auction, prefix='images')
 
-        if form.is_valid() and product_detail_formset.is_valid():
+        if form.is_valid() and product_detail_formset.is_valid() and image_formset.is_valid():
             form.save()
             product_detail_formset.save()
-            messages.success(request, 'Auction and product details updated successfully.')
+            image_formset.save()
+            messages.success(request, 'Auction, product details, and images updated successfully.')
             success = True
         else:
             errors = form.errors.as_json()  # Convert form errors to JSON
-            formset_errors = product_detail_formset.errors  # Get formset errors
+            formset_errors = {
+                'product_detail_formset_errors': product_detail_formset.errors,
+                'image_formset_errors': image_formset.errors,
+            }
             messages.error(request, 'Please correct the errors below.')
-            messages.error(request, errors)
-            messages.error(request, formset_errors)
             success = False
 
         # Collect Django messages to include in the JSON response
@@ -508,6 +557,26 @@ def post_listing(request, auction_id):
             return JsonResponse({'success': False, 'message': 'Please correct the errors below.'})
 
     return JsonResponse({'success': False, 'message': 'Invalid request method.'})
+
+
+@login_required
+@require_GET
+def get_image_formset(request, auction_id):
+    auction = get_object_or_404(Auction, pk=auction_id)
+    # Ensure the user has permission to edit this auction
+    if auction.creator != request.user:
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+
+    # Instantiate the image formset
+    image_formset = EditImageFormSet(instance=auction, prefix=f'images-{auction_id}')
+
+    # Render the formset to a HTML string
+    image_formset_html = render_to_string('auctions/partials/image_formset.html', {
+        'image_formset': image_formset,
+        'auction_id': auction_id,
+    }, request=request)
+
+    return JsonResponse({'image_formset_html': image_formset_html})
 
 
 def register(request):
@@ -1346,6 +1415,21 @@ def auction_close(request, auction_id):
         messages.success(request, 'Auction successfully closed. The highest bidder is now the winner.')
         return HttpResponseRedirect(f"{reverse('dashboard')}?active_tab=listings")
 
+
+@login_required
+def auction_delete_view(request, auction_id):
+    """
+    View to handle the deletion of an Auction.
+    Only the creator of the auction can delete it.
+    """
+    auction = get_object_or_404(Auction, id=auction_id)
+
+    # Check if the user is authorized to delete the auction
+    if auction.creator != request.user:
+        return HttpResponseForbidden("You are not allowed to delete this auction.")
+
+    auction.delete()
+    return JsonResponse({'success': True})
 
 @login_required
 def auction_relist(request, auction_id):

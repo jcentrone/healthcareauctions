@@ -1,7 +1,7 @@
 from django.contrib.auth import views as auth_views
 from django.contrib.sitemaps.views import sitemap
 from django.contrib.staticfiles.storage import staticfiles_storage
-from django.urls import path, include
+from django.urls import path
 from django.views.generic import RedirectView
 
 from . import views
@@ -32,7 +32,9 @@ urlpatterns = [
     path('auction/<str:auction_id>/close', views.auction_close, name='auction_close'),
     path('auction/<str:auction_id>/comment', views.auction_comment, name='auction_comment'),
     path('auction/relist/<int:auction_id>/', views.auction_relist, name='auction_relist'),
-
+    path('auction/delete/<int:auction_id>/', views.auction_delete_view, name='auction-delete'),
+    path('api/get-image-formset/<int:auction_id>/', views.get_image_formset, name='get_image_formset'),
+    path('auction/edit/<int:auction_id>/', views.edit_auction, name='edit_auction'),
     path('categories/<str:category_name>', views.category_details_view, name='category_details_view'),
     path('api/classify-device/', views.classify_device_view, name='classify_device'),
     path('barcode_scanner/', views.barcode_scanner, name='barcode_scanner'),

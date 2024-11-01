@@ -28,6 +28,7 @@ class UserManualAdmin(admin.ModelAdmin):
 
 admin.site.register(UserManual, UserManualAdmin)
 
+
 class AuctionInline(admin.TabularInline):
     model = Auction
     extra = 0

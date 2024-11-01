@@ -1,7 +1,7 @@
 from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.forms import UserChangeForm
 from django.core.exceptions import ValidationError
-from django.forms import modelformset_factory, inlineformset_factory
+from django.forms import modelformset_factory, inlineformset_factory, BaseInlineFormSet
 from django import forms
 
 from .models import Auction, Bid, Comment, Image, Category, CartItem, ProductDetail, Message, Order, ShippingAddress, \
@@ -523,6 +523,36 @@ class EditProductDetailForm(forms.ModelForm):
 
 EditProductDetailFormSet = inlineformset_factory(Auction, ProductDetail, form=EditProductDetailForm, extra=0,
                                                  can_delete=True)
+
+
+class EditImageForm(forms.ModelForm):
+    class Meta:
+        model = Image
+        fields = ['image']
+        widgets = {
+            'image': forms.FileInput(attrs={'class': 'd-none image-input'}),
+        }
+
+
+class BaseEditImageFormSet(BaseInlineFormSet):
+    def __init__(self, *args, **kwargs):
+        super(BaseEditImageFormSet, self).__init__(*args, **kwargs)
+        self.total_forms = 5  # Ensure total forms is always 5
+        self.extra = 0
+        self.max_num = 5
+        self.min_num = 5
+        self.can_delete = True
+
+
+EditImageFormSet = inlineformset_factory(
+    Auction,
+    Image,
+    form=EditImageForm,
+    formset=BaseEditImageFormSet,
+    extra=0,
+    max_num=5,
+    can_delete=True,
+)
 
 
 class EditAuctionForm(forms.ModelForm):

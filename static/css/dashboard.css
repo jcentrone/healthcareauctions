@@ -120,6 +120,47 @@ textarea.form-control {
     max-width: 300px;
 }
 
+.image-placeholder {
+    width: 150px;
+    height: 150px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    position: relative;
+    cursor: pointer;
+    background: #F5F5F5;
+}
+input[type="checkbox"][name$="-DELETE"] {
+    display: none;
+}
+
+.delete-image-btn{
+    border-radius: 50%;
+    height: 25px;
+    width: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-deleted {
+    opacity: 0.5;
+    position: relative;
+}
+
+.image-deleted::after {
+    content: 'Deleted';
+    color: #777777;
+    font-weight: bold;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
 /* Media query for mobile devices */
 @media (max-width: 767px) {
     /* Stack nav-tabs vertically on mobile */

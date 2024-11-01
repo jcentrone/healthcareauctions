@@ -58,39 +58,6 @@ document.addEventListener('DOMContentLoaded', function () {
         charCount.textContent = `${currentLength}/1000 characters used`;
     }
 
-    // Function to get additional images
-    function getAdditionalImages(auctionId) {
-        // Fetch additional images for the modal if needed
-        fetch('/api/get-auction-images/' + auctionId + '/')
-            .then(response => response.json())
-            .then(data => {
-                const imagesContainer = document.getElementById('additional-images-' + auctionId);
-                imagesContainer.innerHTML = ''; // Clear any existing images
-
-                if (data.image_urls.length > 0) {
-                    data.image_urls.forEach(function (url) {
-                        // Create an anchor element with the lightbox attributes
-                        const anchor = document.createElement('a');
-                        anchor.classList.add('thumb-img');
-                        anchor.href = url;
-                        anchor.setAttribute('data-lightbox', 'auction-images');
-                        // anchor.setAttribute('data-title', 'Image Title'); // Optional, add a title for each image
-
-                        // Create an img element
-                        const img = document.createElement('img');
-                        img.src = url;
-                        img.classList.add('img-thumbnail');
-
-                        // Append img to anchor, then anchor to the container
-                        anchor.appendChild(img);
-                        imagesContainer.appendChild(anchor);
-                    });
-                } else {
-                    imagesContainer.innerHTML = '<p>No additional images available.</p>';
-                }
-            })
-            .catch(error => console.error('Error fetching images:', error));
-    }
 
     // Char count for messages listener
     document.querySelectorAll('textarea.form-control').forEach(function (textarea) {
@@ -111,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function () {
             let auctionId = button.getAttribute('data-auction-id'); // Extract info from data-* attributes
 
             // getAdditionalDetails(auctionId);
-            getAdditionalImages(auctionId);
+            // getAdditionalImages(auctionId);
         });
     });
 
@@ -183,10 +150,14 @@ function submitForm(event, listing_id) {
     const form = document.getElementById(`editAuctionForm${listing_id}`);
     const formData = new FormData(form);
 
+    // Get CSRF token
+    const csrftoken = getCookie('csrftoken');
+
     fetch(form.action, {
         method: 'POST',
         body: formData,
         headers: {
+            'X-CSRFToken': csrftoken,
             'X-Requested-With': 'XMLHttpRequest',
         },
     })
@@ -207,11 +178,15 @@ function submitForm(event, listing_id) {
 
             if (data.success) {
                 // Close the modal
-                $('#listingModal' + listing_id).modal('hide');
+                const modal = document.getElementById(`listingModal${listing_id}`);
+                const bootstrapModal = bootstrap.Modal.getInstance(modal);
+                bootstrapModal.hide();
 
+                // Optionally, refresh the page or update the listing in the DOM
             } else {
                 console.log('Form Errors:', data.form_errors);
                 console.log('Formset Errors:', data.formset_errors);
+                alert('Please correct the errors in the form.');
             }
         })
         .catch(error => {
@@ -220,12 +195,117 @@ function submitForm(event, listing_id) {
         });
 }
 
+// CSRF Token Helper Function
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+
+// Function to get additional images
+function initializeImageInputs() {
+    const imageSlots = document.querySelectorAll('.image-slot');
+    imageSlots.forEach(function (slot) {
+        const clickableElement = slot.querySelector('.image-clickable');
+        const imageInput = slot.querySelector('.image-input');
+        const deleteButton = slot.querySelector('.delete-image-btn');
+        const deleteField = slot.querySelector('input[type="checkbox"][name$="-DELETE"]');
+
+        // Attach click event to the clickable element (image or placeholder)
+        if (clickableElement && imageInput) {
+            clickableElement.addEventListener('click', function () {
+                imageInput.click();
+            });
+        }
+
+        // Handle change event for the file input
+        if (imageInput) {
+            imageInput.addEventListener('change', function () {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        // Remove the placeholder if it exists
+                        const placeholder = slot.querySelector('.image-placeholder');
+                        if (placeholder) {
+                            placeholder.remove();
+                        }
+
+                        // Remove existing image if it exists
+                        const existingImage = slot.querySelector('img');
+                        if (existingImage) {
+                            existingImage.remove();
+                        }
+
+                        // Create new image element
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.alt = 'Image';
+                        img.className = 'img-thumbnail image-clickable';
+                        img.style.width = '150px';
+                        img.style.height = '150px';
+                        img.style.objectFit = 'cover';
+                        img.style.cursor = 'pointer';
+
+                        // Insert the new image into the slot
+                        slot.insertBefore(img, imageInput);
+
+                        // Re-attach click event to the new image
+                        img.addEventListener('click', function () {
+                            imageInput.click();
+                        });
+
+                        // If the image was previously marked for deletion, unmark it
+                        if (deleteField) {
+                            deleteField.checked = false;
+                        }
+
+                        // Remove any visual indication of deletion
+                        slot.classList.remove('image-deleted');
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // Handle click event for the delete button
+        if (deleteButton && deleteField) {
+            deleteButton.addEventListener('click', function (e) {
+                e.stopPropagation();  // Prevent triggering the image click event
+                // Mark the image for deletion
+                deleteField.checked = true;
+
+                // Visually indicate that the image is marked for deletion
+                slot.classList.add('image-deleted');
+
+                // Optionally, disable the clickable element
+                clickableElement.style.pointerEvents = 'none';
+                clickableElement.style.opacity = '0.5';
+
+                // Hide the delete button
+                deleteButton.style.display = 'none';
+            });
+        }
+    });
+}
+
 
 function enableEditing(listingId) {
     const form = document.getElementById(`editAuctionForm${listingId}`);
     const inputs = form.querySelectorAll('input[type="text"], input[type="number"], textarea, select');
     const checkboxes = form.querySelectorAll('input[type="checkbox"]');
     const dates = form.querySelectorAll('input[type="date"]');
+    const images = form.querySelectorAll('.image-placeholder');
 
     // Make text inputs and textareas editable
     inputs.forEach(input => {
@@ -250,6 +330,12 @@ function enableEditing(listingId) {
 
     });
 
+    // Show additional image slots
+    images.forEach(image => {
+        image.classList.remove('d-none');
+    });
+
+
     // Hide the edit button and show the save button
     document.getElementById(`editButton${listingId}`).style.display = 'none';
     document.getElementById(`saveButton${listingId}`).style.display = 'block';
@@ -262,6 +348,8 @@ function enableEditing(listingId) {
     } else {
         console.log(`Could not find additional meta for listing ${listingId}`);
     }
+
+    initializeImageInputs();
 }
 
 function disableEditing(listingId) {
@@ -269,6 +357,7 @@ function disableEditing(listingId) {
     const inputs = form.querySelectorAll('input[type="text"], input[type="number"], textarea, select');
     const checkboxes = form.querySelectorAll('input[type="checkbox"]');
     const dates = form.querySelectorAll('input[type="date"]');
+    const images = form.querySelectorAll('.image-placeholder');
 
     // Make text inputs and textareas un-editable
     inputs.forEach(input => {
@@ -289,6 +378,11 @@ function disableEditing(listingId) {
         date.classList.remove('bg-white');
         date.style.padding = '.375rem .75rem';
         date.style.border = 'none';
+    });
+
+    // Show additional image slots
+    images.forEach(image => {
+        image.classList.add('d-none');
     });
 
     // Show the edit button and show the save button
@@ -570,5 +664,111 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+document.addEventListener('DOMContentLoaded', function () {
+    const deleteButton = document.getElementById('delete-auction-btn');
+    if (deleteButton) {
+        deleteButton.addEventListener('click', function () {
+            const auctionId = this.getAttribute('data-auction-id');
+
+            // Display SweetAlert2 confirmation dialog
+            Swal.fire({  // Changed from swal.fire to Swal.fire
+                title: "Are you sure?",
+                text: "Are you sure you want to delete this listing? This action cannot be undone.",
+                icon: "warning",
+                showCancelButton: true,  // Ensure the cancel button is shown
+                confirmButtonText: 'Delete',
+                cancelButtonText: 'Cancel',
+                customClass: {
+                    confirmButton: 'btn btn-primary me-2',
+                    cancelButton: 'btn btn-secondary ms-2',
+                },
+                buttonsStyling: false,
+                allowOutsideClick: false,
+            })
+                .then((result) => {  // Renamed parameter to 'result' for clarity
+                    if (result.isConfirmed) {  // Check if the user confirmed
+                        // Get CSRF token
+                        const csrftoken = getCookie('csrftoken');
+
+                        // Send DELETE request via Fetch API
+                        fetch(`/auction/delete/${auctionId}/`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': csrftoken,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({})
+                        })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Network response was not ok');
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire({
+                                        title: "Deleted!",
+                                        text: "Your auction has been deleted successfully.",
+                                        icon: "success",
+                                        confirmButtonText: 'OK',
+                                        customClass: {
+                                            confirmButton: 'btn btn-primary',
+                                        },
+                                    })
+                                        .then(() => {
+                                            window.location.href = '/dashboard?active_tab=listings'; // Redirect to the dashboard or another appropriate page
+                                        });
+                                } else {
+                                    Swal.fire({
+                                        title: "Error!",
+                                        text: "An error occurred while deleting the auction.",
+                                        icon: "error",
+                                        confirmButtonText: 'OK',
+                                        customClass: {
+                                            confirmButton: 'btn btn-primary',
+                                        },
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                Swal.fire({
+                                    title: "Error!",
+                                    text: "An error occurred while deleting the auction.",
+                                    icon: "error",
+                                    confirmButtonText: 'OK',
+                                    customClass: {
+                                        confirmButton: 'btn btn-primary',
+                                    },
+                                });
+                            });
+                    } else {
+                        // Optional: Handle the cancel action if needed
+                        // For example, you can show a message or simply do nothing
+                        console.log('Deletion canceled by user.');
+                    }
+                });
+        });
+    }
+});
+
+
+// Function to get the CSRF token from cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
 
 
