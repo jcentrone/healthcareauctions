@@ -937,7 +937,6 @@ def import_excel(request):
                 # After processing all auctions, return success
                 return JsonResponse({'status': 'success'})
 
-
         except Exception as e:
             # Handle exceptions
             logger.exception("An error occurred during import_excel")

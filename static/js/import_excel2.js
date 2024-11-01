@@ -1202,62 +1202,102 @@ async function createTabulatorTable(records, selector) {
             rowFormatter: function (row) {
                 const rowData = row.getData();
 
-                // Set the tooltip if there's an error
+                // Check if there's an error in the row data
                 if (rowData.error) {
-                    row.getElement().setAttribute('title', rowData.error);
-                    // Check if the error is fatal
-                    const fatalErrorCell = row.getCell("fatalError");
-                    if (fatalErrorCell) {
-                        const fatalErrorValue = fatalErrorCell.getValue();
-                        if (fatalErrorValue) {
-                            const errorMessage = 'Device not found via GTIN/SKU or Reference Number. Try changing either or both to resolve. We cannot import this listing until it error is resolved.';
-                            row.getElement().setAttribute('title', errorMessage);
-                            const rowElement = row.getElement();
-                            rowElement.style.backgroundColor = "#FFF3CD";
+                    // Define the tooltip message
+                    let tooltipMessage = rowData.error;
 
-                            // Get the SKU cell and style it
-                            const skuCell = row.getCell("SKU");
-                            if (skuCell) {
-                                skuCell.getElement().style.backgroundColor = "#f8d7da"; // Light red background
-                                skuCell.getElement().style.color = "#721c24"; // Dark red text
-                            }
+                    // Check if the error is fatal to customize the tooltip
+                    const fatalError = rowData.fatalError;
+                    if (fatalError) {
+                        tooltipMessage = 'Device not found via GTIN/SKU or Reference Number. Try changing either or both to resolve. We cannot import this listing until the error is resolved.';
 
-                            // Get the Reference Number cell and style it
-                            const referenceCell = row.getCell("Reference Number");
-                            if (referenceCell) {
-                                referenceCell.getElement().style.backgroundColor = "#f8d7da"; // Light red background
-                                referenceCell.getElement().style.color = "#721c24"; // Dark red text
+                        // Apply styling for fatal errors
+                        const rowElement = row.getElement();
+                        rowElement.style.backgroundColor = "#FFF3CD"; // Light yellow background
+
+                        // Style specific cells
+                        ['SKU', 'Reference Number'].forEach(field => {
+                            const cell = row.getCell(field);
+                            if (cell) {
+                                cell.getElement().style.backgroundColor = "#f8d7da"; // Light red background
+                                cell.getElement().style.color = "#721c24"; // Dark red text
                             }
-                        }
+                        });
                     } else {
+                        // Non-fatal errors can have different styling if needed
                         const rowElement = row.getElement();
                         rowElement.style.backgroundColor = "";
-
-                        // Get the SKU cell and style it
-                        const skuCell = row.getCell("SKU");
-                        if (skuCell) {
-                            skuCell.getElement().style.backgroundColor = ""; // Light red background
-                            skuCell.getElement().style.color = ""; // Dark red text
-                        }
-
-                        // Get the Reference Number cell and style it
-                        const referenceCell = row.getCell("Reference Number");
-                        if (referenceCell) {
-                            referenceCell.getElement().style.backgroundColor = ""; // Light red background
-                            referenceCell.getElement().style.color = ""; // Dark red text
-                        }
+                        ['SKU', 'Reference Number'].forEach(field => {
+                            const cell = row.getCell(field);
+                            if (cell) {
+                                cell.getElement().style.backgroundColor = "";
+                                cell.getElement().style.color = "";
+                            }
+                        });
                     }
+
+                    // Add Bootstrap tooltip attributes
+                    const rowElement = row.getElement();
+                    rowElement.setAttribute('data-bs-toggle', 'tooltip');
+                    rowElement.setAttribute('data-bs-placement', 'left');
+                    rowElement.setAttribute('title', tooltipMessage);
                 } else {
-                    row.getElement().removeAttribute('title');
+                    // Remove tooltip attributes if there's no error
+                    const rowElement = row.getElement();
+                    rowElement.removeAttribute('data-bs-toggle');
+                    rowElement.removeAttribute('data-bs-placement');
+                    rowElement.removeAttribute('title');
+
+                    // Reset any styling
+                    rowElement.style.backgroundColor = "";
+                    ['SKU', 'Reference Number'].forEach(field => {
+                        const cell = row.getCell(field);
+                        if (cell) {
+                            cell.getElement().style.backgroundColor = "";
+                            cell.getElement().style.color = "";
+                        }
+                    });
                 }
             }
+
         });
 
         console.log('Table', table.getData());
 
         table.on("cellEdited", function (cell) {
+            const row = cell.getRow();
             cellEditor(cell);
+            initializeBootstrapTooltip(row);
         })
+
+        // Event listener for when a row is added
+        table.on("rowAdded", function (row) {
+            initializeBootstrapTooltip(row);
+        });
+
+        // Event listener for when a row is updated
+        table.on("rowUpdated", function (row) {
+            initializeBootstrapTooltip(row);
+        });
+
+        // Initialize tooltips after the table has been fully rendered
+        table.on("renderComplete", function () {
+            console.log("Render complete. Initializing tooltips...");
+            table.getRows().forEach(row => {
+                initializeBootstrapTooltip(row);
+            });
+        });
+
+        // Function to initialize Bootstrap tooltip on a row if it has tooltip attributes
+        function initializeBootstrapTooltip(row) {
+            const rowElement = row.getElement();
+            if (rowElement.hasAttribute('data-bs-toggle') && rowElement.getAttribute('data-bs-toggle') === 'tooltip') {
+                // Initialize tooltip using Bootstrap's Tooltip constructor
+                new bootstrap.Tooltip(rowElement);
+            }
+        }
+
         return table;
 
     } catch (error) {
