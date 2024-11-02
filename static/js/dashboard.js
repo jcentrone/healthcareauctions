@@ -153,6 +153,21 @@ function submitForm(event, listing_id) {
     // Get CSRF token
     const csrftoken = getCookie('csrftoken');
 
+    // Disable the Save button to prevent multiple submissions
+    const saveButton = document.getElementById(`saveButton${listing_id}`);
+    saveButton.disabled = true;
+
+    // Show processing indicator
+    Swal.fire({
+        title: 'Processing...',
+        text: 'Please wait while your changes are being saved.',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
     fetch(form.action, {
         method: 'POST',
         body: formData,
@@ -163,16 +178,32 @@ function submitForm(event, listing_id) {
     })
         .then(response => response.json())
         .then(data => {
+            Swal.close(); // Close the processing indicator
+
+            // Re-enable the Save button
+            saveButton.disabled = false;
+
             if (data.messages) {
                 data.messages.forEach(msg => {
-                    const alertDiv = document.createElement('div');
-                    alertDiv.className = `alert alert-${msg.tags} alert-dismissible fade show`;
-                    alertDiv.role = 'alert';
-                    alertDiv.innerHTML = `
-                    ${msg.message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                `;
-                    document.getElementById('main-content').prepend(alertDiv);
+                    // Determine the icon based on message tags
+                    let icon = 'info';
+                    if (msg.tags.includes('success')) {
+                        icon = 'success';
+                    } else if (msg.tags.includes('error')) {
+                        icon = 'error';
+                    } else if (msg.tags.includes('warning')) {
+                        icon = 'warning';
+                    }
+
+                    // Display as standard modal popup
+                    Swal.fire({
+                        icon: icon,
+                        title: msg.message,
+                        customClass: {
+                            confirmButton: 'btn btn-primary',
+                        },
+                        buttonsStyling: false,
+                    });
                 });
             }
 
@@ -181,18 +212,106 @@ function submitForm(event, listing_id) {
                 const modal = document.getElementById(`listingModal${listing_id}`);
                 const bootstrapModal = bootstrap.Modal.getInstance(modal);
                 bootstrapModal.hide();
+                disableEditing(listing_id);
+                window.location.reload();
 
                 // Optionally, refresh the page or update the listing in the DOM
             } else {
                 console.log('Form Errors:', data.form_errors);
                 console.log('Formset Errors:', data.formset_errors);
-                alert('Please correct the errors in the form.');
+
+                // Display error alert
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Please correct the errors in the form.',
+                    text: 'Check the highlighted fields and try again.',
+                    customClass: {
+                        confirmButton: 'btn btn-primary',
+                    },
+                    buttonsStyling: false,
+                });
+
+                displayFormErrors(form, data);
             }
         })
         .catch(error => {
-            alert('An error occurred. Please try again.');
+            Swal.close(); // Close the processing indicator
+
+            // Re-enable the Save button
+            saveButton.disabled = false;
+
+            Swal.fire({
+                icon: 'error',
+                title: 'An error occurred.',
+                text: 'Please try again.',
+                customClass: {
+                    confirmButton: 'btn btn-primary',
+                },
+                buttonsStyling: false,
+            });
             console.error('Error:', error);
         });
+}
+
+
+
+// Function to display form errors
+function displayFormErrors(form, data) {
+    // Clear existing errors
+    form.querySelectorAll('.is-invalid').forEach(function (element) {
+        element.classList.remove('is-invalid');
+    });
+    form.querySelectorAll('.invalid-feedback').forEach(function (element) {
+        element.remove();
+    });
+
+    // Display form errors
+    if (data.form_errors) {
+        const errors = JSON.parse(data.form_errors);
+        for (const [field, errorList] of Object.entries(errors)) {
+            const fieldElement = form.querySelector(`[name="${field}"]`);
+            if (fieldElement) {
+                fieldElement.classList.add('is-invalid');
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'invalid-feedback';
+                errorDiv.innerText = errorList.map(err => err.message).join(' ');
+                fieldElement.parentNode.appendChild(errorDiv);
+            }
+        }
+    }
+
+    // Handle formset errors
+    if (data.formset_errors) {
+        // Product Detail FormSet Errors
+        data.formset_errors.product_detail_formset_errors.forEach((formErrors, index) => {
+            for (const [field, errors] of Object.entries(formErrors)) {
+                const fieldName = `product_detail-${index}-${field}`;
+                const fieldElement = form.querySelector(`[name="${fieldName}"]`);
+                if (fieldElement) {
+                    fieldElement.classList.add('is-invalid');
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'invalid-feedback';
+                    errorDiv.innerText = errors.join(' ');
+                    fieldElement.parentNode.appendChild(errorDiv);
+                }
+            }
+        });
+
+        // Image FormSet Errors
+        data.formset_errors.image_formset_errors.forEach((formErrors, index) => {
+            for (const [field, errors] of Object.entries(formErrors)) {
+                const fieldName = `images-${index}-${field}`;
+                const fieldElement = form.querySelector(`[name="${fieldName}"]`);
+                if (fieldElement) {
+                    fieldElement.classList.add('is-invalid');
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'invalid-feedback';
+                    errorDiv.innerText = errors.join(' ');
+                    fieldElement.parentNode.appendChild(errorDiv);
+                }
+            }
+        });
+    }
 }
 
 // CSRF Token Helper Function
@@ -306,6 +425,7 @@ function enableEditing(listingId) {
     const checkboxes = form.querySelectorAll('input[type="checkbox"]');
     const dates = form.querySelectorAll('input[type="date"]');
     const images = form.querySelectorAll('.image-placeholder');
+    const imageDeleteBtns = form.querySelectorAll('.delete-image-btn');
 
     // Make text inputs and textareas editable
     inputs.forEach(input => {
@@ -335,6 +455,11 @@ function enableEditing(listingId) {
         image.classList.remove('d-none');
     });
 
+    imageDeleteBtns.forEach(imageDeleteBtn => {
+        imageDeleteBtn.classList.remove('d-none');
+    });
+
+
 
     // Hide the edit button and show the save button
     document.getElementById(`editButton${listingId}`).style.display = 'none';
@@ -358,6 +483,7 @@ function disableEditing(listingId) {
     const checkboxes = form.querySelectorAll('input[type="checkbox"]');
     const dates = form.querySelectorAll('input[type="date"]');
     const images = form.querySelectorAll('.image-placeholder');
+    const imageDeleteBtns = form.querySelectorAll('.delete-image-btn');
 
     // Make text inputs and textareas un-editable
     inputs.forEach(input => {
@@ -383,6 +509,10 @@ function disableEditing(listingId) {
     // Show additional image slots
     images.forEach(image => {
         image.classList.add('d-none');
+    });
+
+    imageDeleteBtns.forEach(imageDeleteBtn => {
+        imageDeleteBtn.classList.add('d-none');
     });
 
     // Show the edit button and show the save button

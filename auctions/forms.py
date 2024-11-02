@@ -526,12 +526,14 @@ EditProductDetailFormSet = inlineformset_factory(Auction, ProductDetail, form=Ed
 
 
 class EditImageForm(forms.ModelForm):
+    image = forms.ImageField(
+        required=False,  # Make the image field optional
+        widget=forms.FileInput(attrs={'class': 'image-input d-none'})
+    )
+
     class Meta:
         model = Image
         fields = ['image']
-        widgets = {
-            'image': forms.FileInput(attrs={'class': 'd-none image-input'}),
-        }
 
 
 class BaseEditImageFormSet(BaseInlineFormSet):
@@ -540,7 +542,6 @@ class BaseEditImageFormSet(BaseInlineFormSet):
         self.total_forms = 5  # Ensure total forms is always 5
         self.extra = 0
         self.max_num = 5
-        self.min_num = 5
         self.can_delete = True
 
 
@@ -548,10 +549,9 @@ EditImageFormSet = inlineformset_factory(
     Auction,
     Image,
     form=EditImageForm,
-    formset=BaseEditImageFormSet,
-    extra=0,
-    max_num=5,
-    can_delete=True,
+    extra=5,       # Display five forms
+    max_num=5,     # Maximum of five images
+    can_delete=True
 )
 
 

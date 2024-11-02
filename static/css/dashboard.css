@@ -153,7 +153,7 @@ input[type="checkbox"][name$="-DELETE"] {
 
 .image-deleted::after {
     content: 'Deleted';
-    color: #777777;
+    color: red;
     font-weight: bold;
     position: absolute;
     top: 50%;

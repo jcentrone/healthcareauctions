@@ -366,7 +366,7 @@ class AuctionView(models.Model):
 
 class Image(models.Model):
     auction = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name='get_images')
-    image = models.ImageField(upload_to='images/')
+    image = models.ImageField(upload_to='images/', blank=True, null=True)
 
     def __str__(self):
         return f'{self.image}'

@@ -291,9 +291,9 @@ def dashboard(request):
 
     # Add  edit forms to the listings
     for listing in listings:
-        listing.edit_form = EditAuctionForm(instance=listing)
-        listing.edit_form.product_detail = EditProductDetailFormSet(instance=listing)
-        listing.edit_form.images = EditImageFormSet(instance=listing)
+        listing.edit_form = EditAuctionForm(instance=listing, prefix=f'edit_form-{listing.id}')
+        listing.edit_form.product_detail = EditProductDetailFormSet(instance=listing, prefix=f'details-{listing.id}')
+        listing.edit_form.images = EditImageFormSet(instance=listing, prefix=f'images-{listing.id}')
 
     # Listing Count
     listing_count = listings.count()
@@ -452,58 +452,21 @@ def dashboard(request):
     })
 
 
-# @login_required
-# def edit_auction(request, auction_id):
-#     auction = get_object_or_404(Auction, id=auction_id)
-#     errors, formset_errors = None, None
-#
-#     if request.method == 'POST':
-#         form = EditAuctionForm(request.POST, instance=auction)
-#         product_detail_formset = EditProductDetailFormSet(request.POST or None, instance=auction)
-#
-#         if form.is_valid() and product_detail_formset.is_valid():
-#             form.save()
-#             product_detail_formset.save()
-#             messages.success(request, 'Auction and product details updated successfully.')
-#             success = True
-#         else:
-#             errors = form.errors.as_json()  # Convert form errors to JSON
-#             formset_errors = product_detail_formset.errors  # Get formset errors
-#             messages.error(request, 'Please correct the errors below.')
-#             messages.error(request, errors)
-#             messages.error(request, formset_errors)
-#             success = False
-#
-#         # Collect Django messages to include in the JSON response
-#         storage = get_messages(request)
-#         response_messages = []
-#         for message in storage:
-#             response_messages.append({
-#                 'message': message.message,
-#                 'level': message.level,
-#                 'tags': message.tags,
-#             })
-#
-#         return JsonResponse({
-#             'success': success,
-#             'messages': response_messages,
-#             'form_errors': errors if not success else None,
-#             'formset_errors': formset_errors if not success else None,
-#         })
-#
-#     return JsonResponse({'success': False, 'message': 'Invalid request method.'})
-
-
 @login_required
 def edit_auction(request, auction_id):
     auction = get_object_or_404(Auction, id=auction_id)
     errors, formset_errors = None, None
 
     if request.method == 'POST':
-        # Instantiate forms and formsets with POST data and files
-        form = EditAuctionForm(request.POST, instance=auction)
-        product_detail_formset = EditProductDetailFormSet(request.POST, instance=auction)
-        image_formset = EditImageFormSet(request.POST, request.FILES, instance=auction, prefix='images')
+        form = EditAuctionForm(
+            request.POST, instance=auction, prefix=f'edit_form-{auction_id}'
+        )
+        product_detail_formset = EditProductDetailFormSet(
+            request.POST, instance=auction, prefix=f'details-{auction_id}'
+        )
+        image_formset = EditImageFormSet(
+            request.POST, request.FILES, instance=auction, prefix=f'images-{auction_id}'
+        )
 
         if form.is_valid() and product_detail_formset.is_valid() and image_formset.is_valid():
             form.save()
@@ -512,13 +475,26 @@ def edit_auction(request, auction_id):
             messages.success(request, 'Auction, product details, and images updated successfully.')
             success = True
         else:
-            errors = form.errors.as_json()  # Convert form errors to JSON
+            errors = form.errors.as_json()
             formset_errors = {
                 'product_detail_formset_errors': product_detail_formset.errors,
                 'image_formset_errors': image_formset.errors,
             }
             messages.error(request, 'Please correct the errors below.')
             success = False
+
+        if not form.is_valid():
+            print('Form Errors:', form.errors)
+
+        if not product_detail_formset.is_valid():
+            print('Product Detail FormSet Errors:', product_detail_formset.errors)
+            print('Product Detail FormSet Non-Form Errors:', product_detail_formset.non_form_errors())
+            print('Product Detail Management Form Errors:', product_detail_formset.management_form.errors)
+
+        if not image_formset.is_valid():
+            print('Image FormSet Errors:', image_formset.errors)
+            print('Image FormSet Non-Form Errors:', image_formset.non_form_errors())
+            print('Image Management Form Errors:', image_formset.management_form.errors)
 
         # Collect Django messages to include in the JSON response
         storage = get_messages(request)
@@ -1430,6 +1406,7 @@ def auction_delete_view(request, auction_id):
 
     auction.delete()
     return JsonResponse({'success': True})
+
 
 @login_required
 def auction_relist(request, auction_id):

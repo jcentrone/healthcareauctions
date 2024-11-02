@@ -1495,6 +1495,11 @@
                                                 <form id="editAuctionForm{{ listing.id }}" method="post"
                                                       enctype="multipart/form-data"
                                                       action="{% url 'edit_auction' listing.id %}">
+                                                    {{ listing.edit_form.management_form }}
+                                                    {{ listing.edit_form.product_detail.management_form }}
+                                                    {{ listing.edit_form.images.management_form }}
+
+
                                                     {% csrf_token %}
                                                     <!-- Hidden Inputs -->
                                                     <input class="form-control readonly-input"
@@ -1523,7 +1528,8 @@
 
                                                             <div class="modal-body p-0">
                                                                 <!-- Listing Progress Bar -->
-                                                                <div class="d-flex gap-2 align-items-center border-bottom p-3">
+                                                            {% if not listing.hold_for_import %}
+                                                            	 <div class="d-flex gap-2 align-items-center border-bottom p-3">
                                                                     <strong>Progress:</strong>
                                                                     <div class="progress w-100">
                                                                         {% if listing.active %}
@@ -1556,6 +1562,10 @@
                                                                         {% endif %}
                                                                     </div>
                                                                 </div>
+                                                            {% endif %} 
+                                                               
+                                                            
+                                                            
                                                                 <div class="card-body">
                                                                     <!-- Full auction details go here -->
                                                                     <div class="row">
@@ -1624,7 +1634,7 @@
                                                                                     <div class="listing-grid">
                                                                                         <strong>Category:</strong>
                                                                                         <select class="form-control w-100 readonly-input"
-                                                                                                name="{{ listing.edit_form.category.name }}"
+                                                                                                name="{{ listing.edit_form.category.html_name }}"
                                                                                                 id="{{ listing.edit_form.category.id_for_label }}">
                                                                                             {% for category in listing.edit_form.category.field.queryset %}
                                                                                                 <option value="{{ category.id }}"
@@ -1723,8 +1733,6 @@
                                                                                 </tr>
                                                                                 </thead>
                                                                                 <tbody>
-                                                                                {{ listing.edit_form.management_form }}
-                                                                                {{ listing.edit_form.product_detail.management_form }}
                                                                                 {% for detail in listing.edit_form.product_detail %}
                                                                                     {{ detail.id }}
                                                                                     <tr>
@@ -1843,10 +1851,11 @@
                                                                     </div>
                                                                     <!-- Image FormSet -->
                                                                     <fieldset class="mb-3">
-                                                                        {{ listing.edit_form.images.management_form }}
+
                                                                         <div class="image-formset d-flex">
                                                                             {% for form in listing.edit_form.images.forms %}
                                                                                 <div class="image-slot position-relative m-2">
+                                                                                    {{ form.id }}
                                                                                     {% if form.instance.pk and form.instance.image %}
                                                                                         <!-- Display existing image -->
                                                                                         <img src="{{ form.instance.image.url }}"
@@ -1862,7 +1871,7 @@
 
                                                                                         <!-- "X" icon for deletion -->
                                                                                         <button type="button"
-                                                                                                class="btn btn-dark btn-sm delete-image-btn position-absolute top-0 end-0 m-2 delete-image-btn"
+                                                                                                class="btn btn-dark btn-sm delete-image-btn position-absolute top-0 end-0 m-2 d-none"
                                                                                                 title="Delete Image">
                                                                                             <i class="fa-solid fa-xmark"></i>
                                                                                         </button>
