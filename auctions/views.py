@@ -45,6 +45,7 @@ from .utils.calc_fair_price import calculate_fair_price
 from .utils.calculate_tax import get_sales_tax
 from .utils.email_manager import send_welcome_email_html, order_confirmation_message
 from .utils.get_base64_logo import get_logo_base64
+from .utils.get_featured_listings import get_featured_listings
 from .utils.helpers import update_categories_from_fda
 from .utils.openai import get_chat_completion_request
 from .utils.scrape import scrape_images
@@ -102,11 +103,7 @@ def index(request):
     random_listings = Auction.objects.filter(id__in=random_ids)
 
     # Get featured listings from active listings
-    featured_active_listing_ids = Auction.objects.filter(active=True, featured_listing=True).values_list('id',
-                                                                                                         flat=True)
-
-    featured_listing_ids = random.sample(list(featured_active_listing_ids), min(len(featured_active_listing_ids), 4))
-    featured_listings = Auction.objects.filter(id__in=featured_listing_ids)
+    featured_listings = get_featured_listings()
 
     recent_views = Auction.objects.none()
 
