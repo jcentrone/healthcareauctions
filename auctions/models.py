@@ -331,6 +331,10 @@ class Auction(models.Model):
     def get_absolute_url(self):
         return reverse('active_auctions_with_id', args=[self.id])
 
+    class Meta:
+        verbose_name = 'Listing'
+        verbose_name_plural = 'Listings'
+
 
 class ProductDetail(models.Model):
     auction = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name='product_details')

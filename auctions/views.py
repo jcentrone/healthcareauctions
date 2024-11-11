@@ -883,6 +883,16 @@ def import_excel(request):
                     category = update_categories_from_fda(device_data)
                     category_obj = Category.objects.get(id=category['value'])
 
+                    # Helper to check and convert to bool value
+                    def to_bool(value):
+                        if isinstance(value, bool):
+                            return value
+                        return str(value).strip().lower() == 'true'
+
+                    # Convert 'implantable' and 'deviceSterile' to booleans
+                    implantable = to_bool(auction_info.get('implantable', False))
+                    device_sterile = to_bool(auction_info.get('deviceSterile', False))
+
                     # Create the Auction object
                     auction = Auction.objects.create(
                         title=auction_info['title'],
@@ -895,8 +905,8 @@ def import_excel(request):
                         buyItNowPrice=buy_it_now_price,
                         manufacturer=auction_info['manufacturer'],
                         auction_type=auction_info['auction_type'],
-                        implantable=auction_info['implantable'],
-                        deviceSterile=auction_info['deviceSterile'],
+                        implantable=implantable,
+                        deviceSterile=device_sterile,
                         package_type=auction_info['package_type'],
                         auction_duration=auction_duration,
                         hold_for_import=True,  # Mark as held for import

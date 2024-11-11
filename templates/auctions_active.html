@@ -308,9 +308,50 @@
             </div>
 
         </div>
+        {#        {% if pages.has_other_pages %}#}
+        {#            <div class='d-flex align-items-center justify-content-center'>#}
+        {#                <ul class='pagination'>#}
+        {#                    {% if pages.has_previous %}#}
+        {#                        <li class='page-item'>#}
+        {#                            <a class='page-link' href='?page={{ pages.previous_page_number }}'>#}
+        {#                                &laquo;#}
+        {#                            </a>#}
+        {#                        </li>#}
+        {#                    {% else %}#}
+        {#                        <li class='page-item disabled'>#}
+        {#                            <a class='page-link' href='#'>&laquo;</a>#}
+        {#                        </li>#}
+        {#                    {% endif %}#}
+        {#                    {% for i in pages.paginator.page_range %}#}
+        {#                        {% if pages.number == i %}#}
+        {#                            <li class='page-item active'>#}
+        {#                                <a class='page-link' href='#'>{{ i }}</a>#}
+        {#                            </li>#}
+        {#                        {% else %}#}
+        {#                            <li class='page-item'>#}
+        {#                                <a class='page-link' href='?page={{ i }}'>{{ i }}</a>#}
+        {#                            </li>#}
+        {#                        {% endif %}#}
+        {#                    {% endfor %}#}
+        {#                    {% if pages.has_next %}#}
+        {#                        <li class='page-item'>#}
+        {#                            <a class='page-link' href='?page={{ pages.next_page_number }}'>#}
+        {#                                &raquo;#}
+        {#                            </a>#}
+        {#                        </li>#}
+        {#                    {% else %}#}
+        {#                        <li class='page-item disabled'>#}
+        {#                            <a class='page-link' href='#'>&raquo;</a>#}
+        {#                        </li>#}
+        {#                    {% endif %}#}
+        {#                </ul>#}
+        {#            </div>#}
+        {#        {% endif %}#}
         {% if pages.has_other_pages %}
             <div class='d-flex align-items-center justify-content-center'>
                 <ul class='pagination'>
+
+                    <!-- Previous Page Link -->
                     {% if pages.has_previous %}
                         <li class='page-item'>
                             <a class='page-link' href='?page={{ pages.previous_page_number }}'>
@@ -322,17 +363,45 @@
                             <a class='page-link' href='#'>&laquo;</a>
                         </li>
                     {% endif %}
+
+                    <!-- First Page Link and Ellipsis -->
+                    {% if pages.number > 3 %}
+                        <li class='page-item'>
+                            <a class='page-link' href='?page=1'>1</a>
+                        </li>
+                        <li class='page-item disabled'>
+                            <a class='page-link' href='#'>...</a>
+                        </li>
+                    {% endif %}
+
+                    <!-- Page Range Around Current Page -->
                     {% for i in pages.paginator.page_range %}
-                        {% if pages.number == i %}
-                            <li class='page-item active'>
-                                <a class='page-link' href='#'>{{ i }}</a>
-                            </li>
-                        {% else %}
-                            <li class='page-item'>
-                                <a class='page-link' href='?page={{ i }}'>{{ i }}</a>
-                            </li>
+                        {% if i >= pages.number|add:'-2' and i <= pages.number|add:'2' %}
+                            {% if pages.number == i %}
+                                <li class='page-item active'>
+                                    <a class='page-link' href='#'>{{ i }}</a>
+                                </li>
+                            {% else %}
+                                <li class='page-item'>
+                                    <a class='page-link' href='?page={{ i }}'>{{ i }}</a>
+                                </li>
+                            {% endif %}
                         {% endif %}
                     {% endfor %}
+
+                    <!-- Last Page Link and Ellipsis -->
+                    {% if pages.number < pages.paginator.num_pages|add:'-2' %}
+                        <li class='page-item disabled'>
+                            <a class='page-link' href='#'>...</a>
+                        </li>
+                        <li class='page-item'>
+                            <a class='page-link' href='?page={{ pages.paginator.num_pages }}'>
+                                {{ pages.paginator.num_pages }}
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    <!-- Next Page Link -->
                     {% if pages.has_next %}
                         <li class='page-item'>
                             <a class='page-link' href='?page={{ pages.next_page_number }}'>
@@ -344,11 +413,17 @@
                             <a class='page-link' href='#'>&raquo;</a>
                         </li>
                     {% endif %}
+
                 </ul>
             </div>
         {% endif %}
 
+
     </div>
+
+
+
+
 
     <!-- Modals -->
     {% for auction in auctions %}

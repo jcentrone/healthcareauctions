@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
-
+from rangefilter.filters import DateRangeFilter
 from .forms import MessageForm
 from .models import Bid, User, Order, OrderItem, ShippingAddress, \
     BillingAddress, Payment, Carrier, Parcel, ProductDetail, ShippingAccounts, Auction, Address, UserManual
@@ -329,7 +329,12 @@ class AuctionAdmin(admin.ModelAdmin):
         'reserve_bid', 'current_bid', 'buyItNowPrice', 'active', 'auction_end_date',
         'days_remaining', 'highest_bid', 'highest_bidder'
     )
-    list_filter = ('active', 'date_created', 'category', 'auction_duration')
+    list_filter = (
+        'active',
+        ('date_created', DateRangeFilter),  # Use DateRangeFilter for date_created
+        'auction_type',
+        'auction_duration',
+    )
     search_fields = ('title', 'description', 'creator__username', 'category__category_name', 'id')
     ordering = ('-date_created',)
     readonly_fields = (

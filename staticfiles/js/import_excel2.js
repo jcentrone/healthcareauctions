@@ -45,8 +45,8 @@ const medicalSpecialtyOptions = {
     'TX': 'Clinical Toxicology',
 };
 const requiredHeaders = [
-    'SKU',
-    'Reference Number',
+    // 'SKU',
+    // 'Reference Number',
     'Lot Number',
     'Production Date',
     'Expiration Date',
@@ -70,7 +70,7 @@ const columns = [
         field: "images",
         formatter: function (cell, formatterParams, onRendered) {
             const rowData = cell.getRow().getData();
-            console.log('Formatter rowData.images:', rowData.images); // For debugging
+            // console.log('Formatter rowData.images:', rowData.images); // For debugging
             const images = rowData.images || [];
             const imagesCount = images.filter(image => image !== undefined && image !== null).length;
             if (imagesCount > 0) {
@@ -175,14 +175,14 @@ const columns = [
         field: "deviceName",
         editor: "input",
         formatter: validateCell,
-        visible: false,
+        visible: true,
     },
     {
         title: "Manufacturer",
         field: "manufacturer",
         editor: "input",
         formatter: validateCell,
-        visible: false,
+        visible: true,
     },
     {
         title: "Description",
@@ -190,7 +190,7 @@ const columns = [
         editor: "textarea",
         width: 200,
         formatter: validateCell,
-        visible: false,
+        visible: true,
     },
     {
         title: "Medical Specialty Description",
@@ -200,7 +200,7 @@ const columns = [
             values: Object.values(medicalSpecialtyOptions),
         },
         formatter: validateCell,
-        visible: false, // Hide the column but keep the data
+        visible: true, // Hide the column but keep the data
     },
     {
         title: "Medical Specialty Code",
@@ -210,21 +210,21 @@ const columns = [
             values: medicalSpecialtyOptions,
         },
         formatter: validateCell,
-        visible: false, // Hide the column but keep the data
+        visible: true, // Hide the column but keep the data
     },
     {
         title: "Category",
         field: "category",
         editor: false,
         formatter: validateCell,
-        visible: false, // Hide the column but keep the data
+        visible: true, // Hide the column but keep the data
     },
     {
         title: "Category ID",
         field: "categoryId",
         editor: false,
         formatter: validateCell,
-        visible: false, // Hide the column but keep the data
+        visible: true, // Hide the column but keep the data
     },
     {
         title: "Device Sterile",
@@ -759,6 +759,7 @@ async function handleFileSelect(event) {
             const jsonData = XLSX.utils.sheet_to_json(sheet, {header: 1, raw: true});
             const headers = jsonData[0];
             const dataRows = jsonData.slice(1);
+            console.log('JSON Data', jsonData);
 
             // Create data objects
             const dataObjects = dataRows.map(row => {
@@ -794,12 +795,22 @@ async function handleFileSelect(event) {
 }
 
 async function validateAndMapHeaders(extractedHeaders) {
-    const missingHeaders = requiredHeaders.filter(header => !extractedHeaders.includes(header));
+    const missingHeaders = [];
+
+    // Ensure at least one of 'SKU' or 'Reference Number' is present
+    if (!extractedHeaders.includes('SKU') && !extractedHeaders.includes('Reference Number')) {
+        missingHeaders.push("'SKU' or 'Reference Number'");
+    }
+
+    // Check for other missing required headers
+    const otherMissingHeaders = requiredHeaders.filter(header => !extractedHeaders.includes(header));
+    missingHeaders.push(...otherMissingHeaders);
+
     if (missingHeaders.length === 0) {
         // All required headers are present
         return null;
     } else {
-        console.log('Missing Headers', missingHeaders);
+        console.log('Missing Headers:', missingHeaders);
         // Headers don't match, prompt user to map headers
         return missingHeaders;
     }
@@ -993,24 +1004,36 @@ async function processSingleRecord(record) {
         const refNumb = record['Reference Number'];
         if (!sku && !refNumb) {
             mergedRecord.fatalError = true;
+            throw new Error('Either SKU or Reference Number must be provided');
+
         }
-        if (!sku) {
-            throw new Error('SKU is missing');
-        }
+        // if (!sku && refNumb) {
+        //     ('SKU is missing');
+        // }
 
         const deviceData = await fetchDeviceData(sku, refNumb);
+
+        console.log('Ref Numb', refNumb);
+        console.log('Device Data', deviceData);
+
         if (!deviceData || !deviceData.gudid) {
             mergedRecord.fatalError = true;
+            if (refNumb) {
+                mergedRecord.listing_title = refNumb;
+            }
+            if (sku) {
+                mergedRecord.SKU = sku;
+            }
 
             throw new Error('Device not found via GTIN/SKU or Reference Number. Try changing either or both to resolve. We cannot import this listing until it error is resolved.');
         }
 
         // Extract deviceData fields
-        const listing_title = deviceData.gudid.device.catalogNumber || deviceData.gudid.device.versionModelNumber;
+        const listing_title = refNumb || deviceData.gudid.device.catalogNumber || deviceData.gudid.device.versionModelNumber;
         const manufacturer = deviceData.gudid.device.companyName;
         const packageType = deviceData.gudid.device.identifiers?.identifier?.[0]?.pkgType || 'Unknown';
-        const deviceSterile = deviceData.gudid.device.sterilization?.deviceSterile;
-        const implantable = deviceData.gudid.device.gmdnTerms?.gmdn?.[0]?.implantable;
+        const deviceSterile = deviceData.gudid.device.sterilization?.deviceSterile || false;
+        const implantable = deviceData.gudid.device.gmdnTerms?.gmdn?.[0]?.implantable ;
         const gmdnTerms = deviceData.gudid.device.gmdnTerms?.gmdn?.[0]?.gmdnPTDefinition || '';
 
         // Merge deviceData into the record
@@ -1105,8 +1128,8 @@ async function processingComplete(goodRecords, badRecords) {
     window.goodRecordsTable = await createTabulatorTable(goodRecords, '#good-records-table');
     window.badRecordsTable = await createTabulatorTable(badRecords, '#bad-records-table');
 
-    console.log('Good Records', window.goodRecordsTable.getData());
-    console.log('Bad Records', window.badRecordsTable.getData());
+    // console.log('Good Records', window.goodRecordsTable.getData());
+    // console.log('Bad Records', window.badRecordsTable.getData());
 
     if (badRecords.length > 0) {
         Swal.fire({
@@ -1263,7 +1286,7 @@ async function createTabulatorTable(records, selector) {
 
         });
 
-        console.log('Table', table.getData());
+        // console.log('Table', table.getData());
 
         table.on("cellEdited", function (cell) {
             const row = cell.getRow();
@@ -1272,9 +1295,9 @@ async function createTabulatorTable(records, selector) {
         })
 
         // Event listener for when a row is added
-        table.on("rowAdded", function (row) {
-            initializeBootstrapTooltip(row);
-        });
+        // table.on("rowAdded", function (row) {
+        //     initializeBootstrapTooltip(row);
+        // });
 
         // Event listener for when a row is updated
         table.on("rowUpdated", function (row) {
@@ -1283,7 +1306,7 @@ async function createTabulatorTable(records, selector) {
 
         // Initialize tooltips after the table has been fully rendered
         table.on("renderComplete", function () {
-            console.log("Render complete. Initializing tooltips...");
+            // console.log("Render complete. Initializing tooltips...");
             table.getRows().forEach(row => {
                 initializeBootstrapTooltip(row);
             });
@@ -1311,9 +1334,9 @@ async function fetchDeviceData(rawCode, refNumb) {
     const referenceNumber = refNumb;
 
     // Check if data is cached
-    if (deviceDataCache[code]) {
-        return deviceDataCache[code];
-    }
+    // if (deviceDataCache[code]) {
+    //     return deviceDataCache[code];
+    // }
 
     let data = null;
 
@@ -1426,11 +1449,11 @@ async function fetchDeviceDataByVersionModelNumber(referenceNumber) {
 }
 
 async function fetchClassificationData(code) {
-    console.log('Code', code);
+    // console.log('Code', code);
     return fetch(`https://api.fda.gov/device/classification.json?search=product_code:${code}&limit=5`)
         .then(response => response.json())
         .then(data => {
-            console.log("Device data from AccessGUDID Classification:", data);
+            // console.log("Device data from AccessGUDID Classification:", data);
 
             if (data.results && data.results.length > 0) {
                 let classificationData = {
@@ -1455,7 +1478,7 @@ async function fetchClassificationData(code) {
                 })
                     .then(response => response.json())
                     .then(result => {
-                        console.log(result);
+                        // console.log(result);
                         classificationData.category = result.category.category_name;
                         classificationData.category_id = result.category.value;
                         classificationData.description = description;
@@ -1793,8 +1816,8 @@ function formatDate(dateValue) {
 }
 
 function prepareAuctionData() {
-    console.log('Type of goodRecordsTable:', typeof window.goodRecordsTable);
-    console.log('goodRecordsTable:', window.goodRecordsTable);
+    // console.log('Type of goodRecordsTable:', typeof window.goodRecordsTable);
+    // console.log('goodRecordsTable:', window.goodRecordsTable);
 
     const listingsData = window.goodRecordsTable.getData();
     const auction_data = [];
@@ -1803,7 +1826,7 @@ function prepareAuctionData() {
 
     listingsData.forEach((record, index) => {
         let auctionInfo = {
-            title: record['Reference Number'] ? record['Reference Number'].trim() : '',
+            title: record['Reference Number'] ? record['Reference Number'] : '',
             description: record['description'] ? record['description'].trim() : '',
             category_id: record['categoryId'] || null,
             manufacturer: record['manufacturer'] ? record['manufacturer'].trim() : '',
@@ -1815,7 +1838,7 @@ function prepareAuctionData() {
             deviceName: record['deviceName'] || '',
 
             sku: record['SKU'] ? record['SKU'].trim() : null,
-            reference_number: record['Reference Number'] ? record['Reference Number'].trim() : null,
+            reference_number: record['Reference Number'] ? record['Reference Number'] : null,
             lot_number: record['Lot Number'] ? record['Lot Number'].trim() : null,
             production_date: formatDate(record['Production Date']),
             expiration_date: formatDate(record['Expiration Date']),
