@@ -283,7 +283,7 @@
                                             {% if image %}
                                                 <img src="{{ image.image.url }}" alt="{{ item.auction.title }}" style="width:185px">
                                             {% else %}
-                                                <img src="{% static 'images/no_image.png' %}" alt="Default Image">
+                                                <img src="{% static 'images/no_image.png' %}" alt="Default Image" style="width:185px">
                                             {% endif %}
                                         {% endwith %}
                                     </div>
