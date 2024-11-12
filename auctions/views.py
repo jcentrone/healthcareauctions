@@ -921,7 +921,8 @@ def import_excel(request):
                     auctions[index] = auction
 
                     # Clean the reference number by removing leading zeros and whitespace, and converting to uppercase
-                    auction_reference_number = auction_info.get('reference_number', '').strip().lstrip('0').upper()
+                    reference_number_value = auction_info.get('reference_number', '')
+                    auction_reference_number = str(reference_number_value).strip().lstrip('0').upper()
 
                     # Parse production_date and expiration_date
                     def parse_date(date_str, field_name):
