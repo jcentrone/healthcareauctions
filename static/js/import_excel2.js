@@ -1033,7 +1033,7 @@ async function processSingleRecord(record) {
         const manufacturer = deviceData.gudid.device.companyName;
         const packageType = deviceData.gudid.device.identifiers?.identifier?.[0]?.pkgType || 'Unknown';
         const deviceSterile = deviceData.gudid.device.sterilization?.deviceSterile || false;
-        const implantable = deviceData.gudid.device.gmdnTerms?.gmdn?.[0]?.implantable;
+        const implantable = deviceData.gudid.device.gmdnTerms?.gmdn?.[0]?.implantable ;
         const gmdnTerms = deviceData.gudid.device.gmdnTerms?.gmdn?.[0]?.gmdnPTDefinition || '';
 
         // Merge deviceData into the record
@@ -1827,27 +1827,27 @@ function prepareAuctionData() {
     listingsData.forEach((record, index) => {
         let auctionInfo = {
             title: record['Reference Number'] ? record['Reference Number'] : '',
-            description: typeof record['description'] === 'string' ? record['description'].trim() : '',
+            description: record['description'] ? record['description'].trim() : '',
             category_id: record['categoryId'] || null,
-            manufacturer: typeof record['manufacturer'] === 'string' ? record['manufacturer'].trim() : '',
-            package_type: typeof record['packageType'] === 'string' ? record['packageType'].trim() : '',
+            manufacturer: record['manufacturer'] ? record['manufacturer'].trim() : '',
+            package_type: record['packageType'] ? record['packageType'].trim() : '',
             deviceSterile: record['deviceSterile'],
             implantable: record['implantable'],
             medicalSpecialtyCode: record['medicalSpecialtyCode'] || '',
             medicalSpecialtyDescription: record['medicalSpecialtyDescription'] || '',
             deviceName: record['deviceName'] || '',
 
-            sku: typeof record['SKU'] === 'string' ? record['SKU'].trim() : null,
+            sku: record['SKU'] ? record['SKU'].trim() : null,
             reference_number: record['Reference Number'] ? record['Reference Number'] : null,
-            lot_number: typeof record['Lot Number'] === 'string' ? record['Lot Number'].trim() : null,
+            lot_number: record['Lot Number'] ? record['Lot Number'] : null,
             production_date: formatDate(record['Production Date']),
             expiration_date: formatDate(record['Expiration Date']),
             quantity_available: toNullIfEmpty(record['Quantity Available']),
-            auction_type: typeof record['Listing Type'] === 'string' ? record['Listing Type'].trim() : '',
+            auction_type: record['Listing Type'] ? record['Listing Type'].trim() : '',
             starting_bid: toNullIfEmpty(record['Starting Bid']),
             reserve_bid: toNullIfEmpty(record['Reserve Bid']),
             buyItNowPrice: toNullIfEmpty(record['Sale Price']),
-            auction_duration: typeof record['Auction Duration'] === 'string' ? record['Auction Duration'].trim() : null,
+            auction_duration: record['Auction Duration'] ? record['Auction Duration'].toString().trim() : null,
             images: record.images || [], // Include images array
         };
 
