@@ -838,7 +838,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             confirmButton: 'btn btn-primary'
                         }
                     }).then(() => {
-                        window.location.href = data.redirect_url;
+                        window.location.href = `https://www.healthcareauctions.com/auction/active` ;
                     });
                 } else {
                     Swal.fire({

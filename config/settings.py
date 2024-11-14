@@ -176,6 +176,8 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # Google Cloud Storage settings
 GS_BUCKET_NAME = 'healthcare_auctions_auction_images'
 GS_PROJECT_ID = 'healthcare-auctions'
+# GS_DEFAULT_ACL = 'publicRead'
+
 
 # Use GCS for media files
 DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'

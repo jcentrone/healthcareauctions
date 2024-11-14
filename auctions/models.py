@@ -12,6 +12,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.urls import reverse
 from django.utils import timezone
+from google.shopping.merchant_products_v1beta import ProductWeight
 from google.shopping.merchant_products_v1beta.services.product_inputs_service import ProductInputsServiceClient
 from google.shopping.merchant_products_v1beta.types import ProductInput, InsertProductInputRequest
 from google.shopping.merchant_products_v1beta.types import products_common
@@ -357,24 +358,33 @@ class Auction(models.Model):
         product_input.channel = types.Channel.ChannelEnum.ONLINE
         product_input.offer_id = str(self.id)
         product_input.content_language = "en"
-        product_input.feed_label = "auction_feed"
+        product_input.feed_label = "US"
 
         # Product attributes
         attributes = products_common.Attributes()
         attributes.title = self.title
         attributes.description = self.description
-        attributes.link = f'https://www.healthcareauctions.com{self.get_absolute_url()}'
+        attributes.link = f"https://www.healthcareauctions.com{self.get_absolute_url()}"
 
         # Image URL
         image = self.get_image()
+        print(f"Number of images associated with auction {self.id}: {self.get_images.count()}")
+
         if image:
+            # Construct the full image URL
             attributes.image_link = f"https://www.healthcareauctions.com{image.image.url}"
+            print(f"Image Link: {attributes.image_link}")  # For debugging
 
         # Price
         amount = self.buyItNowPrice or self.starting_bid or 0.00
         attributes.price = Price()
         attributes.price.amount_micros = int(float(amount) * 1_000_000)
         attributes.price.currency_code = 'USD'
+
+        # Product Weight
+        attributes.product_weight = ProductWeight()
+        attributes.product_weight.value = 5
+        attributes.product_weight.unit = 'lb'
 
         # Availability
         attributes.availability = 'in stock' if self.active else 'out of stock'
@@ -407,7 +417,7 @@ class Auction(models.Model):
 
         merchant_id = GOOGLE_MERCHANT_CENTER_ID
         parent = f"accounts/{merchant_id}"
-        data_source = f"accounts/{merchant_id}/dataSources/HealthcareAuctions.com"
+        data_source = f"accounts/{merchant_id}/dataSources/10459497661"
 
         request = InsertProductInputRequest(
             parent=parent,
