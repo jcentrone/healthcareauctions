@@ -307,7 +307,7 @@ function populateForm(data, overwrite = false) {
                 }
             }
         }
-        document.getElementById('id_title').value = device.catalogNumber;
+        document.getElementById('id_title').value = device.catalogNumber || device.versionModelNumber || '';
         document.getElementById('id_package_quantity').value = packageQuantity;
 
         // Map package type to the dropdown
@@ -527,6 +527,10 @@ function transferDataToAuctionForm() {
                     console.log('code', '01' + data[key]);
                     let code = '01' + data[key];
                     parseBarcode(code);
+                }
+                if (fieldId === 'id_product_details-0-reference_number') {
+                    console.log('RefNumb', data[key]);
+
                 }
             }
         }

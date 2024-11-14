@@ -18,7 +18,7 @@ SECRET_KEY = os.environ.get(
 SITE_URL = 'https://www.healthcareauctions.com'
 
 # DEBUG = config('DEBUG', default=False, cast=bool)
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     'localhost',
@@ -171,7 +171,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 # Use default file storage for static files (local filesystem or another backend)
-# STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Google Cloud Storage settings
