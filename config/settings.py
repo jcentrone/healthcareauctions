@@ -177,6 +177,8 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 GS_BUCKET_NAME = 'healthcare_auctions_auction_images'
 GS_PROJECT_ID = 'healthcare-auctions'
 # GS_DEFAULT_ACL = 'publicRead'
+GS_QUERYSTRING_AUTH = False  # Disable query string authentication (signed URLs)
+GS_FILE_OVERWRITE = False # Optional: To prevent overwriting files with the same name
 
 
 # Use GCS for media files

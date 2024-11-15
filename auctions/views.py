@@ -46,6 +46,7 @@ from .utils.calculate_tax import get_sales_tax
 from .utils.email_manager import send_welcome_email_html, order_confirmation_message
 from .utils.get_base64_logo import get_logo_base64
 from .utils.get_featured_listings import get_featured_listings
+from .utils.google_shopping import add_to_google, delete_from_google
 from .utils.helpers import update_categories_from_fda
 from .utils.openai import get_chat_completion_request
 from .utils.scrape import scrape_images
@@ -713,8 +714,8 @@ def auction_create(request):
                                                          queryset=ProductDetail.objects.none(),
                                                          prefix='product_details')
 
-        print("Product Detail Form Data: %s", product_detail_formset.data)
-        print("Product Detail Formset Errors: %s", product_detail_formset.errors)
+        # print("Product Detail Form Data: %s", product_detail_formset.data)
+        # print("Product Detail Formset Errors: %s", product_detail_formset.errors)
 
         if auction_form.is_valid() and image_formset.is_valid() and product_detail_formset.is_valid():
             new_auction = auction_form.save(commit=False)
@@ -723,8 +724,8 @@ def auction_create(request):
             new_auction.active = True
             new_auction.save()
 
-            print("Product Detail Form Data: %s", product_detail_formset.data)
-            print("Product Detail Formset Errors: %s", product_detail_formset.errors)
+            # print("Product Detail Form Data: %s", product_detail_formset.data)
+            # print("Product Detail Formset Errors: %s", product_detail_formset.errors)
 
             for form in image_formset.cleaned_data:
                 if form:
@@ -737,6 +738,14 @@ def auction_create(request):
                     product_detail = form.save(commit=False)
                     product_detail.auction = new_auction
                     product_detail.save()
+
+            # Call add_to_google function
+            try:
+                add_to_google(new_auction)
+            except Exception as e:
+                # Handle the exception, log it, or notify administrators
+                print(f"Failed to add product {new_auction.id} to Google Merchant Center: {e}")
+                # Optionally, you can add error handling here to inform the user
 
             # Redirect URL
             redirect_url = reverse('active_auctions_with_id', kwargs={'auction_id': new_auction.id})
@@ -975,6 +984,8 @@ def import_excel(request):
                                 # If there is a default image URL, use it to create the Image object
                                 Image.objects.create(auction=auction, image=default_image_url)
 
+                add_to_google(auction)
+
                 # Handle the uploaded images
                 for key in request.FILES:
                     logger.debug(f"Processing file key: {key}")
@@ -1027,6 +1038,7 @@ def active_auctions_view(request, auction_id=None):
     # Base QuerySet
     auctions = Auction.objects.filter(active=True)
 
+
     # Handle specific auction display
     specific_auction = None
     if auction_id:
@@ -1035,7 +1047,7 @@ def active_auctions_view(request, auction_id=None):
             specific_auction.image = specific_auction.get_images.first()
             if request.user.is_authenticated:
                 specific_auction.is_watched = request.user in specific_auction.watchers.all()
-            auctions = auctions.exclude(id=auction_id)  # Exclude the specific auction from the queryset
+            # Don't exclude the specific auction here
         except Auction.DoesNotExist:
             pass
 
@@ -1161,7 +1173,7 @@ def active_auctions_view(request, auction_id=None):
 
     # If on the first page, prepend the specific auction
     auctions_list = list(pages.object_list)
-    if specific_auction:
+    if specific_auction and page == 1:
         auctions_list = [specific_auction] + auctions_list
 
     # Context for the template
@@ -1412,6 +1424,7 @@ def auction_delete_view(request, auction_id):
     if auction.creator != request.user:
         return HttpResponseForbidden("You are not allowed to delete this auction.")
 
+    delete_from_google(auction.id)
     auction.delete()
     return JsonResponse({'success': True})
 
