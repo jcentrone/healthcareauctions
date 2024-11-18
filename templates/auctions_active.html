@@ -67,45 +67,8 @@
         <!-- Page Heading -->
         <div class="d-flex align-items-center justify-content-between mb-2">
             <h2 class="breadcrumb-item active" aria-current="page">
-                {% if search_query %}
-                    Search Results for "{{ search_query|capitalize_all }}"
-                {% elif category_name or specialty or manufacturer_filter or auction_type or time_filter or sort_by %}
-                    {% comment %} Append filters to the heading {% endcomment %}
-                    {% if category_name %}
-                        in {{ category_name|titlecase }}
-                    {% endif %}
-                    {% if specialty %}
-                        {% if category_name %} - {% endif %}
-                        Specialty: {{ specialty|titlecase }}
-                    {% endif %}
-                    {% if manufacturer_filter %}
-                        {% if category_name or specialty %} - {% endif %}
-                        Manufacturer: {{ manufacturer_filter|titlecase }}
-                    {% endif %}
-                    {% if auction_type %}
-                        {% if category_name or specialty or manufacturer_filter %} - {% endif %}
-                        Type: {{ auction_type|auction_type_label }}
-                    {% endif %}
-                    {% if time_filter %}
-                        {% if category_name or specialty or manufacturer_filter or auction_type %} - {% endif %}
-                        Time: {{ time_filter|titlecase }}
-                    {% endif %}
-                    {% if sort_by %}
-                        {% if category_name or specialty or manufacturer_filter or auction_type or time_filter %} -
-                        {% endif %}
-                        Sorted by: {{ sort_by|sort_by_label }}
-                    {% endif %}
-                {% else %}
-                    {% if title %}
-                        {{ title|titlecase }}
-                    {% else %}
-                        Listings
-                    {% endif %}
-                {% endif %}
-
-                - {{ auctions_count }} Result{% if auctions_count != 1 %}s{% endif %}
+                {{ heading }}
             </h2>
-
             {% if request.user.is_authenticated %}
                 <a href="{% url 'export_listings' %}" class="btn btn-outline-primary ">Download as Excel</a>
             {% endif %}
@@ -124,6 +87,36 @@
                     <!-- Filter Section -->
                     <div class="collapse d-md-block filters" id="filterCollapse">
                         <form id="auction-filter-form" method="get" class="form-inline">
+                            <!-- Sort By -->
+                            <div class="form-group mb-2">
+                                <h6>Sort By: {{ sort_by|sort_by_label }}</h6>
+                                <div class="dropdown">
+                                    <button class="btn border dropdown-toggle d-flex align-items-center justify-content-between"
+                                            type="button" id="sort-by"
+                                            data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        {{ sort_by|sort_by_label }}
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="sort-by">
+                                        <a class="dropdown-item {% if sort_by == '' %}active{% endif %}" href="#"
+                                           data-value="">Best Match</a>
+                                        <a class="dropdown-item {% if sort_by == 'ending_soonest' %}active{% endif %}"
+                                           href="#" data-value="ending_soonest">Ending Soonest</a>
+                                        <a class="dropdown-item {% if sort_by == 'newly_listed' %}active{% endif %}"
+                                           href="#" data-value="newly_listed">Newly Listed</a>
+                                        <a class="dropdown-item {% if sort_by == 'price_highest' %}active{% endif %}"
+                                           href="#" data-value="price_highest">Price Highest</a>
+                                        <a class="dropdown-item {% if sort_by == 'price_lowest' %}active{% endif %}"
+                                           href="#" data-value="price_lowest">Price Lowest</a>
+                                        <a class="dropdown-item {% if sort_by == 'fewest_bids' %}active{% endif %}"
+                                           href="#" data-value="fewest_bids">Fewest Bids</a>
+                                        <a class="dropdown-item {% if sort_by == 'most_bids' %}active{% endif %}"
+                                           href="#" data-value="most_bids">Most Bids</a>
+                                        <a class="dropdown-item" href="#" data-value="">Reset</a>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="sort_by" id="sort-by-value">
+                            </div>
+                            
                             <!-- Manufacturer Filter -->
                             <div class="form-group mb-2">
                                 <h6>Select Manufacturer</h6>
@@ -133,7 +126,7 @@
                                             aria-expanded="false">
                                         <span class="button-text">
                                             {% if manufacturer_filter %}
-                                                {{ manufacturer_filter }}
+                                                {{ manufacturer_filter|titlecase }}
                                             {% else %}
                                                 Select Manufacturer
                                             {% endif %}
@@ -145,7 +138,7 @@
                                         {% for manufacturer in unique_manufacturers %}
                                             <a class="dropdown-item {% if manufacturer_filter == manufacturer %}active{% endif %}"
                                                href="#"
-                                               data-value="{{ manufacturer }}">{{ manufacturer }}</a>
+                                               data-value="{{ manufacturer }}">{{ manufacturer|titlecase }}</a>
                                         {% endfor %}
                                         <a class="dropdown-item" href="#" data-value="">Reset</a>
                                     </div>
@@ -225,35 +218,6 @@
                                 </div>
                                 <input type="hidden" name="time_filter" id="time-filter-value">
                             </div>
-                            <!-- Sort By -->
-                            <div class="form-group mb-2">
-                                <h6>Sort By: {{ sort_by|sort_by_label }}</h6>
-                                <div class="dropdown">
-                                    <button class="btn border dropdown-toggle d-flex align-items-center justify-content-between"
-                                            type="button" id="sort-by"
-                                            data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        {{ sort_by|sort_by_label }}
-                                    </button>
-                                    <div class="dropdown-menu" aria-labelledby="sort-by">
-                                        <a class="dropdown-item {% if sort_by == '' %}active{% endif %}" href="#"
-                                           data-value="">Best Match</a>
-                                        <a class="dropdown-item {% if sort_by == 'ending_soonest' %}active{% endif %}"
-                                           href="#" data-value="ending_soonest">Ending Soonest</a>
-                                        <a class="dropdown-item {% if sort_by == 'newly_listed' %}active{% endif %}"
-                                           href="#" data-value="newly_listed">Newly Listed</a>
-                                        <a class="dropdown-item {% if sort_by == 'price_highest' %}active{% endif %}"
-                                           href="#" data-value="price_highest">Price Highest</a>
-                                        <a class="dropdown-item {% if sort_by == 'price_lowest' %}active{% endif %}"
-                                           href="#" data-value="price_lowest">Price Lowest</a>
-                                        <a class="dropdown-item {% if sort_by == 'fewest_bids' %}active{% endif %}"
-                                           href="#" data-value="fewest_bids">Fewest Bids</a>
-                                        <a class="dropdown-item {% if sort_by == 'most_bids' %}active{% endif %}"
-                                           href="#" data-value="most_bids">Most Bids</a>
-                                        <a class="dropdown-item" href="#" data-value="">Reset</a>
-                                    </div>
-                                </div>
-                                <input type="hidden" name="sort_by" id="sort-by-value">
-                            </div>
                             <!-- Auction Type Filter -->
                             <div class="form-group mb-2">
                                 <h6>Listing Type: {{ auction_type|auction_type_label }}</h6>
@@ -308,45 +272,6 @@
             </div>
 
         </div>
-        {#        {% if pages.has_other_pages %}#}
-        {#            <div class='d-flex align-items-center justify-content-center'>#}
-        {#                <ul class='pagination'>#}
-        {#                    {% if pages.has_previous %}#}
-        {#                        <li class='page-item'>#}
-        {#                            <a class='page-link' href='?page={{ pages.previous_page_number }}'>#}
-        {#                                &laquo;#}
-        {#                            </a>#}
-        {#                        </li>#}
-        {#                    {% else %}#}
-        {#                        <li class='page-item disabled'>#}
-        {#                            <a class='page-link' href='#'>&laquo;</a>#}
-        {#                        </li>#}
-        {#                    {% endif %}#}
-        {#                    {% for i in pages.paginator.page_range %}#}
-        {#                        {% if pages.number == i %}#}
-        {#                            <li class='page-item active'>#}
-        {#                                <a class='page-link' href='#'>{{ i }}</a>#}
-        {#                            </li>#}
-        {#                        {% else %}#}
-        {#                            <li class='page-item'>#}
-        {#                                <a class='page-link' href='?page={{ i }}'>{{ i }}</a>#}
-        {#                            </li>#}
-        {#                        {% endif %}#}
-        {#                    {% endfor %}#}
-        {#                    {% if pages.has_next %}#}
-        {#                        <li class='page-item'>#}
-        {#                            <a class='page-link' href='?page={{ pages.next_page_number }}'>#}
-        {#                                &raquo;#}
-        {#                            </a>#}
-        {#                        </li>#}
-        {#                    {% else %}#}
-        {#                        <li class='page-item disabled'>#}
-        {#                            <a class='page-link' href='#'>&raquo;</a>#}
-        {#                        </li>#}
-        {#                    {% endif %}#}
-        {#                </ul>#}
-        {#            </div>#}
-        {#        {% endif %}#}
         {% if pages.has_other_pages %}
             <div class='d-flex align-items-center justify-content-center'>
                 <ul class='pagination'>

@@ -144,13 +144,14 @@ def add_to_google(listing):
 
     # delete_from_google(id_to_delete)
 
-    try:
-        response = client.insert_product_input(request=request)
-        print(f"Inserted product with ID: {response.product}")
-        return response
-    except Exception as e:
-        print(f"Error adding product {listing.id} to Google Merchant Center: {e}")
-        raise e
+    if not settings.DEBUG:
+        try:
+            response = client.insert_product_input(request=request)
+            print(f"Inserted product with ID: {response.product}")
+            return response
+        except Exception as e:
+            print(f"Error adding product {listing.id} to Google Merchant Center: {e}")
+            raise e
 
 
 @retry(wait=wait_random_exponential(multiplier=1, max=40), stop=stop_after_attempt(MAX_ATTEMPTS), reraise=True)

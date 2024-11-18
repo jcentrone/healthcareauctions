@@ -5,6 +5,7 @@ from decimal import Decimal
 from cryptography.fernet import Fernet
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Q
@@ -17,7 +18,10 @@ from google.shopping.merchant_products_v1beta.services.product_inputs_service im
 from google.shopping.merchant_products_v1beta.types import ProductInput, InsertProductInputRequest
 from google.shopping.merchant_products_v1beta.types import products_common
 from google.shopping.type.types import types, Price
+from imagekit.models import ProcessedImageField, ImageSpecField
+from imagekit.processors import ResizeToFill
 from tenacity import retry, wait_random_exponential, stop_after_attempt
+
 
 from config.storage_backends import ProfileImageStorage, CompanyLogoStorage, W9Storage, ResellerCertificateStorage, \
     GenericImageStorage
@@ -383,9 +387,23 @@ class AuctionView(models.Model):
         return f'{self.user.username} viewed Auction #{self.auction.id} on {self.viewed_at}'
 
 
+def validate_file_size(value):
+    max_size = 10 * 1024 * 1024  # 10 MB limit
+    if value.size > max_size:
+        raise ValidationError("The maximum file size that can be uploaded is 10MB")
+
+
 class Image(models.Model):
     auction = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name='get_images')
-    image = models.ImageField(upload_to='images/', blank=True, null=True)
+    image = ProcessedImageField(
+        upload_to='images/',
+        processors=[ResizeToFill(800, 600)],
+        format='WEBP',  # Converts image to WEBP after processing
+        options={'quality': 80},
+        validators=[validate_file_size],
+        blank=True,
+        null=True
+    )
 
     def __str__(self):
         return f'{self.image}'

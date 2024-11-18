@@ -39,11 +39,12 @@ from .forms import AuctionForm, ImageForm, CommentForm, BidForm, AddToCartForm, 
     PayPalForm, CashAppForm, CustomUserChangeForm, UserAddressForm, OrderNoteForm, EditAuctionForm, \
     EditProductDetailFormSet, ShippingAccountsForm, RegistrationForm, ProductDetailForm, EditImageFormSet
 from .models import Bid, Category, Image, CartItem, Cart, ProductDetail, Order, Payment, \
-    OrderItem, Parcel, ProductImage, ShippingAccounts, Address, Message, User, UserManual, MedicalSpecialty, \
+    OrderItem, Parcel, ProductImage, ShippingAccounts, Address, Message, User, MedicalSpecialty, \
     ProductCodeClassification
 from .utils.calc_fair_price import calculate_fair_price
 from .utils.calculate_tax import get_sales_tax
 from .utils.email_manager import send_welcome_email_html, order_confirmation_message
+from .utils.generate_heading import generate_heading
 from .utils.get_base64_logo import get_logo_base64
 from .utils.get_featured_listings import get_featured_listings
 from .utils.google_shopping import add_to_google, delete_from_google
@@ -1013,6 +1014,211 @@ def import_excel(request):
     })
 
 
+# Old active auctions view
+# def active_auctions_view(request, auction_id=None):
+#     """
+#     Renders a page that displays all the currently active auction listings.
+#     Active auctions are paginated: 10 per page.
+#     """
+#
+#     # Get request parameters
+#     category_name = request.GET.get('category_name')
+#     time_filter = request.GET.get('time_filter')
+#     sort_by = request.GET.get('sort_by')
+#     manufacturer_filter = request.GET.get('mfg_filter')
+#     expired_filter = request.GET.get('expired_filter')
+#     my_auctions = request.GET.get('my_auctions')
+#     search_query = request.GET.get('search_query')
+#     auction_type = request.GET.get('auction_type')
+#     watchlist_filter = request.GET.get('watchlist')
+#     recent_views_filter = request.GET.get('recent_views')
+#     page = request.GET.get('page', 1)
+#     specialty = request.GET.get('specialty')
+#
+#     active_specialties = Auction.get_active_specialties()
+#
+#     # Base QuerySet
+#     auctions = Auction.objects.filter(active=True)
+#
+#     # Handle specific auction display
+#     specific_auction = None
+#     if auction_id:
+#         try:
+#             specific_auction = Auction.objects.get(id=auction_id, active=True)
+#             specific_auction.image = specific_auction.get_images.first()
+#             if request.user.is_authenticated:
+#                 specific_auction.is_watched = request.user in specific_auction.watchers.all()
+#             # Don't exclude the specific auction here
+#         except Auction.DoesNotExist:
+#             pass
+#
+#     # Apply filters
+#     if auction_type:
+#         auctions = auctions.filter(auction_type=auction_type)
+#
+#     if recent_views_filter and request.user.is_authenticated:
+#         recent_views = AuctionView.objects.filter(user=request.user).order_by('-viewed_at').values_list('auction',
+#                                                                                                         flat=True)
+#         auctions = auctions.filter(id__in=recent_views)
+#
+#     if my_auctions and request.user.is_authenticated:
+#         auctions = auctions.filter(creator=request.user)
+#
+#     if watchlist_filter and request.user.is_authenticated:
+#         auctions = request.user.watchlist.all()
+#
+#     if category_name:
+#         auctions = auctions.filter(category__category_name=category_name)
+#
+#     if expired_filter:
+#         today = timezone.now().date()
+#         if expired_filter == 'expired':
+#             auctions = auctions.filter(product_details__expiration_date__lt=today)
+#         elif expired_filter == 'not_expired':
+#             auctions = auctions.filter(product_details__expiration_date__gte=today)
+#
+#     specialty_description = ''
+#
+#     # **Apply specialty filter**
+#     if specialty:
+#         # Strip any leading/trailing whitespace
+#         specialty = specialty.strip()
+#         # Filter auctions where the category's medical specialty description matches the given specialty
+#         auctions = auctions.filter(
+#             category__medical_specialty__code__icontains=specialty
+#         )
+#         specialty_obj = MedicalSpecialty.objects.filter(code=specialty).first()
+#         specialty_description = specialty_obj.description
+#
+#     # Apply time filters using a dictionary mapping
+#     time_deltas = {
+#         'today': timedelta(days=1),
+#         'tomorrow': timedelta(days=2),
+#         'next_3_days': timedelta(days=3),
+#         'next_5_days': timedelta(days=5),
+#         'next_7_days': timedelta(days=7),
+#         'next_10_days': timedelta(days=10),
+#     }
+#     if time_filter in time_deltas:
+#         end_date = timezone.now() + time_deltas[time_filter]
+#         auctions = auctions.filter(date_created__lte=end_date)
+#
+#     # Apply sort options
+#     sort_options = {
+#         'ending_soonest': 'auction_ending_date',
+#         'newly_listed': '-date_created',
+#         'price_highest': '-starting_bid',
+#         'price_lowest': 'starting_bid',
+#         'fewest_bids': 'bid_count',
+#         'most_bids': '-bid_count',
+#     }
+#     if sort_by in sort_options:
+#         if 'bids' in sort_by:
+#             auctions = auctions.annotate(bid_count=Count('bid')).order_by(sort_options[sort_by])
+#         else:
+#             auctions = auctions.order_by(sort_options[sort_by])
+#
+#     if manufacturer_filter:
+#         auctions = auctions.filter(manufacturer=manufacturer_filter)
+#
+#     if search_query:
+#         auctions = auctions.filter(
+#             Q(title__icontains=search_query) |
+#             Q(description__icontains=search_query) |
+#             Q(product_name__icontains=search_query) |
+#             Q(gmdnPTDefinition__icontains=search_query) |
+#             Q(manufacturer__icontains=search_query) |
+#             Q(product_details__reference_number__icontains=search_query) |
+#             Q(product_details__sku__icontains=search_query) |
+#             Q(product_details__lot_number__icontains=search_query)
+#         )
+#
+#     # Annotate auctions with highest bid amount and highest bidder ID
+#     highest_bid_subquery = Bid.objects.filter(
+#         auction=OuterRef('pk')
+#     ).order_by('-amount')
+#
+#     auctions = auctions.annotate(
+#         highest_bid_amount=Subquery(highest_bid_subquery.values('amount')[:1]),
+#         highest_bid_bidder_id=Subquery(highest_bid_subquery.values('user_id')[:1])
+#     )
+#
+#     # Add additional fields to auctions
+#     for auction in auctions:
+#         auction.image = auction.get_images.first()
+#
+#         # Split the auction manufacturer into keywords
+#         keywords = auction.manufacturer.split()
+#
+#         # Build a Q object to match any of the keywords
+#         query = Q()
+#         for keyword in keywords:
+#             query |= Q(manufacturer__icontains=keyword)
+#
+#         # Filter using the constructed Q object
+#         auction.manual_url = UserManual.objects.filter(query).first()
+#
+#         if request.user.is_authenticated:
+#             auction.is_watched = request.user in auction.watchers.all()
+#             auction.message_form = MessageForm(initial={'subject': f'Question about {auction.title}'})
+#             auction.is_user_highest_bidder = (auction.highest_bid_bidder_id == request.user.id)
+#
+#     # Pagination
+#     paginator = Paginator(auctions, 10)
+#     try:
+#         pages = paginator.page(page)
+#     except PageNotAnInteger:
+#         pages = paginator.page(1)
+#     except EmptyPage:
+#         pages = paginator.page(paginator.num_pages)
+#
+#     # If on the first page, prepend the specific auction
+#     auctions_list = list(pages.object_list)
+#     if specific_auction and page == 1:
+#         auctions_list = [specific_auction] + auctions_list
+#
+#     heading = generate_heading(
+#             search_query=search_query,
+#             category_name=category_name,
+#             specialty=specialty,
+#             manufacturer_filter=manufacturer_filter,
+#             auction_type=auction_type,
+#             time_filter=time_filter,
+#             sort_by=sort_by,
+#             title='Active Auctions',
+#             auctions_count=auctions.count()
+#         )
+#
+#     # Context for the template
+#     context = {
+#         'auctions': auctions_list,
+#         'search_query': search_query,
+#         'bid_form': BidForm(),
+#         'add_to_cart_form': AddToCartForm(),
+#         'auctions_count': auctions.count(),
+#         'category_name': category_name,
+#         'pages': pages,
+#         'title': 'Active Auctions',
+#         'unique_manufacturers': sorted(set(auctions.values_list('manufacturer', flat=True))),
+#         'time_filter': time_filter,
+#         'sort_by': sort_by,
+#         'manufacturer_filter': manufacturer_filter,
+#         'my_auctions': my_auctions,
+#         'expired_filter': expired_filter,
+#         'auction_type': auction_type,
+#         'specialty': specialty,
+#         'specialty_description': specialty_description,
+#         'active_specialties': active_specialties,
+#         'recent_views': recent_views_filter,
+#         'heading': heading,
+#     }
+#
+#     # Add authenticated-specific context
+#     if request.user.is_authenticated:
+#         context['has_active_auctions'] = Auction.objects.filter(creator=request.user, active=True).exists()
+#
+#     return render(request, 'auctions_active.html', context)
+
 def active_auctions_view(request, auction_id=None):
     """
     Renders a page that displays all the currently active auction listings.
@@ -1033,42 +1239,50 @@ def active_auctions_view(request, auction_id=None):
     page = request.GET.get('page', 1)
     specialty = request.GET.get('specialty')
 
+    # Preload active specialties
     active_specialties = Auction.get_active_specialties()
 
-    # Base QuerySet
-    auctions = Auction.objects.filter(active=True)
-
-
-    # Handle specific auction display
-    specific_auction = None
-    if auction_id:
-        try:
-            specific_auction = Auction.objects.get(id=auction_id, active=True)
-            specific_auction.image = specific_auction.get_images.first()
-            if request.user.is_authenticated:
-                specific_auction.is_watched = request.user in specific_auction.watchers.all()
-            # Don't exclude the specific auction here
-        except Auction.DoesNotExist:
-            pass
-
-    # Apply filters
+    # Base QuerySet with filters
+    filters = Q(active=True)
     if auction_type:
-        auctions = auctions.filter(auction_type=auction_type)
-
-    if recent_views_filter and request.user.is_authenticated:
-        recent_views = AuctionView.objects.filter(user=request.user).order_by('-viewed_at').values_list('auction',
-                                                                                                        flat=True)
-        auctions = auctions.filter(id__in=recent_views)
-
-    if my_auctions and request.user.is_authenticated:
-        auctions = auctions.filter(creator=request.user)
-
-    if watchlist_filter and request.user.is_authenticated:
-        auctions = request.user.watchlist.all()
-
+        filters &= Q(auction_type=auction_type)
     if category_name:
-        auctions = auctions.filter(category__category_name=category_name)
+        filters &= Q(category__category_name=category_name)
+    if manufacturer_filter:
+        filters &= Q(manufacturer=manufacturer_filter)
+    if search_query:
+        filters &= Q(
+            Q(title__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(product_name__icontains=search_query) |
+            Q(gmdnPTDefinition__icontains=search_query) |
+            Q(manufacturer__icontains=search_query) |
+            Q(product_details__reference_number__icontains=search_query) |
+            Q(product_details__sku__icontains=search_query) |
+            Q(product_details__lot_number__icontains=search_query)
+        )
+    if specialty:
+        filters &= Q(category__medical_specialty__code__icontains=specialty)
 
+    auctions = Auction.objects.filter(filters).select_related(
+        'category', 'creator'
+    ).prefetch_related(
+        'get_images', 'watchers'
+    )
+
+    # Apply additional filters for authenticated users
+    if request.user.is_authenticated:
+        if recent_views_filter:
+            recent_views = AuctionView.objects.filter(user=request.user).order_by('-viewed_at').values_list(
+                'auction_id', flat=True)
+            auctions = auctions.filter(id__in=recent_views)
+        if my_auctions:
+            auctions = auctions.filter(creator=request.user)
+        if watchlist_filter:
+            watchlist_ids = request.user.watchlist.values_list('id', flat=True)
+            auctions = auctions.filter(id__in=watchlist_ids)
+
+    # Apply expired filters
     if expired_filter:
         today = timezone.now().date()
         if expired_filter == 'expired':
@@ -1076,20 +1290,7 @@ def active_auctions_view(request, auction_id=None):
         elif expired_filter == 'not_expired':
             auctions = auctions.filter(product_details__expiration_date__gte=today)
 
-    specialty_description = ''
-
-    # **Apply specialty filter**
-    if specialty:
-        # Strip any leading/trailing whitespace
-        specialty = specialty.strip()
-        # Filter auctions where the category's medical specialty description matches the given specialty
-        auctions = auctions.filter(
-            category__medical_specialty__code__icontains=specialty
-        )
-        specialty_obj = MedicalSpecialty.objects.filter(code=specialty).first()
-        specialty_description = specialty_obj.description
-
-    # Apply time filters using a dictionary mapping
+    # Apply time filters
     time_deltas = {
         'today': timedelta(days=1),
         'tomorrow': timedelta(days=2),
@@ -1102,7 +1303,7 @@ def active_auctions_view(request, auction_id=None):
         end_date = timezone.now() + time_deltas[time_filter]
         auctions = auctions.filter(date_created__lte=end_date)
 
-    # Apply sort options
+    # Apply sorting
     sort_options = {
         'ending_soonest': 'auction_ending_date',
         'newly_listed': '-date_created',
@@ -1111,56 +1312,25 @@ def active_auctions_view(request, auction_id=None):
         'fewest_bids': 'bid_count',
         'most_bids': '-bid_count',
     }
-    if sort_by in sort_options:
+    if sort_by:
         if 'bids' in sort_by:
             auctions = auctions.annotate(bid_count=Count('bid')).order_by(sort_options[sort_by])
         else:
             auctions = auctions.order_by(sort_options[sort_by])
 
-    if manufacturer_filter:
-        auctions = auctions.filter(manufacturer=manufacturer_filter)
-
-    if search_query:
-        auctions = auctions.filter(
-            Q(title__icontains=search_query) |
-            Q(description__icontains=search_query) |
-            Q(product_name__icontains=search_query) |
-            Q(gmdnPTDefinition__icontains=search_query) |
-            Q(manufacturer__icontains=search_query) |
-            Q(product_details__reference_number__icontains=search_query) |
-            Q(product_details__sku__icontains=search_query) |
-            Q(product_details__lot_number__icontains=search_query)
-        )
-
-    # Annotate auctions with highest bid amount and highest bidder ID
-    highest_bid_subquery = Bid.objects.filter(
-        auction=OuterRef('pk')
-    ).order_by('-amount')
-
+    # Annotate with highest bid details
+    highest_bid_subquery = Bid.objects.filter(auction=OuterRef('pk')).order_by('-amount')
     auctions = auctions.annotate(
         highest_bid_amount=Subquery(highest_bid_subquery.values('amount')[:1]),
         highest_bid_bidder_id=Subquery(highest_bid_subquery.values('user_id')[:1])
     )
 
-    # Add additional fields to auctions
-    for auction in auctions:
-        auction.image = auction.get_images.first()
-
-        # Split the auction manufacturer into keywords
-        keywords = auction.manufacturer.split()
-
-        # Build a Q object to match any of the keywords
-        query = Q()
-        for keyword in keywords:
-            query |= Q(manufacturer__icontains=keyword)
-
-        # Filter using the constructed Q object
-        auction.manual_url = UserManual.objects.filter(query).first()
-
-        if request.user.is_authenticated:
-            auction.is_watched = request.user in auction.watchers.all()
-            auction.message_form = MessageForm(initial={'subject': f'Question about {auction.title}'})
-            auction.is_user_highest_bidder = (auction.highest_bid_bidder_id == request.user.id)
+    # Specialty description
+    specialty_description = ''
+    if specialty:
+        specialty_obj = MedicalSpecialty.objects.filter(code=specialty).only('description').first()
+        if specialty_obj:
+            specialty_description = specialty_obj.description
 
     # Pagination
     paginator = Paginator(auctions, 10)
@@ -1171,18 +1341,26 @@ def active_auctions_view(request, auction_id=None):
     except EmptyPage:
         pages = paginator.page(paginator.num_pages)
 
-    # If on the first page, prepend the specific auction
-    auctions_list = list(pages.object_list)
-    if specific_auction and page == 1:
-        auctions_list = [specific_auction] + auctions_list
+    # Heading generation
+    heading = generate_heading(
+        search_query=search_query,
+        category_name=category_name,
+        specialty=specialty,
+        manufacturer_filter=manufacturer_filter,
+        auction_type=auction_type,
+        time_filter=time_filter,
+        sort_by=sort_by,
+        title='Active Auctions',
+        auctions_count=paginator.count
+    )
 
-    # Context for the template
+    # Context
     context = {
-        'auctions': auctions_list,
+        'auctions': pages.object_list,
         'search_query': search_query,
         'bid_form': BidForm(),
         'add_to_cart_form': AddToCartForm(),
-        'auctions_count': auctions.count(),
+        'auctions_count': paginator.count,
         'category_name': category_name,
         'pages': pages,
         'title': 'Active Auctions',
@@ -1197,9 +1375,9 @@ def active_auctions_view(request, auction_id=None):
         'specialty_description': specialty_description,
         'active_specialties': active_specialties,
         'recent_views': recent_views_filter,
+        'heading': heading,
     }
 
-    # Add authenticated-specific context
     if request.user.is_authenticated:
         context['has_active_auctions'] = Auction.objects.filter(creator=request.user, active=True).exists()
 
@@ -1780,7 +1958,7 @@ def checkout(request):
                 if default_shipping_account and default_shipping_account.use_as_default_shipping_method:
                     shipping_amount = Decimal('0.00')
                 else:
-                    shipping_amount = Decimal('')  # Example shipping fee; consider making this dynamic
+                    shipping_amount = Decimal('0.00')  # Example shipping fee; consider making this dynamic
 
                 tax_amount = Decimal('0.00') if tax_exempt else sales_tax_no_shipping
 

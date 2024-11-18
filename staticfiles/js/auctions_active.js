@@ -1,3 +1,55 @@
+document.addEventListener("DOMContentLoaded", function () {
+    // Function to load images
+    function lazyLoadImage(image) {
+        const src = image.getAttribute("data-src");
+        if (!src) return;
+
+        // Replace placeholder with the actual image
+        image.src = src;
+
+        // Ensure the 'onload' event is properly bound
+        image.addEventListener('load', function () {
+            // console.log(`Image successfully loaded: ${src}`);
+            image.removeAttribute("data-src");
+            image.classList.add("loaded");
+            // console.log(`Class 'loaded' added to image:`, image.classList);
+
+            // Add 'loaded' class to the parent container
+             const parent = image.closest('.auction_image_second');
+             console.log(parent);
+            if (parent) {
+                parent.style.position = ''; // Reset any specific positioning
+                parent.classList.add('hide-after');
+                parent.style.removeProperty('content'); // Remove pseudo-element content
+                parent.style.removeProperty('animation'); // Stop spinner animation
+            }
+        });
+
+        // Handle cases where 'onload' might not trigger due to caching
+        if (image.complete) {
+            // console.log(`Image already loaded from cache: ${src}`);
+            image.onload(); // Manually call onload if the image is already cached
+        }
+    }
+
+    // Intersection Observer for lazy loading
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            // console.log(`Intersection entry:`, entry);
+            if (entry.isIntersecting) {
+                // console.log(`Image is in the viewport: ${entry.target.src}`);
+                lazyLoadImage(entry.target);
+                observer.unobserve(entry.target); // Stop observing once loaded
+            }
+        });
+    });
+
+    // Select all lazy-load images
+    const images = document.querySelectorAll('.auction_image_third');
+    images.forEach(image => observer.observe(image));
+});
+
+
 document.querySelectorAll('.dropdown-menu a').forEach(item => {
     item.addEventListener('click', function () {
         const button = this.closest('.dropdown').querySelector('.dropdown-toggle');
@@ -47,39 +99,6 @@ function getAuctionIdFromUrl() {
     return urlParts[urlParts.length - 2]; // This gets the auction ID from the URL
 }
 
-// function getAdditionalImages(auctionId) {
-//     // Fetch additional images for the modal if needed
-//     fetch('/api/get-auction-images/' + auctionId + '/')
-//         .then(response => response.json())
-//         .then(data => {
-//             const imagesContainer = document.getElementById('additional-images-' + auctionId);
-//             imagesContainer.innerHTML = ''; // Clear any existing images
-//
-//             if (data.image_urls.length > 0) {
-//                 data.image_urls.forEach(function (url) {
-//                     // Create an anchor element with the lightbox attributes
-//                     const anchor = document.createElement('a');
-//                     anchor.classList.add('thumb-img');
-//                     anchor.href = url;
-//                     anchor.setAttribute('data-lightbox', 'auction-images');
-//                     // anchor.setAttribute('data-title', 'Image Title'); // Optional, add a title for each image
-//
-//                     // Create an img element
-//                     const img = document.createElement('img');
-//                     img.src = url;
-//                     img.classList.add('img-thumbnail');
-//
-//                     // Append img to anchor, then anchor to the container
-//                     anchor.appendChild(img);
-//                     imagesContainer.appendChild(anchor);
-//                 });
-//             } else {
-//                 imagesContainer.innerHTML = '<p>No additional images available.</p>';
-//             }
-//         })
-//         .catch(error => console.error('Error fetching images:', error));
-// }
-
 function getAdditionalImages(auctionId) {
     // Fetch additional images for the auction
     fetch('/api/get-auction-images/' + auctionId + '/')
@@ -124,85 +143,6 @@ function getAdditionalImages(auctionId) {
         })
         .catch(error => console.error('Error fetching images:', error));
 }
-
-
-// function getAdditionalDetails(auctionId) {
-//     // Fetch additional product details
-//     fetch(`/auction/${auctionId}/product-details/`)
-//         .then(response => response.json())
-//         .then(data => {
-//             let detailsContainer = document.getElementById(`additional-details-${auctionId}`);
-//             detailsContainer.innerHTML = ''; // Clear any existing details
-//
-//
-//
-//
-//             if (data.product_details.length > 0) {
-//                 // console.log('Product Details', data.product_details);
-//
-//                 // Check if any item is expired
-//                 let containsExpiredItems = false;
-//
-//                 data.product_details.forEach(function (detail, index) {
-//                     // Check if the item is expired
-//                     if (detail.expiration_date) {
-//                         let expirationDate = new Date(detail.expiration_date);
-//                         // console.log('exipration', expirationDate);
-//                         let today = new Date();
-//                         if (expirationDate && expirationDate < today) {
-//                             containsExpiredItems = true;
-//                         }
-//                     }
-//
-//                     // Create table if it doesn't exist yet
-//                     let table = detailsContainer.querySelector('table');
-//                     if (!table) {
-//                         table = document.createElement('table');
-//                         table.classList.add('table', 'table-striped', 'table-bordered');
-//                         detailsContainer.appendChild(table);
-//
-//                         // Create the table header
-//                         let thead = document.createElement('thead');
-//                         let headerRow = document.createElement('tr');
-//                         ['Reference Number', 'Lot Number', 'Expiration Date'].forEach(function (headerText) {
-//                             let th = document.createElement('th');
-//                             th.scope = "col";
-//                             th.textContent = headerText;
-//                             headerRow.appendChild(th);
-//                         });
-//                         thead.appendChild(headerRow);
-//                         table.appendChild(thead);
-//
-//                         // Create the table body
-//                         let tbody = document.createElement('tbody');
-//                         table.appendChild(tbody);
-//                     }
-//
-//                     // Add a new row to the table for each product detail
-//                     let row = document.createElement('tr');
-//                     ['reference_number', 'lot_number', 'expiration_date'].forEach(function (field) {
-//                         let td = document.createElement('td');
-//                         td.classList.add('text-uppercase')
-//                         td.textContent = detail[field] || 'N/A';  // Show 'N/A' if the field is empty
-//                         row.appendChild(td);
-//                     });
-//
-//                     table.querySelector('tbody').appendChild(row);
-//                 });
-//
-//                 // If any item is expired, show the warning message
-//                 if (containsExpiredItems) {
-//                     let warningMessage = document.createElement('div');
-//                     warningMessage.className = 'alert alert-warning';
-//                     warningMessage.textContent = 'This listing may contain an expired item(s).';
-//                     detailsContainer.append(warningMessage);
-//                 }
-//
-//             } else {
-//                 detailsContainer.innerHTML = '<p>No additional product details available.</p>';
-//             }
-//         });
-// }
 
 function getAdditionalDetails(auctionId) {
     // Fetch additional product details
@@ -443,6 +383,9 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+
+
+
 
 
 

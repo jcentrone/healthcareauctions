@@ -369,7 +369,7 @@ class ShippingMethodForm(forms.ModelForm):
             'shipping_method': forms.Select(
                 choices=[('standard', 'Standard Shipping: 7 - 10 Days'),
                          ('expedited', 'Expedited Shipping: 5 - 7 Days')],
-                attrs={'class': 'form-control required'}),
+                attrs={'class': 'form-control'}),
             'special_instructions': forms.Textarea(
                 attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Any special instructions...'}),
         }
