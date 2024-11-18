@@ -1270,6 +1270,21 @@ def active_auctions_view(request, auction_id=None):
         'get_images', 'watchers'
     )
 
+    test_auction_id = 3201
+
+    # Fetch the auction and prefetch related images
+    auction = get_object_or_404(
+        Auction.objects.prefetch_related('get_images'),
+        id=test_auction_id
+    )
+
+    # Log the image URL
+    if auction.get_images.exists():
+        image_url = auction.get_images.first().image.url  # Assuming `image` is the field on the related model
+        print(f"Image URL for auction ID {test_auction_id}: {image_url}")
+    else:
+        print(f"No images found for auction ID {test_auction_id}")
+
     # Apply additional filters for authenticated users
     if request.user.is_authenticated:
         if recent_views_filter:

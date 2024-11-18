@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Add 'loaded' class to the parent container
              const parent = image.closest('.auction_image_second');
-             console.log(parent);
+             // console.log(parent);
             if (parent) {
                 parent.style.position = ''; // Reset any specific positioning
                 parent.classList.add('hide-after');
@@ -28,16 +28,17 @@ document.addEventListener("DOMContentLoaded", function () {
         // Handle cases where 'onload' might not trigger due to caching
         if (image.complete) {
             // console.log(`Image already loaded from cache: ${src}`);
-            image.onload(); // Manually call onload if the image is already cached
+            image.onload; // Manually call onload if the image is already cached
         }
     }
 
     // Intersection Observer for lazy loading
     const observer = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {
-            // console.log(`Intersection entry:`, entry);
+            // console.log(`Intersection entry:`, entry.target);
             if (entry.isIntersecting) {
                 // console.log(`Image is in the viewport: ${entry.target.src}`);
+
                 lazyLoadImage(entry.target);
                 observer.unobserve(entry.target); // Stop observing once loaded
             }

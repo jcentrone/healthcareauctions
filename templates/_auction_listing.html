@@ -9,9 +9,10 @@
             <div class="auction_image_second">
                 <img class="auction_image_third"
                      src=""
-                     data-src="{{ auction.image.image.url|default:'https://storage.googleapis.com/healthcare_auctions_auction_images/images/no_image.png' }}"
+                     data-src="{{ auction.get_images.first.image.url|default:'https://storage.googleapis.com/healthcare_auctions_auction_images/images/no_image.png' }}"
                      alt="Product image"
                      loading="lazy">
+{#                <a href="{{ auction.image.image.url }}">{{ auction.image.first.image.url }}</a>#}
             </div>
 
             <!-- Product details-->
