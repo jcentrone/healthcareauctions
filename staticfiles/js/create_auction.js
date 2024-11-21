@@ -829,6 +829,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 Swal.close(); // Close the processing alert
 
                 if (data.success) {
+                    const redirectUrl = data.redirect_url;
                     Swal.fire({
                         title: 'Success!',
                         text: 'Your listing has been added successfully.',
@@ -838,7 +839,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             confirmButton: 'btn btn-primary'
                         }
                     }).then(() => {
-                        window.location.href = `https://www.healthcareauctions.com/auction/active` ;
+                        window.location.href = redirectUrl ;
                     });
                 } else {
                     Swal.fire({
