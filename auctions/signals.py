@@ -4,8 +4,10 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.mail import send_mail
 from django.conf import settings
-from .models import Order
+from .models import Order, User, Address
 from decimal import Decimal
+
+from .utils.zoho_integration import create_or_update_zoho_account_and_contact
 
 
 @receiver(post_save, sender=Order)
@@ -27,3 +29,12 @@ def send_order_notification(sender, instance, created, **kwargs):
 
         # Send the email
         send_mail(subject, message, from_email, recipient_list)
+
+
+@receiver(post_save, sender=User)
+def sync_user_to_zoho(sender, instance, **kwargs):
+    create_or_update_zoho_account_and_contact(instance)
+
+@receiver(post_save, sender=Address)
+def sync_address_to_zoho(sender, instance, **kwargs):
+    create_or_update_zoho_account_and_contact(instance.user)

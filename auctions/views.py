@@ -1696,13 +1696,13 @@ def auction_comment(request, auction_id):
     return HttpResponseRedirect(reverse('auction_details_view', args=[auction_id]))
 
 
-def category_details_view(request, category_name):
+def category_details_view(request, category_id):
     """
     Clicking on the name of any category takes the user to a page that
     displays all the active listings in that category
     Auctions are paginated: 3 per page
     """
-    category = Category.objects.get(category_name=category_name)
+    category = Category.objects.get(id=category_id)
     auctions = Auction.objects.filter(category=category)
 
     for auction in auctions:

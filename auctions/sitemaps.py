@@ -20,7 +20,8 @@ class CategorySitemap(Sitemap):
         return Category.objects.all()
 
     def location(self, obj):
-        return reverse('category_details_view', args=[obj.category_name])
+        # return reverse('category_details_view', args=[obj.category_name])
+        return reverse('category_details_view', args=[obj.id])
 
 class StaticViewSitemap(Sitemap):
     changefreq = 'monthly'

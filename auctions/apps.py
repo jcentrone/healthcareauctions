@@ -8,7 +8,7 @@ class AuctionsConfig(AppConfig):
     name = 'auctions'
 
     def ready(self):
-
+        import auctions.signals
         def start_scheduler(sender, **kwargs):
             call_command('start_scheduler')
 

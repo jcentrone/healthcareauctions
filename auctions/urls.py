@@ -35,7 +35,9 @@ urlpatterns = [
     path('auction/delete/<int:auction_id>/', views.auction_delete_view, name='auction-delete'),
     path('api/get-image-formset/<int:auction_id>/', views.get_image_formset, name='get_image_formset'),
     path('auction/edit/<int:auction_id>/', views.edit_auction, name='edit_auction'),
-    path('categories/<str:category_name>', views.category_details_view, name='category_details_view'),
+    # path('categories/<str:category_name>', views.category_details_view, name='category_details_view'),
+    path('categories/<int:id>/', views.category_details_view, name='category_details_view'),
+
     path('api/classify-device/', views.classify_device_view, name='classify_device'),
     path('barcode_scanner/', views.barcode_scanner, name='barcode_scanner'),
     path('import_excel/', views.import_excel, name='import_excel'),
